@@ -9,6 +9,7 @@ import { AuthFooter } from '../components/AuthFooter';
 import { ReadOnlyField } from '../components/ReadOnlyField';
 import AuthImagePanel from '../components/AuthImagePanel';
 import { FormInput } from '../components/FormInput';
+import { FormSelect } from '../components/FormSelect';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -38,6 +39,39 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   const [dateOfBirth, setDateOfBirth] = useState(profile.date_of_birth || '');
   const [programMajor, setProgramMajor] = useState(profile.program_major || '');
   const [currentClass, setCurrentClass] = useState(profile.current_class || '');
+
+  // Predefined options
+  const programMajorOptions = [
+    { value: 'Programme Grande École – Marketing Digital & Communication', label: 'Programme Grande École – Marketing Digital & Communication' },
+    { value: 'Programme Grande École – Finance Audit & Contrôle', label: 'Programme Grande École – Finance Audit & Contrôle' },
+    { value: 'Programme Grande École – International Business', label: 'Programme Grande École – International Business' },
+    { value: 'Programme Grande École – Entrepreneuriat & Innovation', label: 'Programme Grande École – Entrepreneuriat & Innovation' },
+    { value: 'Programme Grande École – Ingénierie Financière', label: 'Programme Grande École – Ingénierie Financière' },
+    { value: 'Licence – E-Business & Marketing Digital', label: 'Licence – E-Business & Marketing Digital' },
+    { value: 'Licence – Achats & Logistique Internationale', label: 'Licence – Achats & Logistique Internationale' },
+    { value: 'Licence – Gestion Comptable & Financière', label: 'Licence – Gestion Comptable & Financière' },
+    { value: 'Licence – International Business Administration', label: 'Licence – International Business Administration' },
+    { value: 'Master Spécialisé – Management de Projets', label: 'Master Spécialisé – Management de Projets' },
+    { value: 'Master Spécialisé – Management des Ressources Humaines', label: 'Master Spécialisé – Management des Ressources Humaines' },
+    { value: 'Master Spécialisé – Management Financier', label: 'Master Spécialisé – Management Financier' },
+    { value: 'Master Spécialisé – Audit et Contrôle de Gestion', label: 'Master Spécialisé – Audit et Contrôle de Gestion' },
+    { value: 'Master Spécialisé – Marketing Digital', label: 'Master Spécialisé – Marketing Digital' },
+    { value: 'Master Spécialisé – Achats et Supply Chain Management', label: 'Master Spécialisé – Achats et Supply Chain Management' },
+    { value: 'Master Spécialisé – Ingénierie Juridique, Financière et Fiscale', label: 'Master Spécialisé – Ingénierie Juridique, Financière et Fiscale' }
+  ];
+
+  const currentClassOptions = [
+    { value: '1st Year', label: '1st Year' },
+    { value: '2nd Year', label: '2nd Year' },
+    { value: '3rd Year', label: '3rd Year' },
+    { value: '4th Year', label: '4th Year' },
+    { value: '5th Year', label: '5th Year' },
+    { value: 'Licence 1', label: 'Licence 1' },
+    { value: 'Licence 2', label: 'Licence 2' },
+    { value: 'Licence 3', label: 'Licence 3' },
+    { value: 'Master 1', label: 'Master 1' },
+    { value: 'Master 2', label: 'Master 2' }
+  ];
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -91,9 +125,9 @@ const ConfirmIdentityPage: FunctionComponent = () => {
     <div className="w-full min-h-screen overflow-x-hidden lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row bg-white text-left font-inter text-sm text-darkslategray">
       
       {/* Form Container */}
-      <div className="w-full flex-1 lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center px-5 sm:px-8 pb-12 lg:p-4 box-border relative">
+      <div className="w-full flex-1 lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center px-5 sm:px-8 pb-6 lg:p-2 box-border relative">
         <motion.div 
-          className="w-full max-w-[500px] flex flex-col relative m-auto py-6 lg:py-2"
+          className="w-full max-w-[500px] flex flex-col relative m-auto py-4 lg:py-1"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -102,7 +136,7 @@ const ConfirmIdentityPage: FunctionComponent = () => {
             <AuthHeader />
           </motion.div>
 
-          <motion.div variants={itemVariants} className="w-full flex flex-col gap-1 mb-6 mt-4">
+          <motion.div variants={itemVariants} className="w-full flex flex-col gap-1 mb-6 mt-2">
             <div className="flex justify-between items-center text-gray">
               <h1 className="text-lg font-bold m-0 tracking-tight">Confirm Your Identity</h1>
             </div>
@@ -144,7 +178,7 @@ const ConfirmIdentityPage: FunctionComponent = () => {
             )}
           </AnimatePresence>
 
-          <motion.div variants={itemVariants} className="w-full flex flex-col gap-2.5 mb-5 relative">
+          <motion.div variants={itemVariants} className="w-full flex flex-col gap-2 mb-8 relative">
             <div className="absolute -left-4 top-4 bottom-4 w-[2px] bg-gradient-to-b from-mediumslateblue/60 to-transparent rounded-full hidden sm:block"></div>
             
             <AnimatePresence mode="wait">
@@ -162,8 +196,20 @@ const ConfirmIdentityPage: FunctionComponent = () => {
                     <FormInput label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   </div>
                   <FormInput label="Date of Birth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} Icon={Calendar} />
-                  <FormInput label="Program / Major" value={programMajor} onChange={(e) => setProgramMajor(e.target.value)} Icon={BookOpen} placeholder="e.g. Master MIDE" />
-                  <FormInput label="Current Class" value={currentClass} onChange={(e) => setCurrentClass(e.target.value)} Icon={GraduationCap} placeholder="e.g. 5th Year" />
+                  <FormSelect 
+                    label="Program / Major" 
+                    value={programMajor} 
+                    onChange={setProgramMajor} 
+                    Icon={BookOpen} 
+                    options={programMajorOptions}
+                  />
+                  <FormSelect 
+                    label="Current Class" 
+                    value={currentClass} 
+                    onChange={setCurrentClass} 
+                    Icon={GraduationCap} 
+                    options={currentClassOptions}
+                  />
                 </motion.div>
               ) : (
                 <motion.div 
@@ -184,7 +230,7 @@ const ConfirmIdentityPage: FunctionComponent = () => {
             </AnimatePresence>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="w-full flex flex-col gap-2">
+          <motion.div variants={itemVariants} className="w-full flex flex-col gap-2 mt-1">
             <motion.button 
               whileHover={{ y: -1, boxShadow: '0 6px 16px rgba(99, 102, 241, 0.25)' }}
               whileTap={{ scale: 0.98 }}
