@@ -1,25 +1,48 @@
-# PFE Talent Center
+# Talent Center
 
-This repository contains the foundational structure for the PFE Talent Center application.
+A comprehensive platform for managing talent acquisition and development.
 
-## 🏗️ Project Structure
+## Overview
 
-The codebase is organized as a monorepo containing both the frontend and backend applications, along with related documentation. 
+Talent Center is a modern web application designed to streamline the recruitment process, manage candidate profiles, and facilitate talent development within organizations.
 
-```text
-pfe-talent-center/
-├── backend/       # Backend application (Python)
-├── frontend/      # Frontend application (Node/JavaScript)
-├── docs/          # General documentation, diagrams, and architecture notes
-├── .gitignore     # Global ignored files (covers both JS/Python and OS files)
-└── README.md      # Root project documentation
+## Features
+
+- **Candidate Management**: Track and manage potential candidates throughout the recruitment pipeline
+- **Profile System**: Comprehensive candidate profiles with skills, experience, and assessments
+- **Analytics Dashboard**: Insights and metrics on recruitment performance
+- **User Authentication**: Secure login system for different user roles
+- **Responsive Design**: Works seamlessly across desktop and mobile devices
+
+## Technology Stack
+
+- **Frontend**: Modern JavaScript framework with responsive UI components
+- **Backend**: Python-based API with secure authentication
+- **Database**: Relational database for data persistence
+- **Deployment**: Cloud-ready architecture for scalable deployment
+
+## Project Structure
+
+```
+talent-center/
+├── frontend/          # Frontend application
+├── backend/           # Backend API services
+├── docs/              # Documentation and guides
+└── README.md          # This file
 ```
 
-## 📐 Architecture Principles
+## Getting Started
 
-- **Separation of Concerns**: The business logic is strictly separated from presentation and routing layers.
-- **Maintainable & Modular**: Built to scale. The structure inherently supports adding new features and modules alongside the initial foundation and authentication workflows.
-- **Simplicity Active**: We aim to avoid overengineering—focusing on delivering a production-grade yet straightforward logic flow.
+1. Clone this repository
+2. Install dependencies for both frontend and backend
+3. Configure environment variables
+4. Run the development servers
+5. Access the application through your browser
 
-## ⚙️ Next Steps
-Currently, only the foundational project structure is set up. Next steps will include initializing the `backend/` and `frontend/` applications and configuring the authentication module.
+## Contributing
+
+We welcome contributions! Please follow our contribution guidelines and submit pull requests for any improvements.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
