@@ -1,45 +1,82 @@
-// import apiClient from '../../../shared/api/client';
+import apiClient from '../../../shared/api/client';
 import { AuthResponse, User, StudentProfile } from '../types';
 
-// Mock user state stored in memory to simulate backend onboarding
-let mockUser: User = {
-  id: 1,
-  email: 'student@esca.ma',
-  role: 'student',
-  student_profile: {
-    first_name: 'Sarah',
-    last_name: 'Benali',
-    date_of_birth: '2000-05-14',
-    program_major: 'Software Engineering',
-    current_class: 'Master 1',
-    identity_confirmed: false,
-    profile_completed: false
-  }
-};
+// Backend API response envelope
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
 
 export const authApi = {
-  // To connect to the real backend, uncomment the apiClient calls and delete the Mock Promises
+  // Real backend authentication
   login: async (email: string, password: string): Promise<AuthResponse> => {
-    return new Promise((resolve, reject) => setTimeout(() => {
-      if (email && password) {
-         resolve({ access: 'mock_jwt_token_123', user: JSON.parse(JSON.stringify(mockUser)) });
-      } else {
-         reject({ response: { data: { detail: 'Please provide valid credentials' } } });
-      }
-    }, 1000));
+    const response = await apiClient.post<ApiResponse<{
+      access: string;
+      refresh: string;
+      user: User;
+      session: { id: number; expires_at: string };
+    }>>('/auth/login', { email, password });
+    
+    return {
+      access: response.data.data.access,
+      refresh: response.data.data.refresh,
+      user: response.data.data.user,
+    };
   },
   
   me: async (): Promise<User> => {
-    return new Promise((resolve) => setTimeout(() => resolve(JSON.parse(JSON.stringify(mockUser))), 800));
+    const response = await apiClient.get<ApiResponse<User>>('/auth/me');
+    return response.data.data;
   },
 
-  confirmIdentity: async (data: Partial<StudentProfile>): Promise<User> => {
-    mockUser.student_profile!.identity_confirmed = true;
-    return new Promise((resolve) => setTimeout(() => resolve(JSON.parse(JSON.stringify(mockUser))), 1000));
+  refresh: async (refreshToken: string): Promise<AuthResponse> => {
+    const response = await apiClient.post<ApiResponse<{
+      access: string;
+      refresh: string;
+      user: User;
+      session: { id: number; expires_at: string };
+    }>>('/auth/refresh', { refresh: refreshToken });
+    
+    return {
+      access: response.data.data.access,
+      refresh: response.data.data.refresh,
+      user: response.data.data.user,
+    };
+  },
+
+  logout: async (): Promise<void> => {
+    await apiClient.post('/auth/logout');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+  },
+
+  // Profile onboarding - Step 1: Confirm Identity
+  confirmIdentity: async (data: {
+    first_name?: string;
+    last_name?: string;
+    date_of_birth?: string;
+    phone?: string;
+  }): Promise<User> => {
+    const response = await apiClient.patch<ApiResponse<{
+      id: number;
+      first_name: string;
+      last_name: string;
+      phone: string;
+      date_of_birth: string;
+    }>>('/accounts/confirm-identity', data);
+    
+    // After confirming identity, fetch updated user data
+    const updatedUser = await authApi.me();
+    return updatedUser;
   },
 
   completeProfile: async (formData: FormData): Promise<User> => {
-    mockUser.student_profile!.profile_completed = true;
-    return new Promise((resolve) => setTimeout(() => resolve(JSON.parse(JSON.stringify(mockUser))), 1500));
+    const response = await apiClient.patch('/accounts/complete-profile', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
   }
 };

@@ -7,6 +7,14 @@ import ConfirmIdentityPage from '../../features/auth/pages/ConfirmIdentityPage';
 import CompleteProfilePage from '../../features/auth/pages/CompleteProfilePage';
 import CallbackPage from '../../features/auth/pages/CallbackPage';
 
+// Admin Pages
+import AdminDashboardPage from '../../features/admin/pages/AdminDashboardPage';
+
+// CV Pages
+import CVListPage from '../../features/cv/pages/CVListPage';
+import CVEditorPage from '../../features/cv/pages/CVEditorPage';
+import PublicCvPage from '../../features/cv/pages/PublicCvPage';
+
 // Guards
 import { GuestGuard } from './guards/GuestGuard';
 import { OnboardingGuard } from './guards/OnboardingGuard';
@@ -16,6 +24,11 @@ export const router = createBrowserRouter([
   {
     path: '/callback',
     element: <CallbackPage />
+  },
+
+  {
+    path: '/cv/public/:token',
+    element: <PublicCvPage />
   },
 
   {
@@ -45,7 +58,19 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <div>Welcome to the Dashboard!</div>
+        element: <AdminDashboardPage />
+      },
+      {
+        path: '/cv',
+        element: <CVListPage />
+      },
+      {
+        path: '/cv/:id/edit',
+        element: <CVEditorPage />
+      },
+      {
+        path: '/cv-editor',
+        element: <CVEditorPage />
       }
     ]
   }

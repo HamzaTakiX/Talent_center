@@ -1,9 +1,11 @@
 import { FunctionComponent, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ShieldCheck, Edit3, AlertCircle, CheckCircle2, User, Calendar, BookOpen, GraduationCap, X } from 'lucide-react';
 import identityCover from '../assets/images/confirm-identity/istockphoto-2105100634-612x612.jpg';
 import { useAuth } from '../hooks/useAuth';
 import { authApi } from '../api';
+import { markIdentityJustConfirmed } from '../../../app/router/guards/OnboardingGuard';
 import { AuthHeader } from '../components/AuthHeader';
 import { AuthFooter } from '../components/AuthFooter';
 import { ReadOnlyField } from '../components/ReadOnlyField';
@@ -30,6 +32,7 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
 
   const profile = user?.student_profile || ({} as any);
 
@@ -81,27 +84,132 @@ const ConfirmIdentityPage: FunctionComponent = () => {
     return () => clearTimeout(timeout);
   }, [successMsg]);
 
-  const handleConfirm = async () => {
+  // Sync form state with user profile when it updates (e.g., after API call)
+  useEffect(() => {
+    const studentProfile = user?.student_profile;
+    if (studentProfile) {
+      setFirstName(studentProfile.first_name || '');
+      setLastName(studentProfile.last_name || '');
+      setDateOfBirth(studentProfile.date_of_birth || '');
+      setProgramMajor(studentProfile.program_major || '');
+      setCurrentClass(studentProfile.current_class || '');
+    }
+  }, [user?.student_profile]);
+
+  // Comprehensive error message handler
+  const getErrorMessage = (err: any): string => {
+    // No response = network error (backend not running)
+    if (!err.response) {
+      return 'Unable to connect to the server. Please check your internet connection or try again later.';
+    }
+
+    const status = err.response.status;
+    const data = err.response.data;
+    const backendMessage = data?.message || data?.detail || '';
+    const errors = data?.errors;
+
+    switch (status) {
+      case 400:
+        // Bad request - validation errors
+        if (errors) {
+          const fieldErrors = Object.entries(errors)
+            .map(([field, msgs]) => {
+              const messages = Array.isArray(msgs) ? msgs.join(', ') : msgs;
+              return `${messages}`;
+            })
+            .join('; ');
+          return fieldErrors || 'Please check your input and try again.';
+        }
+        return backendMessage || 'Invalid input. Please verify all fields are filled correctly.';
+
+      case 401:
+        // Unauthorized - session expired or not authenticated
+        return 'Your session has expired. Please log in again.';
+
+      case 403:
+        // Forbidden - not allowed to perform this action
+        if (backendMessage.toLowerCase().includes('identity')) {
+          return 'Identity already confirmed. You cannot modify this information.';
+        }
+        return 'You do not have permission to perform this action.';
+
+      case 404:
+        // Not found - user profile not found
+        return 'User profile not found. Please contact support.';
+
+      case 409:
+        // Conflict - data conflict (e.g., duplicate entry)
+        return 'This information conflicts with existing records. Please verify your details.';
+
+      case 422:
+        // Unprocessable entity - validation failed
+        return backendMessage || 'Unable to process your request. Please check your information.';
+
+      case 429:
+        // Rate limited
+        return 'Too many requests. Please wait a moment before trying again.';
+
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        // Server errors
+        return 'Something went wrong on our end. Please try again later or contact support if the problem persists.';
+
+      default:
+        return backendMessage || 'An unexpected error occurred. Please try again.';
+    }
+  };
+
+  const handleConfirm = async (shouldRedirect: boolean = false) => {
     try {
       setLoading(true);
       setError('');
       setSuccessMsg('');
       
-      const payload = isEditing ? {
-        first_name: firstName,
-        last_name: lastName,
+      // Frontend validation
+      if (isEditing) {
+        if (!firstName.trim()) {
+          setError('First name is required.');
+          setLoading(false);
+          return;
+        }
+        if (!lastName.trim()) {
+          setError('Last name is required.');
+          setLoading(false);
+          return;
+        }
+        if (!dateOfBirth) {
+          setError('Date of birth is required.');
+          setLoading(false);
+          return;
+        }
+      }
+      
+      const payload = {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         date_of_birth: dateOfBirth,
         program_major: programMajor,
         current_class: currentClass
-      } : {};
+      };
 
       const updatedUser = await authApi.confirmIdentity(payload);
       updateUser(updatedUser);
       
+      // Mark that we just confirmed identity (prevents OnboardingGuard auto-redirect)
+      markIdentityJustConfirmed();
+      
       setIsEditing(false);
       setSuccessMsg('Your information has been successfully verified and saved.');
+      
+      // Only redirect if explicitly requested (Confirm button, not Save)
+      if (shouldRedirect) {
+        navigate('/complete-profile');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to process request. Please try again.');
+      const errorMessage = getErrorMessage(err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -231,27 +339,53 @@ const ConfirmIdentityPage: FunctionComponent = () => {
           </motion.div>
 
           <motion.div variants={itemVariants} className="w-full flex flex-col gap-2 mt-1">
-            <motion.button 
-              whileHover={{ y: -1, boxShadow: '0 6px 16px rgba(99, 102, 241, 0.25)' }}
-              whileTap={{ scale: 0.98 }}
-              disabled={loading} 
-              onClick={handleConfirm} 
-              className={`w-full h-[48px] rounded-xl bg-mediumslateblue outline-none border-none text-white flex items-center justify-center shadow-md active:opacity-90 overflow-hidden relative group ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-slateblue'} transition-all duration-300`}
-            >
-              <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-full transition-transform duration-700 ease-in-out skew-x-12"></div>
-              <div className="flex items-center gap-2 relative z-10">
-                {loading ? (
-                  <motion.div 
-                    animate={{ rotate: 360 }} 
-                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                    className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                  />
-                ) : (
-                  isEditing ? <CheckCircle2 className="w-[18px] h-[18px] opacity-90" strokeWidth={2.5} /> : <ShieldCheck className="w-[18px] h-[18px] opacity-90" strokeWidth={2.5}/>
-                )}
-                <span className="font-semibold text-[15px]">{loading ? 'Processing...' : isEditing ? 'Save Information' : 'Confirm Information'}</span>
-              </div>
-            </motion.button>
+            {isEditing ? (
+              // Edit mode: Save button (no redirect)
+              <motion.button 
+                whileHover={{ y: -1, boxShadow: '0 6px 16px rgba(99, 102, 241, 0.25)' }}
+                whileTap={{ scale: 0.98 }}
+                disabled={loading} 
+                onClick={() => handleConfirm(false)} 
+                className={`w-full h-[48px] rounded-xl bg-mediumslateblue outline-none border-none text-white flex items-center justify-center shadow-md active:opacity-90 overflow-hidden relative group ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-slateblue'} transition-all duration-300`}
+              >
+                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-full transition-transform duration-700 ease-in-out skew-x-12"></div>
+                <div className="flex items-center gap-2 relative z-10">
+                  {loading ? (
+                    <motion.div 
+                      animate={{ rotate: 360 }} 
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                      className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                    />
+                  ) : (
+                    <CheckCircle2 className="w-[18px] h-[18px] opacity-90" strokeWidth={2.5} />
+                  )}
+                  <span className="font-semibold text-[15px]">{loading ? 'Saving...' : 'Save Information'}</span>
+                </div>
+              </motion.button>
+            ) : (
+              // Read mode: Confirm button (with redirect)
+              <motion.button 
+                whileHover={{ y: -1, boxShadow: '0 6px 16px rgba(99, 102, 241, 0.25)' }}
+                whileTap={{ scale: 0.98 }}
+                disabled={loading} 
+                onClick={() => handleConfirm(true)} 
+                className={`w-full h-[48px] rounded-xl bg-mediumslateblue outline-none border-none text-white flex items-center justify-center shadow-md active:opacity-90 overflow-hidden relative group ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-slateblue'} transition-all duration-300`}
+              >
+                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-full transition-transform duration-700 ease-in-out skew-x-12"></div>
+                <div className="flex items-center gap-2 relative z-10">
+                  {loading ? (
+                    <motion.div 
+                      animate={{ rotate: 360 }} 
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                      className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                    />
+                  ) : (
+                    <ShieldCheck className="w-[18px] h-[18px] opacity-90" strokeWidth={2.5}/>
+                  )}
+                  <span className="font-semibold text-[15px]">{loading ? 'Processing...' : 'Confirm Information'}</span>
+                </div>
+              </motion.button>
+            )}
             <motion.button 
               whileHover={{ y: -1, backgroundColor: '#f8fafc' }}
               whileTap={{ scale: 0.98 }}

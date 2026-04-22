@@ -8,7 +8,7 @@ interface AuthContextType {
   isLoading: boolean;
   user: User | null;
   login: () => void;
-  legacyLogin: (token: string, userData: User) => void;
+  legacyLogin: (token: string, userData: User, refreshToken?: string) => void;
   logout: () => void;
   updateUser: (userData: User) => void;
 }
@@ -74,13 +74,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loginWithRedirect();
   };
 
-  const legacyLogin = (token: string, userData: User) => {
+  const legacyLogin = (token: string, userData: User, refreshToken?: string) => {
     localStorage.setItem('access_token', token);
+    if (refreshToken) {
+      localStorage.setItem('refresh_token', refreshToken);
+    }
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     setUser(null);
     auth0Logout({ logoutParams: { returnTo: window.location.origin + '/login' } });
   };

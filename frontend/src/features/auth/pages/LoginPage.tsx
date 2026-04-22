@@ -34,20 +34,119 @@ const LoginPage: FunctionComponent = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const getErrorMessage = (err: any): { title: string; message: string } => {
+    // No response = network error (backend not running)
+    if (!err.response) {
+      return {
+        title: 'Connection Error',
+        message: 'Unable to connect to the server. Please check your internet connection or try again later.'
+      };
+    }
+
+    const status = err.response.status;
+    const data = err.response.data;
+    const backendMessage = data?.message || data?.detail || '';
+
+    switch (status) {
+      case 400:
+        // Bad request - validation errors
+        if (data?.errors) {
+          const fieldErrors = Object.entries(data.errors)
+            .map(([field, msgs]) => `${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join('; ');
+          return {
+            title: 'Validation Failed',
+            message: fieldErrors || 'Please check your input and try again.'
+          };
+        }
+        return {
+          title: 'Invalid Input',
+          message: backendMessage || 'Please provide valid email and password.'
+        };
+
+      case 401:
+        // Unauthorized - invalid credentials
+        return {
+          title: 'Authentication Failed',
+          message: 'Invalid email or password. Please verify your credentials and try again.'
+        };
+
+      case 403:
+        // Forbidden - account not active or suspended
+        if (backendMessage.toLowerCase().includes('suspended')) {
+          return {
+            title: 'Account Suspended',
+            message: 'Your account has been suspended. Please contact the administrator for assistance.'
+          };
+        }
+        if (backendMessage.toLowerCase().includes('pending')) {
+          return {
+            title: 'Account Pending',
+            message: 'Your account is pending approval. You will receive an email once approved.'
+          };
+        }
+        return {
+          title: 'Access Denied',
+          message: backendMessage || 'Your account does not have access. Please contact support.'
+        };
+
+      case 423:
+        // Locked - too many attempts
+        return {
+          title: 'Account Locked',
+          message: 'Too many failed login attempts. Your account is temporarily locked. Please try again in 15 minutes.'
+        };
+
+      case 429:
+        // Rate limited
+        return {
+          title: 'Too Many Attempts',
+          message: 'Please wait a moment before trying again.'
+        };
+
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        // Server errors
+        return {
+          title: 'Server Error',
+          message: 'Something went wrong on our end. Please try again later or contact support if the problem persists.'
+        };
+
+      default:
+        return {
+          title: 'Login Failed',
+          message: backendMessage || 'An unexpected error occurred. Please try again.'
+        };
+    }
+  };
+
   const handleLogin = async () => {
-    if (!validateEmail(email)) {
-      setError('Please enter a valid email address.');
+    // Frontend validation - only basic checks
+    if (!email.trim()) {
+      setError('Email address is required.');
       return;
     }
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address (e.g., user@example.com).');
+      return;
+    }
+    if (!password) {
+      setError('Password is required.');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
       const response = await authApi.login(email, password);
       if (response.access && legacyLogin) {
-        legacyLogin(response.access, response.user);
+        legacyLogin(response.access, response.user, response.refresh);
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed. Please verify credentials.');
+      const { message } = getErrorMessage(err);
+      setError(message);
     } finally {
       setLoading(false);
     }
