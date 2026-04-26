@@ -1,338 +1,268 @@
-import { FunctionComponent, useMemo, useRef, useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  FileText, Sparkles, Download, Plus, Briefcase, GraduationCap,
-  Lightbulb, FolderOpen, Type, AlignLeft, AlignCenter, AlignRight,
-  Bold, Italic, Layout, Check, Link, Mail, Phone,
-  MapPin, Calendar, Globe, Star, Wand2, Clock, ListOrdered, Share2,
+  FileText, Plus, Briefcase, GraduationCap, Lightbulb, FolderOpen,
+  Type, AlignLeft, AlignCenter, AlignRight, Bold, Italic,
+  Layout, Check, Wand2, Download, Save, Sparkles,
 } from 'lucide-react';
-
-import { useStudentCv } from '../hooks/useStudentCv';
-import {
-  ContactContent,
-  EducationContent,
-  ExperienceContent,
-  LanguagesContent,
-  SkillsContent,
-  SummaryContent,
-  CvSection,
-  SectionType,
-} from '../types';
-import SectionReorderPanel from '../components/SectionReorderPanel';
-import VersionHistoryDrawer from '../components/VersionHistoryDrawer';
-import AiSuggestionsPanel from '../components/AiSuggestionsPanel';
-import ShareLinksPanel from '../components/ShareLinksPanel';
+import StandardCvTemplate, { SectionSuggestionMap } from '../components/StandardCvTemplate';
+import { cvApi } from '../api';
+import type { CvAiAnalysis, SectionType } from '../types';
 import { exportNodeToPdf } from '../utils/pdfExporter';
 
-const DEFAULT_CONTACT: ContactContent = {
-  email: 'sarah.alami@esca.ma',
-  phone: '+212 6 12 34 56 78',
-  linkedin: 'linkedin.com/in/sarah-alami',
-  website: '',
-  location: 'Casablanca, Morocco',
-};
-
-const DEFAULT_SUMMARY: SummaryContent = {
-  text: "Highly motivated Master's student in Management at ESCA Business School with a strong background in business strategy and digital marketing.",
-};
-
-const DEFAULT_EDUCATION: EducationContent = {
-  items: [
-    {
-      id: '1',
-      degree: 'Master in Management',
-      school: 'ESCA Business School',
-      location: 'Casablanca, Morocco',
-      start_date: '2023',
-      end_date: '2025',
-      description: 'Specialization in Digital Marketing and Business Strategy. Current GPA: 3.7/4.0',
-    },
-  ],
-};
-
-const DEFAULT_EXPERIENCE: ExperienceContent = {
-  items: [
-    {
-      id: '1',
-      title: 'Marketing Intern',
-      company: 'Attijariwafa Bank',
-      location: 'Casablanca, Morocco',
-      start_date: 'Jun 2023',
-      end_date: 'Aug 2023',
-      bullets: [
-        'Developed and executed social media campaigns that increased engagement by 35%',
-        'Conducted market research and competitor analysis for new product launches',
-        'Collaborated with design team to create marketing materials',
-      ],
-    },
-  ],
-};
-
-const DEFAULT_SKILLS: SkillsContent = {
-  items: [
-    { id: 's1', name: 'Digital Marketing', level: null },
-    { id: 's2', name: 'Data Analysis', level: null },
-    { id: 's3', name: 'Project Management', level: null },
-    { id: 's4', name: 'Microsoft Office', level: null },
-    { id: 's5', name: 'Google Analytics', level: null },
-    { id: 's6', name: 'Social Media Marketing', level: null },
-  ],
-};
-
-const DEFAULT_LANGUAGES: LanguagesContent = {
-  items: [
-    { id: 'l1', name: 'Arabic', level: 'Native' },
-    { id: 'l2', name: 'French', level: 'Fluent' },
-    { id: 'l3', name: 'English', level: 'Fluent' },
-  ],
-};
-
-function findSection(sections: CvSection[] | undefined, type: SectionType): CvSection | undefined {
-  return sections?.find((s) => s.section_type === type);
-}
-
+/**
+ * CV Editor — Canva-like canvas editor for creating and editing CV templates.
+ * Users can add text, shapes, and images, drag them around, and export as PDF.
+ */
 const CVEditorPage: FunctionComponent = () => {
-  const params = useParams<{ id?: string }>();
-  const cvId = params.id ? Number(params.id) : null;
-  const {
-    cv, loading, error, reload, exportPdf,
-    addSection, deleteSection, reorderSections, updateSection,
-  } = useStudentCv(cvId);
+  const [cvTitle, setCvTitle] = useState('CV Template');
+  const [accentColor, setAccentColor] = useState('#2563eb');
 
   const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [fontWeight, setFontWeight] = useState<'regular' | 'bold'>('regular');
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>('left');
   const [layout, setLayout] = useState<'modern' | 'classic' | 'minimal'>('modern');
   const [aiSuggestions, setAiSuggestions] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
-  const previewRef = useRef<HTMLDivElement>(null);
 
-  const content = useMemo(() => {
-    const contact = (findSection(cv?.sections, 'contact')?.content_json as ContactContent) || DEFAULT_CONTACT;
-    const summary = (findSection(cv?.sections, 'summary')?.content_json as SummaryContent) || DEFAULT_SUMMARY;
-    const education = (findSection(cv?.sections, 'education')?.content_json as EducationContent) || DEFAULT_EDUCATION;
-    const experience = (findSection(cv?.sections, 'experience')?.content_json as ExperienceContent) || DEFAULT_EXPERIENCE;
-    const skills = (findSection(cv?.sections, 'skills')?.content_json as SkillsContent) || DEFAULT_SKILLS;
-    const languages = (findSection(cv?.sections, 'languages')?.content_json as LanguagesContent) || DEFAULT_LANGUAGES;
-    return { contact, summary, education, experience, skills, languages };
-  }, [cv]);
+  // ---- Backend wiring ------------------------------------------------------
+  // Resolve the user's primary CV on mount. If none exists, create one so the
+  // header / sidebar actions have a target to act on.
+  const [cvId, setCvId] = useState<number | null>(null);
+  const [cvScore, setCvScore] = useState<number>(82);
+  const [latestAnalysis, setLatestAnalysis] = useState<CvAiAnalysis | null>(null);
+  const exportRef = useRef<HTMLElement>(null);
+  const titleSaveTimerRef = useRef<number | null>(null);
+  const cvLoadedRef = useRef(false);
 
-  const personalInfo = {
-    name: cv?.title || 'Sarah Alami',
-    title: 'Business Management Student | Digital Marketing Enthusiast',
-    ...content.contact,
-  };
-
-  const cvScore = cv?.current_score ?? 82;
-
-  const fontSizeClasses = { small: 'text-xs', medium: 'text-sm', large: 'text-base' };
-  const fontWeightClasses = { regular: 'font-normal', bold: 'font-semibold' };
-  const alignmentClasses = { left: 'text-left', center: 'text-center', right: 'text-right' };
-
-  // ---- Inline Editable Text Component ----------------------------------------
-  interface EditableTextProps {
-    value: string;
-    onSave: (value: string) => void;
-    className?: string;
-    multiline?: boolean;
-    placeholder?: string;
-  }
-
-  const EditableText: FunctionComponent<EditableTextProps> = ({
-    value,
-    onSave,
-    className = '',
-    multiline = false,
-    placeholder = 'Click to edit...',
-  }) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [editValue, setEditValue] = useState(value);
-    const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-
-    const handleClick = () => {
-      setIsEditing(true);
-      setEditValue(value);
-      setTimeout(() => inputRef.current?.focus(), 0);
-    };
-
-    const handleSave = useCallback(() => {
-      if (editValue !== value) {
-        onSave(editValue);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await cvApi.listMyCvs();
+        if (cancelled) return;
+        const primary = list.find((c) => c.is_primary) ?? list[0];
+        if (primary) {
+          setCvId(primary.id);
+          setCvTitle(primary.title);
+          if (typeof primary.current_score === 'number') setCvScore(primary.current_score);
+          cvLoadedRef.current = true;
+          console.info('[cv-editor] loaded CV', primary.id);
+          return;
+        }
+        // No CV yet — create one so subsequent actions have a target.
+        const created = await cvApi.createCv({ title: 'CV Template' });
+        if (cancelled) return;
+        setCvId(created.id);
+        setCvTitle(created.title);
+        cvLoadedRef.current = true;
+        console.info('[cv-editor] created new CV', created.id);
+      } catch (e) {
+        console.error('[cv-editor] failed to load or create CV (auth token missing? backend down?):', e);
       }
-      setIsEditing(false);
-    }, [editValue, value, onSave]);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' && !multiline) {
-        handleSave();
-      } else if (e.key === 'Escape') {
-        setEditValue(value);
-        setIsEditing(false);
-      }
-    };
+  // Pull the most recent analysis on cv load so badges show immediately when
+  // the user re-opens the editor after an earlier analyze run.
+  useEffect(() => {
+    if (cvId == null) return;
+    let cancelled = false;
+    cvApi.listAnalyses(cvId)
+      .then((list) => {
+        if (cancelled || list.length === 0) return;
+        setLatestAnalysis(list[0]);
+        setCvScore(list[0].score);
+      })
+      .catch((e) => console.warn('[cv-editor] could not load analysis history:', e));
+    return () => { cancelled = true; };
+  }, [cvId]);
 
-    if (isEditing) {
-      const inputClasses = `${className} bg-white border-2 border-blue-500 rounded px-2 py-1 outline-none w-full resize-none`;
-      if (multiline) {
-        return (
-          <textarea
-            ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onBlur={handleSave}
-            onKeyDown={handleKeyDown}
-            className={inputClasses}
-            rows={3}
-          />
-        );
-      }
-      return (
-        <input
-          ref={inputRef as React.RefObject<HTMLInputElement>}
-          type="text"
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={handleKeyDown}
-          className={inputClasses}
-        />
-      );
+  // Build a SectionType -> message map from the most recent analysis. The
+  // template renders a badge above each section that has at least one
+  // suggestion. We pick the FIRST suggestion per section (highest priority
+  // for now; severity-based ordering can be layered on later).
+  const sectionSuggestions = useMemo<SectionSuggestionMap>(() => {
+    if (!latestAnalysis?.suggestions_json) return {};
+    const map: SectionSuggestionMap = {};
+    for (const sug of latestAnalysis.suggestions_json) {
+      const key = sug.section as keyof SectionSuggestionMap;
+      if (!map[key]) map[key] = sug.message;
     }
+    return map;
+  }, [latestAnalysis]);
 
-    return (
-      <span
-        onClick={handleClick}
-        className={`${className} cursor-text hover:bg-blue-50/50 rounded px-1 -mx-1 transition-colors border border-transparent hover:border-blue-200`}
-        title="Click to edit"
-      >
-        {value || placeholder}
-      </span>
-    );
-  };
+  // Debounced persistence of CV title — fires only after the user stops typing,
+  // and only once the CV has been loaded (so the initial setCvTitle from the
+  // mount fetch doesn't trigger a redundant PATCH).
+  useEffect(() => {
+    if (cvId == null || !cvLoadedRef.current) return;
+    if (titleSaveTimerRef.current) window.clearTimeout(titleSaveTimerRef.current);
+    titleSaveTimerRef.current = window.setTimeout(async () => {
+      try {
+        await cvApi.updateCv(cvId, { title: cvTitle });
+        console.info('[cv-editor] title saved');
+      } catch (e) {
+        console.error('[cv-editor] failed to save title:', e);
+      }
+    }, 600);
+    return () => {
+      if (titleSaveTimerRef.current) window.clearTimeout(titleSaveTimerRef.current);
+    };
+  }, [cvTitle, cvId]);
 
-  const handleAnalyze = () => {
-    if (!cvId) return;
-    setAiPanelOpen(true);
-  };
-
-  const handleDownload = async () => {
-    if (!cvId || !previewRef.current) return;
-    setBusy(true);
-    try {
-      await exportPdf();
-      const fileName = (cv?.title || 'cv').replace(/[^a-z0-9-_]+/gi, '_');
-      await exportNodeToPdf(previewRef.current, fileName);
-    } finally {
-      setBusy(false);
+  const requireCv = (action: string): number | null => {
+    if (cvId == null) {
+      console.warn(`[cv-editor] ${action} ignored: CV not ready yet`);
+      return null;
     }
+    return cvId;
   };
 
   const handleAddSection = async (sectionType: SectionType, label: string) => {
-    if (!cvId) return;
-    setBusy(true);
+    const id = requireCv('addSection');
+    if (id == null) return;
     try {
-      await addSection({ section_type: sectionType, label });
-    } finally {
-      setBusy(false);
+      const added = await cvApi.addSection(id, { section_type: sectionType, label });
+      console.info(`[cv-editor] section added: ${sectionType} (#${added.id})`);
+    } catch (e) {
+      console.error('[cv-editor] addSection failed:', e);
     }
   };
 
-  const handleToggleVisibility = (sectionId: number, isVisible: boolean) => {
-    updateSection(sectionId, { is_visible: isVisible });
+  const handleAnalyze = async () => {
+    const id = requireCv('analyze');
+    if (id == null) return;
+    try {
+      const result = await cvApi.analyze(id);
+      setCvScore(result.score);
+      setLatestAnalysis(result);
+      console.info('[cv-editor] analysis complete:', result);
+    } catch (e) {
+      console.error('[cv-editor] analyze failed:', e);
+    }
   };
 
-  const handleDeleteSection = async (sectionId: number) => {
-    if (!window.confirm('Delete this section?')) return;
-    await deleteSection(sectionId);
+  const handleSave = async () => {
+    const id = requireCv('save');
+    if (id == null) return;
+    try {
+      const version = await cvApi.saveVersion(id, 'Manual save from editor');
+      console.info(`[cv-editor] version saved: v${version.version_number}`);
+    } catch (e) {
+      console.error('[cv-editor] save failed:', e);
+    }
+  };
+
+  const handleDownload = async () => {
+    const id = requireCv('download');
+    if (id == null) return;
+    try {
+      // Server-side: record the export attempt (best-effort, non-blocking).
+      cvApi.exportPdf(id).catch((e) => {
+        console.warn('[cv-editor] export-pdf log failed (non-fatal):', e);
+      });
+      // Client-side: render the canvas to a multi-page A4 PDF.
+      if (!exportRef.current) {
+        console.error('[cv-editor] export node not mounted');
+        return;
+      }
+      const fileName = (cvTitle || 'cv').replace(/[^a-z0-9-_]+/gi, '_');
+      await exportNodeToPdf(exportRef.current, fileName);
+      console.info('[cv-editor] PDF downloaded');
+    } catch (e) {
+      console.error('[cv-editor] download failed:', e);
+    }
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/80 px-5 py-3 shadow-sm relative z-10 flex-shrink-0">
-        <div className="flex items-center justify-between">
+    <>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #a1a1a1;
+        }
+      `}</style>
+      <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 relative z-10 flex-shrink-0">
+        <div className="flex items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-                <FileText className="w-5 h-5 text-white" strokeWidth={1.5} />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                <Briefcase className="w-5 h-5 text-white" strokeWidth={1.5} />
               </div>
               <div>
-                <h1 className="font-semibold text-gray-900 text-sm tracking-tight">CV Editor</h1>
-                <p className="text-[10px] text-gray-400 font-medium -mt-1">Digital Talent Center</p>
+                <h1 className="font-bold text-gray-900 text-base tracking-tight">CV Editor</h1>
+                <p className="text-xs text-gray-500 font-medium">Digital Talent Center</p>
               </div>
-            </div>
-            <div className="h-5 w-px bg-gray-200/80" />
-            <div className="flex items-center gap-2 text-gray-500">
-              <FileText className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-xs font-medium">
-                {cv ? `${cv.title} (${cv.template.name})` : 'Sarah_Alami_CV_2024.pdf'}
-                {loading && ' — loading...'}
-                {error && ` — ${error}`}
-              </span>
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="relative w-10 h-10">
-                <svg className="w-10 h-10 transform -rotate-90">
-                  <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none" className="text-gray-200" />
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-[142px] relative rounded-lg bg-gray-50 border border-gray-200 flex items-center px-3 gap-3">
+              <div className="relative w-12 h-12 flex items-center justify-center">
+                <svg className="w-12 h-12 transform -rotate-90">
                   <circle
-                    cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none"
-                    strokeDasharray={`${(cvScore / 100) * 100.5} 100.5`}
-                    className="text-green-500"
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    stroke="#e5e7eb"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    stroke="#22c55e"
+                    strokeWidth="4"
+                    fill="none"
+                    strokeDasharray="125.6"
+                    strokeDashoffset={125.6 - (cvScore / 100) * 125.6}
+                    strokeLinecap="round"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-700">
-                  {cvScore}
-                </span>
+                <span className="absolute text-sm font-bold text-gray-800">{cvScore}</span>
               </div>
-              <div className="text-left">
-                <p className="text-[10px] font-medium text-gray-700">CV Score</p>
-                <p className="text-[10px] text-green-600">Excellent</p>
+              <div className="flex flex-col">
+                <span className="text-xs font-medium text-gray-700">CV Score</span>
+                <span className="text-xs text-gray-500">Excellent</span>
               </div>
             </div>
-
             <motion.button
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleAnalyze}
-              disabled={!cvId || busy}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg text-xs font-medium disabled:opacity-60"
+              className="h-9 px-4 rounded-lg bg-gradient-to-r from-purple-500 to-purple-700 text-white font-medium text-sm flex items-center gap-2"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="w-4 h-4" />
               Analyze with AI
             </motion.button>
-
             <motion.button
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-              onClick={() => setHistoryOpen(true)}
-              disabled={!cvId}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium disabled:opacity-60"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSave}
+              className="h-9 px-4 rounded-lg bg-white border border-gray-300 text-gray-700 font-medium text-sm flex items-center gap-2"
             >
-              <Clock className="w-3.5 h-3.5" />
-              History
+              <Save className="w-4 h-4" />
+              Save
             </motion.button>
-
             <motion.button
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-              onClick={() => setShareOpen(true)}
-              disabled={!cvId}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium disabled:opacity-60"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              Share
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleDownload}
-              disabled={!cvId || busy}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium disabled:opacity-60"
+              className="h-9 px-4 rounded-lg bg-indigo-500 text-white font-medium text-sm flex items-center gap-2"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-4 h-4" />
               Download PDF
             </motion.button>
           </div>
@@ -340,8 +270,38 @@ const CVEditorPage: FunctionComponent = () => {
       </header>
 
       <div className="flex-1 flex overflow-hidden min-h-0">
-        <aside className="w-64 bg-white border-r border-gray-200 overflow-y-auto flex-shrink-0">
+        <aside className="w-64 bg-white border-r border-gray-200 overflow-y-auto overflow-x-hidden flex-shrink-0 custom-scrollbar">
           <div className="p-4 space-y-4">
+            <div>
+              <h3 className="flex items-center gap-1.5 text-xs font-semibold text-gray-900 mb-2">
+                <Plus className="w-3.5 h-3.5" />
+                CV Styling
+              </h3>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600 font-medium whitespace-nowrap">CV Title</span>
+                  <input
+                    type="text"
+                    value={cvTitle}
+                    onChange={(e) => setCvTitle(e.target.value)}
+                    className="flex-1 px-2 py-1 text-xs border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="CV Title"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600 font-medium">Accent Color</span>
+                  <input
+                    type="color"
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
+                    className="w-8 h-8 rounded cursor-pointer border-0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200" />
+
             <div>
               <h3 className="flex items-center gap-1.5 text-xs font-semibold text-gray-900 mb-2">
                 <Plus className="w-3.5 h-3.5" />
@@ -351,8 +311,7 @@ const CVEditorPage: FunctionComponent = () => {
                 <motion.button
                   whileHover={{ scale: 1.01, backgroundColor: '#f3f4f6' }}
                   onClick={() => handleAddSection('experience', 'Experience')}
-                  disabled={!cvId || busy}
-                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-700 transition-colors disabled:opacity-60"
+                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-700 transition-colors"
                 >
                   <Briefcase className="w-4 h-4 text-gray-500" />
                   Add Experience
@@ -360,8 +319,7 @@ const CVEditorPage: FunctionComponent = () => {
                 <motion.button
                   whileHover={{ scale: 1.01, backgroundColor: '#f3f4f6' }}
                   onClick={() => handleAddSection('education', 'Education')}
-                  disabled={!cvId || busy}
-                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-700 transition-colors disabled:opacity-60"
+                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-700 transition-colors"
                 >
                   <GraduationCap className="w-4 h-4 text-gray-500" />
                   Add Education
@@ -369,8 +327,7 @@ const CVEditorPage: FunctionComponent = () => {
                 <motion.button
                   whileHover={{ scale: 1.01, backgroundColor: '#f3f4f6' }}
                   onClick={() => handleAddSection('skills', 'Skills')}
-                  disabled={!cvId || busy}
-                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-700 transition-colors disabled:opacity-60"
+                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-700 transition-colors"
                 >
                   <Lightbulb className="w-4 h-4 text-gray-500" />
                   Add Skills
@@ -378,31 +335,13 @@ const CVEditorPage: FunctionComponent = () => {
                 <motion.button
                   whileHover={{ scale: 1.01, backgroundColor: '#f3f4f6' }}
                   onClick={() => handleAddSection('projects', 'Projects')}
-                  disabled={!cvId || busy}
-                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-700 transition-colors disabled:opacity-60"
+                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-700 transition-colors"
                 >
                   <FolderOpen className="w-4 h-4 text-gray-500" />
                   Add Project
                 </motion.button>
               </div>
             </div>
-
-            <div className="border-t border-gray-200" />
-
-            {cv && cv.sections.length > 0 && (
-              <div>
-                <h3 className="flex items-center gap-1.5 text-xs font-semibold text-gray-900 mb-2">
-                  <ListOrdered className="w-3.5 h-3.5" />
-                  Sections (drag to reorder)
-                </h3>
-                <SectionReorderPanel
-                  sections={cv.sections}
-                  onReorder={(orderedIds) => reorderSections(orderedIds)}
-                  onToggleVisibility={handleToggleVisibility}
-                  onDelete={handleDeleteSection}
-                />
-              </div>
-            )}
 
             <div className="border-t border-gray-200" />
 
@@ -523,372 +462,12 @@ const CVEditorPage: FunctionComponent = () => {
           </div>
         </aside>
 
-        <main className="flex-1 bg-slate-100 overflow-y-auto py-6 px-4 min-h-0">
-          <div className="max-w-3xl mx-auto">
-            <motion.div
-              ref={previewRef}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white shadow-2xl rounded-xl overflow-hidden ring-1 ring-gray-200"
-              style={{ minHeight: '900px' }}
-            >
-              <div className="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-                {aiSuggestions && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="absolute top-4 right-4 bg-purple-600 text-white text-xs px-3 py-2 rounded-lg flex items-center gap-2 shadow-lg"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Great! Your title is clear and professional.</span>
-                  </motion.div>
-                )}
-
-                <h1 className="text-3xl font-bold mb-1">
-                  <EditableText
-                    value={personalInfo.name}
-                    onSave={(val) => {
-                      const contactSection = cv?.sections.find(s => s.section_type === 'contact');
-                      if (contactSection && cvId) {
-                        updateSection(contactSection.id, { content_json: { ...content.contact, email: val } });
-                      }
-                    }}
-                    className="text-white"
-                  />
-                </h1>
-                <p className="text-base text-blue-100">
-                  <EditableText
-                    value={personalInfo.title}
-                    onSave={(val) => {
-                      // Would update title - need to implement CV title update
-                      console.log('Title updated:', val);
-                    }}
-                    className="text-blue-100"
-                  />
-                </p>
-              </div>
-
-              <div className={`flex ${layout === 'modern' ? 'flex-row' : 'flex-col'}`}>
-                {(layout === 'modern' || layout === 'minimal') && (
-                  <div className={`${layout === 'modern' ? 'w-1/3' : 'w-full'} bg-gray-50 p-5 ${fontSizeClasses[fontSize]}`}>
-                    <div className="mb-5">
-                      <h2 className={`flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase text-gray-900 mb-3 ${alignmentClasses[alignment]}`}>
-                        <span className="w-5 h-0.5 bg-blue-600" />
-                        Contact
-                      </h2>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                          <EditableText
-                            value={personalInfo.email}
-                            onSave={(val) => {
-                              const contactSection = cv?.sections.find(s => s.section_type === 'contact');
-                              if (contactSection && cvId) {
-                                updateSection(contactSection.id, { content_json: { ...content.contact, email: val } });
-                              }
-                            }}
-                            className="text-gray-600 text-xs"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Phone className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                          <EditableText
-                            value={personalInfo.phone}
-                            onSave={(val) => {
-                              const contactSection = cv?.sections.find(s => s.section_type === 'contact');
-                              if (contactSection && cvId) {
-                                updateSection(contactSection.id, { content_json: { ...content.contact, phone: val } });
-                              }
-                            }}
-                            className="text-gray-600 text-xs"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2 text-blue-600">
-                          <Link className="w-4 h-4 flex-shrink-0" />
-                          <EditableText
-                            value={personalInfo.linkedin}
-                            onSave={(val) => {
-                              const contactSection = cv?.sections.find(s => s.section_type === 'contact');
-                              if (contactSection && cvId) {
-                                updateSection(contactSection.id, { content_json: { ...content.contact, linkedin: val } });
-                              }
-                            }}
-                            className="text-blue-600 text-xs"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                          <EditableText
-                            value={personalInfo.location}
-                            onSave={(val) => {
-                              const contactSection = cv?.sections.find(s => s.section_type === 'contact');
-                              if (contactSection && cvId) {
-                                updateSection(contactSection.id, { content_json: { ...content.contact, location: val } });
-                              }
-                            }}
-                            className="text-gray-600 text-xs"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mb-5">
-                      <h2 className={`flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase text-gray-900 mb-3 ${alignmentClasses[alignment]}`}>
-                        <span className="w-5 h-0.5 bg-blue-600" />
-                        Skills
-                      </h2>
-                      <div className="space-y-1">
-                        {content.skills.items.map((skill, idx) => (
-                          <div key={skill.id} className="flex items-start gap-2 text-gray-700">
-                            <span className="text-gray-400 mt-1">&bull;</span>
-                            <EditableText
-                              value={skill.name}
-                              onSave={(val) => {
-                                const skillsSection = cv?.sections.find(s => s.section_type === 'skills');
-                                if (skillsSection && cvId) {
-                                  const newItems = [...content.skills.items];
-                                  newItems[idx] = { ...skill, name: val };
-                                  updateSection(skillsSection.id, { content_json: { items: newItems } });
-                                }
-                              }}
-                              className="text-gray-700 text-xs"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h2 className={`flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase text-gray-900 mb-3 ${alignmentClasses[alignment]}`}>
-                        <span className="w-5 h-0.5 bg-blue-600" />
-                        Languages
-                      </h2>
-                      <div className="space-y-1.5">
-                        {content.languages.items.map((lang, idx) => (
-                          <div key={lang.id} className="flex justify-between items-center gap-2">
-                            <EditableText
-                              value={lang.name}
-                              onSave={(val) => {
-                                const langSection = cv?.sections.find(s => s.section_type === 'languages');
-                                if (langSection && cvId) {
-                                  const newItems = [...content.languages.items];
-                                  newItems[idx] = { ...lang, name: val };
-                                  updateSection(langSection.id, { content_json: { items: newItems } });
-                                }
-                              }}
-                              className="text-gray-700 text-xs"
-                            />
-                            <EditableText
-                              value={lang.level}
-                              onSave={(val) => {
-                                const langSection = cv?.sections.find(s => s.section_type === 'languages');
-                                if (langSection && cvId) {
-                                  const newItems = [...content.languages.items];
-                                  newItems[idx] = { ...lang, level: val };
-                                  updateSection(langSection.id, { content_json: { items: newItems } });
-                                }
-                              }}
-                              className="text-gray-500 text-xs"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className={`${layout === 'modern' ? 'w-2/3' : 'w-full'} p-5 ${fontSizeClasses[fontSize]}`}>
-                  <div className="mb-5">
-                    <h2 className={`flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-gray-900 mb-3 ${alignmentClasses[alignment]}`}>
-                      <Star className="w-4 h-4 text-blue-600" />
-                      Profile Summary
-                    </h2>
-                    <EditableText
-                      value={content.summary.text}
-                      onSave={(val) => {
-                        const summarySection = cv?.sections.find(s => s.section_type === 'summary');
-                        if (summarySection && cvId) {
-                          updateSection(summarySection.id, { content_json: { text: val } });
-                        }
-                      }}
-                      multiline
-                      className={`text-gray-600 leading-relaxed text-sm ${fontWeightClasses[fontWeight]} ${alignmentClasses[alignment]}`}
-                    />
-                  </div>
-
-                  <div className="mb-5">
-                    <h2 className={`flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-gray-900 mb-3 ${alignmentClasses[alignment]}`}>
-                      <GraduationCap className="w-4 h-4 text-blue-600" />
-                      Education
-                    </h2>
-                    <div className="space-y-3">
-                      {content.education.items.map((edu, idx) => {
-                        const eduSection = cv?.sections.find(s => s.section_type === 'education');
-                        const updateEdu = (updates: Partial<typeof edu>) => {
-                          if (eduSection && cvId) {
-                            const newItems = [...content.education.items];
-                            newItems[idx] = { ...edu, ...updates };
-                            updateSection(eduSection.id, { content_json: { items: newItems } });
-                          }
-                        };
-                        return (
-                          <div key={edu.id} className="border-l-2 border-blue-600 pl-4">
-                            <div className="flex justify-between items-start mb-1 gap-2">
-                              <EditableText
-                                value={edu.degree}
-                                onSave={(val) => updateEdu({ degree: val })}
-                                className="font-semibold text-gray-900 text-xs"
-                              />
-                              <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
-                                <Calendar className="w-3 h-3" />
-                                <EditableText
-                                  value={`${edu.start_date} - ${edu.end_date}`}
-                                  onSave={(val) => {
-                                    const [start, end] = val.split(' - ');
-                                    updateEdu({ start_date: start?.trim() || edu.start_date, end_date: end?.trim() || edu.end_date });
-                                  }}
-                                  className="text-gray-500 text-[10px]"
-                                />
-                              </div>
-                            </div>
-                            <EditableText
-                              value={edu.school}
-                              onSave={(val) => updateEdu({ school: val })}
-                              className="text-blue-600 text-xs mb-1 block"
-                            />
-                            <EditableText
-                              value={edu.description}
-                              onSave={(val) => updateEdu({ description: val })}
-                              multiline
-                              className="text-gray-600 text-xs"
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h2 className={`flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-gray-900 mb-3 ${alignmentClasses[alignment]}`}>
-                      <Briefcase className="w-4 h-4 text-blue-600" />
-                      Professional Experience
-                    </h2>
-                    <div className="space-y-4">
-                      {content.experience.items.map((exp, idx) => {
-                        const expSection = cv?.sections.find(s => s.section_type === 'experience');
-                        const updateExp = (updates: Partial<typeof exp>) => {
-                          if (expSection && cvId) {
-                            const newItems = [...content.experience.items];
-                            newItems[idx] = { ...exp, ...updates };
-                            updateSection(expSection.id, { content_json: { items: newItems } });
-                          }
-                        };
-                        return (
-                          <div key={exp.id} className="border-l-2 border-blue-600 pl-4">
-                            <div className="flex justify-between items-start mb-1 gap-2">
-                              <EditableText
-                                value={exp.title}
-                                onSave={(val) => updateExp({ title: val })}
-                                className="font-semibold text-gray-900 text-xs"
-                              />
-                              <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
-                                <Calendar className="w-3 h-3" />
-                                <EditableText
-                                  value={`${exp.start_date} - ${exp.end_date}`}
-                                  onSave={(val) => {
-                                    const [start, end] = val.split(' - ');
-                                    updateExp({ start_date: start?.trim() || exp.start_date, end_date: end?.trim() || exp.end_date });
-                                  }}
-                                  className="text-gray-500 text-[10px]"
-                                />
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1 text-blue-600 text-xs mb-2">
-                              <EditableText
-                                value={exp.company}
-                                onSave={(val) => updateExp({ company: val })}
-                                className="text-blue-600 text-xs"
-                              />
-                              <span>|</span>
-                              <EditableText
-                                value={exp.location}
-                                onSave={(val) => updateExp({ location: val })}
-                                className="text-blue-600 text-xs"
-                              />
-                            </div>
-                            <ul className="space-y-1">
-                              {exp.bullets.map((desc, bIdx) => (
-                                <li key={bIdx} className="text-gray-600 text-xs flex items-start gap-2">
-                                  <span className="text-gray-400 mt-1">&bull;</span>
-                                  <EditableText
-                                    value={desc}
-                                    onSave={(val) => {
-                                      const newBullets = [...exp.bullets];
-                                      newBullets[bIdx] = val;
-                                      updateExp({ bullets: newBullets });
-                                    }}
-                                    multiline
-                                    className="text-gray-600 text-xs"
-                                  />
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {layout === 'classic' && (
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                      <h2 className={`flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-gray-900 mb-3 ${alignmentClasses[alignment]}`}>
-                        <Globe className="w-4 h-4 text-blue-600" />
-                        Contact Information
-                      </h2>
-                      <div className="flex flex-wrap gap-3 text-xs text-gray-600">
-                        <span>{personalInfo.email}</span>
-                        <span>&bull;</span>
-                        <span>{personalInfo.phone}</span>
-                        <span>&bull;</span>
-                        <span className="text-blue-600">{personalInfo.linkedin}</span>
-                        <span>&bull;</span>
-                        <span>{personalInfo.location}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-
-            <p className="text-center text-xs text-gray-500 mt-3">
-              Click on any text to edit directly. Hover over sections to see AI suggestions.
-            </p>
-          </div>
+        <main ref={exportRef} className="flex-1 bg-slate-100 overflow-hidden min-h-0">
+          <StandardCvTemplate accentColor={accentColor} sectionSuggestions={sectionSuggestions} />
         </main>
       </div>
-
-      {cvId && (
-        <>
-          <VersionHistoryDrawer
-            cvId={cvId}
-            open={historyOpen}
-            onClose={() => setHistoryOpen(false)}
-            onRestored={reload}
-          />
-          <AiSuggestionsPanel
-            cvId={cvId}
-            open={aiPanelOpen}
-            onClose={() => setAiPanelOpen(false)}
-            onAnalyzed={() => reload()}
-          />
-          <ShareLinksPanel
-            cvId={cvId}
-            open={shareOpen}
-            onClose={() => setShareOpen(false)}
-          />
-        </>
-      )}
     </div>
+    </>
   );
 };
 

@@ -36,6 +36,10 @@ share/python-wheels/
 db.sqlite3
 db.sqlite3-journal
 
+# Django user-uploaded files
+backend/media/
+staticfiles/
+
 # Environments
 .env
 .env.local

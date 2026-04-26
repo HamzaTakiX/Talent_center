@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 // Auth Pages
 import LoginPage from '../../features/auth/pages/LoginPage';
@@ -10,15 +10,33 @@ import CallbackPage from '../../features/auth/pages/CallbackPage';
 // Admin Pages
 import AdminDashboardPage from '../../features/admin/pages/AdminDashboardPage';
 
+// Student Pages
+import StudentDashboardPage from '../../features/student/pages/StudentDashboardPage';
+
 // CV Pages
 import CVListPage from '../../features/cv/pages/CVListPage';
 import CVEditorPage from '../../features/cv/pages/CVEditorPage';
 import PublicCvPage from '../../features/cv/pages/PublicCvPage';
 
+// Hooks
+import { useAuth } from '../../features/auth/hooks/useAuth';
+
 // Guards
 import { GuestGuard } from './guards/GuestGuard';
 import { OnboardingGuard } from './guards/OnboardingGuard';
 import { AuthGuard } from './guards/AuthGuard';
+
+const DashboardRedirect = () => {
+  const { user } = useAuth();
+  const userRole = user?.role?.toUpperCase();
+
+  if (userRole === 'STUDENT') {
+    return <Navigate to="/student-dashboard" replace />;
+  }
+
+  // Admin and other roles go to admin dashboard
+  return <Navigate to="/admin-dashboard" replace />;
+};
 
 export const router = createBrowserRouter([
   {
@@ -58,6 +76,14 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/',
+        element: <DashboardRedirect />
+      },
+      {
+        path: '/student-dashboard',
+        element: <StudentDashboardPage />
+      },
+      {
+        path: '/admin-dashboard',
         element: <AdminDashboardPage />
       },
       {

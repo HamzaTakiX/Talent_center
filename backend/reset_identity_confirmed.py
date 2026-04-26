@@ -45,7 +45,7 @@ if __name__ == "__main__":
     print("=" * 60)
     
     # Reset for the test account
-    reset_identity_confirmed("itshamzataki@gmail.com")
+    reset_identity_confirmed("student@talent-center.local")
     
     print("\n" + "=" * 60)
     print("Done! User will now need to complete the onboarding steps.")

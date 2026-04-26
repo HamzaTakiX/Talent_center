@@ -56,6 +56,26 @@ INSTALLED_APPS = [
     'apps.authentication.apps.AuthenticationConfig',
     'apps.cv_builder.apps.CvBuilderConfig',
     'apps.profile_intelligence.apps.ProfileIntelligenceConfig',
+
+    # Tier 1
+    'apps.settings_app.apps.SettingsAppConfig',
+    'apps.admin_management.apps.AdminManagementConfig',
+
+    # Tier 2
+    'apps.stage.apps.StageConfig',
+
+    # Tier 3
+    'apps.announcements.apps.AnnouncementsConfig',
+    'apps.encadrant.apps.EncadrantConfig',
+    'apps.documents.apps.DocumentsConfig',
+
+    # Tier 4
+    'apps.chat.apps.ChatConfig',
+    'apps.notifications.apps.NotificationsConfig',
+    'apps.srf.apps.SrfConfig',
+
+    # Tier 5
+    'apps.history.apps.HistoryConfig',
 ]
 
 MIDDLEWARE = [
@@ -90,7 +110,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # ---------- Database ----------
-if env('DB_ENGINE', 'sqlite').lower() == 'mysql':
+_db_engine = env('DB_ENGINE', 'sqlite').lower()
+if _db_engine in ('postgresql', 'postgres'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME', 'talent_center'),
+            'USER': env('DB_USER', 'postgres'),
+            'PASSWORD': env('DB_PASSWORD', ''),
+            'HOST': env('DB_HOST', 'localhost'),
+            'PORT': env('DB_PORT', '5432'),
+        }
+    }
+elif _db_engine == 'mysql':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -127,6 +159,11 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+
+# Media (user-uploaded files: CV templates, avatars, attachments, ...)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ---------- CORS ----------

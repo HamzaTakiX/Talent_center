@@ -84,66 +84,14 @@ class RuleBasedProvider:
             suggestions.append({
                 'section': stype,
                 'severity': 'high',
-                'message': f'Add a "{stype}" section — it is typically required on a professional CV.',
+                'message': f'Add a "{stype}" section. It is typically required on a professional CV.',
             })
             weaknesses.append(f'Missing {stype} section')
-
-        # Summary length.
-        summary = sections_by_type.get(SectionType.SUMMARY)
-        if summary:
-            text = (summary.get('content') or {}).get('text') or ''
-            if len(text.strip()) < 80:
-                score -= 8
-                suggestions.append({
-                    'section': SectionType.SUMMARY,
-                    'severity': 'medium',
-                    'message': 'Expand your profile summary — aim for 3-4 concise sentences.',
-                })
-                weaknesses.append('Profile summary is too short')
-            else:
-                strengths.append('Clear, sufficient profile summary')
-
-        # Experience richness.
-        exp = sections_by_type.get(SectionType.EXPERIENCE)
-        if exp:
-            items = (exp.get('content') or {}).get('items') or []
-            if not items:
-                score -= 8
-                suggestions.append({
-                    'section': SectionType.EXPERIENCE,
-                    'severity': 'medium',
-                    'message': 'Add at least one experience entry with measurable impact bullets.',
-                })
-                weaknesses.append('No experience entries')
-            else:
-                thin = [i for i in items if len((i.get('bullets') or [])) < 2]
-                if thin:
-                    score -= 4
-                    suggestions.append({
-                        'section': SectionType.EXPERIENCE,
-                        'severity': 'low',
-                        'message': 'Some experience entries have fewer than 2 bullet points. '
-                                   'Quantify impact where possible.',
-                    })
-
-        # Skills.
-        skills = sections_by_type.get(SectionType.SKILLS)
-        if skills:
-            items = (skills.get('content') or {}).get('items') or []
-            if len(items) < 5:
-                score -= 3
-                suggestions.append({
-                    'section': SectionType.SKILLS,
-                    'severity': 'low',
-                    'message': 'List at least 5 skills — include both hard and soft skills.',
-                })
-            else:
-                strengths.append('Skills list is well populated')
 
         score = max(0, min(100, score))
         raw = {
             'provider': self.name,
-            'checks_run': ['required_sections', 'summary_length', 'experience_bullets', 'skills_count'],
+            'checks_run': ['required_sections'],
             'section_count': len(sections_by_type),
         }
         return _AnalysisResult(
