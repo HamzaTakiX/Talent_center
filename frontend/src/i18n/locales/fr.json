@@ -1,0 +1,464 @@
+{
+  "common": {
+    "search": "Rechercher…",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "language": "Langue",
+    "languages": {
+      "fr": "Français",
+      "en": "Anglais",
+      "ar": "Arabe"
+    },
+    "close": "Fermer"
+  },
+  "roles": {
+    "superAdmin": "Super Admin",
+    "encadrant": "Encadrant",
+    "administrator": "Administrateur"
+  },
+  "admin": {
+    "brand": {
+      "title": "Digital Talent",
+      "subtitle": "Center",
+      "logoAlt": "ESCA — Digital Talent Center"
+    },
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "internshipOffers": "Offres de stage",
+      "announcements": "Annonces",
+      "history": "Historique",
+      "documents": "Documents",
+      "srf": "SRF",
+      "encadrant": "Encadrants",
+      "student": "Étudiants",
+      "admin": "Administrateurs",
+      "chat": "Chat",
+      "reports": "Rapports",
+      "closeMenu": "Fermer le menu"
+    },
+    "header": {
+      "openMenu": "Ouvrir le menu",
+      "searchAdmin": "Rechercher dans l'administration",
+      "darkMode": "Activer le mode sombre",
+      "lightMode": "Activer le mode clair",
+      "defaultTitle": "Digital Talent Center",
+      "titles": {
+        "dashboard": "Tableau de bord",
+        "students": "Étudiants",
+        "encadrants": "Encadrants",
+        "admins": "Administrateurs",
+        "internshipOffers": "Offres de stage",
+        "announcements": "Annonces",
+        "documents": "Documents",
+        "srf": "SRF",
+        "history": "Historique",
+        "account": "Mon compte"
+      }
+    },
+    "userMenu": {
+      "aria": "Menu compte",
+      "profile": "Profil",
+      "settings": "Paramètres",
+      "logout": "Se déconnecter",
+      "loggingOut": "Déconnexion…"
+    },
+    "notifications": {
+      "aria": "Notifications",
+      "ariaUnread": "Notifications, {{count}} non lue",
+      "ariaUnread_plural": "Notifications, {{count}} non lues",
+      "title": "Notifications",
+      "markAllRead": "Tout marquer comme lu",
+      "empty": "Aucune notification",
+      "viewAll": "Voir toutes les notifications",
+      "allCaughtUp": "Tout est à jour",
+      "unread": "{{count}} non lue",
+      "unread_plural": "{{count}} non lues",
+      "items": {
+        "pendingDocuments": "Documents en attente",
+        "pendingDocumentsMsg": "45 documents nécessitent une validation.",
+        "unpaidSrf": "Frais SRF impayés",
+        "unpaidSrfMsg": "23 étudiants ont des frais SRF en retard.",
+        "expiringOffers": "Offres de stage",
+        "expiringOffersMsg": "12 offres expirent cette semaine.",
+        "newApplication": "Nouvelle candidature",
+        "newApplicationMsg": "Un étudiant a postulé à une offre de stage."
+      },
+      "times": {
+        "minutesAgo": "Il y a {{count}} min",
+        "hoursAgo": "Il y a {{count}} h",
+        "yesterday": "Hier"
+      }
+    },
+    "dashboard": {
+      "hero": {
+        "badge": "Vue d'ensemble",
+        "title": "Tableau de bord",
+        "platformActive": "Plateforme active"
+      },
+      "health": {
+        "aria": "Vue d'ensemble de la santé de la plateforme",
+        "platformHealth": "Santé plateforme",
+        "criticalAlerts": "Alertes critiques",
+        "studentsAtRisk": "Étudiants à risque",
+        "activeUsers": "Utilisateurs actifs",
+        "riskTrend": "Tendance risques",
+        "activityTrend": "Tendance activité"
+      },
+      "stats": {
+        "aria": "Indicateurs clés",
+        "totalStudents": "Total étudiants",
+        "totalEncadrants": "Total encadrants",
+        "totalAdmins": "Total administrateurs",
+        "studentsWithoutInternship": "Étudiants sans stage",
+        "activeInternshipOffers": "Offres de stage actives",
+        "ongoingApplications": "Candidatures en cours",
+        "documentsPending": "Documents en attente",
+        "studentsUnpaidSrf": "Étudiants SRF impayés"
+      },
+      "alerts": {
+        "title": "Alertes critiques",
+        "subtitle": "Attention immédiate requise",
+        "empty": "Aucune alerte pour le moment",
+        "priority": {
+          "high": "Haute",
+          "medium": "Moyenne"
+        },
+        "messages": {
+          "unpaidSrf": "23 étudiants ont des frais SRF impayés",
+          "documentsPending": "45 documents en attente de validation",
+          "noInternship": "156 étudiants sans stage assigné",
+          "offersExpiring": "12 offres de stage expirent cette semaine"
+        },
+        "analytics": {
+          "active": "actives",
+          "totalActive": "Types d'alertes actives",
+          "severityMix": "Répartition par sévérité",
+          "items": "éléments",
+          "trend": "Tendance sur 7 jours",
+          "low": "Faible"
+        }
+      },
+      "activity": {
+        "title": "Activité récente",
+        "subtitle": "Dernières actions sur la plateforme",
+        "actions": {
+          "newApplication": "Nouvelle candidature de stage",
+          "documentValidated": "Document validé",
+          "announcementPublished": "Annonce publiée",
+          "profileUpdated": "Profil étudiant mis à jour",
+          "encadrantAssigned": "Encadrant assigné à un étudiant"
+        },
+        "times": {
+          "minutesAgo": "Il y a {{count}} min",
+          "hoursAgo": "Il y a {{count}} h",
+          "yesterday": "Hier"
+        }
+      },
+      "chart": {
+        "title": "Vue d'activité",
+        "subtitle": "7 derniers jours · plateforme",
+        "legend": {
+          "applications": "Candidatures",
+          "documents": "Documents",
+          "announcements": "Annonces",
+          "studentActivity": "Étudiants"
+        },
+        "weekdays": {
+          "mon": "Lun",
+          "tue": "Mar",
+          "wed": "Mer",
+          "thu": "Jeu",
+          "fri": "Ven",
+          "sat": "Sam",
+          "sun": "Dim"
+        }
+      }
+    },
+    "account": {
+      "badge": "Compte",
+      "title": "Mon compte",
+      "subtitle": "Profil, sécurité et paramètres — tout au même endroit.",
+      "sectionsNav": "Sections du compte",
+      "tabs": {
+        "profile": "Profil",
+        "settings": "Paramètres"
+      },
+      "activity": {
+        "title": "Activité du compte",
+        "description": "Résumé de votre compte administrateur.",
+        "lastLogin": "Dernière connexion",
+        "lastLoginHint": "Heure locale",
+        "status": "Statut du compte",
+        "statusValue": "Actif",
+        "statusHint": "Compte vérifié",
+        "memberSince": "Membre depuis",
+        "memberSinceHint": "Date d'inscription",
+        "sessions": "Sessions actives",
+        "sessionsHint": "Appareils connectés"
+      },
+      "personalInfo": {
+        "title": "Informations personnelles",
+        "description": "Mettez à jour votre nom et votre adresse email.",
+        "fullName": "Nom complet",
+        "email": "Email",
+        "fullNameRequired": "Le nom complet est requis.",
+        "emailRequired": "L'email est requis.",
+        "emailInvalid": "Email invalide."
+      },
+      "security": {
+        "title": "Sécurité",
+        "description": "Changez votre mot de passe. Laissez vide pour ne pas modifier.",
+        "currentPassword": "Mot de passe actuel",
+        "currentPasswordRequired": "Le mot de passe actuel est requis pour changer le mot de passe.",
+        "newPassword": "Nouveau mot de passe",
+        "confirmPassword": "Confirmer le mot de passe",
+        "minLength": "Minimum {{count}} caractères.",
+        "mismatch": "Les mots de passe ne correspondent pas."
+      },
+      "save": "Enregistrer les modifications",
+      "saved": "Profil mis à jour avec succès.",
+      "saveFailed": "Impossible d'enregistrer le profil. Vérifiez vos informations.",
+      "fixErrors": "Corrigez les erreurs du formulaire.",
+      "changePhoto": "Changer la photo",
+      "changePhotoAria": "Changer la photo de profil",
+      "settingsHeader": "Paramètres",
+      "settingsSubtitle": "Langue, notifications, apparence et préférences",
+      "avatarAlt": "Photo de profil",
+      "actionsBarLabel": "Actions du compte",
+      "unsavedHint": "Des modifications non enregistrées sont en attente. Enregistrez ou annulez avant de quitter.",
+      "savedHint": "Toutes les modifications sont enregistrées.",
+      "allSaved": "Tout est enregistré"
+    },
+    "settings": {
+      "language": {
+        "title": "Langue",
+        "description": "Choisissez la langue de l'interface pour toute la plateforme.",
+        "label": "Langue de l'interface",
+        "hint": "Sélectionnez une langue puis enregistrez pour l'appliquer.",
+        "current": "Langue actuelle : {{label}}",
+        "save": "Enregistrer la langue",
+        "cancel": "Annuler",
+        "saved": "Langue enregistrée avec succès."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Contrôlez comment vous recevez les alertes.",
+        "email": "Notifications par email",
+        "emailDesc": "Résumés et alertes importantes par email.",
+        "push": "Notifications push",
+        "pushDesc": "Alertes en temps réel dans le navigateur.",
+        "system": "Alertes système",
+        "systemDesc": "Maintenance, sécurité et mises à jour critiques.",
+        "marketing": "Communications marketing",
+        "marketingDesc": "Nouveautés produit et newsletters ESCA."
+      },
+      "appearance": {
+        "title": "Apparence",
+        "description": "Thème clair ou sombre pour tout le tableau de bord.",
+        "light": "Mode clair",
+        "lightDesc": "Interface lumineuse et aérée",
+        "dark": "Mode sombre",
+        "darkDesc": "Confort visuel en faible luminosité"
+      },
+      "preferences": {
+        "title": "Préférences",
+        "description": "Options d'ergonomie et de personnalisation.",
+        "compact": "Mode compact",
+        "compactDesc": "Réduit les espacements pour afficher plus de contenu.",
+        "autoSave": "Enregistrement automatique",
+        "autoSaveDesc": "Sauvegarde vos modifications sans clic manuel.",
+        "dashboard": "Personnalisation du tableau de bord",
+        "dashboardDesc": "Mémorise l'ordre et la disposition de vos widgets.",
+        "reset": "Réinitialiser les préférences",
+        "resetDone": "Préférences réinitialisées.",
+        "dashboardOrderTitle": "Ordre des blocs du tableau de bord",
+        "dashboardSectionStats": "Statistiques",
+        "dashboardSectionAlerts": "Alertes & activité récente",
+        "dashboardSectionOverview": "Vue d'ensemble",
+        "dashboardOrderReset": "Rétablir l'ordre par défaut",
+        "moveUp": "Monter",
+        "moveDown": "Descendre"
+      },
+      "localNote": "Paramètres enregistrés localement sur cet appareil"
+    },
+    "chat": {
+      "sidebarMenu": "Options de la liste",
+      "filterAll": "Toutes les conversations",
+      "filterUnread": "Non lues uniquement",
+      "markAllRead": "Tout marquer comme lu",
+      "allMarkedRead": "Toutes les conversations sont marquées comme lues",
+      "noConversations": "Aucune conversation trouvée",
+      "noConversationsHint": "Modifiez votre recherche ou le filtre",
+      "searchInConversation": "Rechercher dans la conversation…",
+      "noMessages": "Aucun message ne correspond",
+      "openSearch": "Rechercher dans la conversation",
+      "moreActions": "Plus d'actions",
+      "markRead": "Marquer comme lu",
+      "markedRead": "Conversation marquée comme lue",
+      "mute": "Mettre en sourdine",
+      "unmute": "Réactiver les notifications",
+      "muted": "Conversation en sourdine",
+      "unmuted": "Notifications réactivées",
+      "backToList": "Retour aux conversations",
+      "clearSearch": "Effacer la recherche",
+      "attachFile": "Joindre un fichier",
+      "tagTemplate": "Étiquette ou modèle",
+      "sendMessage": "Envoyer le message",
+      "unreadCount": "{{count}} non lus"
+    },
+    "globalSearch": {
+      "open": "Ouvrir la recherche globale",
+      "dialogLabel": "Recherche et navigation",
+      "placeholder": "Rechercher pages, sections, actions…",
+      "triggerPlaceholder": "Rechercher ou naviguer…",
+      "noResults": "Aucun résultat",
+      "noResultsHint": "Essayez un autre mot-clé ou parcourez les suggestions",
+      "recent": "Recherches récentes",
+      "clearRecent": "Effacer",
+      "suggested": "Suggestions",
+      "subtitles": {
+        "account": "Compte administrateur"
+      },
+      "actions": {
+        "toggleTheme": "Basculer le thème clair / sombre",
+        "createOffer": "Créer une offre de stage",
+        "createAnnouncement": "Créer une annonce",
+        "createAdministrator": "Créer un administrateur",
+        "addEncadrant": "Ajouter un encadrant"
+      },
+      "categories": {
+        "page": "Pages",
+        "section": "Sections",
+        "card": "Cartes",
+        "action": "Actions rapides",
+        "setting": "Paramètres",
+        "navigation": "Navigation",
+        "table": "Tableaux",
+        "form": "Formulaires",
+        "tab": "Onglets",
+        "feature": "Fonctionnalités"
+      },
+      "items": {
+        "allOffers": "Toutes les offres",
+        "activeOffers": "Offres actives",
+        "expiredOffers": "Offres expirées",
+        "draftOffers": "Brouillons",
+        "closedOffers": "Offres clôturées",
+        "offersWithApplications": "Offres avec candidatures",
+        "allAnnouncements": "Toutes les annonces",
+        "activeAnnouncements": "Annonces actives",
+        "totalActions": "Total des actions",
+        "studentsHistory": "Historique étudiants",
+        "adminsHistory": "Historique administrateurs",
+        "encadrantsHistory": "Historique encadrants",
+        "offersHistory": "Historique offres",
+        "applicationsHistory": "Historique candidatures",
+        "announcementsHistory": "Historique annonces",
+        "documentsHistory": "Historique documents",
+        "srfHistory": "Historique SRF",
+        "chatHistory": "Historique chat",
+        "reportsHistory": "Historique rapports",
+        "tasksHistory": "Historique tâches",
+        "meetingsHistory": "Historique réunions",
+        "allDocuments": "Tous les documents",
+        "pendingDocuments": "Documents en attente",
+        "validatedDocuments": "Documents validés",
+        "rejectedDocuments": "Documents rejetés",
+        "paidStudents": "Étudiants payés",
+        "unpaidStudents": "Étudiants impayés",
+        "partiallyPaid": "Paiements partiels",
+        "pendingValidation": "Validation en attente",
+        "latePayments": "Paiements en retard",
+        "blockedStudents": "Étudiants bloqués",
+        "exemptedStudents": "Étudiants exemptés",
+        "totalStudents": "Total étudiants",
+        "activeStudents": "Étudiants actifs",
+        "withoutInternship": "Sans stage",
+        "withInternship": "Avec stage",
+        "engagementLevel": "Niveau d'engagement",
+        "allEncadrants": "Tous les encadrants",
+        "assignedStudents": "Par étudiants assignés",
+        "reportsInProgress": "Rapports en cours",
+        "upcomingMeetings": "Réunions à venir",
+        "allAdministrators": "Tous les administrateurs",
+        "stageAdministrators": "Administrateurs stage",
+        "financeAdministrators": "Administrateurs finance",
+        "documentsAdministrators": "Administrateurs documents",
+        "communicationAdministrators": "Administrateurs communication",
+        "studentsTable": "Tableau des étudiants",
+        "encadrantsTable": "Tableau des encadrants",
+        "documentsTable": "Tableau des documents",
+        "srfTable": "Tableau SRF",
+        "uploadDocument": "Gérer les documents",
+        "offersTable": "Tableau des offres de stage",
+        "announcementsTable": "Tableau des annonces",
+        "adminsTable": "Tableau des administrateurs",
+        "activityTimeline": "Fil d'activité",
+        "currentPage": "Page actuelle"
+      },
+      "footer": {
+        "select": "sélectionner",
+        "navigate": "naviguer",
+        "close": "fermer"
+      }
+    }
+  },
+  "auth": {
+    "brand": {
+      "title": "Digital Talent Center",
+      "tagline": "Plateforme de gestion des stages ESCA"
+    },
+    "login": {
+      "title": "Connexion",
+      "subtitle": "Accédez à votre espace Talent Center",
+      "email": "Adresse email",
+      "emailLabel": "Email",
+      "password": "Mot de passe",
+      "passwordLabel": "Mot de passe de votre compte ESCA",
+      "emailPlaceholder": "etudiant@esca.ma",
+      "passwordPlaceholder": "Saisissez votre mot de passe",
+      "submit": "Se connecter",
+      "submitting": "Connexion…",
+      "submitButton": "Se connecter à votre compte",
+      "microsoft": "Se connecter avec Microsoft (ESCA SSO)",
+      "or": "Ou connectez-vous par email",
+      "forgotPassword": "Mot de passe oublié ?",
+      "footerNeedHelp": "Besoin d'aide ? Contactez",
+      "panelBadge": "ESCA Talent Center",
+      "panelTitle": "Accompagner les étudiants ESCA",
+      "panelSubtitle": "Connectez-vous aux entreprises, découvrez des stages de qualité et lancez votre parcours professionnel.",
+      "panelCoverAlt": "Illustration connexion",
+      "errors": {
+        "connectionTitle": "Erreur de connexion",
+        "connectionMessage": "Impossible de joindre le serveur. Vérifiez votre connexion ou réessayez.",
+        "authTitle": "Échec d'authentification",
+        "authMessage": "Email ou mot de passe incorrect.",
+        "validationTitle": "Saisie invalide",
+        "validationMessage": "Veuillez vérifier vos informations.",
+        "emailRequired": "L'adresse email est obligatoire.",
+        "emailInvalid": "Veuillez saisir une adresse email valide (ex. user@example.com).",
+        "passwordRequired": "Le mot de passe est obligatoire.",
+        "suspendedTitle": "Compte suspendu",
+        "suspendedMessage": "Votre compte a été suspendu. Contactez l'administrateur.",
+        "pendingTitle": "Compte en attente",
+        "pendingMessage": "Votre compte est en attente de validation. Vous recevrez un email une fois approuvé.",
+        "deniedTitle": "Accès refusé",
+        "deniedMessage": "Votre compte n'a pas accès. Contactez le support.",
+        "lockedTitle": "Compte verrouillé",
+        "lockedMessage": "Trop de tentatives. Réessayez dans 15 minutes.",
+        "rateLimitTitle": "Trop de tentatives",
+        "rateLimitMessage": "Veuillez patienter avant de réessayer.",
+        "serverTitle": "Erreur serveur",
+        "serverMessage": "Une erreur est survenue. Réessayez plus tard.",
+        "failedTitle": "Échec de connexion",
+        "failedMessage": "Une erreur inattendue est survenue. Réessayez."
+      }
+    },
+    "student": {
+      "welcome": "Bienvenue, Étudiant !",
+      "subtitle": "Espace étudiant en cours de développement.",
+      "logout": "Se déconnecter"
+    }
+  }
+}

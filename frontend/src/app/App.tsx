@@ -1,7 +1,9 @@
-import { RouterProvider, useNavigate } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import { AuthProvider } from '../features/auth/context/AuthContext';
 import { router } from './router';
 import { Auth0ProviderWithNavigate } from '../features/auth/components/Auth0ProviderWithNavigate';
+import LanguageProvider from '../i18n/LanguageProvider';
+import '../i18n/config';
 
 // This wrapper handles the redirection logically after Auth0 provides the state
 // We create a tiny component to use the router hook inside the router context if we needed to
@@ -20,10 +22,12 @@ const onRedirectCallback = (appState: any) => {
 
 export const App = () => {
   return (
-    <Auth0ProviderWithNavigate onRedirectCallback={onRedirectCallback}>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
-    </Auth0ProviderWithNavigate>
+    <LanguageProvider>
+      <Auth0ProviderWithNavigate onRedirectCallback={onRedirectCallback}>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </Auth0ProviderWithNavigate>
+    </LanguageProvider>
   );
 };

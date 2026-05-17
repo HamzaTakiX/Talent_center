@@ -1,5 +1,5 @@
 import apiClient from '../../../shared/api/client';
-import { AuthResponse, User, StudentProfile } from '../types';
+import { AuthResponse, LoginSession, User } from '../types';
 
 // Backend API response envelope
 interface ApiResponse<T> {
@@ -30,6 +30,27 @@ export const authApi = {
     return response.data.data;
   },
 
+  updateMe: async (payload: FormData | Record<string, unknown>): Promise<User> => {
+    const isFormData = payload instanceof FormData;
+    const response = await apiClient.patch<ApiResponse<User>>('/auth/me', payload, isFormData
+      ? { headers: { 'Content-Type': 'multipart/form-data' } }
+      : undefined);
+    return response.data.data;
+  },
+
+  changePassword: async (data: {
+    old_password: string;
+    new_password: string;
+    logout_other_sessions?: boolean;
+  }): Promise<void> => {
+    await apiClient.post<ApiResponse<Record<string, never>>>('/auth/change-password', data);
+  },
+
+  getSessions: async (): Promise<LoginSession[]> => {
+    const response = await apiClient.get<ApiResponse<LoginSession[]>>('/auth/sessions');
+    return response.data.data;
+  },
+
   refresh: async (refreshToken: string): Promise<AuthResponse> => {
     const response = await apiClient.post<ApiResponse<{
       access: string;
@@ -45,10 +66,13 @@ export const authApi = {
     };
   },
 
+  /** Revoke the current server session. Best-effort — never blocks local sign-out. */
   logout: async (): Promise<void> => {
-    await apiClient.post('/auth/logout');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    try {
+      await apiClient.post('/auth/logout');
+    } catch {
+      // Session may already be expired or revoked; local cleanup still proceeds.
+    }
   },
 
   // Profile onboarding - Step 1: Confirm Identity

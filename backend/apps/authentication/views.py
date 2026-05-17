@@ -1,8 +1,11 @@
 
 from rest_framework import status
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from apps.accounts_et_roles.services import update_account_profile
 
 from .exceptions import ProviderNotImplemented
 from .providers.registry import get_provider, list_all, list_enabled
@@ -13,6 +16,7 @@ from .serializers import (
     LoginSerializer,
     LoginSessionSerializer,
     MeSerializer,
+    UpdateMeSerializer,
     RefreshSerializer,
     ResetPasswordSerializer,
 )
@@ -91,10 +95,20 @@ class LogoutAllView(APIView):
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get(self, request):
         return Response(
             envelope(True, 'OK', data=_user_payload(request.user)),
+            status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request):
+        serializer = UpdateMeSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        user = update_account_profile(request.user, serializer.validated_data)
+        return Response(
+            envelope(True, 'Profile updated', data=_user_payload(user)),
             status=status.HTTP_200_OK,
         )
 

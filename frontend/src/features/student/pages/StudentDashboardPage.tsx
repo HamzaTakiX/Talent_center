@@ -1,17 +1,21 @@
 import { FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { LogOut } from 'lucide-react';
+import AuthLanguageSwitcher from '../../auth/components/AuthLanguageSwitcher';
 
 const StudentDashboardPage: FunctionComponent = () => {
+  const { t } = useTranslation();
   const { logout, user } = useAuth();
 
   const handleLogout = () => {
-    logout();
+    void logout();
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+      <AuthLanguageSwitcher />
       {/* Simple centered message */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -23,13 +27,9 @@ const StudentDashboardPage: FunctionComponent = () => {
           <span className="text-4xl">👋</span>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Bienvenue Étudiant!
-        </h1>
+        <h1 className="mb-4 text-3xl font-bold text-gray-900">{t('auth.student.welcome')}</h1>
 
-        <p className="text-gray-600 text-lg max-w-md mb-8">
-          Espace étudiant en cours de développement.
-        </p>
+        <p className="mb-8 max-w-md text-lg text-gray-600">{t('auth.student.subtitle')}</p>
 
         {/* Logout Button - Centered */}
         <div className="flex justify-center">

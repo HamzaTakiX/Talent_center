@@ -1,0 +1,464 @@
+{
+  "common": {
+    "search": "Search…",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "language": "Language",
+    "languages": {
+      "fr": "French",
+      "en": "English",
+      "ar": "Arabic"
+    },
+    "close": "Close"
+  },
+  "roles": {
+    "superAdmin": "Super Admin",
+    "encadrant": "Supervisor",
+    "administrator": "Administrator"
+  },
+  "admin": {
+    "brand": {
+      "title": "Digital Talent",
+      "subtitle": "Center",
+      "logoAlt": "ESCA — Digital Talent Center"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "internshipOffers": "Internship Offers",
+      "announcements": "Announcements",
+      "history": "History",
+      "documents": "Documents",
+      "srf": "SRF",
+      "encadrant": "Supervisors",
+      "student": "Students",
+      "admin": "Administrators",
+      "chat": "Chat",
+      "reports": "Reports",
+      "closeMenu": "Close navigation menu"
+    },
+    "header": {
+      "openMenu": "Open menu",
+      "searchAdmin": "Search administration",
+      "darkMode": "Enable dark mode",
+      "lightMode": "Enable light mode",
+      "defaultTitle": "Digital Talent Center",
+      "titles": {
+        "dashboard": "Dashboard",
+        "students": "Students",
+        "encadrants": "Supervisors",
+        "admins": "Administrators",
+        "internshipOffers": "Internship Offers",
+        "announcements": "Announcements",
+        "documents": "Documents",
+        "srf": "SRF",
+        "history": "History",
+        "account": "My account"
+      }
+    },
+    "userMenu": {
+      "aria": "Account menu",
+      "profile": "Profile",
+      "settings": "Settings",
+      "logout": "Sign out",
+      "loggingOut": "Signing out…"
+    },
+    "notifications": {
+      "aria": "Notifications",
+      "ariaUnread": "Notifications, {{count}} unread",
+      "ariaUnread_plural": "Notifications, {{count}} unread",
+      "title": "Notifications",
+      "markAllRead": "Mark all as read",
+      "empty": "No notifications",
+      "viewAll": "View all notifications",
+      "allCaughtUp": "You're all caught up",
+      "unread": "{{count}} unread",
+      "unread_plural": "{{count}} unread",
+      "items": {
+        "pendingDocuments": "Pending documents",
+        "pendingDocumentsMsg": "45 documents need validation.",
+        "unpaidSrf": "Unpaid SRF fees",
+        "unpaidSrfMsg": "23 students have overdue SRF fees.",
+        "expiringOffers": "Internship offers",
+        "expiringOffersMsg": "12 offers expire this week.",
+        "newApplication": "New application",
+        "newApplicationMsg": "A student applied to an internship offer."
+      },
+      "times": {
+        "minutesAgo": "{{count}} min ago",
+        "hoursAgo": "{{count}} h ago",
+        "yesterday": "Yesterday"
+      }
+    },
+    "dashboard": {
+      "hero": {
+        "badge": "Overview",
+        "title": "Dashboard",
+        "platformActive": "Platform active"
+      },
+      "health": {
+        "aria": "Platform health overview",
+        "platformHealth": "Platform Health",
+        "criticalAlerts": "Critical Alerts",
+        "studentsAtRisk": "Students At Risk",
+        "activeUsers": "Active Users",
+        "riskTrend": "Risk Trend",
+        "activityTrend": "Activity Trend"
+      },
+      "stats": {
+        "aria": "Key metrics",
+        "totalStudents": "Total students",
+        "totalEncadrants": "Total supervisors",
+        "totalAdmins": "Total administrators",
+        "studentsWithoutInternship": "Students without internship",
+        "activeInternshipOffers": "Active internship offers",
+        "ongoingApplications": "Ongoing applications",
+        "documentsPending": "Documents pending",
+        "studentsUnpaidSrf": "Students with unpaid SRF"
+      },
+      "alerts": {
+        "title": "Critical alerts",
+        "subtitle": "Immediate attention required",
+        "empty": "No alerts at the moment",
+        "priority": {
+          "high": "High",
+          "medium": "Medium"
+        },
+        "messages": {
+          "unpaidSrf": "23 students have unpaid SRF fees",
+          "documentsPending": "45 documents awaiting validation",
+          "noInternship": "156 students without an assigned internship",
+          "offersExpiring": "12 internship offers expiring this week"
+        },
+        "analytics": {
+          "active": "active",
+          "totalActive": "Active alert types",
+          "severityMix": "Alert severity distribution",
+          "items": "items",
+          "trend": "7-day volume trend",
+          "low": "Low"
+        }
+      },
+      "activity": {
+        "title": "Recent activity",
+        "subtitle": "Latest actions on the platform",
+        "actions": {
+          "newApplication": "New internship application",
+          "documentValidated": "Document validated",
+          "announcementPublished": "Announcement published",
+          "profileUpdated": "Student profile updated",
+          "encadrantAssigned": "Supervisor assigned to student"
+        },
+        "times": {
+          "minutesAgo": "{{count}} min ago",
+          "hoursAgo": "{{count}} h ago",
+          "yesterday": "Yesterday"
+        }
+      },
+      "chart": {
+        "title": "Activity overview",
+        "subtitle": "Last 7 days · platform",
+        "legend": {
+          "applications": "Applications",
+          "documents": "Documents",
+          "announcements": "Announcements",
+          "studentActivity": "Students"
+        },
+        "weekdays": {
+          "mon": "Mon",
+          "tue": "Tue",
+          "wed": "Wed",
+          "thu": "Thu",
+          "fri": "Fri",
+          "sat": "Sat",
+          "sun": "Sun"
+        }
+      }
+    },
+    "account": {
+      "badge": "Account",
+      "title": "My account",
+      "subtitle": "Profile, security and settings — all in one place.",
+      "sectionsNav": "Account sections",
+      "tabs": {
+        "profile": "Profile",
+        "settings": "Settings"
+      },
+      "activity": {
+        "title": "Account activity",
+        "description": "Overview of your administrator account.",
+        "lastLogin": "Last login",
+        "lastLoginHint": "Local time",
+        "status": "Account status",
+        "statusValue": "Active",
+        "statusHint": "Verified account",
+        "memberSince": "Member since",
+        "memberSinceHint": "Registration date",
+        "sessions": "Active sessions",
+        "sessionsHint": "Connected devices"
+      },
+      "personalInfo": {
+        "title": "Personal information",
+        "description": "Update your name and email address.",
+        "fullName": "Full name",
+        "email": "Email",
+        "fullNameRequired": "Full name is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Invalid email."
+      },
+      "security": {
+        "title": "Security",
+        "description": "Change your password. Leave blank to keep current password.",
+        "currentPassword": "Current password",
+        "currentPasswordRequired": "Current password is required to set a new password.",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm password",
+        "minLength": "Minimum {{count}} characters.",
+        "mismatch": "Passwords do not match."
+      },
+      "save": "Save changes",
+      "saved": "Profile updated successfully.",
+      "saveFailed": "Could not save profile. Please check your details.",
+      "fixErrors": "Please fix the form errors.",
+      "changePhoto": "Change photo",
+      "changePhotoAria": "Change profile photo",
+      "settingsHeader": "Settings",
+      "settingsSubtitle": "Language, notifications, appearance and preferences",
+      "avatarAlt": "Profile photo",
+      "actionsBarLabel": "Account actions",
+      "unsavedHint": "You have unsaved changes. Save or cancel before leaving.",
+      "savedHint": "All changes are saved.",
+      "allSaved": "All saved"
+    },
+    "settings": {
+      "language": {
+        "title": "Language",
+        "description": "Choose the interface language for the entire platform.",
+        "label": "Interface language",
+        "hint": "Select a language, then save to apply it.",
+        "current": "Current language: {{label}}",
+        "save": "Save language",
+        "cancel": "Cancel",
+        "saved": "Language saved successfully."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Control how you receive alerts.",
+        "email": "Email notifications",
+        "emailDesc": "Summaries and important alerts by email.",
+        "push": "Push notifications",
+        "pushDesc": "Real-time alerts in the browser.",
+        "system": "System alerts",
+        "systemDesc": "Maintenance, security and critical updates.",
+        "marketing": "Marketing communications",
+        "marketingDesc": "Product news and ESCA newsletters."
+      },
+      "appearance": {
+        "title": "Appearance",
+        "description": "Light or dark theme for the entire dashboard.",
+        "light": "Light mode",
+        "lightDesc": "Bright and airy interface",
+        "dark": "Dark mode",
+        "darkDesc": "Comfortable in low light"
+      },
+      "preferences": {
+        "title": "Preferences",
+        "description": "Ergonomics and personalization options.",
+        "compact": "Compact mode",
+        "compactDesc": "Reduces spacing to show more content.",
+        "autoSave": "Auto-save",
+        "autoSaveDesc": "Saves your changes without a manual click.",
+        "dashboard": "Dashboard personalization",
+        "dashboardDesc": "Remembers widget order and layout.",
+        "reset": "Reset preferences",
+        "resetDone": "Preferences reset.",
+        "dashboardOrderTitle": "Dashboard block order",
+        "dashboardSectionStats": "Statistics",
+        "dashboardSectionAlerts": "Alerts & recent activity",
+        "dashboardSectionOverview": "Overview",
+        "dashboardOrderReset": "Restore default order",
+        "moveUp": "Move up",
+        "moveDown": "Move down"
+      },
+      "localNote": "Settings saved locally on this device"
+    },
+    "chat": {
+      "sidebarMenu": "List options",
+      "filterAll": "All conversations",
+      "filterUnread": "Unread only",
+      "markAllRead": "Mark all as read",
+      "allMarkedRead": "All conversations marked as read",
+      "noConversations": "No conversations found",
+      "noConversationsHint": "Try a different search or filter",
+      "searchInConversation": "Search in conversation…",
+      "noMessages": "No matching messages",
+      "openSearch": "Search in conversation",
+      "moreActions": "More actions",
+      "markRead": "Mark as read",
+      "markedRead": "Conversation marked as read",
+      "mute": "Mute notifications",
+      "unmute": "Unmute notifications",
+      "muted": "Conversation muted",
+      "unmuted": "Notifications restored",
+      "backToList": "Back to conversations",
+      "clearSearch": "Clear search",
+      "attachFile": "Attach file",
+      "tagTemplate": "Tag or template",
+      "sendMessage": "Send message",
+      "unreadCount": "{{count}} unread"
+    },
+    "globalSearch": {
+      "open": "Open global search",
+      "dialogLabel": "Search and navigation",
+      "placeholder": "Search pages, sections, actions…",
+      "triggerPlaceholder": "Search or jump to…",
+      "noResults": "No results found",
+      "noResultsHint": "Try another keyword or browse suggestions",
+      "recent": "Recent searches",
+      "clearRecent": "Clear",
+      "suggested": "Suggested",
+      "subtitles": {
+        "account": "Administrator account"
+      },
+      "actions": {
+        "toggleTheme": "Toggle light / dark theme",
+        "createOffer": "Create internship offer",
+        "createAnnouncement": "Create announcement",
+        "createAdministrator": "Create administrator",
+        "addEncadrant": "Add supervisor"
+      },
+      "categories": {
+        "page": "Pages",
+        "section": "Sections",
+        "card": "Cards",
+        "action": "Quick actions",
+        "setting": "Settings",
+        "navigation": "Navigation",
+        "table": "Tables",
+        "form": "Forms",
+        "tab": "Tabs",
+        "feature": "Features"
+      },
+      "items": {
+        "allOffers": "All offers",
+        "activeOffers": "Active offers",
+        "expiredOffers": "Expired offers",
+        "draftOffers": "Draft offers",
+        "closedOffers": "Closed offers",
+        "offersWithApplications": "Offers with applications",
+        "allAnnouncements": "All announcements",
+        "activeAnnouncements": "Active announcements",
+        "totalActions": "Total actions",
+        "studentsHistory": "Students history",
+        "adminsHistory": "Administrators history",
+        "encadrantsHistory": "Supervisors history",
+        "offersHistory": "Offers history",
+        "applicationsHistory": "Applications history",
+        "announcementsHistory": "Announcements history",
+        "documentsHistory": "Documents history",
+        "srfHistory": "SRF history",
+        "chatHistory": "Chat history",
+        "reportsHistory": "Reports history",
+        "tasksHistory": "Tasks history",
+        "meetingsHistory": "Meetings history",
+        "allDocuments": "All documents",
+        "pendingDocuments": "Pending documents",
+        "validatedDocuments": "Validated documents",
+        "rejectedDocuments": "Rejected documents",
+        "paidStudents": "Paid students",
+        "unpaidStudents": "Unpaid students",
+        "partiallyPaid": "Partially paid",
+        "pendingValidation": "Pending validation",
+        "latePayments": "Late payments",
+        "blockedStudents": "Blocked students",
+        "exemptedStudents": "Exempted students",
+        "totalStudents": "Total students",
+        "activeStudents": "Active students",
+        "withoutInternship": "Without internship",
+        "withInternship": "With internship",
+        "engagementLevel": "Engagement level",
+        "allEncadrants": "All supervisors",
+        "assignedStudents": "By assigned students",
+        "reportsInProgress": "Reports in progress",
+        "upcomingMeetings": "Upcoming meetings",
+        "allAdministrators": "All administrators",
+        "stageAdministrators": "Internship administrators",
+        "financeAdministrators": "Finance administrators",
+        "documentsAdministrators": "Documents administrators",
+        "communicationAdministrators": "Communication administrators",
+        "studentsTable": "Students table",
+        "encadrantsTable": "Supervisors table",
+        "documentsTable": "Documents table",
+        "srfTable": "SRF table",
+        "uploadDocument": "Manage documents",
+        "offersTable": "Internship offers table",
+        "announcementsTable": "Announcements table",
+        "adminsTable": "Administrators table",
+        "activityTimeline": "Activity timeline",
+        "currentPage": "Current page"
+      },
+      "footer": {
+        "select": "select",
+        "navigate": "navigate",
+        "close": "close"
+      }
+    }
+  },
+  "auth": {
+    "brand": {
+      "title": "Digital Talent Center",
+      "tagline": "ESCA Internship Management Platform"
+    },
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Access your Talent Center workspace",
+      "email": "Email address",
+      "emailLabel": "Email",
+      "password": "Password",
+      "passwordLabel": "Enter your ESCA account password",
+      "emailPlaceholder": "student@esca.ma",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "submitButton": "Login to your account",
+      "microsoft": "Sign in with Microsoft (ESCA SSO)",
+      "or": "Or sign in with email",
+      "forgotPassword": "Forgot password?",
+      "footerNeedHelp": "Need help? Contact",
+      "panelBadge": "ESCA Talent Center",
+      "panelTitle": "Empowering ESCA Students",
+      "panelSubtitle": "Connect with top companies, discover meaningful internship opportunities, and kickstart your professional journey.",
+      "panelCoverAlt": "Login cover",
+      "errors": {
+        "connectionTitle": "Connection error",
+        "connectionMessage": "Unable to reach the server. Check your connection and try again.",
+        "authTitle": "Authentication failed",
+        "authMessage": "Invalid email or password.",
+        "validationTitle": "Invalid input",
+        "validationMessage": "Please check your information.",
+        "emailRequired": "Email address is required.",
+        "emailInvalid": "Please enter a valid email address (e.g., user@example.com).",
+        "passwordRequired": "Password is required.",
+        "suspendedTitle": "Account suspended",
+        "suspendedMessage": "Your account has been suspended. Please contact the administrator.",
+        "pendingTitle": "Account pending",
+        "pendingMessage": "Your account is pending approval. You will receive an email once approved.",
+        "deniedTitle": "Access denied",
+        "deniedMessage": "Your account does not have access. Please contact support.",
+        "lockedTitle": "Account locked",
+        "lockedMessage": "Too many failed attempts. Try again in 15 minutes.",
+        "rateLimitTitle": "Too many attempts",
+        "rateLimitMessage": "Please wait a moment before trying again.",
+        "serverTitle": "Server error",
+        "serverMessage": "Something went wrong. Please try again later.",
+        "failedTitle": "Login failed",
+        "failedMessage": "An unexpected error occurred. Please try again."
+      }
+    },
+    "student": {
+      "welcome": "Welcome, Student!",
+      "subtitle": "Student area under development.",
+      "logout": "Sign out"
+    }
+  }
+}

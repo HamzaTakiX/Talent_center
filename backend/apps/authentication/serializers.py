@@ -49,6 +49,7 @@ class RefreshSerializer(serializers.Serializer):
 class MeSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
     last_login_at = serializers.DateTimeField(source='last_login', read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
     profile = UserProfileSerializer(read_only=True)
     student_profile = StudentProfileSerializer(read_only=True)
     staff_profile = StaffProfileSerializer(read_only=True)
@@ -58,10 +59,17 @@ class MeSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'account_status', 'auth_provider',
-            'last_login_at', 'full_name', 'role',
+            'last_login_at', 'created_at', 'full_name', 'role',
             'profile', 'student_profile', 'staff_profile', 'supervisor_profile',
         ]
         read_only_fields = fields
+
+
+class UpdateMeSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    avatar = serializers.ImageField(required=False, allow_null=True)
 
 
 class LoginSessionSerializer(serializers.ModelSerializer):

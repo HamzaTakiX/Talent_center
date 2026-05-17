@@ -1,0 +1,464 @@
+{
+  "common": {
+    "search": "بحث…",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "saving": "جاري الحفظ…",
+    "language": "اللغة",
+    "languages": {
+      "fr": "الفرنسية",
+      "en": "الإنجليزية",
+      "ar": "العربية"
+    },
+    "close": "إغلاق"
+  },
+  "roles": {
+    "superAdmin": "المشرف الأعلى",
+    "encadrant": "المشرف",
+    "administrator": "المسؤول"
+  },
+  "admin": {
+    "brand": {
+      "title": "Digital Talent",
+      "subtitle": "Center",
+      "logoAlt": "ESCA — مركز المواهب الرقمية"
+    },
+    "nav": {
+      "dashboard": "لوحة التحكم",
+      "internshipOffers": "عروض التدريب",
+      "announcements": "الإعلانات",
+      "history": "السجل",
+      "documents": "المستندات",
+      "srf": "SRF",
+      "encadrant": "المشرفون",
+      "student": "الطلاب",
+      "admin": "المسؤولون",
+      "chat": "الدردشة",
+      "reports": "التقارير",
+      "closeMenu": "إغلاق القائمة"
+    },
+    "header": {
+      "openMenu": "فتح القائمة",
+      "searchAdmin": "البحث في الإدارة",
+      "darkMode": "تفعيل الوضع الداكن",
+      "lightMode": "تفعيل الوضع الفاتح",
+      "defaultTitle": "مركز المواهب الرقمية",
+      "titles": {
+        "dashboard": "لوحة التحكم",
+        "students": "الطلاب",
+        "encadrants": "المشرفون",
+        "admins": "المسؤولون",
+        "internshipOffers": "عروض التدريب",
+        "announcements": "الإعلانات",
+        "documents": "المستندات",
+        "srf": "SRF",
+        "history": "السجل",
+        "account": "حسابي"
+      }
+    },
+    "userMenu": {
+      "aria": "قائمة الحساب",
+      "profile": "الملف الشخصي",
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج",
+      "loggingOut": "جاري الخروج…"
+    },
+    "notifications": {
+      "aria": "الإشعارات",
+      "ariaUnread": "الإشعارات، {{count}} غير مقروء",
+      "ariaUnread_plural": "الإشعارات، {{count}} غير مقروءة",
+      "title": "الإشعارات",
+      "markAllRead": "تعليم الكل كمقروء",
+      "empty": "لا توجد إشعارات",
+      "viewAll": "عرض كل الإشعارات",
+      "allCaughtUp": "كل شيء محدّث",
+      "unread": "{{count}} غير مقروء",
+      "unread_plural": "{{count}} غير مقروءة",
+      "items": {
+        "pendingDocuments": "مستندات قيد الانتظار",
+        "pendingDocumentsMsg": "45 مستندًا يحتاج إلى التحقق.",
+        "unpaidSrf": "رسوم SRF غير مدفوعة",
+        "unpaidSrfMsg": "23 طالبًا لديهم رسوم SRF متأخرة.",
+        "expiringOffers": "عروض التدريب",
+        "expiringOffersMsg": "12 عرضًا تنتهي صلاحيتها هذا الأسبوع.",
+        "newApplication": "طلب جديد",
+        "newApplicationMsg": "تقدّم طالب بطلب تدريب."
+      },
+      "times": {
+        "minutesAgo": "منذ {{count}} د",
+        "hoursAgo": "منذ {{count}} س",
+        "yesterday": "أمس"
+      }
+    },
+    "dashboard": {
+      "hero": {
+        "badge": "نظرة عامة",
+        "title": "لوحة التحكم",
+        "platformActive": "المنصة نشطة"
+      },
+      "health": {
+        "aria": "نظرة عامة على صحة المنصة",
+        "platformHealth": "صحة المنصة",
+        "criticalAlerts": "تنبيهات حرجة",
+        "studentsAtRisk": "طلاب معرّضون للخطر",
+        "activeUsers": "مستخدمون نشطون",
+        "riskTrend": "اتجاه المخاطر",
+        "activityTrend": "اتجاه النشاط"
+      },
+      "stats": {
+        "aria": "المؤشرات الرئيسية",
+        "totalStudents": "إجمالي الطلاب",
+        "totalEncadrants": "إجمالي المشرفين",
+        "totalAdmins": "إجمالي المسؤولين",
+        "studentsWithoutInternship": "طلاب بدون تدريب",
+        "activeInternshipOffers": "عروض تدريب نشطة",
+        "ongoingApplications": "طلبات قيد المعالجة",
+        "documentsPending": "مستندات قيد الانتظار",
+        "studentsUnpaidSrf": "طلاب SRF غير مدفوع"
+      },
+      "alerts": {
+        "title": "تنبيهات حرجة",
+        "subtitle": "يتطلب اهتمامًا فوريًا",
+        "empty": "لا توجد تنبيهات حاليًا",
+        "priority": {
+          "high": "عالية",
+          "medium": "متوسطة"
+        },
+        "messages": {
+          "unpaidSrf": "23 طالبًا لديهم رسوم SRF غير مدفوعة",
+          "documentsPending": "45 مستندًا في انتظار التحقق",
+          "noInternship": "156 طالبًا بدون تدريب معيّن",
+          "offersExpiring": "12 عرض تدريب تنتهي هذا الأسبوع"
+        },
+        "analytics": {
+          "active": "نشطة",
+          "totalActive": "أنواع التنبيهات النشطة",
+          "severityMix": "توزيع الخطورة",
+          "items": "عناصر",
+          "trend": "اتجاه 7 أيام",
+          "low": "منخفض"
+        }
+      },
+      "activity": {
+        "title": "النشاط الأخير",
+        "subtitle": "آخر الإجراءات على المنصة",
+        "actions": {
+          "newApplication": "طلب تدريب جديد",
+          "documentValidated": "تم التحقق من مستند",
+          "announcementPublished": "تم نشر إعلان",
+          "profileUpdated": "تم تحديث ملف الطالب",
+          "encadrantAssigned": "تم تعيين مشرف لطالب"
+        },
+        "times": {
+          "minutesAgo": "منذ {{count}} د",
+          "hoursAgo": "منذ {{count}} س",
+          "yesterday": "أمس"
+        }
+      },
+      "chart": {
+        "title": "نظرة على النشاط",
+        "subtitle": "آخر 7 أيام · المنصة",
+        "legend": {
+          "applications": "الطلبات",
+          "documents": "المستندات",
+          "announcements": "الإعلانات",
+          "studentActivity": "الطلاب"
+        },
+        "weekdays": {
+          "mon": "إث",
+          "tue": "ثل",
+          "wed": "أر",
+          "thu": "خم",
+          "fri": "جم",
+          "sat": "سب",
+          "sun": "أح"
+        }
+      }
+    },
+    "account": {
+      "badge": "الحساب",
+      "title": "حسابي",
+      "subtitle": "الملف الشخصي والأمان والإعدادات — كل شيء في مكان واحد.",
+      "sectionsNav": "أقسام الحساب",
+      "tabs": {
+        "profile": "الملف الشخصي",
+        "settings": "الإعدادات"
+      },
+      "activity": {
+        "title": "نشاط الحساب",
+        "description": "ملخص حساب المسؤول الخاص بك.",
+        "lastLogin": "آخر اتصال",
+        "lastLoginHint": "التوقيت المحلي",
+        "status": "حالة الحساب",
+        "statusValue": "نشط",
+        "statusHint": "حساب موثق",
+        "memberSince": "عضو منذ",
+        "memberSinceHint": "تاريخ التسجيل",
+        "sessions": "الجلسات النشطة",
+        "sessionsHint": "الأجهزة المتصلة"
+      },
+      "personalInfo": {
+        "title": "المعلومات الشخصية",
+        "description": "حدّث اسمك وعنوان بريدك الإلكتروني.",
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "fullNameRequired": "الاسم الكامل مطلوب.",
+        "emailRequired": "البريد الإلكتروني مطلوب.",
+        "emailInvalid": "بريد إلكتروني غير صالح."
+      },
+      "security": {
+        "title": "الأمان",
+        "description": "غيّر كلمة المرور. اتركها فارغة للإبقاء على الحالية.",
+        "currentPassword": "كلمة المرور الحالية",
+        "currentPasswordRequired": "كلمة المرور الحالية مطلوبة لتعيين كلمة مرور جديدة.",
+        "newPassword": "كلمة مرور جديدة",
+        "confirmPassword": "تأكيد كلمة المرور",
+        "minLength": "الحد الأدنى {{count}} أحرف.",
+        "mismatch": "كلمتا المرور غير متطابقتين."
+      },
+      "save": "حفظ التغييرات",
+      "saved": "تم تحديث الملف الشخصي بنجاح.",
+      "saveFailed": "تعذر حفظ الملف الشخصي. تحقق من معلوماتك.",
+      "fixErrors": "يرجى تصحيح أخطاء النموذج.",
+      "changePhoto": "تغيير الصورة",
+      "changePhotoAria": "تغيير صورة الملف الشخصي",
+      "settingsHeader": "الإعدادات",
+      "settingsSubtitle": "اللغة والإشعارات والمظهر والتفضيلات",
+      "avatarAlt": "صورة الملف الشخصي",
+      "actionsBarLabel": "إجراءات الحساب",
+      "unsavedHint": "لديك تغييرات غير محفوظة. احفظ أو ألغِ قبل المغادرة.",
+      "savedHint": "تم حفظ جميع التغييرات.",
+      "allSaved": "تم الحفظ بالكامل"
+    },
+    "settings": {
+      "language": {
+        "title": "اللغة",
+        "description": "اختر لغة الواجهة لكامل المنصة.",
+        "label": "لغة الواجهة",
+        "hint": "اختر لغة ثم احفظ لتطبيقها.",
+        "current": "اللغة الحالية: {{label}}",
+        "save": "حفظ اللغة",
+        "cancel": "إلغاء",
+        "saved": "تم حفظ اللغة بنجاح."
+      },
+      "notifications": {
+        "title": "الإشعارات",
+        "description": "تحكم في كيفية استلام التنبيهات.",
+        "email": "إشعارات البريد",
+        "emailDesc": "ملخصات وتنبيهات مهمة عبر البريد.",
+        "push": "إشعارات فورية",
+        "pushDesc": "تنبيهات فورية في المتصفح.",
+        "system": "تنبيهات النظام",
+        "systemDesc": "الصيانة والأمان والتحديثات الحرجة.",
+        "marketing": "اتصالات تسويقية",
+        "marketingDesc": "أخبار المنتج ونشرات ESCA."
+      },
+      "appearance": {
+        "title": "المظهر",
+        "description": "سمة فاتحة أو داكنة لكامل لوحة التحكم.",
+        "light": "الوضع الفاتح",
+        "lightDesc": "واجهة مشرقة وواسعة",
+        "dark": "الوضع الداكن",
+        "darkDesc": "مريح في الإضاءة المنخفضة"
+      },
+      "preferences": {
+        "title": "التفضيلات",
+        "description": "خيارات الراحة والتخصيص.",
+        "compact": "الوضع المدمج",
+        "compactDesc": "يقلل المسافات لعرض المزيد من المحتوى.",
+        "autoSave": "الحفظ التلقائي",
+        "autoSaveDesc": "يحفظ تغييراتك دون نقرة يدوية.",
+        "dashboard": "تخصيص لوحة التحكم",
+        "dashboardDesc": "يتذكر ترتيب وتخطيط الأدوات.",
+        "reset": "إعادة تعيين التفضيلات",
+        "resetDone": "تمت إعادة تعيين التفضيلات.",
+        "dashboardOrderTitle": "ترتيب كتل لوحة التحكم",
+        "dashboardSectionStats": "الإحصائيات",
+        "dashboardSectionAlerts": "التنبيهات والنشاط الأخير",
+        "dashboardSectionOverview": "نظرة عامة",
+        "dashboardOrderReset": "استعادة الترتيب الافتراضي",
+        "moveUp": "تحريك لأعلى",
+        "moveDown": "تحريك لأسفل"
+      },
+      "localNote": "الإعدادات محفوظة محلياً على هذا الجهاز"
+    },
+    "chat": {
+      "sidebarMenu": "خيارات القائمة",
+      "filterAll": "كل المحادثات",
+      "filterUnread": "غير المقروءة فقط",
+      "markAllRead": "تعليم الكل كمقروء",
+      "allMarkedRead": "تم تعليم كل المحادثات كمقروءة",
+      "noConversations": "لا توجد محادثات",
+      "noConversationsHint": "جرّب بحثاً أو فلتراً آخر",
+      "searchInConversation": "البحث في المحادثة…",
+      "noMessages": "لا توجد رسائل مطابقة",
+      "openSearch": "البحث في المحادثة",
+      "moreActions": "المزيد من الإجراءات",
+      "markRead": "تعليم كمقروء",
+      "markedRead": "تم تعليم المحادثة كمقروءة",
+      "mute": "كتم الإشعارات",
+      "unmute": "إلغاء الكتم",
+      "muted": "المحادثة مكتومة",
+      "unmuted": "تمت استعادة الإشعارات",
+      "backToList": "العودة إلى المحادثات",
+      "clearSearch": "مسح البحث",
+      "attachFile": "إرفاق ملف",
+      "tagTemplate": "وسم أو قالب",
+      "sendMessage": "إرسال الرسالة",
+      "unreadCount": "{{count}} غير مقروء"
+    },
+    "globalSearch": {
+      "open": "فتح البحث العام",
+      "dialogLabel": "البحث والتنقل",
+      "placeholder": "ابحث عن الصفحات والأقسام والإجراءات…",
+      "triggerPlaceholder": "ابحث أو انتقل إلى…",
+      "noResults": "لا توجد نتائج",
+      "noResultsHint": "جرّب كلمة مفتاحية أخرى أو تصفح الاقتراحات",
+      "recent": "عمليات البحث الأخيرة",
+      "clearRecent": "مسح",
+      "suggested": "اقتراحات",
+      "subtitles": {
+        "account": "حساب المسؤول"
+      },
+      "actions": {
+        "toggleTheme": "تبديل الوضع الفاتح / الداكن",
+        "createOffer": "إنشاء عرض تدريب",
+        "createAnnouncement": "إنشاء إعلان",
+        "createAdministrator": "إنشاء مسؤول",
+        "addEncadrant": "إضافة مشرف"
+      },
+      "categories": {
+        "page": "الصفحات",
+        "section": "الأقسام",
+        "card": "البطاقات",
+        "action": "إجراءات سريعة",
+        "setting": "الإعدادات",
+        "navigation": "التنقل",
+        "table": "الجداول",
+        "form": "النماذج",
+        "tab": "علامات التبويب",
+        "feature": "الميزات"
+      },
+      "items": {
+        "allOffers": "جميع العروض",
+        "activeOffers": "العروض النشطة",
+        "expiredOffers": "العروض المنتهية",
+        "draftOffers": "المسودات",
+        "closedOffers": "العروض المغلقة",
+        "offersWithApplications": "عروض مع طلبات",
+        "allAnnouncements": "جميع الإعلانات",
+        "activeAnnouncements": "الإعلانات النشطة",
+        "totalActions": "إجمالي الإجراءات",
+        "studentsHistory": "سجل الطلاب",
+        "adminsHistory": "سجل المسؤولين",
+        "encadrantsHistory": "سجل المشرفين",
+        "offersHistory": "سجل العروض",
+        "applicationsHistory": "سجل الطلبات",
+        "announcementsHistory": "سجل الإعلانات",
+        "documentsHistory": "سجل المستندات",
+        "srfHistory": "سجل SRF",
+        "chatHistory": "سجل الدردشة",
+        "reportsHistory": "سجل التقارير",
+        "tasksHistory": "سجل المهام",
+        "meetingsHistory": "سجل الاجتماعات",
+        "allDocuments": "جميع المستندات",
+        "pendingDocuments": "مستندات قيد الانتظار",
+        "validatedDocuments": "مستندات معتمدة",
+        "rejectedDocuments": "مستندات مرفوضة",
+        "paidStudents": "طلاب مدفوعون",
+        "unpaidStudents": "طلاب غير مدفوعين",
+        "partiallyPaid": "مدفوع جزئياً",
+        "pendingValidation": "في انتظار التحقق",
+        "latePayments": "مدفوعات متأخرة",
+        "blockedStudents": "طلاب محظورون",
+        "exemptedStudents": "طلاب معفيون",
+        "totalStudents": "إجمالي الطلاب",
+        "activeStudents": "طلاب نشطون",
+        "withoutInternship": "بدون تدريب",
+        "withInternship": "مع تدريب",
+        "engagementLevel": "مستوى المشاركة",
+        "allEncadrants": "جميع المشرفين",
+        "assignedStudents": "حسب الطلاب المعينين",
+        "reportsInProgress": "تقارير قيد التنفيذ",
+        "upcomingMeetings": "اجتماعات قادمة",
+        "allAdministrators": "جميع المسؤولين",
+        "stageAdministrators": "مسؤولو التدريب",
+        "financeAdministrators": "مسؤولو المالية",
+        "documentsAdministrators": "مسؤولو المستندات",
+        "communicationAdministrators": "مسؤولو التواصل",
+        "studentsTable": "جدول الطلاب",
+        "encadrantsTable": "جدول المشرفين",
+        "documentsTable": "جدول المستندات",
+        "srfTable": "جدول SRF",
+        "uploadDocument": "إدارة المستندات",
+        "offersTable": "جدول عروض التدريب",
+        "announcementsTable": "جدول الإعلانات",
+        "adminsTable": "جدول المسؤولين",
+        "activityTimeline": "سجل النشاط",
+        "currentPage": "الصفحة الحالية"
+      },
+      "footer": {
+        "select": "تحديد",
+        "navigate": "تنقل",
+        "close": "إغلاق"
+      }
+    }
+  },
+  "auth": {
+    "brand": {
+      "title": "Digital Talent Center",
+      "tagline": "منصة إدارة التداريب ESCA"
+    },
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "الوصول إلى مساحة Talent Center",
+      "email": "البريد الإلكتروني",
+      "emailLabel": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "passwordLabel": "كلمة مرور حساب ESCA",
+      "emailPlaceholder": "student@esca.ma",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "submit": "تسجيل الدخول",
+      "submitting": "جاري الاتصال…",
+      "submitButton": "تسجيل الدخول إلى حسابك",
+      "microsoft": "تسجيل الدخول عبر Microsoft (ESCA SSO)",
+      "or": "أو سجّل الدخول بالبريد",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "footerNeedHelp": "تحتاج مساعدة؟ تواصل مع",
+      "panelBadge": "ESCA Talent Center",
+      "panelTitle": "تمكين طلاب ESCA",
+      "panelSubtitle": "تواصل مع الشركات، اكتشف فرص تدريب ذات معنى، وابدأ مسيرتك المهنية.",
+      "panelCoverAlt": "صورة تسجيل الدخول",
+      "errors": {
+        "connectionTitle": "خطأ في الاتصال",
+        "connectionMessage": "تعذر الاتصال بالخادم. تحقق من اتصالك وحاول مجدداً.",
+        "authTitle": "فشل المصادقة",
+        "authMessage": "البريد أو كلمة المرور غير صحيحة.",
+        "validationTitle": "إدخال غير صالح",
+        "validationMessage": "يرجى التحقق من معلوماتك.",
+        "emailRequired": "البريد الإلكتروني مطلوب.",
+        "emailInvalid": "يرجى إدخال بريد إلكتروني صالح.",
+        "passwordRequired": "كلمة المرور مطلوبة.",
+        "suspendedTitle": "حساب موقوف",
+        "suspendedMessage": "تم إيقاف حسابك. تواصل مع المسؤول.",
+        "pendingTitle": "حساب قيد الانتظار",
+        "pendingMessage": "حسابك بانتظار الموافقة. ستصلك رسالة عند القبول.",
+        "deniedTitle": "الوصول مرفوض",
+        "deniedMessage": "لا يملك حسابك صلاحية الوصول. تواصل مع الدعم.",
+        "lockedTitle": "حساب مقفل",
+        "lockedMessage": "محاولات كثيرة فاشلة. أعد المحاولة بعد 15 دقيقة.",
+        "rateLimitTitle": "محاولات كثيرة",
+        "rateLimitMessage": "يرجى الانتظار قليلاً قبل المحاولة مجدداً.",
+        "serverTitle": "خطأ في الخادم",
+        "serverMessage": "حدث خطأ. حاول لاحقاً.",
+        "failedTitle": "فشل تسجيل الدخول",
+        "failedMessage": "حدث خطأ غير متوقع. حاول مجدداً."
+      }
+    },
+    "student": {
+      "welcome": "مرحباً أيها الطالب!",
+      "subtitle": "مساحة الطالب قيد التطوير.",
+      "logout": "تسجيل الخروج"
+    }
+  }
+}

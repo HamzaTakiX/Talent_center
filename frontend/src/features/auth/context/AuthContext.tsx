@@ -9,11 +9,28 @@ interface AuthContextType {
   user: User | null;
   login: () => void;
   legacyLogin: (token: string, userData: User, refreshToken?: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUser: (userData: User) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
+
+// Check if frontend-only admin mode is enabled
+const isFrontendOnlyAdmin = import.meta.env.VITE_FRONTEND_ONLY_ADMIN === 'true';
+
+// Fake admin user for frontend-only mode
+const fakeAdminUser: User = {
+  id: 999,
+  email: 'admin.demo@talentcenter.local',
+  role: 'ADMIN',
+  full_name: 'Super Admin',
+  account_status: 'ACTIVE',
+  profile: {
+    id: 1,
+    first_name: 'Super',
+    last_name: 'Admin',
+  },
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { 
@@ -32,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const token = await getAccessTokenSilently();
       // Store token so legacy authApi logic still works
       localStorage.setItem('access_token', token);
-      
+
       const userData = await authApi.me();
       setUser(userData);
     } catch (error) {
@@ -45,8 +62,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [getAccessTokenSilently]);
 
   useEffect(() => {
+    // Frontend-only admin mode: Set fake user immediately
+    if (isFrontendOnlyAdmin) {
+      setUser(fakeAdminUser);
+      setIsBackendLoading(false);
+      return;
+    }
+
+    // Normal auth flow
     if (isAuth0Loading) return;
-    
+
     if (isAuth0Authenticated) {
       fetchBackendUser();
     } else {
@@ -82,12 +107,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData);
   };
 
-  const logout = () => {
+  const clearLocalAuth = useCallback(() => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setUser(null);
-    auth0Logout({ logoutParams: { returnTo: window.location.origin + '/login' } });
-  };
+  }, []);
+
+  const logout = useCallback(async () => {
+    const loginUrl = `${window.location.origin}/login`;
+
+    if (isFrontendOnlyAdmin) {
+      clearLocalAuth();
+      window.location.replace(loginUrl);
+      return;
+    }
+
+    const hadLocalToken = Boolean(localStorage.getItem('access_token'));
+
+    // Revoke backend session while the access token is still valid.
+    if (hadLocalToken) {
+      await authApi.logout();
+    }
+
+    clearLocalAuth();
+
+    if (isAuth0Authenticated) {
+      auth0Logout({ logoutParams: { returnTo: loginUrl } });
+      return;
+    }
+
+    window.location.replace(loginUrl);
+  }, [isAuth0Authenticated, auth0Logout, clearLocalAuth]);
 
   const updateUser = (userData: User) => {
     setUser(userData);

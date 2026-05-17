@@ -1,3 +1,18 @@
+export interface UserProfile {
+  id: number;
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  date_of_birth?: string | null;
+  gender?: string;
+  avatar?: string | null;
+  bio?: string;
+  timezone?: string;
+  language?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface StudentProfile {
   first_name: string;
   last_name: string;
@@ -15,7 +30,24 @@ export interface User {
   id: number;
   email: string;
   role: string;
+  full_name?: string;
+  account_status?: string;
+  auth_provider?: string;
+  last_login_at?: string | null;
+  created_at?: string;
+  profile?: UserProfile;
   student_profile?: StudentProfile;
+}
+
+export interface LoginSession {
+  id: number;
+  device_name: string;
+  ip_address: string;
+  user_agent: string;
+  created_at: string;
+  expires_at: string;
+  revoked_at: string | null;
+  current: boolean;
 }
 
 export interface AuthResponse {

@@ -1,6 +1,7 @@
 import { FunctionComponent, useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Mail, Lock, LogIn, ChevronRight, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 import microsoftIcon from '../assets/icons/login/microsoft.svg';
 import loginCover from '../assets/images/login/DSCF1339 (1).webp';
 import { useAuth } from '../hooks/useAuth';
@@ -10,6 +11,7 @@ import { AuthHeader } from '../components/AuthHeader';
 import { AuthFooter } from '../components/AuthFooter';
 import { FormInput } from '../components/FormInput';
 import AuthImagePanel from '../components/AuthImagePanel';
+import AuthLanguageSwitcher from '../components/AuthLanguageSwitcher';
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 15 },
@@ -28,19 +30,16 @@ const containerVariants: Variants = {
 };
 
 const LoginPage: FunctionComponent = () => {
+  const { t } = useTranslation();
   const { login, legacyLogin } = useAuth(); // login = Auth0, legacyLogin = custom form mock
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const getErrorMessage = (err: any): { title: string; message: string } => {
-    // No response = network error (backend not running)
+  const getErrorMessage = (err: any): string => {
     if (!err.response) {
-      return {
-        title: 'Connection Error',
-        message: 'Unable to connect to the server. Please check your internet connection or try again later.'
-      };
+      return t('auth.login.errors.connectionMessage');
     }
 
     const status = err.response.status;
@@ -49,91 +48,55 @@ const LoginPage: FunctionComponent = () => {
 
     switch (status) {
       case 400:
-        // Bad request - validation errors
         if (data?.errors) {
           const fieldErrors = Object.entries(data.errors)
-            .map(([field, msgs]) => `${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .map(([, msgs]) => `${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
             .join('; ');
-          return {
-            title: 'Validation Failed',
-            message: fieldErrors || 'Please check your input and try again.'
-          };
+          return fieldErrors || t('auth.login.errors.validationMessage');
         }
-        return {
-          title: 'Invalid Input',
-          message: backendMessage || 'Please provide valid email and password.'
-        };
+        return backendMessage || t('auth.login.errors.validationMessage');
 
       case 401:
-        // Unauthorized - invalid credentials
-        return {
-          title: 'Authentication Failed',
-          message: 'Invalid email or password. Please verify your credentials and try again.'
-        };
+        return t('auth.login.errors.authMessage');
 
       case 403:
-        // Forbidden - account not active or suspended
         if (backendMessage.toLowerCase().includes('suspended')) {
-          return {
-            title: 'Account Suspended',
-            message: 'Your account has been suspended. Please contact the administrator for assistance.'
-          };
+          return t('auth.login.errors.suspendedMessage');
         }
         if (backendMessage.toLowerCase().includes('pending')) {
-          return {
-            title: 'Account Pending',
-            message: 'Your account is pending approval. You will receive an email once approved.'
-          };
+          return t('auth.login.errors.pendingMessage');
         }
-        return {
-          title: 'Access Denied',
-          message: backendMessage || 'Your account does not have access. Please contact support.'
-        };
+        return backendMessage || t('auth.login.errors.deniedMessage');
 
       case 423:
-        // Locked - too many attempts
-        return {
-          title: 'Account Locked',
-          message: 'Too many failed login attempts. Your account is temporarily locked. Please try again in 15 minutes.'
-        };
+        return t('auth.login.errors.lockedMessage');
 
       case 429:
-        // Rate limited
-        return {
-          title: 'Too Many Attempts',
-          message: 'Please wait a moment before trying again.'
-        };
+        return t('auth.login.errors.rateLimitMessage');
 
       case 500:
       case 502:
       case 503:
       case 504:
-        // Server errors
-        return {
-          title: 'Server Error',
-          message: 'Something went wrong on our end. Please try again later or contact support if the problem persists.'
-        };
+        return t('auth.login.errors.serverMessage');
 
       default:
-        return {
-          title: 'Login Failed',
-          message: backendMessage || 'An unexpected error occurred. Please try again.'
-        };
+        return backendMessage || t('auth.login.errors.failedMessage');
     }
   };
 
   const handleLogin = async () => {
     // Frontend validation - only basic checks
     if (!email.trim()) {
-      setError('Email address is required.');
+      setError(t('auth.login.errors.emailRequired'));
       return;
     }
     if (!validateEmail(email)) {
-      setError('Please enter a valid email address (e.g., user@example.com).');
+      setError(t('auth.login.errors.emailInvalid'));
       return;
     }
     if (!password) {
-      setError('Password is required.');
+      setError(t('auth.login.errors.passwordRequired'));
       return;
     }
 
@@ -145,18 +108,19 @@ const LoginPage: FunctionComponent = () => {
         legacyLogin(response.access, response.user, response.refresh);
       }
     } catch (err: any) {
-      const { message } = getErrorMessage(err);
-      setError(message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full min-h-screen overflow-x-hidden lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row bg-white text-left font-inter text-sm text-darkslategray">
-      
+    <div className="relative w-full min-h-screen overflow-x-hidden lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row bg-white text-start font-inter text-sm text-darkslategray">
       {/* Form Container */}
-      <div className="w-full flex-1 lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center px-5 sm:px-8 pb-12 lg:p-4 box-border">
+      <div className="relative w-full flex-1 lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center px-5 sm:px-8 pb-12 lg:p-4 box-border">
+        <div className="absolute end-5 top-5 z-20 sm:end-8 sm:top-6">
+          <AuthLanguageSwitcher embedded />
+        </div>
         <motion.div 
           className="w-full max-w-[500px] flex flex-col relative m-auto py-6 lg:py-2"
           variants={containerVariants}
@@ -193,34 +157,34 @@ const LoginPage: FunctionComponent = () => {
           >
             <div className="absolute inset-0 bg-slate-50 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
             <img className="w-5 h-5 relative z-10" alt="Microsoft" src={microsoftIcon} />
-            <div className="leading-5 font-medium text-[14px] relative z-10">Sign in with Microsoft (ESCA SSO)</div>
+            <div className="leading-5 font-medium text-[14px] relative z-10">{t('auth.login.microsoft')}</div>
           </motion.div>
 
           <motion.div variants={itemVariants} className="w-full flex items-center mb-4 text-slategray-200">
             <div className="flex-1 bg-gainsboro h-[1px]" />
-            <div className="px-3 text-[10px] font-bold uppercase tracking-widest text-slategray-100">Or sign in with email</div>
+            <div className="px-3 text-[10px] font-bold uppercase tracking-widest text-slategray-100">{t('auth.login.or')}</div>
             <div className="flex-1 bg-gainsboro h-[1px]" />
           </motion.div>
 
           <motion.div variants={itemVariants} className="w-full flex flex-col gap-4">
             <FormInput 
-              label="Email"
+              label={t('auth.login.emailLabel')}
               type="email"
               value={email}
               Icon={Mail}
               onChange={(e) => { setEmail(e.target.value); setError(''); }}
-              placeholder="student@esca.ma"
+              placeholder={t('auth.login.emailPlaceholder')}
             />
             <FormInput 
-              label="Enter your ESCA account password"
+              label={t('auth.login.passwordLabel')}
               type="password"
               value={password}
               Icon={Lock}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t('auth.login.passwordPlaceholder')}
             />
             <div className="w-full flex justify-end mt-[-10px] text-mediumslateblue">
-              <span className="text-xs font-medium cursor-pointer hover:underline transition-all">Forgot password?</span>
+              <span className="text-xs font-medium cursor-pointer hover:underline transition-all">{t('auth.login.forgotPassword')}</span>
             </div>
             
             <motion.button 
@@ -241,7 +205,7 @@ const LoginPage: FunctionComponent = () => {
                 ) : (
                   <LogIn className="w-[18px] h-[18px] opacity-90" strokeWidth={2.5}/>
                 )}
-                <span className="font-semibold text-[15px]">{loading ? 'Logging in...' : 'Login to your account'}</span>
+                <span className="font-semibold text-[15px]">{loading ? t('auth.login.submitting') : t('auth.login.submitButton')}</span>
               </div>
             </motion.button>
           </motion.div>
@@ -254,10 +218,10 @@ const LoginPage: FunctionComponent = () => {
 
       <AuthImagePanel
         imageSrc={loginCover}
-        imageAlt="Login Cover"
-        badge="ESCA Talent Center"
-        title="Empowering ESCA Students"
-        subtitle="Connect with top companies, discover meaningful internship opportunities, and kickstart your professional journey."
+        imageAlt={t('auth.login.panelCoverAlt')}
+        badge={t('auth.login.panelBadge')}
+        title={t('auth.login.panelTitle')}
+        subtitle={t('auth.login.panelSubtitle')}
       />
 
     </div>

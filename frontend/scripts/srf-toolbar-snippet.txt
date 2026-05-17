@@ -1,0 +1,44 @@
+        <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:max-w-2xl">
+          <AdminSearchInput
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            onClear={() => onQueryChange('')}
+            placeholder="Search students..."
+            aria-label="Search students"
+            containerClassName="min-w-0 flex-1 sm:min-w-[12rem]"
+          />
+          <div ref={filterRef} className="flex w-full items-center gap-2 sm:w-auto">
+            <div
+              id="srf-status-filter"
+              className={`min-w-0 flex-1 sm:w-[11rem] sm:flex-none ${showStatusSelect ? 'block' : 'hidden'} lg:block`}
+            >
+              <AdminSelectField
+                value={statusFilter}
+                onChange={(value) => {
+                  setStatusFilter(value);
+                  setFilterOpen(false);
+                }}
+                options={[...STATUS_FILTER_OPTIONS]}
+                aria-label="Filter by payment status"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setFilterOpen((open) => !open)}
+              aria-expanded={filterOpen}
+              aria-controls="srf-status-filter"
+              aria-label={
+                hasActiveFilter ? `Status filter: ${statusFilter}. Click to change` : 'Show status filter'
+              }
+              className={[
+                'flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-colors',
+                'admin-btn-surface text-[var(--admin-text)] hover:bg-[var(--admin-row-hover)]',
+                hasActiveFilter || filterOpen
+                  ? 'border-[var(--admin-brand)] bg-[var(--admin-brand-muted)]'
+                  : 'border-[var(--admin-border)] bg-[var(--admin-bg-elevated)]',
+              ].join(' ')}
+            >
+              <Filter className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+            </button>
+          </div>
+        </div>

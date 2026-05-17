@@ -1,12 +1,17 @@
 import { FunctionComponent } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const AuthFooter: FunctionComponent = () => {
+  const { t } = useTranslation();
+
   return (
-    <div className="w-full border-t border-solid border-gainsboro mt-6 pt-4 mb-2 flex justify-center text-[13px] text-dimgray">
+    <div className="mb-2 mt-6 flex w-full justify-center border-t border-solid border-gainsboro pt-4 text-[13px] text-dimgray">
       <div>
-        <span>{`Need help? Contact `}</span>
-        <span className="text-mediumslateblue cursor-pointer hover:underline font-medium">support@esca.ma</span>
+        <span>{t('auth.login.footerNeedHelp')} </span>
+        <span className="cursor-pointer font-medium text-mediumslateblue hover:underline">support@esca.ma</span>
       </div>
     </div>
   );
 };
+
+

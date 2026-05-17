@@ -21,6 +21,36 @@ def ensure_user_profile(user: User) -> UserProfile:
     return profile
 
 
+def update_account_profile(user: User, data: dict) -> User:
+    """
+    Update the authenticated user's email and common profile fields.
+
+    Supported keys: email, first_name, last_name, avatar (file).
+    """
+    profile = ensure_user_profile(user)
+    update_user_fields = []
+
+    if 'email' in data and data['email'] != user.email:
+        user.email = data['email']
+        update_user_fields.extend(['email', 'updated_at'])
+
+    if 'first_name' in data:
+        profile.first_name = data['first_name']
+    if 'last_name' in data:
+        profile.last_name = data['last_name']
+    if 'avatar' in data:
+        profile.avatar = data['avatar']
+
+    if update_user_fields:
+        user.save(update_fields=update_user_fields)
+    profile.save()
+
+    user.refresh_from_db()
+    if hasattr(user, 'profile'):
+        user.profile.refresh_from_db()
+    return user
+
+
 def confirm_identity(user: User, data: dict) -> UserProfile:
     """
     Step 1 onboarding: Confirm basic identity (writes to UserProfile).

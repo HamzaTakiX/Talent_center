@@ -4,6 +4,11 @@ import { useAuth } from '../../../features/auth/hooks/useAuth';
 export const AuthGuard = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
 
+  // Frontend-only admin mode: bypass all auth checks
+  if (import.meta.env.VITE_FRONTEND_ONLY_ADMIN === 'true') {
+    return <Outlet />;
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50">
@@ -24,14 +29,14 @@ export const AuthGuard = () => {
 
   const userRole = user.role?.toUpperCase();
   const isStudent = userRole === 'STUDENT';
-  
+
   // Only students need to complete onboarding
   if (isStudent) {
     // Prevent accessing protected dashboard without full onboarding
     if (!user.student_profile?.identity_confirmed) {
       return <Navigate to="/confirm-identity" replace />;
     }
-    
+
     if (!user.student_profile?.profile_completed) {
       return <Navigate to="/complete-profile" replace />;
     }
