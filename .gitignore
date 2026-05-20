@@ -15,6 +15,9 @@ frontend/src/features/cv_builder/node_modules/
 frontend/src/features/cv_builder/.svelte-kit/
 frontend/src/features/cv_builder/build/
 
+# Generated at build from VITE_* (Vercel / local .env.local)
+frontend/public/tc-auth-env.js
+
 # Python / Django
 __pycache__/
 *.py[cod]

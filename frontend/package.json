@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build"
+    "build": "node scripts/emit-auth-env.mjs && tsc && vite build",
+    "predev": "node scripts/emit-auth-env.mjs"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.15.1",

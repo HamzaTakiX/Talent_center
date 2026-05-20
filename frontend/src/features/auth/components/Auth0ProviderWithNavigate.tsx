@@ -1,6 +1,6 @@
 import { Auth0Provider, type AppState } from '@auth0/auth0-react';
 import { ReactNode, useMemo } from 'react';
-import { getAuth0EnvConfig } from '../config/auth0Env';
+import { getAuth0EnvConfig, logAuth0EnvDiagnostics } from '../config/auth0Env';
 import { AuthConfigErrorScreen } from './AuthConfigErrorScreen';
 
 interface Auth0ProviderWithNavigateProps {
@@ -15,7 +15,8 @@ export const Auth0ProviderWithNavigate = ({
   const config = useMemo(() => getAuth0EnvConfig(), []);
 
   if (!config.isConfigured) {
-    return <AuthConfigErrorScreen />;
+    logAuth0EnvDiagnostics(config);
+    return <AuthConfigErrorScreen diagnostics={config.diagnostics} />;
   }
 
   const authorizationParams: Record<string, string> = {

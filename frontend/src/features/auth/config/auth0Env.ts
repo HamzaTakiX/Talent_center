@@ -1,7 +1,23 @@
 /**
  * Auth0 SPA configuration — frontend only (no client secret).
- * Values are injected at build time via Vite `VITE_*` variables.
+ * Sources (in order): import.meta.env (Vite build) → window.__TC_AUTH0_ENV__ (tc-auth-env.js).
  */
+
+declare global {
+  interface Window {
+    __TC_AUTH0_ENV__?: Partial<
+      Record<
+        'VITE_AUTH0_DOMAIN' | 'VITE_AUTH0_CLIENT_ID' | 'VITE_AUTH0_AUDIENCE' | 'VITE_API_URL',
+        string
+      >
+    >;
+  }
+}
+
+type Auth0EnvKey =
+  | 'VITE_AUTH0_DOMAIN'
+  | 'VITE_AUTH0_CLIENT_ID'
+  | 'VITE_AUTH0_AUDIENCE';
 
 function readEnv(value: string | undefined): string {
   if (!value) return '';
@@ -15,26 +31,109 @@ function readEnv(value: string | undefined): string {
   return trimmed;
 }
 
+function readViteEnv(key: Auth0EnvKey): string {
+  const fromMeta = import.meta.env[key];
+  if (typeof fromMeta === 'string' && fromMeta.length > 0) {
+    return readEnv(fromMeta);
+  }
+
+  if (typeof window !== 'undefined') {
+    const runtime = window.__TC_AUTH0_ENV__?.[key];
+    if (typeof runtime === 'string' && runtime.length > 0) {
+      return readEnv(runtime);
+    }
+  }
+
+  return '';
+}
+
 export type Auth0EnvConfig = {
   domain: string;
   clientId: string;
   audience?: string;
   redirectUri: string;
   isConfigured: boolean;
+  /** Diagnostic snapshot for error UI / console (values masked). */
+  diagnostics: {
+    domainFromMeta: boolean;
+    clientIdFromMeta: boolean;
+    domainFromRuntime: boolean;
+    clientIdFromRuntime: boolean;
+    mode: string;
+    prod: boolean;
+  };
 };
 
+let diagnosticsLogged = false;
+
+/** TEMP: production-safe diagnostic logs (remove after Vercel env is confirmed). */
+export function logAuth0EnvDiagnostics(config: Auth0EnvConfig): void {
+  if (diagnosticsLogged) return;
+  diagnosticsLogged = true;
+
+  const mask = (v: string) =>
+    v.length > 10 ? `${v.slice(0, 8)}…(${v.length})` : v ? '(short)' : '(empty)';
+
+  const payload = {
+    configured: config.isConfigured,
+    import_meta: {
+      VITE_AUTH0_DOMAIN: mask(readEnv(import.meta.env.VITE_AUTH0_DOMAIN)),
+      VITE_AUTH0_CLIENT_ID: mask(readEnv(import.meta.env.VITE_AUTH0_CLIENT_ID)),
+      MODE: import.meta.env.MODE,
+      PROD: import.meta.env.PROD,
+    },
+    runtime_script: {
+      VITE_AUTH0_DOMAIN: mask(readEnv(window.__TC_AUTH0_ENV__?.VITE_AUTH0_DOMAIN)),
+      VITE_AUTH0_CLIENT_ID: mask(readEnv(window.__TC_AUTH0_ENV__?.VITE_AUTH0_CLIENT_ID)),
+      scriptPresent: typeof window.__TC_AUTH0_ENV__ !== 'undefined',
+    },
+    resolved: {
+      domain: mask(config.domain),
+      clientId: mask(config.clientId),
+    },
+    sources: config.diagnostics,
+  };
+
+  console.info('[Auth0 env diagnostic]', payload);
+}
+
 export function getAuth0EnvConfig(): Auth0EnvConfig {
-  const domain = readEnv(import.meta.env.VITE_AUTH0_DOMAIN);
-  const clientId = readEnv(import.meta.env.VITE_AUTH0_CLIENT_ID);
-  const audience = readEnv(import.meta.env.VITE_AUTH0_AUDIENCE) || undefined;
+  const domainMeta = readEnv(import.meta.env.VITE_AUTH0_DOMAIN);
+  const clientIdMeta = readEnv(import.meta.env.VITE_AUTH0_CLIENT_ID);
+  const domainRuntime =
+    typeof window !== 'undefined'
+      ? readEnv(window.__TC_AUTH0_ENV__?.VITE_AUTH0_DOMAIN)
+      : '';
+  const clientIdRuntime =
+    typeof window !== 'undefined'
+      ? readEnv(window.__TC_AUTH0_ENV__?.VITE_AUTH0_CLIENT_ID)
+      : '';
+
+  const domain = readViteEnv('VITE_AUTH0_DOMAIN');
+  const clientId = readViteEnv('VITE_AUTH0_CLIENT_ID');
+  const audience = readViteEnv('VITE_AUTH0_AUDIENCE') || undefined;
   const origin =
     typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
 
-  return {
+  const config: Auth0EnvConfig = {
     domain,
     clientId,
     audience,
     redirectUri: `${origin}/callback`,
     isConfigured: Boolean(domain && clientId),
+    diagnostics: {
+      domainFromMeta: Boolean(domainMeta),
+      clientIdFromMeta: Boolean(clientIdMeta),
+      domainFromRuntime: Boolean(domainRuntime),
+      clientIdFromRuntime: Boolean(clientIdRuntime),
+      mode: import.meta.env.MODE,
+      prod: import.meta.env.PROD,
+    },
   };
+
+  if (import.meta.env.PROD) {
+    logAuth0EnvDiagnostics(config);
+  }
+
+  return config;
 }
