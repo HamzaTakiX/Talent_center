@@ -18,6 +18,7 @@ const SupervisionReportsAnalyticsPanel: FunctionComponent<SupervisionReportsAnal
   const riskChart = useMemo(
     () =>
       Object.entries(riskDist).map(([label, value]) => ({
+        key: label,
         label,
         value,
         color:
@@ -55,7 +56,7 @@ const SupervisionReportsAnalyticsPanel: FunctionComponent<SupervisionReportsAnal
           {t('admin.modules.reports.analytics.riskDist', { defaultValue: 'Distribution risques' })}
         </p>
         {riskChart.length > 0 ? (
-          <AdminDonutChart segments={riskChart} size={100} strokeWidth={14} />
+          <AdminDonutChart segments={riskChart} ariaLabel={t('admin.modules.reports.analytics.riskDist', { defaultValue: 'Distribution risques' })} />
         ) : (
           <p className="text-sm text-[var(--admin-text-muted)]">—</p>
         )}

@@ -61,10 +61,11 @@ const EncadrantDetailModal: FunctionComponent<EncadrantDetailModalProps> = ({
             .map((d) => specializationDomainLabel(d, t))
             .join(', ');
 
+    const supervisedTypeList = encadrant.supervised_internship_types ?? [];
     const supervisedTypes =
-      (encadrant.supervised_internship_types ?? []).length === 0
+      supervisedTypeList.length === 0
         ? '—'
-        : encadrant.supervised_internship_types
+        : supervisedTypeList
             .map((item) =>
               item.duration_hint ? `${item.name} (${item.duration_hint})` : item.name,
             )

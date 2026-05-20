@@ -11,6 +11,7 @@ import BackToAdminButton from './BackToAdminButton';
 import AdministratorsRoleDistributionChart from './AdministratorsRoleDistributionChart';
 import PlatformAdministratorsMainTable from './PlatformAdministratorsMainTable';
 import { useAdminPagination } from '../../shared/hooks/useAdminPagination';
+import { useTableRowSelection } from '../../shared/hooks/useTableRowSelection';
 
 interface AdministratorFilteredListLayoutProps {
   filter: AdministratorListFilter;
@@ -61,6 +62,9 @@ const AdministratorFilteredListLayout: FunctionComponent<AdministratorFilteredLi
     pageSize,
   } = useAdminPagination(filteredRows);
 
+  const rowIds = useMemo(() => paginatedItems.map((r) => r.id), [paginatedItems]);
+  const selection = useTableRowSelection(rowIds);
+
   const listTitle = t(`admin.pages.administrators.list.${filter}`);
 
   return (
@@ -107,6 +111,8 @@ const AdministratorFilteredListLayout: FunctionComponent<AdministratorFilteredLi
             totalItems={totalItems}
             pageSize={pageSize}
             onPageChange={setPage}
+            selectionMode={false}
+            selection={selection}
           />
         </div>
       </div>

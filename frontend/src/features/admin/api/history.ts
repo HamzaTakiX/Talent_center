@@ -27,8 +27,7 @@ export interface HistoryEventDto {
   new_values: Record<string, unknown>;
   details: Record<string, unknown>;
   entity_path: string | null;
-  metadata: Record<string, string>;
-  metadata?: { key: string; value: string; value_type: string }[];
+  metadata_entries?: { key: string; value: string; value_type: string }[];
   targets?: {
     target_entity_type: string;
     target_entity_id: number;

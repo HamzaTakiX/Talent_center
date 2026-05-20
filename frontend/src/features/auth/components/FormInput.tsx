@@ -9,6 +9,7 @@ interface FormInputProps extends InputHTMLAttributes<HTMLInputElement | HTMLText
   isTextArea?: boolean;
   Icon?: LucideIcon;
   boxClassName?: string;
+  rows?: number;
 }
 
 export const FormInput: FunctionComponent<FormInputProps> = ({
@@ -17,6 +18,7 @@ export const FormInput: FunctionComponent<FormInputProps> = ({
   isTextArea = false,
   Icon,
   boxClassName = '',
+  rows = 4,
   type,
   ...inputProps
 }) => {
@@ -41,7 +43,7 @@ export const FormInput: FunctionComponent<FormInputProps> = ({
             <Icon className="auth-form-field__icon mt-1 h-4 w-4 shrink-0" strokeWidth={2} />
             <textarea
               className="auth-form-input min-h-0 flex-1 resize-none text-[14px] leading-5 font-inter"
-              rows={3}
+              rows={rows}
               {...(inputProps as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
             />
           </div>
@@ -52,7 +54,7 @@ export const FormInput: FunctionComponent<FormInputProps> = ({
         {!Icon && isTextArea ? (
           <textarea
             className="auth-form-input min-h-0 w-full resize-none text-[14px] leading-5 font-inter"
-            rows={3}
+            rows={rows}
             {...(inputProps as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
           />
         ) : null}

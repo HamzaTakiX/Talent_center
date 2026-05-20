@@ -44,7 +44,10 @@ function scopePreview(row: AdminEncadrantRow, t: (k: string) => string): string 
   );
 }
 
-function levelsCellContent(row: AdminEncadrantRow, t: (k: string) => string): string {
+function levelsCellContent(
+  row: AdminEncadrantRow,
+  t: (k: string, options?: Record<string, unknown>) => string,
+): string {
   const labelList = row.scopes?.level_labels ?? [];
   if (labelList.length > 0) {
     const preview = labelList.slice(0, 2).join(', ');

@@ -112,7 +112,7 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
             <AdminMobileRowCard
               key={row.id}
               title={row.full_name}
-              subtitle={row.email}
+              meta={row.email}
               badges={
                 <>
                   {roleSlugs.map((slug) => (

@@ -140,7 +140,8 @@ export type AdminDetailFieldKey =
   | 'createdAt'
   | 'onboarding'
   | 'roles'
-  | 'permissions';
+  | 'permissions'
+  | 'supervisedInternships';
 
 export const ADMIN_DETAIL_FIELD_ICONS: Partial<Record<AdminDetailFieldKey, LucideIcon>> = {
   ...ADMIN_FORM_FIELD_ICONS,

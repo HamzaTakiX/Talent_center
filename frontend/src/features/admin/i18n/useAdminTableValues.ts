@@ -68,10 +68,13 @@ const SRF_PAYMENT_KEY: Record<string, string> = {
 };
 
 const PERMISSION_LABEL_TO_KEY: Record<string, AdminPermissionKey> = {
-  'Internship Management': 'internshipManagement',
+  'Internship Management': 'manageInternshipOffers',
   'Financial Operations': 'financialOperations',
-  'Document Validation': 'documentValidation',
-  'Announcements & Notifications': 'announcementsNotifications',
+  'Document Validation': 'validateDocuments',
+  'Announcements & Notifications': 'createAnnouncements',
+  internshipManagement: 'manageInternshipOffers',
+  documentValidation: 'validateDocuments',
+  announcementsNotifications: 'createAnnouncements',
 };
 
 /** Translates mock/table enum values shown in admin data grids. */

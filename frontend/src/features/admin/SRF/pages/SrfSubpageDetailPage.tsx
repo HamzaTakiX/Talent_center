@@ -2,13 +2,14 @@ import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminListPageShell } from '../../ui';
 import AdminStatChartSection from '../../ui/charts/AdminStatChartSection';
+import type { StatPageChartId } from '../../ui';
 import type { SrfSubpageId } from '../constants';
 import SrfSubpageKpiCards from '../components/SrfSubpageKpiCards';
 import SrfSubpageSection from '../components/SrfSubpageSection';
 
 interface SrfSubpageDetailPageProps {
   subpageId: SrfSubpageId;
-  chartId: string;
+  chartId: StatPageChartId;
   showRemaining?: boolean;
 }
 

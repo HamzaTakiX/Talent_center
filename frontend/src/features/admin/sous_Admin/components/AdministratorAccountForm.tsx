@@ -2,7 +2,7 @@ import { FormEvent, FunctionComponent, useEffect, useId, useMemo, useState } fro
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { adminAdministratorsApi } from '../../api/administrators';
-import type { AdminAdministratorRow } from '../../api/types';
+import type { AdminAccountStatus, AdminAdministratorRow } from '../../api/types';
 import AdminSelect from '../../account/components/AdminSelect';
 import AdminAcademicScopeFields, {
   type AcademicScopeState,
@@ -175,7 +175,7 @@ const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps>
       sector_ids: academicScope.sectorIds,
       academic_years: academicScope.academicYears,
       sso_enabled: ssoEnabled,
-      account_status: accountStatus,
+      account_status: accountStatus as AdminAccountStatus,
       grant_access: grantAccess,
       ...(mode === 'edit' ? { platform_access_granted: grantAccess, is_active: isActive } : {}),
     };

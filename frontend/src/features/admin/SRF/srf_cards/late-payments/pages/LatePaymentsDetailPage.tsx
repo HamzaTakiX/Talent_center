@@ -2,7 +2,7 @@ import { FunctionComponent } from 'react';
 import SrfSubpageDetailPage from '../../../pages/SrfSubpageDetailPage';
 
 const LatePaymentsDetailPage: FunctionComponent = () => (
-  <SrfSubpageDetailPage subpageId="late-payments" chartId="srf-late-payments" showRemaining />
+  <SrfSubpageDetailPage subpageId="late-payments" chartId="srf-late-timeline" showRemaining />
 );
 
 export default LatePaymentsDetailPage;

@@ -18,6 +18,16 @@ const levelIdsParam = (ids?: number[]) =>
 
 const withLang = (lang?: string) => (lang ? { lang } : {});
 
+function buildQuery(entries: Record<string, string | undefined>): Record<string, string> {
+  const query: Record<string, string> = {};
+  for (const [key, value] of Object.entries(entries)) {
+    if (value !== undefined && value !== '') {
+      query[key] = value;
+    }
+  }
+  return query;
+}
+
 export const academicReferenceApi = {
   listFilieres: async (params?: {
     program_family?: string;
@@ -49,15 +59,15 @@ export const academicReferenceApi = {
     academic_year?: string;
     class_group_ids?: number[];
   }): Promise<AcademicLevelOption[] | string[]> => {
-    const query: Record<string, string> = {
+    const query = buildQuery({
       ...filiereIdsParam(params.filiere_ids),
       ...withLang(params.lang),
-    };
-    if (params.legacy) query.legacy = 'true';
-    if (params.academic_year) query.academic_year = params.academic_year;
-    if (params.class_group_ids?.length) {
-      query.class_group_ids = params.class_group_ids.join(',');
-    }
+      legacy: params.legacy ? 'true' : undefined,
+      academic_year: params.academic_year,
+      class_group_ids: params.class_group_ids?.length
+        ? params.class_group_ids.join(',')
+        : undefined,
+    });
     const response = await apiClient.get<ApiEnvelope<AcademicLevelOption[] | string[]>>(
       '/admin/academic-levels',
       { params: query },
@@ -77,8 +87,11 @@ export const academicReferenceApi = {
     sector_id?: number;
     lang?: string;
   }): Promise<InternshipTypeOption[]> => {
-    const query: Record<string, string> = { ...levelIdsParam(params.level_ids), ...withLang(params.lang) };
-    if (params.sector_id) query.sector_id = String(params.sector_id);
+    const query = buildQuery({
+      ...levelIdsParam(params.level_ids),
+      ...withLang(params.lang),
+      sector_id: params.sector_id != null ? String(params.sector_id) : undefined,
+    });
     const response = await apiClient.get<ApiEnvelope<InternshipTypeOption[]>>('/admin/internship-types', {
       params: query,
     });
@@ -100,15 +113,17 @@ export const academicReferenceApi = {
     sector_id?: number;
     lang?: string;
   }): Promise<ClassGroupOption[]> => {
-    const query: Record<string, string> = { ...withLang(params?.lang) };
-    if (params?.filiere_ids?.length) {
-      query.filiere_ids = params.filiere_ids.join(',');
-    } else if (params?.filiere_id) {
-      query.filiere_id = String(params.filiere_id);
-    }
-    if (params?.academic_year) query.academic_year = params.academic_year;
-    if (params?.level_ids?.length) query.level_ids = params.level_ids.join(',');
-    if (params?.sector_id) query.sector_id = String(params.sector_id);
+    const query = buildQuery({
+      ...withLang(params?.lang),
+      filiere_ids: params?.filiere_ids?.length ? params.filiere_ids.join(',') : undefined,
+      filiere_id:
+        !params?.filiere_ids?.length && params?.filiere_id
+          ? String(params.filiere_id)
+          : undefined,
+      academic_year: params?.academic_year,
+      level_ids: params?.level_ids?.length ? params.level_ids.join(',') : undefined,
+      sector_id: params?.sector_id != null ? String(params.sector_id) : undefined,
+    });
     const response = await apiClient.get<ApiEnvelope<ClassGroupOption[]>>('/admin/class-groups', {
       params: query,
     });
@@ -124,16 +139,16 @@ export const academicReferenceApi = {
     search?: string;
     lang?: string;
   }): Promise<SpecializationDomainOption[]> => {
-    const query: Record<string, string> = { ...withLang(params?.lang) };
-    if (params?.filiere_ids?.length) {
-      query.filiere_ids = params.filiere_ids.join(',');
-    }
-    if (params?.program_families?.length) {
-      query.program_families = params.program_families.join(',');
-    }
-    if (params?.category) query.category = params.category;
-    if (params?.include_tech) query.include_tech = 'true';
-    if (params?.search) query.search = params.search;
+    const query = buildQuery({
+      ...withLang(params?.lang),
+      filiere_ids: params?.filiere_ids?.length ? params.filiere_ids.join(',') : undefined,
+      program_families: params?.program_families?.length
+        ? params.program_families.join(',')
+        : undefined,
+      category: params?.category,
+      include_tech: params?.include_tech ? 'true' : undefined,
+      search: params?.search,
+    });
     const response = await apiClient.get<ApiEnvelope<SpecializationDomainOption[]>>(
       '/admin/specialization-domains',
       { params: query },

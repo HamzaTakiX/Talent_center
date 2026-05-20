@@ -25,6 +25,7 @@ export interface EncadrantReportRow {
   status: EncadrantReportStatus;
   submittedDate: string;
   dueDate: string;
+  priorityScore?: number;
 }
 
 export const encadrantReportsRows: EncadrantReportRow[] = [
