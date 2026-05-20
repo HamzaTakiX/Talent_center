@@ -1,0 +1,224 @@
+.quickcv-root {
+  --fg: #1d293d;
+  --bg: #ffffff;
+  --primary: #364153;
+  --primary-fg: #ffffff;
+  --secondary: #eaeef4;
+  --secondary-fg: #1d293d;
+  --border: #d8e2ec;
+  --input: #f0f4f8;
+  --ring: #a9b0ff;
+  --muted: #f5f7fa;
+  --muted-fg: #557091;
+  --success: #22c55e;
+  --success-subtle: #dcfce7;
+  --warning: #bb9502;
+  --warning-subtle: #fef9c3;
+  --danger: #ed3535;
+  --danger-subtle: #fee2e2;
+  --info: #60a5fa;
+  --info-subtle: #dbeafe;
+  --codeblock: #232b3d;
+
+  scroll-behavior: smooth;
+  background-color: var(--secondary);
+  color: var(--fg);
+  font-family: 'Inter', sans-serif;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.quickcv-root *,
+.quickcv-root *::before,
+.quickcv-root *::after {
+  box-sizing: border-box;
+}
+
+.quickcv-root.dark {
+  --fg: #f3f4f6;
+  --bg: #0b1221;
+  --primary: #9baaf2;
+  --primary-fg: #0b1221;
+  --secondary: #151e31;
+  --secondary-fg: #cfd0da;
+  --border: #1f2739;
+  --input: #151e31;
+  --ring: #bae6fd;
+  --muted: #171e2d;
+  --muted-fg: #788393;
+  --success: #b5e8b0;
+  --success-subtle: #1d3d23;
+  --warning: #e8d4b0;
+  --warning-subtle: #3d3721;
+  --danger: #fca5a5;
+  --danger-subtle: #3f1d1d;
+  --info: #93c5fd;
+  --info-subtle: #1e293b;
+  --codeblock: #121a2a;
+}
+
+.quickcv-root.quickcv-root--split {
+  overflow: hidden;
+}
+
+.quickcv-root h1 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.quickcv-root h2 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.quickcv-root h3 {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.quickcv-root h4 {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+@media (min-width: 1024px) {
+  .quickcv-root h1 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+
+  .quickcv-root h2 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  .quickcv-root h3 {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
+  .quickcv-root h4 {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+}
+
+.quickcv-root .link {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.quickcv-root .doc {
+  width: 210mm;
+  max-width: 100%;
+  min-height: 297mm;
+  min-width: 0;
+  transform-origin: top center;
+  transition: scale 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 2.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Long text / URLs without spaces — wrap in Edge & all browsers */
+.quickcv-root .doc :is(p, span, li, a, h1, h2, h3, h4, div, section, ul, strong) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.quickcv-root .doc .frow {
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.quickcv-root .doc .frow > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.quickcv-root .doc a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Print rules for embedded Talent Center: see cv/styles/quickcv-print.css */
+
+.quickcv-root .scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--border), black 20%) var(--border);
+}
+
+.quickcv-root.dark .scrollbar {
+  scrollbar-color: color-mix(in srgb, var(--border), white 10%) var(--border);
+}
+
+.quickcv-root input[type='range'] {
+  appearance: none;
+  height: 0.75rem;
+  outline: none;
+  overflow: hidden;
+  border-radius: 0.125rem;
+}
+
+.quickcv-root input[type='range']::-webkit-slider-runnable-track {
+  background-color: var(--border);
+  height: 100%;
+}
+
+.quickcv-root input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  height: 100%;
+  width: 8px;
+  border: 0;
+  outline: 0;
+  border-radius: 0;
+  box-shadow: -20em 0 0 20em var(--primary);
+  background-color: hsl(from var(--primary) h s 60%);
+  transition-duration: 300ms;
+}
+
+.quickcv-root input[type='range']:hover::-webkit-slider-thumb {
+  box-shadow: -20em 0 0 20em var(--info);
+  background-color: hsl(from var(--info) h s 60%);
+}
+
+.quickcv-root input[type='range']::-moz-range-track {
+  background-color: var(--input);
+  height: 100%;
+}
+
+.quickcv-root input[type='range']::-moz-range-thumb {
+  appearance: none;
+  height: 100%;
+  width: 8px;
+  border: 0;
+  outline: 0;
+  border-radius: 0;
+  box-shadow: -20em 0 0 20em var(--primary);
+  background-color: hsl(from var(--primary) h s 60%);
+  transition-duration: 300ms;
+}
+
+.quickcv-root input[type='range']:hover::-moz-range-thumb {
+  box-shadow: -20em 0 0 20em var(--info);
+  background-color: hsl(from var(--info) h s 60%);
+}

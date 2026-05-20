@@ -10,6 +10,11 @@ yarn-error.log*
 .eslintcache
 .pnp.*
 
+# CV builder (Svelte) — keep src/lib in repo; ignore generated kit output
+frontend/src/features/cv_builder/node_modules/
+frontend/src/features/cv_builder/.svelte-kit/
+frontend/src/features/cv_builder/build/
+
 # Python / Django
 __pycache__/
 *.py[cod]
@@ -23,8 +28,9 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Python virtualenv libs (root only — do not match frontend/.../src/lib)
+/lib/
+/lib64/
 parts/
 sdist/
 var/
