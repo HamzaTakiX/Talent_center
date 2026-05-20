@@ -1,0 +1,457 @@
+/**
+ * QuickCV × Talent Center admin design system
+ * Parent must have [data-admin-theme="light|dark"] (see CvEditorShell).
+ */
+
+[data-admin-theme] .quickcv-root {
+  --fg: var(--admin-text);
+  --bg: var(--admin-bg-elevated);
+  --primary: var(--admin-brand);
+  --primary-fg: #ffffff;
+  --secondary: var(--admin-surface-inset);
+  --secondary-fg: var(--admin-text-secondary);
+  --border: var(--admin-border);
+  --input: var(--admin-input-bg);
+  --ring: var(--admin-brand-muted);
+  --muted: var(--admin-surface-inset);
+  --muted-fg: var(--admin-text-muted);
+  --success: #22c55e;
+  --success-subtle: rgba(34, 197, 94, 0.12);
+  --warning: #f59e0b;
+  --warning-subtle: rgba(245, 158, 11, 0.12);
+  --danger: #ef4444;
+  --danger-subtle: rgba(239, 68, 68, 0.12);
+  --info: var(--admin-brand);
+  --info-subtle: var(--admin-brand-muted);
+
+  background-color: var(--admin-surface-inset);
+  color: var(--admin-text);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+[data-admin-theme] .quickcv-root.dark {
+  /* legacy QuickCV dark class disabled — admin theme drives colors */
+}
+
+/* Barre d’outils React (CvEditorToolbar) */
+[data-admin-theme] .quickcv-zoom-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+[data-admin-theme] .quickcv-zoom-range::-webkit-slider-runnable-track {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--admin-border);
+}
+
+[data-admin-theme] .quickcv-zoom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: -0.27rem;
+  border-radius: 50%;
+  background: var(--admin-brand);
+  border: 2px solid var(--admin-bg-elevated);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+}
+
+[data-admin-theme] .quickcv-zoom-range::-moz-range-track {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--admin-border);
+}
+
+[data-admin-theme] .quickcv-zoom-range::-moz-range-thumb {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  background: var(--admin-brand);
+  border: 2px solid var(--admin-bg-elevated);
+}
+
+[data-admin-theme] .quickcv-root label {
+  color: var(--admin-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+[data-admin-theme] .quickcv-root strong {
+  color: var(--admin-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+[data-admin-theme] .quickcv-root .input,
+[data-admin-theme] .quickcv-root input[type='text'],
+[data-admin-theme] .quickcv-root input[type='email'],
+[data-admin-theme] .quickcv-root input[type='url'],
+[data-admin-theme] .quickcv-root input[type='tel'],
+[data-admin-theme] .quickcv-root input[type='search'],
+[data-admin-theme] .quickcv-root input:not([type]),
+[data-admin-theme] .quickcv-root textarea {
+  background-color: var(--admin-input-bg) !important;
+  color: var(--admin-text) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  box-shadow: none !important;
+}
+
+[data-admin-theme] .quickcv-root input::placeholder,
+[data-admin-theme] .quickcv-root textarea::placeholder {
+  color: var(--admin-text-muted) !important;
+}
+
+[data-admin-theme] .quickcv-root input:focus,
+[data-admin-theme] .quickcv-root textarea:focus {
+  border-color: var(--admin-brand) !important;
+  box-shadow: 0 0 0 3px var(--admin-brand-muted) !important;
+  outline: none !important;
+}
+
+[data-admin-theme] .quickcv-root textarea {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Haze UI Input wrappers */
+[data-admin-theme] .quickcv-root :is(.inline-flex, [class*='grinput']) {
+  background-color: var(--admin-input-bg) !important;
+  border: 1px solid var(--admin-border) !important;
+  color: var(--admin-text) !important;
+  border-radius: 0.75rem !important;
+}
+
+[data-admin-theme] .quickcv-root :is(.inline-flex, [class*='grinput']) input {
+  background: transparent !important;
+  border: none !important;
+  color: var(--admin-text) !important;
+  box-shadow: none !important;
+}
+
+[data-admin-theme] .quickcv-root :is(.inline-flex, [class*='grinput']) input::placeholder {
+  color: var(--admin-text-muted) !important;
+}
+
+[data-admin-theme] .quickcv-root .btn-primary,
+[data-admin-theme] .quickcv-root button.btn-primary {
+  background: var(--admin-brand) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  padding: 0.5rem 1rem !important;
+  box-shadow: 0 1px 2px var(--admin-brand-glow) !important;
+}
+
+[data-admin-theme] .quickcv-root .btn-primary:hover,
+[data-admin-theme] .quickcv-root button.btn-primary:hover {
+  background: var(--admin-brand-hover) !important;
+}
+
+[data-admin-theme] .quickcv-root .btn-soft,
+[data-admin-theme] .quickcv-root button.btn-soft,
+[data-admin-theme] .quickcv-root [class*='btn-soft'] {
+  background: var(--admin-bg-elevated) !important;
+  color: var(--admin-text-secondary) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 0.75rem !important;
+}
+
+/* Formulaire / chrome QuickCV — pas le document CV */
+[data-admin-theme] .quickcv-root .quickcv-editor-scroll .brd,
+[data-admin-theme] .quickcv-root .quickcv-editor-scroll [class*='brd'],
+[data-admin-theme] .quickcv-root .quickcv-form-sections .brd,
+[data-admin-theme] .quickcv-root .quickcv-form-sections [class*='brd'] {
+  border-color: var(--admin-border) !important;
+}
+
+[data-admin-theme] .quickcv-root .quickcv-editor-scroll .bg-bg,
+[data-admin-theme] .quickcv-root .quickcv-form-sections .bg-bg {
+  background-color: var(--admin-bg-elevated) !important;
+}
+
+[data-admin-theme] .quickcv-root .quickcv-editor-scroll .bg-muted,
+[data-admin-theme] .quickcv-root .quickcv-editor-scroll .bg-secondary,
+[data-admin-theme] .quickcv-root .quickcv-form-sections .bg-muted,
+[data-admin-theme] .quickcv-root .quickcv-form-sections .bg-secondary {
+  background-color: var(--admin-surface-inset) !important;
+}
+
+[data-admin-theme] .quickcv-root .quickcv-editor-scroll .text-fg,
+[data-admin-theme] .quickcv-root .quickcv-form-sections .text-fg {
+  color: var(--admin-text) !important;
+}
+
+/*
+ * Zone autour du CV (preview scroll) → suit le thème admin.
+ * Le document #resume / .doc → toujours papier blanc (vrai CV imprimable).
+ */
+[data-admin-theme='light'] .quickcv-preview-scroll,
+[data-admin-theme='light'] .quickcv-paper-surface {
+  background: var(--admin-surface-inset, #f1f5f9);
+}
+
+[data-admin-theme='dark'] .quickcv-preview-scroll,
+[data-admin-theme='dark'] .quickcv-paper-surface {
+  background: var(--admin-surface-inset, #0f172a);
+}
+
+/*
+ * Document CV (#resume / .doc) — toujours thème « papier ».
+ * Réécrit les vars admin/UnoCSS pour que rien ne devienne sombre en dark mode app.
+ */
+[data-admin-theme] .quickcv-root #resume,
+[data-admin-theme] .quickcv-root #resume.doc,
+[data-admin-theme] .quickcv-root .doc,
+[data-admin-theme='dark'] .quickcv-root #resume,
+[data-admin-theme='dark'] .quickcv-root #resume.doc,
+[data-admin-theme='dark'] .quickcv-root .doc {
+  direction: ltr;
+  text-align: left;
+  color-scheme: light;
+
+  --fg: #0f172a;
+  --bg: #ffffff;
+  --primary: var(--admin-brand, #2563eb);
+  --primary-fg: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-fg: #475569;
+  --muted: #f1f5f9;
+  --muted-fg: #64748b;
+  --border: #e2e8f0;
+
+  --admin-text: #0f172a;
+  --admin-text-secondary: #475569;
+  --admin-text-muted: #64748b;
+  --admin-surface-inset: #f1f5f9;
+  --admin-bg-elevated: #ffffff;
+  --admin-border: #e2e8f0;
+  --admin-input-bg: #ffffff;
+
+  background: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.12);
+  border: 1px solid #e2e8f0 !important;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+[data-admin-theme] .quickcv-root .doc :is(p, span, li, a, h1, h2, h3, h4, div, section, ul, strong),
+[data-admin-theme='dark'] .quickcv-root .doc :is(p, span, li, a, h1, h2, h3, h4, div, section, ul, strong) {
+  color: inherit;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+  max-width: 100%;
+}
+
+[data-admin-theme] .quickcv-root .doc a {
+  color: var(--admin-brand, #2563eb);
+}
+
+[data-admin-theme] .quickcv-root .doc .text-primary {
+  color: var(--admin-brand, #2563eb) !important;
+}
+
+[data-admin-theme] .quickcv-root .doc .text-secondary-fg,
+[data-admin-theme] .quickcv-root .doc .text-muted-fg {
+  color: #64748b !important;
+}
+
+[data-admin-theme] .quickcv-root .doc .bg-secondary {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+[data-admin-theme] .quickcv-root .doc .bg-fg {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+[data-admin-theme] .quickcv-root .doc :is(.badge-secondary, .badge-surface-sm, .badge-outline) {
+  background-color: #e2e8f0 !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-admin-theme] .quickcv-root .doc .badge-lg.bg-fg {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+[data-admin-theme] .quickcv-root .doc [class*='border'][class*='fg'],
+[data-admin-theme] .quickcv-root .doc [class*='brd'] {
+  border-color: #cbd5e1 !important;
+}
+
+[data-admin-theme] .quickcv-root .doc .frow {
+  flex-wrap: wrap;
+}
+
+[data-admin-theme] .quickcv-preview-scroll {
+  overflow-x: hidden;
+}
+
+[data-admin-theme='light'] .quickcv-tabs-viewer {
+  background: var(--admin-surface-inset, #f1f5f9);
+}
+
+[data-admin-theme='dark'] .quickcv-tabs-viewer {
+  background: var(--admin-surface-inset, #0f172a);
+}
+
+/* Split layout — scroll formulaire avec marge bas */
+[data-admin-theme] .quickcv-split {
+  height: 100%;
+  min-height: 0;
+}
+
+[data-admin-theme] .quickcv-editor-scroll {
+  height: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 1rem 1rem 2.75rem;
+  background: var(--admin-bg-elevated);
+  border-right: 1px solid var(--admin-border);
+}
+
+[data-admin-theme] .quickcv-form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+[data-admin-theme] .quickcv-form-card {
+  padding: 1.25rem 1.25rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+[data-admin-theme] .quickcv-form-card--last {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+}
+
+/* Titres de section + icônes alignés */
+[data-admin-theme] .quickcv-root strong.frow,
+[data-admin-theme] .quickcv-root .frow:has(strong) {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  line-height: 1.35 !important;
+}
+
+[data-admin-theme] .quickcv-root strong.frow i,
+[data-admin-theme] .quickcv-root strong.frow [class*='i-'],
+[data-admin-theme] .quickcv-root strong.frow :is([class^='i-'], [class*=' i-']) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+}
+
+/* Labels au-dessus des champs */
+[data-admin-theme] .quickcv-field-grid label,
+[data-admin-theme] .quickcv-root .grid label {
+  display: block;
+  margin-bottom: 0.35rem;
+  margin-top: 0.15rem;
+}
+
+/* Champs Haze avec icône — alignement vertical */
+[data-admin-theme] .quickcv-root :is(.inline-flex, [class*='grinput']) {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  align-content: center !important;
+  min-height: 2.75rem !important;
+  width: 100% !important;
+  gap: 0.5rem !important;
+  padding: 0.375rem 0.75rem !important;
+  box-sizing: border-box !important;
+}
+
+[data-admin-theme] .quickcv-root :is(.inline-flex, [class*='grinput']) > *:first-child:not(input),
+[data-admin-theme] .quickcv-root :is(.inline-flex, [class*='grinput']) i,
+[data-admin-theme] .quickcv-root :is(.inline-flex, [class*='grinput']) [class*='i-'] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  align-self: center !important;
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  min-width: 1.125rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+
+[data-admin-theme] .quickcv-root :is(.inline-flex, [class*='grinput']) input {
+  flex: 1 1 auto !important;
+  min-height: 1.5rem !important;
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Boutons Ajouter — tous bleus (admin primary) */
+[data-admin-theme] .quickcv-root .quickcv-add-btn,
+[data-admin-theme] .quickcv-root button.quickcv-add-btn,
+[data-admin-theme] .quickcv-root .btn.ml-auto,
+[data-admin-theme] .quickcv-root button.btn:not(.btn-soft):not([class*='btn-soft']) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.25rem !important;
+  padding: 0.5rem 1rem !important;
+  min-height: 2.5rem !important;
+  background: var(--admin-brand) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  font-weight: 600 !important;
+  font-size: 0.8125rem !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 2px var(--admin-brand-glow) !important;
+}
+
+[data-admin-theme] .quickcv-root .quickcv-add-btn:hover,
+[data-admin-theme] .quickcv-root button.quickcv-add-btn:hover {
+  background: var(--admin-brand-hover) !important;
+}
+
+[data-admin-theme] .quickcv-root .grid.gap5 {
+  gap: 1rem !important;
+}
+
+[data-admin-theme] .quickcv-root .checkbox-sm {
+  accent-color: var(--admin-brand);
+}
+
+[data-admin-theme] .quickcv-admin-tabs :global(button) {
+  color: var(--admin-text-secondary) !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.8125rem !important;
+}
+

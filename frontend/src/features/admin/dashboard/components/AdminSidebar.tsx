@@ -2,9 +2,9 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, MessageSquare, Clock, FileText, LucideIcon } from 'lucide-react';
-import escaLogoLight from '../assets/images/Logo_ESCA.png';
-import escaLogoDark from '../assets/images/logo-esca.png';
+import { ChevronDown, MessageSquare, Clock, FileText, CalendarDays, Brain, Upload, Settings2, BookOpen, LucideIcon } from 'lucide-react';
+import escaLogoLight from '../../../auth/assets/images/common/Logo_ESCA.png';
+import escaLogoDark from '../../../auth/assets/images/common/logo-esca.png';
 import { useAuth } from '../../../auth/hooks/useAuth';
 import { useAdminTheme } from '../context/AdminThemeContext';
 import AdminUserIdentity from './AdminUserIdentity';
@@ -14,15 +14,21 @@ import {
   getActiveSectionFromPath,
   getChildPath,
   getSectionPath,
+  isChildNavActive,
   sectionToExpandForPath,
   type AdminNavChildId,
   type AdminNavSectionId,
 } from '../config/adminNavConfig';
 
 const subIconMap: Record<AdminNavChildId, LucideIcon> = {
+  catalog: BookOpen,
   chat: MessageSquare,
   history: Clock,
   reports: FileText,
+  meetings: CalendarDays,
+  smartAssignment: Brain,
+  imports: Upload,
+  config: Settings2,
 };
 
 interface SidebarMenuButtonProps {
@@ -232,7 +238,7 @@ const AdminSidebar: FunctionComponent<AdminSidebarProps> = ({ mobileOpen, onMobi
                   <motion.div className="ml-3 mt-1 flex min-w-0 flex-col gap-0.5 border-l border-[var(--admin-border)] pl-3">
                     {item.children?.map((child) => {
                       const subPath = getChildPath(item.id, child);
-                      const isSubActive = subPath !== undefined && pathname === subPath;
+                      const isSubActive = isChildNavActive(item.id, child, pathname);
                       return (
                         <SidebarSubButton
                           key={child}

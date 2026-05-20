@@ -1,17 +1,47 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminMockData, STAT_ROUTES, type DashboardStatId } from '../data/adminMockData';
+import { useAdminDashboardLiveCounts } from './useAdminDashboardLiveCounts';
+
+const formatCount = (value: number | null, fallback: string): string => {
+  if (value == null) return fallback;
+  return new Intl.NumberFormat('en-US').format(value);
+};
+
+const LIVE_STAT_IDS = new Set<DashboardStatId>([
+  'totalStudents',
+  'totalEncadrants',
+  'totalAdmins',
+  'studentsWithoutInternship',
+]);
 
 export const useAdminDashboardData = () => {
   const { t } = useTranslation();
+  const liveCounts = useAdminDashboardLiveCounts();
+
+  const liveValueById: Partial<Record<DashboardStatId, number | null>> = {
+    totalStudents: liveCounts.totalStudents,
+    totalEncadrants: liveCounts.totalEncadrants,
+    totalAdmins: liveCounts.totalAdmins,
+    studentsWithoutInternship: liveCounts.studentsWithoutInternship,
+  };
 
   return useMemo(
     () => ({
-      stats: adminMockData.stats.map((stat) => ({
-        ...stat,
-        label: t(`admin.dashboard.stats.${stat.id}`),
-        route: STAT_ROUTES[stat.id],
-      })),
+      statsLoading: liveCounts.loading,
+      stats: adminMockData.stats.map((stat) => {
+        const liveValue = liveValueById[stat.id];
+        const value =
+          LIVE_STAT_IDS.has(stat.id) && liveValue != null
+            ? formatCount(liveValue, stat.value)
+            : stat.value;
+        return {
+          ...stat,
+          value,
+          label: t(`admin.dashboard.stats.${stat.id}`),
+          route: STAT_ROUTES[stat.id],
+        };
+      }),
       alerts: adminMockData.alerts.map((alert) => ({
         ...alert,
         message: t(`admin.dashboard.alerts.messages.${alert.messageKey}`),
@@ -36,7 +66,7 @@ export const useAdminDashboardData = () => {
         { key: 'studentActivity' as const, label: t('admin.dashboard.chart.legend.studentActivity'), color: '#2563eb' },
       ],
     }),
-    [t]
+    [t, liveCounts.loading, liveCounts.totalStudents, liveCounts.totalEncadrants, liveCounts.totalAdmins, liveCounts.studentsWithoutInternship]
   );
 };
 

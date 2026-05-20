@@ -9,7 +9,7 @@ import { staggerContainer } from '../ui/animations';
 const DashboardStats: FunctionComponent = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { stats } = useAdminDashboardData();
+  const { stats, statsLoading } = useAdminDashboardData();
 
   return (
     <motion.section
@@ -25,7 +25,7 @@ const DashboardStats: FunctionComponent = () => {
           <DashboardStatCard
             key={stat.id}
             label={stat.label}
-            value={stat.value}
+            value={statsLoading && ['totalStudents', 'totalEncadrants', 'totalAdmins', 'studentsWithoutInternship'].includes(stat.id) ? '…' : stat.value}
             icon={stat.icon}
             index={index}
             onClick={() => navigate(stat.route)}

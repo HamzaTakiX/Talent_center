@@ -30,6 +30,21 @@ export const authApi = {
     return response.data.data;
   },
 
+  /** Exchange Auth0 SPA token for platform JWT (session + authorization). */
+  auth0Exchange: async (accessToken: string): Promise<AuthResponse> => {
+    const response = await apiClient.post<ApiResponse<{
+      access: string;
+      refresh: string;
+      user: User;
+      session: { id: number; expires_at: string };
+    }>>('/auth/providers/auth0/exchange', { access_token: accessToken });
+    return {
+      access: response.data.data.access,
+      refresh: response.data.data.refresh,
+      user: response.data.data.user,
+    };
+  },
+
   updateMe: async (payload: FormData | Record<string, unknown>): Promise<User> => {
     const isFormData = payload instanceof FormData;
     const response = await apiClient.patch<ApiResponse<User>>('/auth/me', payload, isFormData
@@ -81,6 +96,10 @@ export const authApi = {
     last_name?: string;
     date_of_birth?: string;
     phone?: string;
+    program_major?: string;
+    current_class?: string;
+    filiere_id?: number | null;
+    class_group_id?: number | null;
   }): Promise<User> => {
     const response = await apiClient.patch<ApiResponse<{
       id: number;
@@ -96,11 +115,11 @@ export const authApi = {
   },
 
   completeProfile: async (formData: FormData): Promise<User> => {
-    const response = await apiClient.patch('/accounts/complete-profile', formData, {
+    await apiClient.patch('/accounts/complete-profile', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data;
-  }
+    return authApi.me();
+  },
 };

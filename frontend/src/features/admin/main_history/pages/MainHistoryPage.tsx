@@ -1,57 +1,65 @@
-import { FunctionComponent, useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { FunctionComponent, useMemo, useState } from 'react';
 import AdminModulePageShell from '../../ui/AdminModulePageShell';
-import { historyActionsMock } from '../data/historyMockData';
+import { AdminSearchEmptyState } from '../../ui';
 import HistoryFiltersBar, {
   HISTORY_ACTION_FILTER_ALL,
   HISTORY_MODULE_FILTER_ALL,
 } from '../components/HistoryFiltersBar';
 import HistoryStatsGrid from '../components/HistoryStatsGrid';
 import HistoryTimelineList from '../components/HistoryTimelineList';
-import { HISTORY_MODULE_I18N_KEY } from '../constants/historyModuleI18n';
+import HistoryEventDetailDrawer from '../components/HistoryEventDetailDrawer';
+import HistoryExportButton from '../components/HistoryExportButton';
+import { useHistoryCenter } from '../hooks/useHistoryCenter';
+import type { HistoryActionRow } from '../types';
+import type { HistoryListParams } from '../../api/history';
 
-const MAIN_PREFIX = 'admin.historyUi.main';
+const MODULE_TO_API: Record<string, string> = {
+  'Internship Offers': 'stage',
+  Documents: 'documents',
+  Students: 'students',
+  Announcements: 'announcements',
+  SRF: 'srf',
+  Encadrants: 'encadrant',
+  Reports: 'reports',
+  Chat: 'chat',
+};
 
 const MainHistoryPage: FunctionComponent = () => {
-  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [moduleFilter, setModuleFilter] = useState<string>(HISTORY_MODULE_FILTER_ALL);
   const [actionFilter, setActionFilter] = useState<string>(HISTORY_ACTION_FILTER_ALL);
+  const [criticalityFilter, setCriticalityFilter] = useState('all');
+  const [automatedFilter, setAutomatedFilter] = useState('all');
+  const [selectedRow, setSelectedRow] = useState<HistoryActionRow | null>(null);
 
-  const rowText = useCallback(
-    (rowId: string, field: 'title' | 'actor', fallback: string) => {
-      const key = `${MAIN_PREFIX}.rows.${rowId}.${field}`;
-      const value = t(key);
-      return value === key ? fallback : value;
-    },
-    [t]
+  const apiFilters: HistoryListParams = useMemo(
+    () => ({
+      search: search.trim() || undefined,
+      module: moduleFilter === HISTORY_MODULE_FILTER_ALL ? undefined : MODULE_TO_API[moduleFilter] ?? moduleFilter,
+      action: actionFilter === HISTORY_ACTION_FILTER_ALL ? undefined : actionFilter,
+      criticality: criticalityFilter === 'all' ? undefined : criticalityFilter,
+      automated:
+        automatedFilter === 'all' ? undefined : automatedFilter === 'yes' ? 'true' : 'false',
+    }),
+    [search, moduleFilter, actionFilter, criticalityFilter, automatedFilter],
   );
 
-  const filteredRows = useMemo(() => {
-    const normalizedQuery = search.trim().toLowerCase();
-
-    return historyActionsMock.filter((row) => {
-      if (moduleFilter !== HISTORY_MODULE_FILTER_ALL && row.module !== moduleFilter) return false;
-      if (actionFilter !== HISTORY_ACTION_FILTER_ALL && row.actionType !== actionFilter) return false;
-
-      if (!normalizedQuery) return true;
-
-      const moduleLabel = t(`${MAIN_PREFIX}.modules.${HISTORY_MODULE_I18N_KEY[row.module]}`);
-      const actionLabel = t(`${MAIN_PREFIX}.actions.${row.actionType}`);
-      const title = rowText(row.id, 'title', row.title);
-      const actor = rowText(row.id, 'actor', row.actor);
-
-      return [moduleLabel, title, actor, actionLabel, row.status, row.priority, row.timestamp]
-        .join(' ')
-        .toLowerCase()
-        .includes(normalizedQuery);
-    });
-  }, [actionFilter, moduleFilter, search, t, rowText]);
+  const { rows, stats, loading, error } = useHistoryCenter(apiFilters);
 
   return (
     <AdminModulePageShell width="wide">
       <div className="flex w-full min-w-0 flex-col gap-5 md:gap-7">
-        <HistoryStatsGrid />
+        {error ? (
+          <p
+            role="alert"
+            className="rounded-lg border border-[#fecaca] bg-[#fef2f2] px-3 py-2 text-sm text-[#b91c1c] dark:border-[#7f1d1d] dark:bg-[#450a0a]/50 dark:text-[#fca5a5]"
+          >
+            {error}
+          </p>
+        ) : null}
+
+        {stats.length > 0 ? <HistoryStatsGrid stats={stats} loading={loading} /> : null}
+
         <section
           data-admin-search-id="history-timeline"
           className="admin-history-page admin-history-page--panel admin-module-panel w-full min-w-0 overflow-x-hidden shadow-sm"
@@ -60,15 +68,37 @@ const MainHistoryPage: FunctionComponent = () => {
             search={search}
             moduleFilter={moduleFilter}
             actionFilter={actionFilter}
+            criticalityFilter={criticalityFilter}
+            automatedFilter={automatedFilter}
             onSearchChange={setSearch}
             onModuleChange={setModuleFilter}
             onActionChange={setActionFilter}
+            onCriticalityChange={setCriticalityFilter}
+            onAutomatedChange={setAutomatedFilter}
+            trailingActions={<HistoryExportButton filters={apiFilters} />}
           />
+
           <div className="flex min-w-0 max-w-full flex-col gap-3 overflow-x-hidden px-4 pb-4 pt-0 sm:gap-4 sm:px-6 sm:pb-6">
-            <HistoryTimelineList rows={filteredRows} />
+            {loading ? (
+              <div className="space-y-3">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="admin-skeleton h-[76px] rounded-xl" />
+                ))}
+              </div>
+            ) : error ? (
+              <AdminSearchEmptyState titleKey="admin.auditCenter.loadError" />
+            ) : (
+              <HistoryTimelineList rows={rows} onViewDetails={setSelectedRow} />
+            )}
           </div>
         </section>
       </div>
+
+      <HistoryEventDetailDrawer
+        row={selectedRow}
+        open={Boolean(selectedRow)}
+        onClose={() => setSelectedRow(null)}
+      />
     </AdminModulePageShell>
   );
 };

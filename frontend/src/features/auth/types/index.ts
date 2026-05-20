@@ -19,6 +19,13 @@ export interface StudentProfile {
   date_of_birth: string;
   program_major: string;
   current_class: string;
+  /** FK id from API (`filiere` field) */
+  filiere?: number | null;
+  filiere_id?: number | null;
+  /** FK id from API (`class_group` field) */
+  class_group?: number | null;
+  class_group_id?: number | null;
+  academic_year?: string;
   linkedin_url?: string;
   professional_summary?: string;
   cv_file?: string;
@@ -33,6 +40,9 @@ export interface User {
   full_name?: string;
   account_status?: string;
   auth_provider?: string;
+  platform_access_granted?: boolean;
+  sso_enabled?: boolean;
+  first_login_completed?: boolean;
   last_login_at?: string | null;
   created_at?: string;
   profile?: UserProfile;

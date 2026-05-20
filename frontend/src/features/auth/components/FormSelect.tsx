@@ -1,5 +1,6 @@
 import { FunctionComponent, useState, useRef, useEffect } from 'react';
 import { LucideIcon, ChevronDown } from 'lucide-react';
+import '../styles/auth-form.css';
 
 interface FormSelectProps {
   label: string;
@@ -9,6 +10,7 @@ interface FormSelectProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export const FormSelect: FunctionComponent<FormSelectProps> = ({
@@ -18,7 +20,8 @@ export const FormSelect: FunctionComponent<FormSelectProps> = ({
   options,
   value,
   onChange,
-  placeholder = "Select an option..."
+  placeholder = 'Select an option...',
+  disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -26,7 +29,7 @@ export const FormSelect: FunctionComponent<FormSelectProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const selectedOption = options.find(option => option.value === value);
+  const selectedOption = options.find((option) => option.value === value);
   const displayValue = selectedOption ? selectedOption.label : placeholder;
 
   useEffect(() => {
@@ -38,15 +41,15 @@ export const FormSelect: FunctionComponent<FormSelectProps> = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isOpen) return;
-      
+
       switch (event.key) {
         case 'ArrowDown':
           event.preventDefault();
-          setHighlightedIndex(prev => (prev + 1) % options.length);
+          setHighlightedIndex((prev) => (prev + 1) % options.length);
           break;
         case 'ArrowUp':
           event.preventDefault();
-          setHighlightedIndex(prev => (prev - 1 + options.length) % options.length);
+          setHighlightedIndex((prev) => (prev - 1 + options.length) % options.length);
           break;
         case 'Enter':
           event.preventDefault();
@@ -58,6 +61,8 @@ export const FormSelect: FunctionComponent<FormSelectProps> = ({
         case 'Escape':
           event.preventDefault();
           setIsOpen(false);
+          break;
+        default:
           break;
       }
     };
@@ -78,24 +83,21 @@ export const FormSelect: FunctionComponent<FormSelectProps> = ({
   };
 
   const handleToggle = () => {
+    if (disabled) return;
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const optionHeight = 44; // Actual height of each option (py-3 + text height)
-      const dropdownHeight = Math.min(options.length * optionHeight, 300); // Max 300px
-      const spaceBelow = window.innerHeight - rect.bottom - 40; // 40px padding
-      const spaceAbove = rect.top - 40; // 40px padding
-      
-      // Always drop up if there's any chance of overlap with elements below
-      setDropUp(spaceBelow < dropdownHeight + 50); // Extra 50px buffer
+      const optionHeight = 44;
+      const dropdownHeight = Math.min(options.length * optionHeight, 300);
+      const spaceBelow = window.innerHeight - rect.bottom - 40;
+      setDropUp(spaceBelow < dropdownHeight + 50);
     }
     setIsOpen(!isOpen);
     if (!isOpen) {
-      const currentIndex = options.findIndex(option => option.value === value);
+      const currentIndex = options.findIndex((option) => option.value === value);
       setHighlightedIndex(currentIndex >= 0 ? currentIndex : -1);
     }
   };
 
-  // Reset dropUp state when closing
   useEffect(() => {
     if (!isOpen) {
       setDropUp(false);
@@ -103,53 +105,60 @@ export const FormSelect: FunctionComponent<FormSelectProps> = ({
   }, [isOpen]);
 
   return (
-    <div className="w-full flex flex-col gap-1.5 focus-within:-translate-y-[1px] transition-transform duration-300 ease-out group relative">
+    <div
+      className={`auth-select-field auth-form-field group relative flex w-full flex-col gap-1.5 transition-transform duration-300 ease-out focus-within:-translate-y-px ${error ? 'auth-form-field--error' : ''}`}
+    >
       <div className="flex items-center justify-between">
-        <label className="text-[13px] font-medium text-darkslategray leading-none transition-colors duration-300 group-focus-within:text-mediumslateblue">{label}</label>
-        {error && <div className="text-red-500 text-[11px] font-medium animate-pulse">{error}</div>}
+        <label className="auth-form-field__label text-[13px] font-medium leading-none">{label}</label>
+        {error ? <div className="auth-form-field__hint text-[11px] font-medium animate-pulse">{error}</div> : null}
       </div>
       <div className="relative" ref={dropdownRef} style={{ zIndex: isOpen ? 99999 : 'auto' }}>
         <button
           type="button"
           ref={buttonRef}
           onClick={handleToggle}
-          className="w-full h-[44px] rounded-xl bg-whitesmoke border-lightgray border-solid border-[1px] box-border overflow-hidden text-slategray-100 transition-all duration-300 focus-within:border-mediumslateblue focus-within:ring-2 focus-within:ring-mediumslateblue/20 focus-within:bg-white focus-within:shadow-sm flex items-center px-3.5 hover:bg-white hover:border-mediumslateblue/50 hover:shadow-sm group"
+          aria-expanded={isOpen}
+          disabled={disabled}
+          className={`auth-select-trigger group ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
         >
-          {Icon && (
-             <Icon className="w-4 h-4 mr-2.5 text-slategray-200 transition-colors duration-300 group-focus-within:text-mediumslateblue shrink-0" strokeWidth={2} />
-          )}
-          <span className={`flex-1 text-left text-darkslategray text-[14px] font-inter transition-colors truncate ${!value ? 'text-lightgray-200' : ''}`}>
+          {Icon ? (
+            <Icon className="auth-select-trigger__icon me-2.5 h-4 w-4 shrink-0" strokeWidth={2} />
+          ) : null}
+          <span
+            className={`auth-select-trigger__value ${!value ? 'auth-select-trigger__value--placeholder' : ''}`}
+          >
             {displayValue}
           </span>
-          <ChevronDown 
-            className={`w-4 h-4 text-slategray-200 transition-all duration-300 shrink-0 ml-2 ${isOpen ? 'rotate-180 text-mediumslateblue' : 'group-hover:text-mediumslateblue'}`} 
-            strokeWidth={2} 
+          <ChevronDown
+            className={`auth-select-trigger__icon ms-2 h-4 w-4 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+            strokeWidth={2}
           />
         </button>
 
-        {/* Custom Dropdown */}
-        {isOpen && (
-          <div 
-            className="absolute w-full bg-white rounded-xl border border-lightgray/50 shadow-xl overflow-hidden"
+        {isOpen ? (
+          <div
+            className="auth-select-dropdown absolute w-full overflow-hidden"
             style={{
               top: dropUp ? 'auto' : 'calc(100% + 8px)',
               bottom: dropUp ? 'calc(100% + 8px)' : 'auto',
-              left: '0',
-              zIndex: 99999
+              left: 0,
+              zIndex: 99999,
             }}
           >
-            <div className="overflow-y-auto" style={{ maxHeight: '300px' }}>
+            <div className="max-h-[300px] overflow-y-auto">
               {options.map((option, index) => (
                 <div
                   key={option.value}
+                  role="option"
+                  aria-selected={option.value === value}
                   onClick={() => handleOptionClick(option.value)}
                   onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`px-3.5 py-3 cursor-pointer transition-all duration-150 text-[14px] font-inter border-b border-lightgray/20 last:border-b-0 ${
-                    option.value === value 
-                      ? 'bg-mediumslateblue/10 text-mediumslateblue font-medium' 
-                      : highlightedIndex === index 
-                        ? 'bg-slate-50 text-darkslategray'
-                        : 'text-darkslategray hover:bg-slate-50'
+                  className={`auth-select-option ${
+                    option.value === value
+                      ? 'auth-select-option--selected'
+                      : highlightedIndex === index
+                        ? 'auth-select-option--highlight'
+                        : ''
                   }`}
                 >
                   {option.label}
@@ -157,7 +166,7 @@ export const FormSelect: FunctionComponent<FormSelectProps> = ({
               ))}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

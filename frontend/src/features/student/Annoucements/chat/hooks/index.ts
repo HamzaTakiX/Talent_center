@@ -1,0 +1,1 @@
+/** Hooks — Announcements Chat (placeholder). */

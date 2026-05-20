@@ -12,6 +12,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+
+from apps.admin_management.permissions import IsPlatformAdmin
 from rest_framework.response import Response
 
 from apps.accounts_et_roles.models import StudentProfile
@@ -28,7 +30,7 @@ from .services.suggestion_engine import mark_suggestion_completed
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsPlatformAdmin])
 def dashboard(request, student_id: int):
     """
     GET /api/profile-intelligence/<student_id>/dashboard/
@@ -43,7 +45,7 @@ def dashboard(request, student_id: int):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsPlatformAdmin])
 def search(request):
     """
     GET /api/profile-intelligence/search/
@@ -79,7 +81,7 @@ def search(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsPlatformAdmin])
 def analyze(request, student_id: int):
     """
     POST /api/profile-intelligence/analyze/<student_id>/
@@ -96,7 +98,7 @@ def analyze(request, student_id: int):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsPlatformAdmin])
 def complete_suggestion(request, suggestion_id: int):
     """
     POST /api/profile-intelligence/suggestions/<suggestion_id>/complete/

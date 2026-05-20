@@ -3,10 +3,12 @@ from django.contrib import admin
 from .models import (
     Channel,
     Conversation,
+    ConversationContext,
     ConversationParticipant,
     Mention,
     Message,
     MessageAttachment,
+    MessageReaction,
     MessageTag,
     Tag,
 )
@@ -26,6 +28,14 @@ class ConversationParticipantInline(admin.TabularInline):
     fields = ('user', 'role', 'joined_at', 'left_at', 'is_muted', 'last_read_message_id')
     readonly_fields = ('joined_at',)
     autocomplete_fields = ('user',)
+
+
+@admin.register(ConversationContext)
+class ConversationContextAdmin(admin.ModelAdmin):
+    list_display = ('conversation', 'module', 'context_kind', 'entity_type', 'entity_id', 'urgency')
+    list_filter = ('module', 'context_kind', 'urgency', 'is_internal_only')
+    search_fields = ('entity_label', 'entity_id', 'entity_type')
+    autocomplete_fields = ('conversation', 'student_user')
 
 
 @admin.register(Conversation)
@@ -103,3 +113,9 @@ class TagAdmin(admin.ModelAdmin):
 class MessageTagAdmin(admin.ModelAdmin):
     list_display = ('message', 'tag', 'tagged_by', 'created_at')
     autocomplete_fields = ('message', 'tag', 'tagged_by')
+
+
+@admin.register(MessageReaction)
+class MessageReactionAdmin(admin.ModelAdmin):
+    list_display = ('message', 'user', 'emoji_code', 'created_at')
+    autocomplete_fields = ('message', 'user')

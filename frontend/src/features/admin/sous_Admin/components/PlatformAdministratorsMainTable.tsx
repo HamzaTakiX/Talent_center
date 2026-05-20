@@ -1,133 +1,326 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { adminCrudRoutes } from '../../shared/navigation/adminCrudRoutes';
 import { Eye, Hexagon, Pencil } from 'lucide-react';
 import { useAdminCopy } from '../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
-import type { PlatformAdministratorRow } from '../types/platformAdministrators';
+import type { useTableRowSelection } from '../../shared/hooks/useTableRowSelection';
+import type { AdminAdministratorRow, PlatformAdminRoleVariant } from '../types/platformAdministrators';
 import {
   PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS,
   PLATFORM_ADMIN_PRIMARY_ACTION_BTN_MAIN_TABLE_CLASS,
-  PLATFORM_ADMIN_ACTIVE_BADGE_CLASS,
-  PLATFORM_ADMIN_ROLE_BADGE_CLASS,
+  platformAdminStatusBadgeClass,
+  platformRoleBadgeClass,
 } from '../constants/platformAdministratorsUi';
 import AdminMobileRowCard from '../../shared/AdminMobileRowCard';
-import { AdminSearchEmptyState, AdminTableEmptyState, AdminTableScroll } from '../../ui';
+import {
+  AdminMobileTableSkeleton,
+  AdminPagination,
+  AdminSearchEmptyState,
+  AdminTableEmptyState,
+  AdminTableScroll,
+  AdminTableSkeletonRows,
+} from '../../ui';
+import AdministratorDetailModal from './AdministratorDetailModal';
+import {
+  administratorRoleSlugs,
+  isSuperAdminAdministrator,
+} from '../utils/platformAdministratorUtils';
 
 interface PlatformAdministratorsMainTableProps {
-  rows: PlatformAdministratorRow[];
+  rows: AdminAdministratorRow[];
+  loading?: boolean;
+  page: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  selectionMode: boolean;
+  selection: ReturnType<typeof useTableRowSelection>;
+}
+
+function formatScopePreview(row: AdminAdministratorRow, t: (k: string) => string): string {
+  const parts: string[] = [];
+  const scopes = row.scopes;
+  if (scopes?.filiere_labels?.length) {
+    parts.push(scopes.filiere_labels.slice(0, 2).join(', '));
+  }
+  if (scopes?.class_group_labels?.length) {
+    parts.push(scopes.class_group_labels.slice(0, 2).join(', '));
+  }
+  if (!parts.length) return t('admin.tables.administrators.scopeGlobal');
+  return parts.join(' · ');
+}
+
+function formatLastLogin(iso: string | null, locale: string, neverLabel: string): string {
+  if (!iso) return neverLabel;
+  try {
+    return new Date(iso).toLocaleString(locale);
+  } catch {
+    return neverLabel;
+  }
 }
 
 const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsMainTableProps> = ({
-  rows
+  rows,
+  loading = false,
+  page,
+  totalPages,
+  totalItems,
+  pageSize,
+  onPageChange,
+  selectionMode,
+  selection,
 }) => {
-  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const { tableColumn, emptyState, action } = useAdminCopy();
-  const { adminRole, adminPermission, accountStatus } = useAdminTableValues();
+  const { adminRole, accountStatus } = useAdminTableValues();
   const managePermissionsLabel = t('admin.common.actions.managePermissions');
+  const neverLogin = t('admin.tables.administrators.neverLoggedIn');
+  const dateLocale = i18n.language.startsWith('ar') ? 'ar-MA' : i18n.language.startsWith('en') ? 'en-GB' : 'fr-FR';
+  const [viewRow, setViewRow] = useState<AdminAdministratorRow | null>(null);
+
+  const colSpan = selectionMode ? 8 : 7;
 
   return (
-  <>
-    <div className="space-y-3 px-3 pb-6 text-num-14 sm:px-5 md:px-6 lg:hidden">
-      {rows.length === 0 ? (
-        <AdminSearchEmptyState title={emptyState('administratorsSearch')} />
-      ) : (
-        rows.map((row) => (
-          <AdminMobileRowCard
-            key={row.id}
-            title={row.name}
-            badges={
-              <>
-                <span className={PLATFORM_ADMIN_ROLE_BADGE_CLASS[row.roleVariant]}>{adminRole(row.roleVariant)}</span>
-                <span className={PLATFORM_ADMIN_ACTIVE_BADGE_CLASS}>
-                  {accountStatus(row.status)}
-                </span>
-              </>
-            }
-            fields={[
-              {
-                label: tableColumn('permissions'),
-                value: (
-                  <span className="inline-flex items-center gap-2">
-                    <Hexagon className="h-4 w-4 shrink-0 text-[var(--admin-text-secondary)]" strokeWidth={1.75} aria-hidden />
-                    {adminPermission(row.permissionKey)}
-                  </span>
-                )
+    <>
+      <AdministratorDetailModal
+        open={viewRow != null}
+        administrator={viewRow}
+        onClose={() => setViewRow(null)}
+        onEdit={
+          viewRow && !isSuperAdminAdministrator(viewRow)
+            ? (id) => {
+                setViewRow(null);
+                navigate(adminCrudRoutes.adminEdit(String(id)));
               }
-            ]}
-            actions={
-              <>
-                <button type="button" className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} w-full justify-center sm:w-auto`}>
-                  <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                  {action('view')}
-                </button>
-                <button type="button" className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} w-full justify-center sm:w-auto`}>
-                  <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                  {action('edit')}
-                </button>
-                <button type="button" className={`${PLATFORM_ADMIN_PRIMARY_ACTION_BTN_MAIN_TABLE_CLASS} w-full justify-center sm:w-auto`}>
-                  <Hexagon className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                  {managePermissionsLabel}
-                </button>
-              </>
-            }
-          />
-        ))
-      )}
-    </div>
-
-    <div className="admin-module-table-wrap hidden min-w-0 px-3 pb-6 text-num-14 sm:px-5 md:px-6 lg:block">
-      <AdminTableScroll minWidth="900px" className="admin-table-scroll--panel">
-        <thead>
-          <tr>
-            <th>{tableColumn('name')}</th>
-            <th>{tableColumn('role')}</th>
-            <th>{tableColumn('permissions')}</th>
-            <th>{tableColumn('status')}</th>
-            <th>{tableColumn('actions')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 ? (
-            <AdminTableEmptyState colSpan={5} title={emptyState('administratorsSearch')} />
-          ) : (
-            rows.map((row) => (
-              <tr key={row.id}>
-                <td className="font-medium">{row.name}</td>
-                <td>
-                  <span className={PLATFORM_ADMIN_ROLE_BADGE_CLASS[row.roleVariant]}>{adminRole(row.roleVariant)}</span>
-                </td>
-                <td>
-                  <span className="inline-flex items-center gap-2">
-                    <Hexagon className="h-4 w-4 shrink-0 text-[var(--admin-text-secondary)]" strokeWidth={1.75} aria-hidden />
-                    {adminPermission(row.permissionKey)}
+            : undefined
+        }
+      />
+      <div className="space-y-3 px-3 pb-6 text-num-14 sm:px-5 md:px-6 lg:hidden">
+        {loading ? (
+          <AdminMobileTableSkeleton />
+        ) : rows.length === 0 ? (
+          <AdminSearchEmptyState title={emptyState('administratorsSearch')} />
+        ) : (
+          rows.map((row) => {
+            const superAdmin = isSuperAdminAdministrator(row);
+            const roleSlugs = administratorRoleSlugs(row);
+            return (
+            <AdminMobileRowCard
+              key={row.id}
+              title={row.full_name}
+              subtitle={row.email}
+              badges={
+                <>
+                  {roleSlugs.map((slug) => (
+                    <span key={slug} className={platformRoleBadgeClass(slug)}>
+                      {adminRole(slug)}
+                    </span>
+                  ))}
+                  <span className={platformAdminStatusBadgeClass(row.account_status)}>
+                    {accountStatus(row.account_status)}
                   </span>
-                </td>
-                <td>
-                  <span className={PLATFORM_ADMIN_ACTIVE_BADGE_CLASS}>{accountStatus(row.status)}</span>
-                </td>
-                <td>
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    <button type="button" className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} min-w-[78.7px]`}>
-                      <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                      {action('view')}
-                    </button>
-                    <button type="button" className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} min-w-[72.4px]`}>
-                      <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                      {action('edit')}
-                    </button>
-                    <button type="button" className={`${PLATFORM_ADMIN_PRIMARY_ACTION_BTN_MAIN_TABLE_CLASS} min-w-[176px]`}>
-                      <Hexagon className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                      {managePermissionsLabel}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </AdminTableScroll>
-    </div>
-  </>
+                </>
+              }
+              fields={[
+                {
+                  label: tableColumn('scopes'),
+                  value: formatScopePreview(row, t),
+                },
+                {
+                  label: tableColumn('lastLogin'),
+                  value: formatLastLogin(row.last_login_at, dateLocale, neverLogin),
+                },
+                {
+                  label: tableColumn('onboarding'),
+                  value: row.onboarding_complete
+                    ? t('admin.tables.administrators.onboardingComplete')
+                    : t('admin.tables.administrators.onboardingPending'),
+                },
+              ]}
+              actions={
+                <>
+                  <button
+                    type="button"
+                    className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} w-full justify-center sm:w-auto`}
+                    onClick={() => setViewRow(row)}
+                  >
+                    <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                    {action('view')}
+                  </button>
+                  {!superAdmin ? (
+                    <>
+                      <button
+                        type="button"
+                        className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} w-full justify-center sm:w-auto`}
+                        onClick={() => navigate(adminCrudRoutes.adminEdit(String(row.id)))}
+                      >
+                        <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                        {action('edit')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${PLATFORM_ADMIN_PRIMARY_ACTION_BTN_MAIN_TABLE_CLASS} w-full justify-center sm:w-auto`}
+                        onClick={() => navigate(adminCrudRoutes.adminPermissions(String(row.id)))}
+                      >
+                        <Hexagon className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                        {managePermissionsLabel}
+                      </button>
+                    </>
+                  ) : null}
+                </>
+              }
+            />
+            );
+          })
+        )}
+      </div>
+
+      <div className="admin-module-table-wrap hidden min-w-0 px-3 pb-6 text-num-14 sm:px-5 md:px-6 lg:block">
+        <AdminTableScroll
+          minWidth={selectionMode ? '1140px' : '1100px'}
+          className="admin-table-scroll--panel"
+        >
+          <thead>
+            <tr>
+              {selectionMode ? (
+                <th className="w-10">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-[var(--admin-border)] accent-[var(--admin-accent)]"
+                    checked={selection.allOnPageSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = selection.someOnPageSelected;
+                    }}
+                    onChange={selection.toggleAllOnPage}
+                    aria-label={t('admin.common.delete.clearSelection')}
+                  />
+                </th>
+              ) : null}
+              <th>{tableColumn('name')}</th>
+              <th>{tableColumn('role')}</th>
+              <th>{tableColumn('scopes')}</th>
+              <th>{tableColumn('status')}</th>
+              <th>{tableColumn('lastLogin')}</th>
+              <th>{tableColumn('onboarding')}</th>
+              <th>{tableColumn('actions')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <AdminTableSkeletonRows colSpan={colSpan} />
+            ) : rows.length === 0 ? (
+              <AdminTableEmptyState colSpan={colSpan} title={emptyState('administratorsSearch')} />
+            ) : (
+              rows.map((row) => {
+                const superAdmin = isSuperAdminAdministrator(row);
+                const roleSlugs = administratorRoleSlugs(row);
+                return (
+                <tr key={row.id}>
+                  {selectionMode ? (
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-[var(--admin-border)] accent-[var(--admin-accent)]"
+                        checked={selection.isSelected(row.id)}
+                        onChange={() => selection.toggleRow(row.id)}
+                        disabled={superAdmin}
+                        aria-label={row.full_name || row.email}
+                      />
+                    </td>
+                  ) : null}
+                  <td>
+                    <div className="font-medium">{row.full_name}</div>
+                    <div className="text-xs text-[var(--admin-text-secondary)]">{row.email}</div>
+                  </td>
+                  <td>
+                    <div className="flex flex-wrap gap-1">
+                      {roleSlugs.length === 0 ? (
+                        <span className="text-xs text-[var(--admin-text-secondary)]">—</span>
+                      ) : (
+                        roleSlugs.map((slug) => (
+                          <span key={slug} className={platformRoleBadgeClass(slug)}>
+                            {adminRole(slug)}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </td>
+                  <td className="max-w-[200px] truncate text-xs text-[var(--admin-text-secondary)]">
+                    {formatScopePreview(row, t)}
+                  </td>
+                  <td>
+                    <span className={platformAdminStatusBadgeClass(row.account_status)}>
+                      {accountStatus(row.account_status)}
+                    </span>
+                  </td>
+                  <td className="text-xs text-[var(--admin-text-secondary)]">
+                    {formatLastLogin(row.last_login_at, dateLocale, neverLogin)}
+                  </td>
+                  <td>
+                    <span
+                      className={
+                        row.onboarding_complete
+                          ? 'text-emerald-400 text-xs font-medium'
+                          : 'text-amber-400 text-xs font-medium'
+                      }
+                    >
+                      {row.onboarding_complete
+                        ? t('admin.tables.administrators.onboardingComplete')
+                        : t('admin.tables.administrators.onboardingPending')}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} min-w-[78.7px]`}
+                        onClick={() => setViewRow(row)}
+                      >
+                        <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                        {action('view')}
+                      </button>
+                      {!superAdmin ? (
+                        <>
+                          <button
+                            type="button"
+                            className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} min-w-[72.4px]`}
+                            onClick={() => navigate(adminCrudRoutes.adminEdit(String(row.id)))}
+                          >
+                            <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                            {action('edit')}
+                          </button>
+                          <button
+                            type="button"
+                            className={`${PLATFORM_ADMIN_PRIMARY_ACTION_BTN_MAIN_TABLE_CLASS} min-w-[176px]`}
+                            onClick={() => navigate(adminCrudRoutes.adminPermissions(String(row.id)))}
+                          >
+                            <Hexagon className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                            {managePermissionsLabel}
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+                );
+              })
+            )}
+          </tbody>
+        </AdminTableScroll>
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
+          itemLabel={t('admin.pagination.administrators', { defaultValue: 'administrateurs' })}
+        />
+      </div>
+    </>
   );
 };
 

@@ -8,10 +8,13 @@ export function useTranslateAdminLabel() {
 
   return useCallback(
     (label: string, labelKey?: string): string => {
-      const key = labelKey ?? ADMIN_KPI_LABEL_TO_KEY[label];
-      if (!key) return label;
+      const rawKey = labelKey ?? ADMIN_KPI_LABEL_TO_KEY[label];
+      if (!rawKey) return label;
+      const key = rawKey.startsWith('admin.')
+        ? rawKey
+        : `admin.kpi.${rawKey}`;
       const translated = t(key);
-      return translated === key ? label : translated;
+      return translated === key ? label || rawKey : translated;
     },
     [t, i18n.language]
   );

@@ -1,0 +1,806 @@
+/**
+ * CV AI — ESCA / Talent Center premium recruiter cockpit
+ * Calm surfaces, glass hints, radial scores. No neon / crypto aesthetics.
+ */
+
+/* —— Toolbar analyze —— */
+[data-admin-theme] .cv-ai-analyze-btn {
+  background: var(--admin-brand);
+  color: #fff !important;
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 80%, #000);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 12px color-mix(in srgb, var(--admin-brand) 22%, transparent);
+}
+
+[data-admin-theme='light'] .cv-ai-analyze-btn {
+  background: var(--admin-brand);
+  color: #fff !important;
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 70%, #0f172a);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    0 4px 14px color-mix(in srgb, var(--admin-brand) 28%, transparent);
+}
+
+[data-admin-theme='light'] .cv-ai-analyze-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.1),
+    0 6px 18px color-mix(in srgb, var(--admin-brand) 32%, transparent);
+}
+
+[data-admin-theme] .cv-ai-analyze-btn:hover:not(:disabled) {
+  filter: brightness(1.04);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--admin-brand) 28%, transparent);
+}
+
+[data-admin-theme='dark'] .cv-ai-analyze-btn {
+  color: #fff !important;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--admin-brand) 18%, transparent);
+}
+
+[data-admin-theme] .cv-ai-analyze-btn svg {
+  color: inherit;
+}
+
+/* —— CV preview annotations (Figma-style recruiter notes) —— */
+[data-admin-theme] .cv-preview-block {
+  position: relative;
+  margin-bottom: 0.35rem;
+  transition: box-shadow 0.35s ease, background 0.35s ease;
+}
+
+[data-admin-theme] .cv-preview-section--focus {
+  background: color-mix(in srgb, var(--admin-brand) 6%, transparent);
+  box-shadow: inset 3px 0 0 var(--admin-brand);
+  border-radius: 4px;
+  padding-left: 0.35rem;
+}
+
+/* Stacked above section content — stable in LTR paper + RTL UI */
+[data-admin-theme] .cv-preview-annotation--stacked {
+  position: relative;
+  top: auto;
+  right: auto;
+  left: auto;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 0.45rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.625rem;
+  line-height: 1.45;
+  font-weight: 500;
+  pointer-events: none;
+  box-sizing: border-box;
+  animation: cv-preview-note-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes cv-preview-note-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-admin-theme='light'] .cv-preview-annotation--stacked {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+}
+
+/* Annotations sur CV papier blanc — même style en dark/light app */
+[data-admin-theme='dark'] .cv-preview-annotation--stacked {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+
+[data-admin-theme='dark'] .cv-preview-section--focus {
+  background: color-mix(in srgb, var(--admin-brand) 8%, #ffffff);
+  box-shadow: inset 3px 0 0 var(--admin-brand);
+}
+
+[data-admin-theme] .cv-preview-annotation__marker {
+  width: 4px;
+  height: 4px;
+  margin-top: 0.35rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+[data-admin-theme] .cv-preview-annotation--success .cv-preview-annotation__marker {
+  background: #0d9488;
+}
+
+[data-admin-theme] .cv-preview-annotation--warning .cv-preview-annotation__marker {
+  background: #d97706;
+}
+
+[data-admin-theme] .cv-preview-annotation--info .cv-preview-annotation__marker {
+  background: var(--admin-brand);
+}
+
+[data-admin-theme] .cv-preview-annotation--focus {
+  border-color: color-mix(in srgb, var(--admin-brand) 50%, transparent);
+}
+
+[data-admin-theme] .cv-preview-annotation__text {
+  margin: 0;
+}
+
+/* Validation only highlights form (not AI insights) */
+[data-admin-theme] .cv-section--highlight-warn {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #d97706 30%, transparent);
+  border-radius: 12px;
+}
+
+/* —— Floating cockpit panel —— */
+[data-admin-theme] .cv-ai-cockpit--expanded {
+  width: min(42rem, calc(100vw - 1.5rem));
+  max-width: 42rem;
+}
+
+@media (min-width: 1280px) {
+  [data-admin-theme] .cv-ai-cockpit--expanded {
+    width: min(44rem, calc(100vw - 4rem));
+  }
+}
+
+[data-admin-theme] .cv-ai-cockpit__surface {
+  border-radius: 16px;
+  overflow: hidden;
+  max-height: min(86vh, 40rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+[data-admin-theme] .cv-ai-cockpit--expanded .cv-ai-cockpit__surface {
+  max-height: min(88vh, 44rem);
+}
+
+/* Collapsed pill — reopen panel */
+[data-admin-theme] .cv-ai-cockpit-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem 0.55rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-admin-theme] .cv-ai-cockpit-pill:hover {
+  transform: translateY(-2px);
+}
+
+[data-admin-theme='light'] .cv-ai-cockpit-pill,
+[data-admin-theme='light'] .admin-shell-bg button.cv-ai-cockpit-pill {
+  background-color: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 40%, #cbd5e1);
+  color: #0f172a;
+  box-shadow:
+    0 10px 28px rgba(15, 23, 42, 0.14),
+    0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+}
+
+[data-admin-theme='light'] .cv-ai-cockpit-pill svg,
+[data-admin-theme='light'] .admin-shell-bg button.cv-ai-cockpit-pill svg {
+  color: var(--admin-brand);
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit-pill,
+[data-admin-theme='dark'] .admin-shell-bg button.cv-ai-cockpit-pill,
+html[data-admin-theme='dark'] .cv-ai-cockpit-pill {
+  background-color: #1e293b;
+  border: 1px solid #475569;
+  color: #f8fafc;
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit-pill svg,
+[data-admin-theme='dark'] .admin-shell-bg button.cv-ai-cockpit-pill svg,
+html[data-admin-theme='dark'] .cv-ai-cockpit-pill svg {
+  color: #93c5fd;
+}
+
+[data-admin-theme] .cv-ai-cockpit-pill__label {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+}
+
+[data-admin-theme='light'] .cv-ai-cockpit-pill__label {
+  color: #0f172a;
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit-pill__label,
+html[data-admin-theme='dark'] .cv-ai-cockpit-pill__label {
+  color: #f8fafc;
+}
+
+[data-admin-theme] .cv-ai-cockpit-pill__score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--admin-brand);
+  color: #fff;
+}
+
+[data-admin-theme] .cv-ai-cockpit--expanded .cv-ai-cockpit__scores {
+  gap: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
+[data-admin-theme] .cv-ai-cockpit--expanded .cv-ai-cockpit__readiness-text {
+  font-size: 0.875rem;
+}
+
+[data-admin-theme] .cv-ai-cockpit--expanded .cv-ai-cockpit__bullet-list li {
+  font-size: 0.8125rem;
+}
+
+[data-admin-theme='light'] .cv-ai-cockpit__surface {
+  background: color-mix(in srgb, var(--admin-bg-elevated) 96%, #fff);
+  border: 1px solid color-mix(in srgb, var(--admin-border) 100%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset,
+    0 24px 48px -12px rgba(15, 23, 42, 0.12),
+    0 8px 16px -8px rgba(15, 23, 42, 0.06);
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit__surface {
+  background: color-mix(in srgb, var(--admin-surface-inset) 94%, #0a0c10);
+  border: 1px solid color-mix(in srgb, var(--admin-border) 80%, transparent);
+  box-shadow: 0 24px 56px -16px rgba(0, 0, 0, 0.55);
+}
+
+[data-admin-theme] .cv-ai-cockpit__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.15rem 0.85rem;
+}
+
+[data-admin-theme] .cv-ai-cockpit__title-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+[data-admin-theme] .cv-ai-cockpit__pulse {
+  width: 8px;
+  height: 8px;
+  margin-top: 0.35rem;
+  border-radius: 50%;
+  background: var(--admin-brand);
+  flex-shrink: 0;
+  animation: cv-ai-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cv-ai-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+[data-admin-theme] .cv-ai-cockpit__title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--admin-text);
+}
+
+[data-admin-theme] .cv-ai-cockpit__subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--admin-text-secondary);
+  line-height: 1.4;
+}
+
+[data-admin-theme] .cv-ai-cockpit__close,
+[data-admin-theme] .admin-shell-bg button.cv-ai-cockpit__close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  background-color: color-mix(in srgb, var(--admin-text-secondary) 10%, transparent);
+  color: var(--admin-text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+[data-admin-theme='light'] .cv-ai-cockpit__close,
+[data-admin-theme='light'] .admin-shell-bg button.cv-ai-cockpit__close {
+  background-color: color-mix(in srgb, var(--admin-text-secondary) 8%, #fff);
+  color: var(--admin-text-secondary);
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit__close,
+[data-admin-theme='dark'] .admin-shell-bg button.cv-ai-cockpit__close,
+html[data-admin-theme='dark'] .cv-ai-cockpit__close {
+  background-color: color-mix(in srgb, #fff 8%, #1e293b);
+  color: #cbd5e1;
+}
+
+[data-admin-theme] .cv-ai-cockpit__close:hover,
+[data-admin-theme] .admin-shell-bg button.cv-ai-cockpit__close:hover {
+  background-color: var(--admin-brand-muted);
+  color: var(--admin-text);
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit__close:hover,
+html[data-admin-theme='dark'] .cv-ai-cockpit__close:hover {
+  background-color: color-mix(in srgb, var(--admin-brand) 22%, #1e293b);
+  color: #f8fafc;
+}
+
+[data-admin-theme] .cv-ai-cockpit__scores {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.15rem 1.1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--admin-border) 60%, transparent);
+}
+
+[data-admin-theme] .cv-ai-cockpit__readiness {
+  flex: 1;
+  min-width: 0;
+}
+
+[data-admin-theme] .cv-ai-cockpit__readiness-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted);
+}
+
+[data-admin-theme] .cv-ai-cockpit__readiness-text {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--admin-text);
+}
+
+/* —— Score rings —— */
+[data-admin-theme] .cv-ai-ring {
+  position: relative;
+  flex-shrink: 0;
+}
+
+[data-admin-theme] .cv-ai-ring__track {
+  stroke: color-mix(in srgb, var(--admin-border) 100%, transparent);
+}
+
+[data-admin-theme] .cv-ai-ring--excellent .cv-ai-ring__progress {
+  stroke: #0d9488;
+}
+
+[data-admin-theme] .cv-ai-ring--good .cv-ai-ring__progress {
+  stroke: var(--admin-brand);
+}
+
+[data-admin-theme] .cv-ai-ring--fair .cv-ai-ring__progress {
+  stroke: #64748b;
+}
+
+[data-admin-theme] .cv-ai-ring--low .cv-ai-ring__progress {
+  stroke: #94a3b8;
+}
+
+[data-admin-theme='dark'] .cv-ai-ring--excellent .cv-ai-ring__progress {
+  stroke: #2dd4bf;
+}
+
+[data-admin-theme] .cv-ai-ring__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+[data-admin-theme] .cv-ai-ring__value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--admin-text);
+}
+
+[data-admin-theme] .cv-ai-ring__label {
+  margin-top: 0.15rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--admin-text-muted);
+  max-width: 4.5rem;
+}
+
+/* —— Insights row —— */
+[data-admin-theme] .cv-ai-cockpit__block {
+  padding: 0.75rem 1.15rem 0.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--admin-border) 45%, transparent);
+}
+
+[data-admin-theme] .cv-ai-cockpit__block-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}
+
+[data-admin-theme] .cv-ai-cockpit__block--strengths .cv-ai-cockpit__block-title {
+  color: #0f766e;
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit__block--strengths .cv-ai-cockpit__block-title {
+  color: #5eead4;
+}
+
+[data-admin-theme] .cv-ai-cockpit__block--improve .cv-ai-cockpit__block-title {
+  color: #b45309;
+}
+
+[data-admin-theme] .cv-ai-cockpit__block-meta {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  color: var(--admin-text-secondary);
+}
+
+[data-admin-theme] .cv-ai-cockpit__bullet-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+[data-admin-theme] .cv-ai-cockpit__bullet-list li {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--admin-text);
+  padding-left: 0.65rem;
+  border-left: 2px solid color-mix(in srgb, #0d9488 40%, transparent);
+}
+
+[data-admin-theme] .cv-ai-cockpit__insight {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+}
+
+[data-admin-theme='light'] .cv-ai-cockpit__insight {
+  background: var(--admin-surface-inset);
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit__insight {
+  background: color-mix(in srgb, var(--admin-bg-elevated) 50%, transparent);
+}
+
+[data-admin-theme] .cv-ai-cockpit__insight--up {
+  color: #0f766e;
+}
+
+[data-admin-theme] .cv-ai-cockpit__insight--down {
+  color: #b45309;
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit__insight--up {
+  color: #5eead4;
+}
+
+[data-admin-theme='dark'] .cv-ai-cockpit__insight--down {
+  color: #fcd34d;
+}
+
+[data-admin-theme] .cv-ai-cockpit__insight-kicker {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+[data-admin-theme] .cv-ai-cockpit__insight-value {
+  display: block;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin-top: 0.1rem;
+}
+
+[data-admin-theme] .cv-ai-cockpit__note {
+  margin: 0 1.15rem 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+[data-admin-theme] .cv-ai-cockpit__note--positive {
+  background: color-mix(in srgb, #0d9488 8%, var(--admin-surface-inset));
+  color: var(--admin-text-secondary);
+  border-left: 2px solid #0d9488;
+}
+
+/* —— Recommendation cards —— */
+[data-admin-theme] .cv-ai-cockpit__recs {
+  padding: 0.5rem 1.15rem 0.85rem;
+}
+
+[data-admin-theme] .cv-ai-cockpit__recs-title {
+  margin: 0 0 0.6rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--admin-text-muted);
+}
+
+[data-admin-theme] .cv-ai-cockpit__recs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+[data-admin-theme] .cv-ai-rec-card {
+  border-radius: 10px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+[data-admin-theme='light'] .cv-ai-rec-card {
+  background: var(--admin-surface-inset);
+  border: 1px solid color-mix(in srgb, var(--admin-border) 70%, transparent);
+}
+
+[data-admin-theme='dark'] .cv-ai-rec-card {
+  background: color-mix(in srgb, var(--admin-bg-elevated) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--admin-border) 50%, transparent);
+}
+
+[data-admin-theme] .cv-ai-rec-card:hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+[data-admin-theme] .cv-ai-rec-card__head {
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 0.2rem 0.5rem;
+  align-items: start;
+  cursor: pointer;
+  color: inherit;
+  background: transparent;
+  border: none;
+  font: inherit;
+}
+
+[data-admin-theme] .cv-ai-rec-card__priority {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  align-self: center;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+[data-admin-theme] .cv-ai-rec-card__priority--critical {
+  background: color-mix(in srgb, #b45309 14%, transparent);
+  color: #92400e;
+}
+
+[data-admin-theme] .cv-ai-rec-card__priority--important {
+  background: color-mix(in srgb, var(--admin-brand) 12%, transparent);
+  color: var(--admin-brand);
+}
+
+[data-admin-theme] .cv-ai-rec-card__priority--optional {
+  background: color-mix(in srgb, var(--admin-text-muted) 12%, transparent);
+  color: var(--admin-text-muted);
+}
+
+[data-admin-theme='dark'] .cv-ai-rec-card__priority--critical {
+  color: #fcd34d;
+}
+
+[data-admin-theme] .cv-ai-rec-card__section {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--admin-text-muted);
+}
+
+[data-admin-theme] .cv-ai-rec-card__title {
+  grid-column: 2;
+  grid-row: 2;
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--admin-text);
+}
+
+[data-admin-theme] .cv-ai-rec-card__chevron {
+  grid-column: 3;
+  grid-row: 1 / -1;
+  align-self: center;
+  width: 1rem;
+  height: 1rem;
+  color: var(--admin-text-muted);
+  transition: transform 0.2s ease;
+}
+
+[data-admin-theme] .cv-ai-rec-card__chevron--open {
+  transform: rotate(180deg);
+}
+
+[data-admin-theme] .cv-ai-rec-card__body-wrap {
+  overflow: hidden;
+}
+
+[data-admin-theme] .cv-ai-rec-card__impact {
+  margin: 0;
+  padding: 0 0.75rem 0.65rem 2.5rem;
+  font-size: 0.6875rem;
+  color: var(--admin-text-secondary);
+  line-height: 1.4;
+}
+
+[data-admin-theme] .cv-ai-cockpit__footer {
+  padding: 0.75rem 1.15rem 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--admin-border) 50%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+[data-admin-theme] .cv-ai-cockpit__meta {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--admin-text-secondary);
+}
+
+[data-admin-theme] .cv-ai-cockpit__meta--muted {
+  color: var(--admin-text-muted);
+}
+
+/* —— Validation card —— */
+[data-admin-theme='light'] .cv-ai-validation__surface {
+  background: var(--admin-bg-elevated);
+  border: 1px solid color-mix(in srgb, #d97706 28%, var(--admin-border));
+  border-radius: 14px;
+  box-shadow: 0 16px 40px -12px rgba(15, 23, 42, 0.1);
+}
+
+[data-admin-theme='dark'] .cv-ai-validation__surface {
+  background: var(--admin-surface-inset);
+  border: 1px solid color-mix(in srgb, #d97706 22%, var(--admin-border));
+  border-radius: 14px;
+  box-shadow: 0 20px 48px -16px rgba(0, 0, 0, 0.45);
+}
+
+[data-admin-theme] .cv-ai-validation__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.5rem;
+}
+
+[data-admin-theme] .cv-ai-validation__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+[data-admin-theme] .cv-ai-validation__subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--admin-text-secondary);
+}
+
+[data-admin-theme] .cv-ai-validation__list {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+[data-admin-theme] .cv-ai-validation__item {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding: 0.5rem 0;
+}
+
+[data-admin-theme] .cv-ai-validation__dot {
+  width: 6px;
+  height: 6px;
+  margin-top: 0.4rem;
+  border-radius: 50%;
+  background: #d97706;
+  flex-shrink: 0;
+}
+
+[data-admin-theme] .cv-ai-validation__section {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--admin-text-muted);
+}
+
+[data-admin-theme] .cv-ai-validation__message {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--admin-text);
+}
+
+/* —— Config banner —— */
+[data-admin-theme='light'] .cv-ai-config-banner {
+  background: color-mix(in srgb, #fef2f2 80%, var(--admin-bg-elevated));
+  border-color: color-mix(in srgb, #fecaca 100%, var(--admin-border));
+  color: #7f1d1d;
+}
+
+[data-admin-theme='dark'] .cv-ai-config-banner {
+  background: color-mix(in srgb, #450a0a 35%, var(--admin-surface-inset));
+  border-color: color-mix(in srgb, #991b1b 40%, var(--admin-border));
+  color: #fecaca;
+}

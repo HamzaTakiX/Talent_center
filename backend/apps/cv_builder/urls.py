@@ -34,6 +34,9 @@ urlpatterns = [
     path('student-cvs/<int:pk>/analyze/', views.CvAnalyzeView.as_view(), name='studentcv-analyze'),
     path('student-cvs/<int:pk>/analysis-history/',
          views.CvAnalysisHistoryView.as_view(), name='studentcv-analysis-history'),
+    path('builder/analysis-config/', views.CvBuilderAnalysisConfigView.as_view(),
+         name='cv-builder-analysis-config'),
+    path('builder/analyze/', views.CvBuilderAnalyzeView.as_view(), name='cv-builder-analyze'),
 
     # Export
     path('student-cvs/<int:pk>/export-pdf/', views.CvExportPdfView.as_view(), name='studentcv-export-pdf'),

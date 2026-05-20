@@ -1,0 +1,1 @@
+﻿/** Types — Encadrant Chat (placeholder). */

@@ -4,7 +4,12 @@ from .models import (
     AgendaEvent,
     Meeting,
     Report,
+    ReportAttachment,
+    ReportComment,
+    ReportObligation,
+    ReportTemplate,
     ReportVersion,
+    ReportWorkflowEvent,
     SupervisedStudent,
     Task,
     Workspace,
@@ -66,14 +71,45 @@ class ReportVersionInline(admin.TabularInline):
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
     list_display = (
-        'title', 'report_type', 'status', 'student_profile',
-        'encadrant_profile', 'period_start', 'period_end', 'score',
+        'title', 'report_type', 'status', 'severity', 'priority_score',
+        'is_overdue', 'student_profile', 'encadrant_profile', 'score',
     )
-    list_filter = ('report_type', 'status')
-    search_fields = ('title', 'student_profile__user__email')
-    autocomplete_fields = ('workspace', 'student_profile', 'encadrant_profile', 'reviewed_by')
+    list_filter = ('report_type', 'status', 'severity', 'is_overdue')
+    search_fields = ('title', 'student_profile__user__email', 'company_name')
+    autocomplete_fields = (
+        'workspace', 'student_profile', 'encadrant_profile', 'reviewed_by',
+        'assigned_reviewer', 'filiere',
+    )
+    raw_id_fields = ('internship_type',)
     inlines = [ReportVersionInline]
     date_hierarchy = 'created_at'
+
+
+@admin.register(ReportAttachment)
+class ReportAttachmentAdmin(admin.ModelAdmin):
+    list_display = ('report', 'original_name', 'mime_type', 'size_bytes', 'created_at')
+
+
+@admin.register(ReportWorkflowEvent)
+class ReportWorkflowEventAdmin(admin.ModelAdmin):
+    list_display = ('report', 'action', 'from_status', 'to_status', 'actor', 'created_at')
+    list_filter = ('action',)
+
+
+@admin.register(ReportComment)
+class ReportCommentAdmin(admin.ModelAdmin):
+    list_display = ('report', 'author', 'is_internal', 'created_at')
+
+
+@admin.register(ReportTemplate)
+class ReportTemplateAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'report_type', 'is_active')
+
+
+@admin.register(ReportObligation)
+class ReportObligationAdmin(admin.ModelAdmin):
+    list_display = ('student_profile', 'encadrant_profile', 'report_type', 'due_at', 'status')
+    list_filter = ('status', 'report_type')
 
 
 @admin.register(ReportVersion)

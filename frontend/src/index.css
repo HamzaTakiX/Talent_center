@@ -1,13 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700&display=swap');
 @import './features/admin/dashboard/styles/admin-dashboard.css';
 @import './features/admin/dashboard/styles/admin-alerts-analytics.css';
+@import './features/admin/encadrant/smart-assignment/styles/admin-smart-assignment-analytics.css';
+@import './features/admin/ui/styles/admin-section-states.css';
+@import './features/student/Dashboard/styles/student-dashboard.css';
+@import './features/student/styles/student-platform.css';
+@import './design-system/platformThemeBridge.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+html,
 body {
-  	@apply leading-[normal] m-0 font-inter;
+  min-height: 100%;
+  background-color: var(--admin-bg, #f4f6fb);
+}
+
+body {
+  @apply leading-[normal] m-0 font-inter;
 }
 
 @layer base { 

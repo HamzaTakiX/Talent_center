@@ -5,7 +5,7 @@ import StudentDashboardStatCard from './StudentDashboardStatCard';
 import { useTranslateAdminLabel } from '../../i18n/useTranslateAdminLabel';
 
 export interface StudentCardStatItem {
-  label: string;
+  label?: string;
   labelKey?: string;
   value: number;
   Icon: LucideIcon;
@@ -30,12 +30,13 @@ const StudentCardStatGrid: FunctionComponent<StudentCardStatGridProps> = ({
   return (
     <AdminKpiGrid columns={columns}>
       {stats.map((stat, index) => {
-        const resolvedLabel = translateLabel(stat.label, stat.labelKey);
-        const clickKey = stat.labelKey ?? stat.label;
+        const clickKey = stat.labelKey ?? stat.label ?? String(index);
+        const resolvedLabel = translateLabel(stat.label ?? '', stat.labelKey);
         return (
           <StudentDashboardStatCard
             key={clickKey}
             label={resolvedLabel}
+            labelKey={stat.labelKey}
             value={stat.value}
             IconComponent={stat.Icon}
             iconBgClass={stat.iconBgClass}

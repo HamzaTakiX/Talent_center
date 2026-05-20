@@ -5,14 +5,15 @@ import { tonesFromBgClass } from '../../ui/adminKpiTones';
 
 interface EncadrantSummaryStatCardProps {
   label: string;
-  value: number;
+  value: number | string;
   IconComponent: LucideIcon;
   iconBgClass: string;
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
   index?: number;
 }
 
-const formatInt = (n: number) => new Intl.NumberFormat('en-US').format(n);
+const formatValue = (n: number | string) =>
+  typeof n === 'string' ? n : new Intl.NumberFormat('en-US').format(n);
 
 const EncadrantSummaryStatCard: FunctionComponent<EncadrantSummaryStatCardProps> = ({
   label,
@@ -26,7 +27,7 @@ const EncadrantSummaryStatCard: FunctionComponent<EncadrantSummaryStatCardProps>
   return (
     <AdminKpiStatCard
       label={label}
-      value={formatInt(value)}
+      value={formatValue(value)}
       icon={IconComponent}
       accent={accent}
       accentBg={bg}

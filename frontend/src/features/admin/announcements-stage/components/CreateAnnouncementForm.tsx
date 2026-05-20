@@ -9,16 +9,16 @@ import {
   AdminFormInput,
   AdminFormTextarea,
 } from '../../shared/forms/AdminFormPrimitives';
+import AdminFormPanelHeader from '../../shared/forms/AdminFormPanelHeader';
+import AdminFormSection from '../../shared/forms/AdminFormSection';
 import {
-  adminFormActionsClass,
-  adminFormBodyClass,
+  adminFormActionsFooterClass,
+  adminFormBodyScrollClass,
+  adminFormPanelFlexClass,
   adminFormBtnPrimaryClass,
   adminFormBtnSecondaryClass,
   adminFormGridClass,
-  adminFormHeaderClass,
-  adminFormPanelClass,
-  adminFormSubtitleClass,
-  adminFormTitleClass,
+  adminFormSectionsStackClass,
 } from '../../shared/forms/adminFormClasses';
 import {
   ANNOUNCEMENT_AUDIENCE_OPTIONS,
@@ -30,6 +30,8 @@ import {
 const FORM_PREFIX = 'admin.forms.createAnnouncement';
 
 interface CreateAnnouncementFormProps {
+  variant?: 'create' | 'edit';
+  hidePanelHeader?: boolean;
   title: string;
   type: string;
   audience: string;
@@ -49,6 +51,8 @@ interface CreateAnnouncementFormProps {
 }
 
 const CreateAnnouncementForm: FunctionComponent<CreateAnnouncementFormProps> = ({
+  variant = 'create',
+  hidePanelHeader = false,
   title,
   type,
   audience,
@@ -109,17 +113,28 @@ const CreateAnnouncementForm: FunctionComponent<CreateAnnouncementFormProps> = (
     onPublish();
   };
 
-  return (
-    <form className={adminFormPanelClass} onSubmit={handlePublish} noValidate>
-      <div className={adminFormBodyClass}>
-        <header className={adminFormHeaderClass}>
-          <h1 className={adminFormTitleClass}>{t(`${FORM_PREFIX}.title`)}</h1>
-          <p className={adminFormSubtitleClass}>{t(`${FORM_PREFIX}.subtitle`)}</p>
-        </header>
+  const formTitle =
+    variant === 'edit'
+      ? t(`${FORM_PREFIX}.editTitle`)
+      : t(`${FORM_PREFIX}.title`);
+  const formSubtitle =
+    variant === 'edit' ? t(`${FORM_PREFIX}.editSubtitle`) : t(`${FORM_PREFIX}.subtitle`);
 
+  return (
+    <form className={adminFormPanelFlexClass} onSubmit={handlePublish} noValidate>
+      {!hidePanelHeader && <AdminFormPanelHeader title={formTitle} subtitle={formSubtitle} />}
+
+      <div className={adminFormBodyScrollClass}>
+        <div className={adminFormSectionsStackClass}>
+        <AdminFormSection
+          sectionKey="content"
+          title={t(`${FORM_PREFIX}.sections.general`)}
+          description={t(`${FORM_PREFIX}.sections.generalHint`)}
+        >
         <div className={adminFormGridClass}>
-          <AdminFormField label={t(`${FORM_PREFIX}.fields.title`)} htmlFor="announcement-title" required>
+          <AdminFormField fieldKey="title" label={t(`${FORM_PREFIX}.fields.title`)} htmlFor="announcement-title" required>
             <AdminFormInput
+              fieldKey="title"
               id="announcement-title"
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
@@ -144,7 +159,7 @@ const CreateAnnouncementForm: FunctionComponent<CreateAnnouncementFormProps> = (
             options={audienceOptions}
           />
 
-          <AdminFormField label={t(`${FORM_PREFIX}.fields.eventDate`)} htmlFor="event-date">
+          <AdminFormField fieldKey="eventDate" label={t(`${FORM_PREFIX}.fields.eventDate`)} htmlFor="event-date">
             <AdminFormDateInput
               id="event-date"
               value={eventDate}
@@ -168,41 +183,48 @@ const CreateAnnouncementForm: FunctionComponent<CreateAnnouncementFormProps> = (
             options={visibilityOptions}
           />
         </div>
+        </AdminFormSection>
 
-        <AdminFormField
-          className="mt-6"
-          label={t(`${FORM_PREFIX}.fields.message`)}
-          htmlFor="message-content"
-          required
+        <AdminFormSection
+          sectionKey="description"
+          title={t(`${FORM_PREFIX}.fields.message`)}
+          description={t(`${FORM_PREFIX}.sections.messageHint`)}
         >
-          <AdminFormTextarea
-            id="message-content"
-            value={message}
-            onChange={(e) => onMessageChange(e.target.value)}
-            placeholder={t(`${FORM_PREFIX}.placeholders.message`)}
-            rows={5}
-            required
-          />
-        </AdminFormField>
+          <AdminFormField fieldKey="message" label={t(`${FORM_PREFIX}.fields.message`)} htmlFor="message-content" required>
+            <AdminFormTextarea
+              fieldKey="message"
+              id="message-content"
+              value={message}
+              onChange={(e) => onMessageChange(e.target.value)}
+              placeholder={t(`${FORM_PREFIX}.placeholders.message`)}
+              rows={5}
+              required
+            />
+          </AdminFormField>
+        </AdminFormSection>
 
-        <AdminFormField
-          className="mt-6"
-          label={t(`${FORM_PREFIX}.fields.attachments`)}
-          htmlFor="attachments"
-          hint={t(`${FORM_PREFIX}.attachmentsHint`)}
+        <AdminFormSection
+          sectionKey="attachments"
+          title={t(`${FORM_PREFIX}.fields.attachments`)}
+          description={t(`${FORM_PREFIX}.attachmentsHint`)}
         >
-          <AdminFormFileInput id="attachments" multiple />
-        </AdminFormField>
+          <AdminFormField label={t(`${FORM_PREFIX}.fields.attachments`)} htmlFor="attachments">
+            <AdminFormFileInput id="attachments" multiple />
+          </AdminFormField>
+        </AdminFormSection>
+        </div>
       </div>
 
-      <div className={adminFormActionsClass}>
+      <div className={adminFormActionsFooterClass}>
         <button type="button" onClick={onDraft} className={adminFormBtnSecondaryClass}>
           <FileText className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-          {t(`${FORM_PREFIX}.actions.draft`)}
+          {variant === 'edit'
+            ? t(`${FORM_PREFIX}.actions.cancel`)
+            : t(`${FORM_PREFIX}.actions.draft`)}
         </button>
         <button type="submit" className={adminFormBtnPrimaryClass}>
           <CheckCircle className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-          {t(`${FORM_PREFIX}.actions.publish`)}
+          {variant === 'edit' ? t(`${FORM_PREFIX}.actions.save`) : t(`${FORM_PREFIX}.actions.publish`)}
         </button>
       </div>
     </form>

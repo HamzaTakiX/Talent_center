@@ -61,6 +61,17 @@ class HistoryEvent(models.Model):
     )
     # Denormalised so the audit record survives user deletion.
     actor_email = models.CharField(max_length=255, blank=True, default='')
+    actor_role = models.CharField(max_length=32, blank=True, default='', db_index=True)
+
+    summary = models.CharField(max_length=512, blank=True, default='', db_index=True)
+    is_automated = models.BooleanField(default=False, db_index=True)
+    visibility_scope = models.CharField(
+        max_length=32,
+        blank=True,
+        default='platform',
+        db_index=True,
+        help_text=_('platform | scoped | self — RBAC visibility hint'),
+    )
 
     severity = models.CharField(
         max_length=16,

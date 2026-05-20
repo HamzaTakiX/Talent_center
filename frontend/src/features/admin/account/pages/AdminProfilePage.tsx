@@ -344,6 +344,7 @@ const AdminProfilePage: FunctionComponent = () => {
         </motion.div>
 
         <AccountSection
+          sectionKey="activity"
           title={t('admin.account.activity.title')}
           description={t('admin.account.activity.description')}
         >
@@ -353,6 +354,7 @@ const AdminProfilePage: FunctionComponent = () => {
         <form id="admin-profile-form" onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-6">
             <AccountSection
+              sectionKey="personal"
               sectionId="profile-personal-info"
               title={t('admin.account.personalInfo.title')}
               description={t('admin.account.personalInfo.description')}
@@ -396,6 +398,7 @@ const AdminProfilePage: FunctionComponent = () => {
             </AccountSection>
 
             <AccountSection
+              sectionKey="security"
               sectionId="profile-security"
               title={t('admin.account.security.title')}
               description={t('admin.account.security.description')}

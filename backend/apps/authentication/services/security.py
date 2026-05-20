@@ -55,9 +55,16 @@ def log_event(
     metadata: Optional[dict] = None,
     ip: Optional[str] = None,
 ) -> SecurityEvent:
-    return SecurityEvent.objects.create(
+    event = SecurityEvent.objects.create(
         event_type=event_type,
         user=user,
         metadata=metadata or {},
         ip_address=ip,
     )
+    try:
+        from apps.history.integrations.auth import mirror_security_event
+
+        mirror_security_event(event, ip=ip)
+    except Exception:
+        pass
+    return event

@@ -1,6 +1,7 @@
 import type { AdminChatMessage, AdminChatParticipant } from '../../../shared/admin-module-chat/adminChatTypes';
 
 export const encadrantParticipants: AdminChatParticipant[] = [
+  // contextual supervision threads
   {
     id: 'enc1',
     initials: 'MS',
@@ -8,6 +9,10 @@ export const encadrantParticipants: AdminChatParticipant[] = [
     lastPreview: 'Site visit postponed — plant safety rehearsal runs Thursday noon.',
     timeLabel: '11:41',
     unreadCount: 1,
+    contextKind: 'workflow_thread',
+    urgency: 'HIGH',
+    workflowStatus: 'internship_followup',
+    entityLabel: 'Suivi stage — Ahmed B.',
   },
   {
     id: 'enc2',

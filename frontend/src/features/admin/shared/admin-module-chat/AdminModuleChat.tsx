@@ -5,6 +5,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type ComponentType,
   type ReactNode,
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -140,6 +141,12 @@ const ChatMenuButton: FunctionComponent<{
   </button>
 );
 
+export type AdminModuleChatLayoutProps = {
+  children: ReactNode;
+  mainFillHeight?: boolean;
+  contentFlush?: boolean;
+};
+
 export interface AdminModuleChatProps {
   participantsSeed: AdminChatParticipant[];
   initialMessages: Record<string, AdminChatMessage[]>;
@@ -148,6 +155,21 @@ export interface AdminModuleChatProps {
   searchPlaceholder?: string;
   composerPlaceholder?: string;
   emptyConversationLabel: string;
+  /** Shell layout (default: AdminLayout). Student portal passes StudentLayout. */
+  Layout?: ComponentType<AdminModuleChatLayoutProps>;
+  /** Status strip above chat (live / demo / loading) */
+  topBanner?: ReactNode;
+  /** Contextual workflow header below thread toolbar */
+  contextHeader?: ReactNode;
+  /** Right-side contextual panel (workflow summary) */
+  rightPanel?: ReactNode;
+  /** Smart workflow actions above composer */
+  smartActionsBar?: ReactNode;
+  selectedConversationId?: string;
+  onSelectConversation?: (id: string) => void;
+  onSendMessage?: (text: string, conversationId: string) => boolean | Promise<boolean>;
+  renderConversationBadge?: (participant: AdminChatParticipant) => ReactNode;
+  renderListMeta?: (participant: AdminChatParticipant) => ReactNode;
 }
 
 const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
@@ -158,6 +180,16 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
   searchPlaceholder,
   composerPlaceholder,
   emptyConversationLabel,
+  Layout = AdminLayout,
+  topBanner,
+  contextHeader,
+  rightPanel,
+  smartActionsBar,
+  selectedConversationId,
+  onSelectConversation,
+  onSendMessage,
+  renderConversationBadge,
+  renderListMeta,
 }) => {
   const { t, i18n } = useTranslation();
   const toast = useAdminToast();
@@ -166,7 +198,9 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
   const [conversationRows, setConversationRows] = useState<AdminChatParticipant[]>(() =>
     participantsSeed.map((c) => ({ ...c }))
   );
-  const [selectedId, setSelectedId] = useState(participantsSeed[0]?.id ?? '');
+  const [selectedId, setSelectedId] = useState(
+    selectedConversationId ?? participantsSeed[0]?.id ?? ''
+  );
   const [search, setSearch] = useState('');
   const [listFilter, setListFilter] = useState<ListFilter>('all');
   const [draft, setDraft] = useState('');
@@ -233,6 +267,10 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
   }, [selectedId]);
 
   useEffect(() => {
+    if (selectedConversationId) setSelectedId(selectedConversationId);
+  }, [selectedConversationId]);
+
+  useEffect(() => {
     setConversationRows(participantsSeed.map((c) => ({ ...c })));
     setMessagesByConv((prev) => {
       const base = { ...initialMessages };
@@ -267,19 +305,24 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
     toast.showToast(t('admin.chat.allMarkedRead'), 'success');
   }, [t, toast]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = draft.trim();
     if (!text || !selectedId) return;
-    const msg: AdminChatMessage = {
-      id: `local-${Date.now()}`,
-      direction: 'out',
-      text,
-      time: formatNowTime(i18n.language),
-    };
-    setMessagesByConv((prev) => ({
-      ...prev,
-      [selectedId]: [...(prev[selectedId] ?? []), msg],
-    }));
+    if (onSendMessage) {
+      const ok = await onSendMessage(text, selectedId);
+      if (!ok) return;
+    } else {
+      const msg: AdminChatMessage = {
+        id: `local-${Date.now()}`,
+        direction: 'out',
+        text,
+        time: formatNowTime(i18n.language),
+      };
+      setMessagesByConv((prev) => ({
+        ...prev,
+        [selectedId]: [...(prev[selectedId] ?? []), msg],
+      }));
+    }
     setDraft('');
     if (composerRef.current) {
       composerRef.current.style.height = '2rem';
@@ -292,6 +335,7 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
 
   const selectConversation = (c: AdminChatParticipant) => {
     setSelectedId(c.id);
+    onSelectConversation?.(c.id);
     markConversationRead(c.id);
     setThreadSearch('');
     setThreadSearchOpen(false);
@@ -323,9 +367,12 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
         : '';
 
   return (
-    <AdminLayout mainFillHeight>
-      <div className="admin-chat-shell font-inter -mx-3 -my-4 flex h-full min-h-0 flex-1 flex-col overflow-hidden sm:-mx-5 sm:-my-5 md:-mx-6 md:-my-6">
-        <div className={`admin-chat-layout flex h-full min-h-0 flex-1 overflow-hidden ${layoutClass}`}>
+    <Layout mainFillHeight contentFlush>
+      <div className="admin-chat-shell font-inter flex h-0 min-h-0 flex-1 flex-col overflow-hidden">
+        {topBanner}
+        <div
+          className={`admin-chat-layout ctx-chat-layout flex min-h-0 flex-1 overflow-hidden ${layoutClass} ${rightPanel ? 'ctx-chat-layout--with-panel' : ''}`}
+        >
           <aside className="admin-chat-sidebar flex h-full min-h-0 w-full max-w-[100%] shrink-0 flex-col border-r border-solid border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] sm:w-[clamp(260px,32vw,340px)]">
             <div className="admin-chat-sidebar-toolbar flex min-h-[2.875rem] shrink-0 items-center gap-2 border-b border-solid border-[var(--admin-border)] px-2.5">
               <ChatDropdown
@@ -438,9 +485,15 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
                       </div>
                       <div className="min-w-0 flex-1 pt-0.5">
                         <div className="flex items-start justify-between gap-2">
-                          <span className="admin-chat-conv-title truncate text-sm">{c.title}</span>
+                          <span className="admin-chat-conv-title flex min-w-0 items-center gap-1.5 truncate text-sm">
+                            {renderListMeta?.(c)}
+                            {c.title}
+                          </span>
                           <span className="admin-chat-conv-time shrink-0 text-xs">{c.timeLabel}</span>
                         </div>
+                        {renderConversationBadge ? (
+                          <div className="mt-0.5">{renderConversationBadge(c)}</div>
+                        ) : null}
                         <p className="admin-chat-conv-preview mt-0.5 line-clamp-1 text-xs leading-snug">
                           {c.lastPreview}
                         </p>
@@ -584,6 +637,8 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
                   </AnimatePresence>
                 </div>
 
+                {contextHeader}
+
                 <div
                   ref={scrollRef}
                   className="admin-chat-messages relative z-[1] min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4"
@@ -634,6 +689,8 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
                     ))
                   )}
                 </div>
+
+                {smartActionsBar}
 
                 <footer className="admin-chat-composer-footer relative z-[1] box-border w-full max-w-full min-w-0 shrink-0 bg-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-2 md:px-5">
                   <div className="admin-chat-composer-bar box-border flex min-h-[2.375rem] w-full max-w-full min-w-0 flex-nowrap items-center gap-1.5 rounded-[1.5rem] border border-solid py-1 pl-2 pr-2.5 shadow-sm">
@@ -689,9 +746,10 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
               </div>
             )}
           </section>
+          {rightPanel}
         </div>
       </div>
-    </AdminLayout>
+    </Layout>
   );
 };
 

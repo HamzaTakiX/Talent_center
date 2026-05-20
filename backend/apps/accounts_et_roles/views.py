@@ -123,11 +123,56 @@ class CompleteProfileApiView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def patch(self, request):
-        serializer = CompleteStudentProfileSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        profile = complete_student_profile(
-            user=request.user,
-            data=serializer.validated_data,
-            cv_file=request.FILES.get('cv_file'),
-        )
-        return Response(StudentProfileSerializer(profile).data)
+        try:
+            if request.user.role != User.RoleChoices.STUDENT:
+                return Response(
+                    envelope(
+                        success=False,
+                        message='Only students can complete profile through this endpoint.',
+                        errors={'role': ['This endpoint is only for students.']},
+                    ),
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            serializer = CompleteStudentProfileSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            complete_student_profile(
+                user=request.user,
+                data=serializer.validated_data,
+                cv_file=request.FILES.get('cv_file'),
+            )
+
+            request.user.refresh_from_db()
+            if hasattr(request.user, 'profile'):
+                request.user.profile.refresh_from_db()
+            if hasattr(request.user, 'student_profile'):
+                request.user.student_profile.refresh_from_db()
+
+            return Response(
+                envelope(
+                    success=True,
+                    message='Profile completed successfully.',
+                    data=UserSerializer(request.user).data,
+                ),
+                status=status.HTTP_200_OK,
+            )
+        except ValidationError as e:
+            return Response(
+                envelope(
+                    success=False,
+                    message='Validation failed. Please check your input.',
+                    errors=e.detail,
+                ),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error in CompleteProfileApiView: {str(e)}', exc_info=True)
+            return Response(
+                envelope(
+                    success=False,
+                    message='An error occurred while processing your request. Please try again later.',
+                ),
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

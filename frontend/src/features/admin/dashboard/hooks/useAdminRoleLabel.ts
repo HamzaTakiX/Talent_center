@@ -5,6 +5,10 @@ export const useAdminRoleLabel = (role?: string | null): string => {
   const { t } = useTranslation();
   const normalized = (role ?? '').toLowerCase().trim();
 
+  if (normalized === 'student') {
+    return t('roles.student', { defaultValue: 'Étudiant' });
+  }
+
   if (normalized === 'encadrant' || normalized === 'supervisor') {
     return t('roles.encadrant');
   }

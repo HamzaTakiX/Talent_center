@@ -1,0 +1,1 @@
+﻿/** Utils — Encadrant Task (placeholder). */

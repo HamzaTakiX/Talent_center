@@ -61,6 +61,8 @@ from .serializers import (
 )
 from .services import (
     analysis_service,
+    builder_analysis_service,
+    builder_validation,
     cv_service,
     export_service,
     section_service,
@@ -366,6 +368,87 @@ class CvAnalysisHistoryView(APIView):
         analyses = list_analyses_for_cv(cv)
         return Response(
             envelope(True, 'ok', data=CvAiAnalysisSerializer(analyses, many=True).data)
+        )
+
+
+class CvBuilderAnalysisConfigView(APIView):
+    """Report whether premium AI analysis is configured (no secrets exposed)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(
+            envelope(True, 'ok', data=builder_analysis_service.get_analysis_config())
+        )
+
+
+class CvBuilderAnalyzeView(APIView):
+    """Premium section-aware analysis for the QuickCV builder payload."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        payload = request.data.get('cv') or request.data
+        if not isinstance(payload, dict):
+            return Response(
+                envelope(False, 'Invalid CV payload.', errors={'cv': ['Expected an object.']}),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        is_valid, issues = builder_validation.validate_builder_payload(payload)
+        if not is_valid:
+            return Response(
+                envelope(
+                    False,
+                    'CV does not meet minimum requirements for AI analysis.',
+                    data={'validation_issues': issues},
+                ),
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        try:
+            result = builder_analysis_service.analyze_builder(
+                user=request.user,
+                payload=payload,
+            )
+        except RuntimeError as e:
+            return Response(
+                envelope(False, str(e), errors={'configuration': [str(e)]}),
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except ValueError:
+            return Response(
+                envelope(
+                    False,
+                    'Validation failed.',
+                    data={'validation_issues': issues},
+                ),
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        if hasattr(result, 'to_api_dict'):
+            analysis_data = result.to_api_dict()
+        elif isinstance(result, dict):
+            analysis_data = result
+        else:
+            # Legacy BuilderAnalysisResult (single locale)
+            analysis_data = {
+                'provider': result.provider,
+                'localized': {
+                    code: {
+                        'overview': result.overview,
+                        'sections': result.sections,
+                    }
+                    for code in ('fr', 'en', 'ar')
+                },
+                'raw': result.raw,
+            }
+
+        return Response(
+            envelope(
+                True,
+                'Premium analysis complete.',
+                data=analysis_data,
+            ),
+            status=status.HTTP_200_OK,
         )
 
 

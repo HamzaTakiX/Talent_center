@@ -347,3 +347,114 @@ class MessageTag(models.Model):
 
     def __str__(self) -> str:
         return f'MessageTag<{self.message_id}:{self.tag_id}>'
+
+
+# ============================================================================
+# 9. CONVERSATION CONTEXT (business / workflow linkage)
+# ============================================================================
+
+class ConversationContext(TimestampedModel):
+    """Links a conversation to a module workflow entity (documents, SRF, etc.)."""
+
+    class Module(models.TextChoices):
+        PLATFORM = 'platform', _('Platform')
+        DOCUMENTS = 'documents', _('Documents')
+        SRF = 'srf', _('SRF')
+        ANNOUNCEMENTS = 'announcements', _('Announcements')
+        ENCADRANT = 'encadrant', _('Encadrant')
+        MEETINGS = 'meetings', _('Meetings')
+        SMART_ASSIGNMENT = 'smart_assignment', _('Smart assignment')
+        OFFERS = 'offers', _('Internship offers')
+
+    class ContextKind(models.TextChoices):
+        WORKFLOW_THREAD = 'workflow_thread', _('Workflow thread')
+        CHANNEL = 'channel', _('Channel')
+        DIRECT = 'direct', _('Direct')
+        ANNOUNCEMENT_THREAD = 'announcement_thread', _('Announcement thread')
+        MEETING_THREAD = 'meeting_thread', _('Meeting thread')
+
+    class Urgency(models.TextChoices):
+        NONE = 'NONE', _('None')
+        NORMAL = 'NORMAL', _('Normal')
+        HIGH = 'HIGH', _('High')
+        CRITICAL = 'CRITICAL', _('Critical')
+
+    conversation = models.OneToOneField(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name='context',
+    )
+    module = models.CharField(max_length=32, choices=Module.choices, db_index=True)
+    context_kind = models.CharField(
+        max_length=32,
+        choices=ContextKind.choices,
+        default=ContextKind.WORKFLOW_THREAD,
+        db_index=True,
+    )
+    entity_type = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    entity_id = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    entity_label = models.CharField(max_length=255, blank=True, default='')
+    workflow_status = models.CharField(max_length=64, blank=True, default='')
+    urgency = models.CharField(
+        max_length=16,
+        choices=Urgency.choices,
+        default=Urgency.NONE,
+        db_index=True,
+    )
+    student_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='student_context_conversations',
+    )
+    is_internal_only = models.BooleanField(
+        default=False,
+        help_text=_('Visible to admins/staff only (internal notes).'),
+    )
+    context_snapshot_json = models.JSONField(default=dict, blank=True)
+
+    class Meta(TimestampedModel.Meta):
+        indexes = [
+            models.Index(fields=['module', 'entity_type', 'entity_id']),
+            models.Index(fields=['module', '-updated_at']),
+            models.Index(fields=['urgency', '-updated_at']),
+        ]
+
+    def __str__(self) -> str:
+        return f'Context<{self.module}:{self.entity_type}/{self.entity_id}>'
+
+
+# ============================================================================
+# 10. MESSAGE REACTION
+# ============================================================================
+
+class MessageReaction(models.Model):
+    """Emoji reaction on a message."""
+
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        related_name='reactions',
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='message_reactions',
+    )
+    emoji_code = models.CharField(max_length=32, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['message', 'user', 'emoji_code'],
+                name='uniq_reaction_per_user_emoji',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['message', 'emoji_code']),
+        ]
+
+    def __str__(self) -> str:
+        return f'Reaction<{self.message_id}:{self.emoji_code}>'

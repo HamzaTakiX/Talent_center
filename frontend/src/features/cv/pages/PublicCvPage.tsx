@@ -1,217 +1,74 @@
 import { FunctionComponent, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { FileText } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import apiClient from '../../../shared/api/client';
 
-import { cvApi } from '../api';
-import { PublicCv } from '../types';
+interface PublicCvPayload {
+  title?: string;
+  sections?: unknown[];
+}
 
 const PublicCvPage: FunctionComponent = () => {
+  const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
-  const [cv, setCv] = useState<PublicCv | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [cv, setCv] = useState<PublicCvPayload | null>(null);
 
   useEffect(() => {
-    if (!token) return;
-    setLoading(true);
-    cvApi
-      .getPublicCv(token)
-      .then((data) => setCv(data))
-      .catch((e) => setError(e instanceof Error ? e.message : 'CV not available'))
-      .finally(() => setLoading(false));
-  }, [token]);
+    if (!token) {
+      setError(t('cv.public.missingToken'));
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const res = await apiClient.get(`/cv/public/${token}/`);
+        const body = res.data as { data?: PublicCvPayload } & PublicCvPayload;
+        const payload = body?.data ?? body;
+        if (!cancelled) setCv(payload);
+      } catch {
+        if (!cancelled) setError(t('cv.public.loadFailed'));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, t]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">
-        Loading CV...
+      <div className="flex min-h-screen items-center justify-center gap-3 font-inter">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--admin-brand,#6366f1)]" />
+        <span className="text-sm text-[var(--admin-text-muted,#64748b)]">{t('cv.public.loading')}</span>
       </div>
     );
   }
 
   if (error || !cv) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <h1 className="text-lg font-semibold text-gray-900">This CV is not available.</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            The link may have expired or been revoked by the owner.
-          </p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center px-6 font-inter">
+        <p className="text-center text-sm text-red-600">{error || t('cv.public.loadFailed')}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-4xl mx-auto px-6">
-        <header className="mb-6">
-          <p className="text-xs uppercase tracking-wider text-gray-500">Shared CV</p>
-          <h1 className="text-2xl font-bold text-gray-900 mt-1">{cv.title}</h1>
-          {cv.owner_name && (
-            <p className="text-sm text-gray-600 mt-0.5">by {cv.owner_name}</p>
-          )}
-        </header>
-
-        <article className="bg-white shadow-xl rounded-lg overflow-hidden p-10 space-y-8">
-          {cv.sections.map((section) => (
-            <PublicSection key={section.id} section={section} />
-          ))}
-          {cv.sections.length === 0 && (
-            <p className="text-sm text-gray-500 italic">This CV has no visible sections.</p>
-          )}
-        </article>
-
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Powered by Digital Talent Center
-        </p>
+    <div className="min-h-screen bg-[var(--admin-surface-inset,#f8fafc)] px-4 py-10 font-inter">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-[var(--admin-border,#e2e8f0)] bg-white p-6 shadow-sm">
+        <h1 className="text-lg font-bold text-[var(--admin-text,#0f172a)]">
+          {cv.title || t('cv.public.defaultTitle')}
+        </h1>
+        <p className="mt-2 text-sm text-[var(--admin-text-muted,#64748b)]">{t('cv.public.previewSoon')}</p>
       </div>
     </div>
   );
 };
-
-interface PublicSectionProps {
-  section: PublicCv['sections'][number];
-}
-
-const PublicSection: FunctionComponent<PublicSectionProps> = ({ section }) => {
-  const content = (section.content_json || {}) as Record<string, any>;
-
-  return (
-    <section>
-      <h2 className="text-xs font-bold uppercase tracking-wider text-blue-600 border-b border-blue-200 pb-1 mb-3">
-        {section.label || section.section_type}
-      </h2>
-      {renderContent(section.section_type, content)}
-    </section>
-  );
-};
-
-function renderContent(type: string, content: Record<string, any>) {
-  switch (type) {
-    case 'summary':
-      return <p className="text-sm text-gray-700 leading-relaxed">{content.text || ''}</p>;
-
-    case 'contact': {
-      const fields = [
-        content.email,
-        content.phone,
-        content.linkedin,
-        content.website,
-        content.location,
-      ].filter(Boolean);
-      return (
-        <p className="text-sm text-gray-700">
-          {fields.map((f, i) => (
-            <span key={i}>
-              {i > 0 && <span className="mx-2 text-gray-400">·</span>}
-              {String(f)}
-            </span>
-          ))}
-        </p>
-      );
-    }
-
-    case 'experience': {
-      const items = (content.items || []) as any[];
-      return (
-        <div className="space-y-4">
-          {items.map((item, i) => (
-            <div key={item.id || i} className="border-l-2 border-blue-500 pl-4">
-              <div className="flex items-baseline justify-between gap-2">
-                <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
-                <span className="text-xs text-gray-500">
-                  {item.start_date}{item.end_date ? ` – ${item.end_date}` : ''}
-                </span>
-              </div>
-              <p className="text-xs text-blue-600 mb-1">
-                {[item.company, item.location].filter(Boolean).join(' · ')}
-              </p>
-              {item.bullets && item.bullets.length > 0 && (
-                <ul className="text-sm text-gray-700 list-disc ml-4 space-y-0.5">
-                  {item.bullets.map((b: string, bi: number) => (
-                    <li key={bi}>{b}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    case 'education': {
-      const items = (content.items || []) as any[];
-      return (
-        <div className="space-y-3">
-          {items.map((item, i) => (
-            <div key={item.id || i} className="border-l-2 border-blue-500 pl-4">
-              <div className="flex items-baseline justify-between gap-2">
-                <h3 className="font-semibold text-gray-900 text-sm">{item.degree}</h3>
-                <span className="text-xs text-gray-500">
-                  {item.start_date}{item.end_date ? ` – ${item.end_date}` : ''}
-                </span>
-              </div>
-              <p className="text-xs text-blue-600 mb-1">
-                {[item.school, item.location].filter(Boolean).join(' · ')}
-              </p>
-              {item.description && <p className="text-sm text-gray-700">{item.description}</p>}
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    case 'skills':
-    case 'languages': {
-      const items = (content.items || []) as any[];
-      return (
-        <div className="flex flex-wrap gap-2">
-          {items.map((item, i) => (
-            <span
-              key={item.id || i}
-              className="px-2.5 py-1 bg-blue-50 text-blue-800 rounded-full text-xs"
-            >
-              {item.name}
-              {item.level ? ` — ${item.level}` : ''}
-            </span>
-          ))}
-        </div>
-      );
-    }
-
-    case 'projects': {
-      const items = (content.items || []) as any[];
-      return (
-        <div className="space-y-3">
-          {items.map((item, i) => (
-            <div key={item.id || i}>
-              <h3 className="font-semibold text-gray-900 text-sm">
-                {item.title || item.name}
-              </h3>
-              {item.description && (
-                <p className="text-sm text-gray-700">{item.description}</p>
-              )}
-              {item.bullets && item.bullets.length > 0 && (
-                <ul className="text-sm text-gray-700 list-disc ml-4 space-y-0.5">
-                  {item.bullets.map((b: string, bi: number) => (
-                    <li key={bi}>{b}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    default:
-      if (content.text) {
-        return <p className="text-sm text-gray-700">{String(content.text)}</p>;
-      }
-      return null;
-  }
-}
 
 export default PublicCvPage;

@@ -77,6 +77,14 @@ export function historyModuleBadgeClass(): string {
   return adminBadgeClass('neutral', ADMIN_CHIP_BADGE);
 }
 
+/** Compact badges for timeline rows — keeps action buttons inside the card. */
+export const HISTORY_TIMELINE_BADGE =
+  'inline-flex h-[18px] max-w-[7rem] min-w-0 shrink items-center truncate rounded px-1.5 py-0 text-[10px] font-medium leading-none sm:max-w-[8.5rem]';
+
+export function historyTimelineBadgeClass(baseClass: string): string {
+  return `${baseClass} ${HISTORY_TIMELINE_BADGE}`;
+}
+
 /** @deprecated Utiliser historyActionBadgeClass — conservé pour scripts legacy */
 export const HISTORY_ACTION_BADGE_CLASS: Record<HistoryActionType, string> = {
   create: 'bg-[#dcfce7] text-[#016630]',

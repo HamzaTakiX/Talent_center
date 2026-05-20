@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 
-export type AdminToastVariant = 'success' | 'error' | 'info';
+export type AdminToastVariant = 'success' | 'error' | 'info' | 'warning';
 
 export interface AdminToastItem {
   id: string;
@@ -22,6 +22,7 @@ interface AdminToastContextValue {
   dismissToast: (id: string) => void;
   success: (message: string) => void;
   error: (message: string) => void;
+  warning: (message: string) => void;
 }
 
 const AdminToastContext = createContext<AdminToastContextValue | null>(null);
@@ -46,10 +47,11 @@ export const AdminToastProvider: FunctionComponent<{ children: ReactNode }> = ({
 
   const success = useCallback((message: string) => showToast(message, 'success'), [showToast]);
   const error = useCallback((message: string) => showToast(message, 'error'), [showToast]);
+  const warning = useCallback((message: string) => showToast(message, 'warning'), [showToast]);
 
   const value = useMemo(
-    () => ({ toasts, showToast, dismissToast, success, error }),
-    [toasts, showToast, dismissToast, success, error]
+    () => ({ toasts, showToast, dismissToast, success, error, warning }),
+    [toasts, showToast, dismissToast, success, error, warning]
   );
 
   return <AdminToastContext.Provider value={value}>{children}</AdminToastContext.Provider>;

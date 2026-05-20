@@ -1,0 +1,108 @@
+/**
+ * Platform theme bridge — force les tokens admin dans le portail étudiant.
+ * Corrige le dark mode et les classes legacy (bg-white, hex, etc.) sans toucher au métier.
+ */
+
+@layer components {
+  /* Scope portail étudiant */
+  .student-portal {
+    color: var(--admin-text);
+  }
+
+  .student-portal main {
+    color: inherit;
+  }
+
+  /* Surfaces legacy → tokens */
+  .student-portal .bg-white,
+  .student-portal [class*='bg-white']:not([class*='bg-white/']) {
+    background-color: var(--admin-bg-elevated) !important;
+  }
+
+  .student-portal .bg-neutral-50,
+  .student-portal .bg-gray-50,
+  .student-portal .bg-whitesmoke {
+    background-color: var(--admin-surface-muted) !important;
+  }
+
+  .student-portal .bg-neutral-100,
+  .student-portal .bg-gray-100 {
+    background-color: var(--admin-surface-inset) !important;
+  }
+
+  /* Bordures legacy */
+  .student-portal .border-neutral-100,
+  .student-portal .border-neutral-200,
+  .student-portal .border-gray-200,
+  .student-portal .border-gainsboro {
+    border-color: var(--admin-border) !important;
+  }
+
+  /* Texte legacy Tailwind nommé */
+  .student-portal .text-slategray-100,
+  .student-portal .text-dimgray {
+    color: var(--admin-text-muted) !important;
+  }
+
+  .student-portal .text-darkorchid,
+  .student-portal .text-slateblue,
+  .student-portal .text-seagreen,
+  .student-portal .text-firebrick {
+    color: var(--admin-text-secondary) !important;
+  }
+
+  /* Badges timeline legacy (lavender, papayawhip, etc.) */
+  .student-portal .bg-lavender-100,
+  .student-portal .bg-lavender-200,
+  .student-portal .bg-papayawhip,
+  .student-portal .bg-honeydew,
+  .student-portal .bg-mistyrose,
+  .student-portal .bg-gainsboro {
+    background-color: var(--admin-surface-inset) !important;
+    color: var(--admin-text) !important;
+    border: 1px solid var(--admin-border);
+  }
+
+  /* Cartes custom rounded sans admin-module-panel */
+  .student-portal [class*='rounded-[14px]'][class*='border'][class*='bg-']:not(.admin-module-panel):not(.admin-kpi-cell):not(.admin-panel-interactive) {
+    background-color: var(--admin-bg-elevated) !important;
+    border-color: var(--admin-border) !important;
+    box-shadow: var(--admin-shadow-sm);
+  }
+
+  /* Inputs legacy hors admin-form-input */
+  .student-portal input:not(.admin-search-field):not(.admin-form-input):not([type='checkbox']):not([type='radio']),
+  .student-portal select:not(.admin-form-input),
+  .student-portal textarea:not(.admin-form-input) {
+    background-color: var(--admin-input-bg, var(--admin-bg-elevated));
+    color: var(--admin-text);
+    border-color: var(--admin-border);
+  }
+
+  .student-portal input::placeholder,
+  .student-portal textarea::placeholder {
+    color: var(--admin-text-muted);
+  }
+
+  /* Timeline rail */
+  .student-portal .bg-gainsboro[class*='w-0'] {
+    background-color: var(--admin-border) !important;
+  }
+
+  /* Hover rows */
+  .student-portal .hover\:bg-neutral-100:hover,
+  .student-portal .hover\:bg-\[\#f5f5f5\]:hover,
+  .student-portal .hover\:bg-\[\#fafafa\]:hover {
+    background-color: var(--admin-row-hover) !important;
+  }
+
+  [data-admin-theme='dark'] .student-portal .shadow-\[0px_0px_0px_4px_\#fff\] {
+    --tw-shadow-color: var(--admin-bg-elevated);
+    box-shadow: 0 0 0 4px var(--admin-bg-elevated) !important;
+  }
+
+  /* Modales / dropdowns legacy blancs */
+  [data-admin-theme='dark'] .student-portal [class*='shadow-[0_10px'] {
+    box-shadow: var(--admin-shadow-lg) !important;
+  }
+}

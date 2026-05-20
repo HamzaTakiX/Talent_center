@@ -271,7 +271,7 @@ class ProviderCallbackView(APIView):
         from .services.sessions import create_session
         from .services.security import log_event
 
-        user = resolve_or_link_user(identity)
+        user = resolve_or_link_user(identity, after_sso=True)
         tokens = issue_token_pair(user)
         session = create_session(
             user=user,
@@ -283,6 +283,35 @@ class ProviderCallbackView(APIView):
             event_type='LOGIN_SUCCESS',
             user=user,
             metadata={'provider': instance.name.value, 'session_id': session.id},
+        )
+        return Response(
+            envelope(True, 'Login successful', data={
+                'access': tokens.access,
+                'refresh': tokens.refresh,
+                'user': _user_payload(user),
+                'session': _session_payload(session),
+            }),
+            status=status.HTTP_200_OK,
+        )
+
+
+class Auth0ExchangeView(APIView):
+    """Exchange an Auth0 access token for platform JWT session tokens."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        access_token = (request.data.get('access_token') or '').strip()
+        if not access_token:
+            return Response(
+                envelope(False, 'access_token is required'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user, tokens, session = perform_login(
+            provider_name='AUTH0',
+            credentials={'access_token': access_token},
+            request=request,
+            device_name=request.data.get('device_name', ''),
         )
         return Response(
             envelope(True, 'Login successful', data={

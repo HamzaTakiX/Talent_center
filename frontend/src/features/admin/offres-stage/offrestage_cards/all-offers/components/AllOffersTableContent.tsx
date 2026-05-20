@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { adminCrudRoutes } from '../../../../shared/navigation/adminCrudRoutes';
 import { Eye, Edit, Users } from 'lucide-react';
 import type { AllOfferRow } from '../data/allOffersMockData';
 import AdminMobileRowCard from '../../../../shared/AdminMobileRowCard';
@@ -56,7 +57,7 @@ const AllOffersTableContent: FunctionComponent<AllOffersTableContentProps> = ({ 
                     <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                     <span>View</span>
                   </button>
-                  <button type="button" className={adminTableBtnMobile} onClick={() => console.log('Edit offer:', offer.id)}>
+                  <button type="button" className={adminTableBtnMobile} onClick={() => navigate(adminCrudRoutes.internshipOfferEdit(offer.id))}>
                     <Edit className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                     <span>Edit</span>
                   </button>
@@ -107,7 +108,7 @@ const AllOffersTableContent: FunctionComponent<AllOffersTableContentProps> = ({ 
                         <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                         <span>View</span>
                       </button>
-                      <button type="button" className={adminTableBtn} onClick={() => console.log('Edit offer:', offer.id)}>
+                      <button type="button" className={adminTableBtn} onClick={() => navigate(adminCrudRoutes.internshipOfferEdit(offer.id))}>
                         <Edit className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                         <span>Edit</span>
                       </button>

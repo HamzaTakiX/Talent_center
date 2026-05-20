@@ -2,11 +2,18 @@ import { FunctionComponent } from 'react';
 import { useAdminChatChannel } from '../../../i18n/useAdminCopy';
 import { useAdminChatMockData } from '../../../i18n/useAdminChatMockData';
 import AdminModuleChat from '../../../shared/admin-module-chat/AdminModuleChat';
-import { studentDeskParticipants, studentDeskInitialMessages } from '../data/studentChatMock';
+import {
+  studentDeskParticipants,
+  studentDeskInitialMessages,
+} from '../data/studentChatMock';
 
 const StudentChatPage: FunctionComponent = () => {
   const chat = useAdminChatChannel('students');
-  const mock = useAdminChatMockData('students', studentDeskParticipants, studentDeskInitialMessages);
+  const mock = useAdminChatMockData(
+    'students',
+    studentDeskParticipants,
+    studentDeskInitialMessages
+  );
 
   return (
     <AdminModuleChat

@@ -1,19 +1,8 @@
 import { FunctionComponent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AdminListPageShell } from '../../../../ui';
-import LatePaymentsKpiCards from '../components/LatePaymentsKpiCards';
-import LatePaymentsDetailTable from '../components/LatePaymentsDetailTable';
-import { AdminStatChartSection } from '../../../../ui';
+import SrfSubpageDetailPage from '../../../pages/SrfSubpageDetailPage';
 
-const LatePaymentsDetailPage: FunctionComponent = () => {
-  const navigate = useNavigate();
-  return (
-    <AdminListPageShell onBack={() => navigate('/admin/srf')} backTo="srf">
-      <LatePaymentsKpiCards />
-      <AdminStatChartSection chartId="srf-late-timeline" />
-      <LatePaymentsDetailTable />
-    </AdminListPageShell>
-  );
-};
+const LatePaymentsDetailPage: FunctionComponent = () => (
+  <SrfSubpageDetailPage subpageId="late-payments" chartId="srf-late-payments" showRemaining />
+);
 
 export default LatePaymentsDetailPage;

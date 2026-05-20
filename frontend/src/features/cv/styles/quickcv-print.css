@@ -1,0 +1,96 @@
+/**
+ * Print / Save as PDF — Talent Center CV editor
+ * Only #resume (.doc) is printed; header, toolbar, and form are hidden.
+ * Activated via body.quickcv-print-mode (see generatePDF in cv_builder utils).
+ */
+
+@media print {
+  @page {
+    margin: 0;
+    size: A4 portrait;
+  }
+
+  html,
+  body.quickcv-print-mode {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* Hide React shell chrome */
+  body.quickcv-print-mode [data-cv-editor-shell] > *:not(.cv-editor-main),
+  body.quickcv-print-mode .cv-editor-header,
+  body.quickcv-print-mode .quickcv-toolbar-admin,
+  body.quickcv-print-mode [data-cv-onboarding-banner],
+  body.quickcv-print-mode [data-cv-editor-footer],
+  body.quickcv-print-mode .cv-editor-main > *:not(.quickcv-host) {
+    display: none !important;
+  }
+
+  /* Hide form column / tabs chrome inside QuickCV */
+  body.quickcv-print-mode .quickcv-editor-scroll,
+  body.quickcv-print-mode .quickcv-tabs-list,
+  body.quickcv-print-mode .quickcv-tabs-editor {
+    display: none !important;
+  }
+
+  /* Unchain overflow/height so only the CV flows to paper */
+  body.quickcv-print-mode [data-cv-editor-shell],
+  body.quickcv-print-mode .cv-editor-main,
+  body.quickcv-print-mode .quickcv-host,
+  body.quickcv-print-mode .quickcv-root,
+  body.quickcv-print-mode .quickcv-root > div,
+  body.quickcv-print-mode .quickcv-split,
+  body.quickcv-print-mode .quickcv-preview-scroll,
+  body.quickcv-print-mode .quickcv-tabs-viewer {
+    display: block !important;
+    position: static !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    width: auto !important;
+    flex: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.quickcv-print-mode .quickcv-split {
+    display: block !important;
+    grid-template-columns: none !important;
+  }
+
+  body.quickcv-print-mode #resume,
+  body.quickcv-print-mode #resume.doc {
+    visibility: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    margin: 0 auto !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    max-width: 100% !important;
+    scale: 1 !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.quickcv-print-mode #resume * {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

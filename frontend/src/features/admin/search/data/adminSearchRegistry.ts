@@ -21,8 +21,11 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Brain,
   Ban,
   Wallet,
+  Upload,
+  Settings2,
   GraduationCap,
   UserPlus,
   FilePlus,
@@ -165,6 +168,7 @@ export const ADMIN_SEARCH_REGISTRY: AdminSearchRegistryEntry[] = [
   e({ id: 'nav-documents-pending', titleKey: 'admin.globalSearch.items.pendingDocuments', subtitleKey: 'admin.nav.documents', category: 'navigation', path: '/admin/documents/pending', icon: Clock, priority: 68 }),
   e({ id: 'nav-documents-validated', titleKey: 'admin.globalSearch.items.validatedDocuments', subtitleKey: 'admin.nav.documents', category: 'navigation', path: '/admin/documents/validated', icon: CheckCircle2, priority: 62 }),
   e({ id: 'nav-documents-rejected', titleKey: 'admin.globalSearch.items.rejectedDocuments', subtitleKey: 'admin.nav.documents', category: 'navigation', path: '/admin/documents/rejected', icon: XCircle, priority: 62 }),
+  e({ id: 'nav-documents-catalog', titleKey: 'admin.nav.catalog', subtitleKey: 'admin.nav.documents', category: 'navigation', path: '/admin/documents/catalog', icon: FileText, priority: 64, keywords: ['service', 'catalogue', 'configuration', 'document type'] }),
   e({ id: 'nav-documents-chat', titleKey: 'admin.nav.chat', subtitleKey: 'admin.nav.documents', category: 'navigation', path: '/admin/documents/chat', icon: MessageSquare, priority: 58 }),
   e({ id: 'nav-documents-history', titleKey: 'admin.nav.history', subtitleKey: 'admin.nav.documents', category: 'navigation', path: '/admin/documents/history', icon: History, priority: 58 }),
 
@@ -176,7 +180,10 @@ export const ADMIN_SEARCH_REGISTRY: AdminSearchRegistryEntry[] = [
   e({ id: 'nav-srf-late', titleKey: 'admin.globalSearch.items.latePayments', subtitleKey: 'admin.nav.srf', category: 'navigation', path: '/admin/srf/late-payments', icon: AlertTriangle, priority: 65 }),
   e({ id: 'nav-srf-blocked', titleKey: 'admin.globalSearch.items.blockedStudents', subtitleKey: 'admin.nav.srf', category: 'navigation', path: '/admin/srf/blocked-students', icon: Ban, priority: 62 }),
   e({ id: 'nav-srf-exempted', titleKey: 'admin.globalSearch.items.exemptedStudents', subtitleKey: 'admin.nav.srf', category: 'navigation', path: '/admin/srf/exempted-students', icon: User, priority: 58 }),
+  e({ id: 'nav-srf-config', titleKey: 'admin.nav.config', subtitleKey: 'admin.nav.srf', category: 'navigation', path: '/admin/srf/config', icon: Settings2, priority: 72, keywords: ['exam', 'warning', 'notification', 'config', 'srf', 'restriction'] }),
+  e({ id: 'nav-srf-imports', titleKey: 'admin.nav.imports', subtitleKey: 'admin.nav.srf', category: 'navigation', path: '/admin/srf/imports', icon: Upload, priority: 70, keywords: ['import', 'financial', 'erp', 'csv', 'excel'] }),
   e({ id: 'nav-srf-chat', titleKey: 'admin.nav.chat', subtitleKey: 'admin.nav.srf', category: 'navigation', path: '/admin/srf/chat', icon: MessageSquare, priority: 58 }),
+  e({ id: 'nav-srf-history', titleKey: 'admin.nav.history', subtitleKey: 'admin.nav.srf', category: 'navigation', path: '/admin/srf/history', icon: History, priority: 58 }),
 
   // ── Students ──
   e({ id: 'nav-students-total', titleKey: 'admin.globalSearch.items.totalStudents', subtitleKey: 'admin.nav.student', category: 'navigation', path: '/admin/students/total-students', icon: Users, priority: 65 }),
@@ -189,13 +196,17 @@ export const ADMIN_SEARCH_REGISTRY: AdminSearchRegistryEntry[] = [
   // ── Encadrants ──
   e({ id: 'nav-encadrants-all', titleKey: 'admin.globalSearch.items.allEncadrants', subtitleKey: 'admin.nav.encadrant', category: 'navigation', path: '/admin/encadrants/all', icon: UserCheck, priority: 65 }),
   e({ id: 'nav-encadrants-assigned', titleKey: 'admin.globalSearch.items.assignedStudents', subtitleKey: 'admin.nav.encadrant', category: 'navigation', path: '/admin/encadrants/assigned-students', icon: Users, priority: 62 }),
-  e({ id: 'nav-encadrants-reports', titleKey: 'admin.globalSearch.items.reportsInProgress', subtitleKey: 'admin.nav.encadrant', category: 'navigation', path: '/admin/encadrants/reports-in-progress', icon: FileText, priority: 62 }),
+  e({ id: 'nav-encadrants-reports', titleKey: 'admin.globalSearch.items.reportsInProgress', subtitleKey: 'admin.nav.encadrant', category: 'navigation', path: '/admin/encadrant/reports/in-progress', icon: FileText, priority: 62 }),
   e({ id: 'nav-encadrants-meetings', titleKey: 'admin.globalSearch.items.upcomingMeetings', subtitleKey: 'admin.nav.encadrant', category: 'navigation', path: '/admin/encadrants/upcoming-meetings', icon: Clock, priority: 62 }),
+  e({ id: 'nav-encadrants-history', titleKey: 'admin.nav.history', subtitleKey: 'admin.nav.encadrant', category: 'navigation', path: '/admin/encadrants/history', icon: History, priority: 58 }),
+  e({ id: 'nav-encadrants-meetings-history', titleKey: 'admin.nav.history', subtitleKey: 'admin.nav.meetings', category: 'navigation', path: '/admin/encadrant/meetings/history', icon: History, priority: 56 }),
+  e({ id: 'nav-encadrants-smart-assignment-history', titleKey: 'admin.nav.history', subtitleKey: 'admin.nav.smartAssignment', category: 'navigation', path: '/admin/encadrant/smart-assignment/history', icon: History, priority: 56 }),
   e({ id: 'nav-encadrants-chat', titleKey: 'admin.nav.chat', subtitleKey: 'admin.nav.encadrant', category: 'navigation', path: '/admin/encadrant/chat', icon: MessageSquare, priority: 58 }),
   e({ id: 'nav-encadrants-reports-page', titleKey: 'admin.nav.reports', subtitleKey: 'admin.nav.encadrant', category: 'navigation', path: '/admin/encadrant/reports', icon: FileText, priority: 60 }),
+  e({ id: 'nav-encadrants-smart-assignment', titleKey: 'admin.nav.smartAssignment', subtitleKey: 'admin.nav.encadrant', category: 'navigation', path: '/admin/encadrant/smart-assignment', icon: Brain, priority: 60 }),
 
   // ── Administrators ──
-  e({ id: 'nav-admins-all', titleKey: 'admin.globalSearch.items.allAdministrators', subtitleKey: 'admin.nav.admin', category: 'navigation', path: '/admin/admins/all-administrators', icon: Shield, priority: 65 }),
+  e({ id: 'nav-admins-all', titleKey: 'admin.globalSearch.items.allAdministrators', subtitleKey: 'admin.nav.admin', category: 'navigation', path: '/admin/admins', icon: Shield, priority: 65 }),
   e({ id: 'nav-admins-stage', titleKey: 'admin.globalSearch.items.stageAdministrators', subtitleKey: 'admin.nav.admin', category: 'navigation', path: '/admin/admins/stage-administrators', icon: Briefcase, priority: 60 }),
   e({ id: 'nav-admins-finance', titleKey: 'admin.globalSearch.items.financeAdministrators', subtitleKey: 'admin.nav.admin', category: 'navigation', path: '/admin/admins/finance-administrators', icon: DollarSign, priority: 60 }),
   e({ id: 'nav-admins-documents', titleKey: 'admin.globalSearch.items.documentsAdministrators', subtitleKey: 'admin.nav.admin', category: 'navigation', path: '/admin/admins/documents-administrators', icon: FileText, priority: 60 }),

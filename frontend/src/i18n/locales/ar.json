@@ -15,7 +15,8 @@
   "roles": {
     "superAdmin": "المشرف الأعلى",
     "encadrant": "المشرف",
-    "administrator": "المسؤول"
+    "administrator": "المسؤول",
+    "student": "طالب"
   },
   "admin": {
     "brand": {
@@ -33,8 +34,13 @@
       "encadrant": "المشرفون",
       "student": "الطلاب",
       "admin": "المسؤولون",
+      "catalog": "كتالوج الخدمات",
       "chat": "الدردشة",
       "reports": "التقارير",
+      "smartAssignment": "التعيين الذكي",
+      "meetings": "الاجتماعات",
+      "imports": "الاستيراد المالي",
+      "config": "إعداد الامتحانات والتنبيهات",
       "closeMenu": "إغلاق القائمة"
     },
     "header": {
@@ -51,9 +57,45 @@
         "internshipOffers": "عروض التدريب",
         "announcements": "الإعلانات",
         "documents": "المستندات",
+        "documentsCatalog": "كتالوج الخدمات",
         "srf": "SRF",
         "history": "السجل",
         "account": "حسابي"
+      }
+    },
+    "toast": {
+      "successTitle": "نجاح",
+      "errorTitle": "خطأ",
+      "infoTitle": "معلومة",
+      "warningTitle": "تحذير"
+    },
+    "common": {
+      "loading": "جاري التحميل…",
+      "actions": {
+        "view": "عرض",
+        "edit": "تعديل",
+        "delete": "حذف",
+        "assign": "تعيين",
+        "deactivate": "تعطيل",
+        "importExcel": "استيراد Excel"
+      },
+      "delete": {
+        "confirm": "حذف نهائي",
+        "confirmWithCount": "حذف ({{count}})",
+        "startSelection": "تحديد مستخدمين للحذف",
+        "cancelSelection": "إلغاء",
+        "selectedCount": "{{count}} محدد",
+        "clearSelection": "إلغاء التحديد",
+        "deleteSelected": "حذف المحدد",
+        "studentTitle": "حذف الطالب",
+        "studentDescription": "حذف « {{name}} » نهائياً؟ لا يمكن التراجع.",
+        "studentBulkDescription": "حذف {{count}} طالب(اً) نهائياً؟ لا يمكن التراجع.",
+        "adminTitle": "حذف المسؤول",
+        "adminDescription": "حذف « {{name}} » نهائياً؟ لا يمكن التراجع.",
+        "adminBulkDescription": "حذف {{count}} مسؤول(اً) نهائياً؟ لا يمكن التراجع.",
+        "encadrantTitle": "حذف المشرف",
+        "encadrantDescription": "حذف « {{name}} » نهائياً؟ لا يمكن التراجع.",
+        "encadrantBulkDescription": "حذف {{count}} مشرف(اً) نهائياً؟ لا يمكن التراجع."
       }
     },
     "userMenu": {
@@ -424,6 +466,8 @@
       "microsoft": "تسجيل الدخول عبر Microsoft (ESCA SSO)",
       "or": "أو سجّل الدخول بالبريد",
       "forgotPassword": "نسيت كلمة المرور؟",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
       "footerNeedHelp": "تحتاج مساعدة؟ تواصل مع",
       "panelBadge": "ESCA Talent Center",
       "panelTitle": "تمكين طلاب ESCA",
@@ -459,6 +503,469 @@
       "welcome": "مرحباً أيها الطالب!",
       "subtitle": "مساحة الطالب قيد التطوير.",
       "logout": "تسجيل الخروج"
+    },
+    "preferences": {
+      "darkMode": "تفعيل الوضع الداكن",
+      "lightMode": "تفعيل الوضع الفاتح"
+    },
+    "confirmIdentity": {
+      "title": "تأكيد هويتك",
+      "subtitle": "يرجى التحقق من معلوماتك الأكاديمية قبل الوصول إلى المنصة.",
+      "panelBadge": "التحقق من الهوية",
+      "panelTitle": "تحقق من ملفك الطلابي",
+      "panelSubtitle": "أكد معلوماتك الشخصية والأكاديمية للمتابعة على منصة ESCA.",
+      "panelCoverAlt": "غلاف التحقق من الهوية",
+      "fields": {
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "dateOfBirth": "تاريخ الميلاد",
+        "programMajor": "التخصص / البرنامج",
+        "currentClass": "القسم الحالي"
+      },
+      "placeholders": {
+        "selectOption": "اختر خياراً…",
+        "selectProgramFirst": "اختر التخصص أولاً",
+        "loading": "جاري التحميل…",
+        "emptyValue": "—"
+      },
+      "actions": {
+        "save": "حفظ المعلومات",
+        "saving": "جاري الحفظ…",
+        "confirm": "تأكيد المعلومات",
+        "processing": "جاري المعالجة…",
+        "edit": "تعديل المعلومات",
+        "cancelEdit": "إلغاء التعديل"
+      },
+      "success": "تم التحقق من معلوماتك وحفظها بنجاح.",
+      "errors": {
+        "network": "تعذر الاتصال بالخادم. تحقق من اتصالك أو أعد المحاولة لاحقاً.",
+        "validation": "يرجى التحقق من المدخلات والمحاولة مرة أخرى.",
+        "invalidInput": "مدخلات غير صالحة. تأكد من ملء جميع الحقول بشكل صحيح.",
+        "sessionExpired": "انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.",
+        "identityAlreadyConfirmed": "تم تأكيد الهوية مسبقاً. لا يمكنك تعديل هذه المعلومات.",
+        "forbidden": "ليس لديك إذن لتنفيذ هذا الإجراء.",
+        "notFound": "لم يتم العثور على الملف الشخصي. تواصل مع الدعم.",
+        "conflict": "تتعارض هذه المعلومات مع سجلات موجودة. تحقق من التفاصيل.",
+        "unprocessable": "تعذر معالجة طلبك. تحقق من معلوماتك.",
+        "rateLimit": "طلبات كثيرة جداً. انتظر قليلاً قبل إعادة المحاولة.",
+        "server": "حدث خطأ من جانبنا. أعد المحاولة لاحقاً أو تواصل مع الدعم.",
+        "unexpected": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+        "firstNameRequired": "الاسم الأول مطلوب.",
+        "lastNameRequired": "اسم العائلة مطلوب.",
+        "dateOfBirthRequired": "تاريخ الميلاد مطلوب.",
+        "programRequired": "يرجى اختيار تخصص ESCA.",
+        "classRequired": "يرجى اختيار القسم.",
+        "referenceLoadFailed": "تعذر تحميل التخصصات والأقسام ESCA. تحقق من الاتصال وأعد المحاولة."
+      }
+    },
+    "completeProfile": {
+      "title": "أكمل ملفك الشخصي",
+      "subtitle": "أضف معلوماتك المهنية قبل الوصول إلى فرص التدريب.",
+      "infoBanner": "تساعد هذه المعلومات في تحسين درجة التطابق مع فرص التدريب المناسبة.",
+      "panelBadge": "إعداد الملف",
+      "panelTitle": "ابنِ ملفك المهني",
+      "panelSubtitle": "أكمل ملفك، استخدم قالب السيرة الرسمي لـ ESCA، واستعد للفرص.",
+      "panelCoverAlt": "غلاف إعداد الملف",
+      "sections": {
+        "professional": "المعلومات المهنية",
+        "careerObjective": "الهدف المهني",
+        "skills": "المهارات",
+        "availability": "التوفر والموقع",
+        "applicationExperience": "خبرة التقديم"
+      },
+      "fields": {
+        "linkedin": "رابط ملف LinkedIn",
+        "professionalSummary": "ملخص مهني قصير",
+        "careerObjective": "نوع التدريب الذي تبحث عنه",
+        "skills": "اختر مهاراتك",
+        "whenStart": "متى يمكنك البدء؟",
+        "startDate": "تاريخ البدء",
+        "city": "المدينة الحالية",
+        "mobility": "تفضيلات التنقل",
+        "hasApplied": "هل تقدمت مسبقاً لعروض تدريب؟"
+      },
+      "placeholders": {
+        "linkedin": "https://linkedin.com/in/your-profile",
+        "professionalSummary": "عرّف بإيجاز مسارك الأكاديمي ومهاراتك وأهدافك المهنية…",
+        "careerObjective": "مثال: تدريب في التسويق بشركة متعددة الجنسيات، مع التركيز على الاستراتيجية الرقمية…",
+        "city": "مثال: الدار البيضاء"
+      },
+      "availability": {
+        "immediately": "فوراً",
+        "specificDate": "تاريخ محدد"
+      },
+      "mobility": {
+        "withinCity": "داخل المدينة",
+        "national": "وطني",
+        "international": "دولي",
+        "remote": "عن بُعد"
+      },
+      "skills": {
+        "digitalMarketing": "التسويق الرقمي",
+        "dataAnalysis": "تحليل البيانات",
+        "projectManagement": "إدارة المشاريع",
+        "microsoftOffice": "Microsoft Office",
+        "leadership": "القيادة",
+        "communication": "التواصل",
+        "problemSolving": "حل المشكلات",
+        "socialMediaMarketing": "تسويق وسائل التواصل",
+        "googleAnalytics": "Google Analytics",
+        "teamwork": "العمل الجماعي",
+        "businessStrategy": "استراتيجية الأعمال",
+        "financialAnalysis": "التحليل المالي",
+        "python": "Python",
+        "excel": "Excel",
+        "powerpoint": "PowerPoint",
+        "photoshop": "Photoshop",
+        "illustrator": "Illustrator"
+      },
+      "yes": "نعم",
+      "no": "لا",
+      "save": "حفظ ومتابعة",
+      "success": "تم إكمال الملف الشخصي! سيتم توجيهك إلى منشئ السيرة الذاتية قبل لوحة التحكم.",
+      "loginRecapTitle": "بيانات تسجيل الدخول",
+      "loginRecapHint": "جاري التحويل إلى منشئ السيرة الذاتية…",
+      "loginRecapHintDev": "حساب تجريبي محلي — انسخ بيانات الدخول إن لزم. تحويل تلقائي خلال {{seconds}} ث، أو انقر متابعة.",
+      "continueToCvEditor": "متابعة — إنشاء سيرتي",
+      "loginRecapEmail": "البريد الإلكتروني",
+      "loginRecapPassword": "كلمة المرور",
+      "loginRecapDevPassword": "حساب تجريبي محلي",
+      "loginRecapGoLogin": "الذهاب إلى صفحة تسجيل الدخول",
+      "copyCredentials": "نسخ بيانات الدخول",
+      "errors": {
+        "missingFields": "يرجى تعبئة الحقول الإلزامية التالية: {{fields}}",
+        "linkedinInvalid": "يرجى إدخال رابط LinkedIn صالح (مثال: https://linkedin.com/in/your-name)",
+        "linkedinInvalidField": "يجب أن يكون رابط LinkedIn ملفاً شخصياً صالحاً (مثال: https://linkedin.com/in/your-name)",
+        "submitFailed": "تعذر إكمال الملف. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "loading": {
+      "session": "جاري التحقق من الجلسة…"
+    },
+    "configMissing": {
+      "title": "إعداد Auth0 مفقود",
+      "body": "أضف VITE_AUTH0_DOMAIN و VITE_AUTH0_CLIENT_ID في .env.local أو لوحة Vercel ثم أعد النشر.",
+      "secretHint": "لا تعرض AUTH0_CLIENT_SECRET في الواجهة الأمامية."
+    },
+    "accessDenied": {
+      "title": "وصول غير مصرح",
+      "body": "دورك لا يسمح بالوصول إلى هذا القسم.",
+      "back": "العودة إلى مساحتي"
+    },
+    "callback": {
+      "title": "جاري المصادقة…",
+      "subtitle": "يرجى الانتظار أثناء التحقق من بيانات الاعتماد."
+    }
+  },
+  "cv": {
+    "onboarding": {
+      "banner": "الخطوة التالية: أكمل سيرتك الذاتية ESCA. بعد الإنهاء، يمكنك الوصول إلى لوحة التحكم."
+    },
+    "list": {
+      "title": "سيرتي الذاتية",
+      "openEditor": "فتح منشئ السيرة الذاتية"
+    },
+    "public": {
+      "loading": "جاري تحميل السيرة الذاتية…",
+      "loadFailed": "تعذر تحميل هذه السيرة الذاتية العامة.",
+      "missingToken": "رابط غير صالح.",
+      "defaultTitle": "سيرة ذاتية مشتركة",
+      "previewSoon": "المعاينة التفصيلية قريباً. استخدم منشئ السيرة الذاتية لتعديل مستندك."
+    },
+    "quickBuilder": {
+      "loading": "جاري تحميل منشئ السيرة الذاتية…",
+      "unavailable": "منشئ QuickCV غير متاح.",
+      "devHint": "أعد تحميل الصفحة. منشئ السيرة الذاتية مدمج في التطبيق.",
+      "frameTitle": "منشئ السيرة الذاتية QuickCV"
+    },
+    "toolbar": {
+      "zoom": "تكبير المعاينة",
+      "demo": "بيانات تجريبية",
+      "viewMode": "وضع العرض",
+      "split": "مقسم",
+      "tabbed": "تبويبات",
+      "download": "تحميل PDF"
+    },
+    "editor": {
+      "title": "محرر السيرة الذاتية",
+      "subtitle": "مركز المواهب الرقمي",
+      "calmSubtitle": "أكمل سيرتك — ببساطة وبدون تشتيت",
+      "calmHint": "المعاينة تتحدث تلقائياً. التحليل والتصدير في النهاية فقط.",
+      "back": "رجوع",
+      "finalizeCta": "إنهاء وعرض النتيجة",
+      "finalizeHint": "أضف اسمك وتعليماً أو خبرة واحدة على الأقل للمتابعة.",
+      "finalizeReady": "سيرتك جاهزة — انتقل للخطوة النهائية للتحليل والتصدير.",
+      "defaultTitle": "قالب السيرة الذاتية",
+      "saveVersionNote": "حفظ يدوي من المحرر",
+      "score": {
+        "label": "درجة السيرة",
+        "excellent": "ممتاز",
+        "good": "جيد",
+        "fair": "مقبول",
+        "needsWork": "يحتاج تحسيناً"
+      },
+      "loading": "جاري تحميل السيرة…",
+      "saving": "جاري الحفظ…",
+      "actions": {
+        "analyze": "تحليل بالذكاء الاصطناعي",
+        "save": "حفظ",
+        "saved": "تم الحفظ",
+        "continueDashboard": "المتابعة إلى لوحة التحكم",
+        "saveError": "فشل الحفظ",
+        "download": "تنزيل PDF"
+      },
+      "groups": {
+        "styling": "تنسيق السيرة",
+        "addSection": "إضافة قسم",
+        "manageSections": "إدارة الأقسام",
+        "textStyling": "تنسيق النص",
+        "layout": "خيارات التخطيط"
+      },
+      "hints": {
+        "duplicate": "اسحب لإعادة الترتيب. استخدم أيقونة العين لإخفاء قسم."
+      },
+      "empty": {
+        "title": "ابدأ بناء سيرتك الذاتية",
+        "description": "استخدم الشريط الجانبي لإضافة خبرة أو تعليم أو مهارات أو مشاريع. يتحدث المعاين فوراً."
+      },
+      "fields": {
+        "title": "عنوان السيرة",
+        "titlePlaceholder": "عنوان السيرة",
+        "accentColor": "لون التمييز",
+        "fontSize": "حجم الخط",
+        "fontWeight": "سمك الخط",
+        "alignment": "المحاذاة",
+        "aiSuggestions": "اقتراحات الذكاء الاصطناعي"
+      },
+      "fontSize": {
+        "small": "صغير",
+        "medium": "متوسط",
+        "large": "كبير"
+      },
+      "fontWeight": {
+        "regular": "عادي"
+      },
+      "layout": {
+        "executive": "تنفيذي حديث",
+        "minimal": "ATS بسيط",
+        "creative": "إبداعي مقسّم",
+        "elegant": "أنيق احترافي",
+        "corporate": "مؤسسي مدمج"
+      },
+      "sections": {
+        "experience": "الخبرة",
+        "education": "التعليم",
+        "skills": "المهارات",
+        "projects": "المشاريع",
+        "add": {
+          "experience": "إضافة خبرة",
+          "education": "إضافة تعليم",
+          "skills": "إضافة مهارات",
+          "projects": "إضافة مشروع"
+        }
+      }
+    },
+    "forms": {
+      "panelTitle": "بناء سيرتك الذاتية",
+      "panelSubtitle": "نماذج منظمة · معاينة ATS مباشرة",
+      "nav": { "label": "أقسام السيرة" },
+      "mobile": { "form": "النموذج", "preview": "المعاينة" },
+      "wizard": { "prev": "السابق", "next": "التالي" },
+      "empty": { "description": "أضف قسمًا واحدًا على الأقل عبر النموذج." },
+      "steps": {
+        "personal": "المعلومات الشخصية",
+        "summary": "الملخص المهني",
+        "social": "الروابط الاجتماعية",
+        "education": "التعليم",
+        "experience": "الخبرة",
+        "skills": "المهارات",
+        "languages": "اللغات",
+        "projects": "المشاريع",
+        "certifications": "الشهادات",
+        "awards": "الجوائز",
+        "custom": "أقسام مخصصة",
+        "template": "القالب والنمط"
+      },
+      "photo": { "upload": "رفع صورة", "remove": "حذف" },
+      "personal": {
+        "fullName": "الاسم الكامل",
+        "headline": "المسمى",
+        "email": "البريد",
+        "phone": "الهاتف",
+        "location": "الموقع"
+      },
+      "summary": { "label": "الملخص", "hint": "2–4 جمل للتدريب أو أول وظيفة.", "aiSuggest": "اقتراح بالذكاء الاصطناعي" },
+      "social": {
+        "linkedin": "LinkedIn",
+        "github": "GitHub",
+        "twitter": "X",
+        "website": "الموقع",
+        "portfolio": "المعرض"
+      },
+      "common": { "start": "البداية", "end": "النهاية", "date": "التاريخ" },
+      "education": {
+        "add": "إضافة تعليم",
+        "new": "تعليم جديد",
+        "degree": "الشهادة",
+        "school": "المؤسسة",
+        "location": "الموقع",
+        "description": "الوصف"
+      },
+      "experience": {
+        "add": "إضافة خبرة",
+        "new": "خبرة جديدة",
+        "title": "المنصب",
+        "company": "الشركة",
+        "location": "الموقع",
+        "bullets": "الإنجازات",
+        "addBullet": "إضافة نقطة"
+      },
+      "skills": { "add": "إضافة مهارة", "new": "مهارة", "name": "الاسم", "level": "المستوى" },
+      "languages": { "add": "إضافة لغة", "new": "لغة", "name": "اللغة", "level": "المستوى" },
+      "projects": {
+        "add": "إضافة مشروع",
+        "new": "مشروع",
+        "name": "الاسم",
+        "tech": "التقنيات",
+        "url": "الرابط",
+        "description": "الوصف"
+      },
+      "certifications": {
+        "add": "إضافة شهادة",
+        "new": "شهادة",
+        "name": "الاسم",
+        "issuer": "الجهة"
+      },
+      "awards": {
+        "add": "إضافة جائزة",
+        "new": "جائزة",
+        "title": "العنوان",
+        "organization": "المنظمة",
+        "description": "الوصف"
+      },
+      "custom": { "add": "إضافة قسم", "new": "قسم", "title": "العنوان", "content": "المحتوى" },
+      "template": {
+        "pick": "اختر قالبًا",
+        "desc": {
+          "executive": "حديث ومتوازن",
+          "minimal": "محسّن لـ ATS",
+          "creative": "تخطيط إبداعي",
+          "elegant": "تنفيذي أنيق",
+          "corporate": "مؤسسي مدمج"
+        }
+      }
+    },
+    "ai": {
+      "validation": {
+        "title": "أكمل سيرتك قبل التحليل بالذكاء الاصطناعي",
+        "subtitle": "بعض الأقسام الأساسية لا تزال فارغة.",
+        "missingFullName": "أضف اسمك الكامل",
+        "missingTitle": "أضف عنواناً مهنياً",
+        "missingContact": "أضف وسيلة اتصال واحدة على الأقل",
+        "missingSummary": "سيرتك تحتاج ملخصاً مهنياً",
+        "missingEducation": "أضف تكويناً واحداً على الأقل",
+        "missingExperience": "أضف خبرة أو مشروعاً واحداً على الأقل",
+        "missingSkills": "قسم المهارات فارغ",
+        "missingLanguages": "أضف لغة واحدة على الأقل"
+      },
+      "overview": {
+        "title": "مراجعة المُوظّف",
+        "subtitle": "تحليل مخصّص لملفك في ESCA ولأهداف التدريب.",
+        "scoresLabel": "مؤشرات رئيسية",
+        "overall": "الإجمالي",
+        "ats": "ATS",
+        "readiness": "جاهزية التدريب",
+        "strongest": "نقطة قوة",
+        "weakest": "أولوية",
+        "strengthsTitle": "نقاط القوة",
+        "improvementsTitle": "للتحسين"
+      },
+      "priority": {
+        "critical": "حرج",
+        "important": "مهم",
+        "optional": "اختياري"
+      },
+      "recruiter_impact_critical": "تأثير مباشر على ATS والقائمة المختصرة.",
+      "recruiter_impact_important": "يعزز انطباع المُوظّف وملاءمة التخصص.",
+      "recruiter_impact_optional": "تحسين مُوصى به، غير حاسم.",
+      "panel": {
+        "show": "إظهار مراجعة المُوظّف",
+        "hide": "تصغير اللوحة"
+      },
+      "config": {
+        "title": "التحليل بالذكاء الاصطناعي غير متاح",
+        "hint": "اضبط ANTHROPIC_API_KEY و CV_ANALYSIS_PROVIDER=claude في الخادم (.env)."
+      },
+      "analyzing": "جاري التحليل…"
+    },
+    "finalize": {
+      "title": "سيرتك جاهزة",
+      "cvIdLabel": "السيرة الذاتية رقم {{id}}",
+      "subtitle": "راجع النتيجة النهائية، حسّن بالذكاء الاصطناعي، وصدّر باحترافية.",
+      "previewLabel": "المعاينة النهائية",
+      "actions": {
+        "downloadPdf": "تحميل PDF",
+        "downloadDocx": "DOCX",
+        "docxSoon": "تصدير Word قريباً",
+        "save": "حفظ نسخة",
+        "share": "نسخ رابط المشاركة",
+        "edit": "تعديل المحتوى",
+        "changeTemplate": "تغيير القالب",
+        "duplicate": "نسخ",
+        "duplicateSoon": "النسخ قريباً",
+        "analyze": "تحليل بالذكاء الاصطناعي",
+        "goDashboard": "الذهاب إلى لوحة التحكم"
+      },
+      "share": {
+        "defaultLabel": "رابط عام",
+        "copied": "تم نسخ الرابط"
+      },
+      "analytics": {
+        "sectionTitle": "تحليل ATS والتحسين",
+        "sectionDesc": "رؤى مسؤول التوظيف والكلمات المفتاحية — في هذه الصفحة فقط.",
+        "reanalyze": "إعادة التحليل",
+        "emptyTitle": "حسّن سيرتك بالذكاء الاصطناعي",
+        "emptyDesc": "احصل على درجة ATS ونقاط القوة والضعف ونصائح للتدريب والوظائف الأولى.",
+        "atsScore": "درجة ATS",
+        "readability": "الوضوح",
+        "readabilityGood": "بنية واضحة وتسلسل احترافي",
+        "readabilityFair": "أضف إنجازات قابلة للقياس",
+        "keywords": "الكلمات المفتاحية",
+        "keywordDefault": "تغطية جيدة — أضف مهارات تقنية",
+        "internship": "ملاءمة التدريب",
+        "internshipDefault": "ملف مناسب للتدريب والمبتدئين",
+        "strengths": "نقاط القوة",
+        "weaknesses": "نقاط التحسين",
+        "optimization": "توصيات",
+        "historyCount": "{{count}} تحليلات محفوظة"
+      }
+    },
+    "preview": {
+      "canvas": "معاينة السيرة",
+      "uploadPhoto": "رفع صورة",
+      "phone": "الهاتف",
+      "location": "الموقع",
+      "placeholders": {
+        "jobTitle": "المسمى الوظيفي",
+        "company": "اسم الشركة",
+        "degree": "الشهادة أو البرنامج",
+        "school": "الجامعة أو المدرسة",
+        "startDate": "البداية",
+        "endDate": "النهاية",
+        "bullet": "صف إنجازك…",
+        "description": "صف مسارك الدراسي…",
+        "fullName": "الاسم الكامل",
+        "headline": "المسمى الوظيفي",
+        "summary": "اكتب ملخصاً مهنياً…",
+        "skill": "مهارة",
+        "language": "اللغة",
+        "level": "المستوى",
+        "email": "email@example.com",
+        "phone": "+966 50 000 0000",
+        "linkedin": "linkedin.com/in/you",
+        "website": "yoursite.com",
+        "location": "المدينة، البلد"
+      }
     }
   }
 }

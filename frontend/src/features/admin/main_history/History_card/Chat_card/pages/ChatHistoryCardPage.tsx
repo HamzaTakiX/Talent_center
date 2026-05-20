@@ -1,12 +1,6 @@
 import { FunctionComponent } from 'react';
-import HistoryCardPageShell from '../../../components/HistoryCardPageShell';
-import { AdminStatChartSection } from '../../../../ui';
-import ChatStatsGrid from '../components/ChatStatsGrid';
-import ChatTimelineList from '../components/ChatTimelineList';
+import ModuleHistoryCardPage from '../../../pages/ModuleHistoryCardPage';
 
-const ChatHistoryCardPage: FunctionComponent = () => (
-  <HistoryCardPageShell stats={<ChatStatsGrid />} chart={<AdminStatChartSection chartId="history-chat" />}
-      timeline={<ChatTimelineList />} />
-);
+const ChatHistoryCardPage: FunctionComponent = () => <ModuleHistoryCardPage kpiKey="chat" />;
 
 export default ChatHistoryCardPage;

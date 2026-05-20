@@ -24,6 +24,7 @@ export interface AdminListToolbarProps {
   onCreate?: () => void;
   toolbarAriaLabel?: string;
   actionExtra?: ReactNode;
+  beforeCreate?: ReactNode;
   controlsLayout?: AdminListToolbarControlsLayout;
 }
 
@@ -38,10 +39,11 @@ const AdminListToolbar: FunctionComponent<AdminListToolbarProps> = ({
   onCreate,
   toolbarAriaLabel = 'List filters',
   actionExtra,
+  beforeCreate,
   controlsLayout = 'grid',
 }) => {
   const hasCreate = Boolean(onCreate && createLabel);
-  const hasAction = hasCreate || actionExtra || controlsLayout === 'grouped';
+  const hasAction = hasCreate || actionExtra || beforeCreate || controlsLayout === 'grouped';
 
   const searchInput = (
     <AdminSearchInput
@@ -59,6 +61,7 @@ const AdminListToolbar: FunctionComponent<AdminListToolbarProps> = ({
       {filter1 ? <AdminSelectField {...filter1} /> : null}
       {filter2 ? <AdminSelectField {...filter2} /> : null}
       {actionExtra}
+      {beforeCreate}
       {hasCreate && (
         <button type="button" className="admin-module-toolbar__btn" onClick={onCreate}>
           <Plus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />

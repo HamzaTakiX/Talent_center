@@ -1,38 +1,38 @@
-import { Auth0Provider } from '@auth0/auth0-react';
-import { ReactNode } from 'react';
+import { Auth0Provider, type AppState } from '@auth0/auth0-react';
+import { ReactNode, useMemo } from 'react';
+import { getAuth0EnvConfig } from '../config/auth0Env';
+import { AuthConfigErrorScreen } from './AuthConfigErrorScreen';
 
 interface Auth0ProviderWithNavigateProps {
   children: ReactNode;
-  onRedirectCallback: (appState?: any) => void;
+  onRedirectCallback: (appState?: AppState) => void;
 }
 
-export const Auth0ProviderWithNavigate = ({ children, onRedirectCallback }: Auth0ProviderWithNavigateProps) => {
-  const domain = import.meta.env.VITE_AUTH0_DOMAIN;
-  const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
-  const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
+export const Auth0ProviderWithNavigate = ({
+  children,
+  onRedirectCallback,
+}: Auth0ProviderWithNavigateProps) => {
+  const config = useMemo(() => getAuth0EnvConfig(), []);
 
-  // Wait for the environment variables to be available before rendering the application.
-  // In development, sometimes strict mode causes the initial render to not have these if they are fetched asynchronously.
-  // Although Vite injects them statically.
-  if (!domain || !clientId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-800">Auth0 Configuration Missing</h2>
-          <p className="text-gray-600 mt-2">Please provide VITE_AUTH0_DOMAIN and VITE_AUTH0_CLIENT_ID in your .env.local file.</p>
-        </div>
-      </div>
-    );
+  if (!config.isConfigured) {
+    return <AuthConfigErrorScreen />;
+  }
+
+  const authorizationParams: Record<string, string> = {
+    redirect_uri: config.redirectUri,
+    scope: 'openid profile email',
+  };
+  if (config.audience) {
+    authorizationParams.audience = config.audience;
   }
 
   return (
     <Auth0Provider
-      domain={domain}
-      clientId={clientId}
-      authorizationParams={{
-        redirect_uri: window.location.origin + '/callback',
-        audience: audience,
-      }}
+      domain={config.domain}
+      clientId={config.clientId}
+      cacheLocation="localstorage"
+      useRefreshTokens
+      authorizationParams={authorizationParams}
       onRedirectCallback={onRedirectCallback}
     >
       {children}

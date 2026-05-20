@@ -11,6 +11,7 @@ import {
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, ChevronDown, Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAdminDropdownPosition } from './hooks/useAdminDropdownPosition';
 import { useAdminTheme } from '../dashboard/context/AdminThemeContext';
 
@@ -54,6 +55,8 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
   'aria-label': ariaLabel,
 }) => {
   const { theme } = useAdminTheme();
+  const { i18n } = useTranslation();
+  const isRtl = i18n.dir() === 'rtl';
   const autoId = useId();
   const id = idProp ?? autoId;
   const listboxId = `${id}-listbox`;
@@ -195,6 +198,7 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
           role="listbox"
           aria-label={ariaLabel}
           data-admin-theme={theme}
+          dir={isRtl ? 'rtl' : 'ltr'}
           className={`admin-custom-select__menu admin-custom-select__menu--${coords.placement}`}
               style={{
                 position: 'fixed',
@@ -276,6 +280,7 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
       ]
         .filter(Boolean)
         .join(' ')}
+      dir={isRtl ? 'rtl' : 'ltr'}
     >
       <button
         ref={triggerRef}

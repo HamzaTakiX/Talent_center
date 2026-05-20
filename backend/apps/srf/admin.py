@@ -1,5 +1,18 @@
 from django.contrib import admin
 
+from .compliance_models import (
+    FinancialRiskAlert,
+    Installment,
+    PaymentProofSubmission,
+    ProgramExamPeriod,
+    StudentAcademicAccess,
+)
+from .import_models import (
+    FinancialImportAuditEvent,
+    FinancialImportBatch,
+    FinancialImportMappingProfile,
+    FinancialImportSnapshot,
+)
 from .models import (
     CashflowSnapshot,
     ExemptionAndAdjustment,
@@ -35,13 +48,21 @@ class FinancialLineInline(admin.TabularInline):
     autocomplete_fields = ('fee_type',)
 
 
+class InstallmentInline(admin.TabularInline):
+    model = Installment
+    extra = 0
+
+
 @admin.register(FinancialAccount)
 class FinancialAccountAdmin(admin.ModelAdmin):
-    list_display = ('account_number', 'student_profile', 'balance', 'currency', 'status', 'last_payment_at')
-    list_filter = ('status', 'currency')
+    list_display = (
+        'account_number', 'student_profile', 'financial_status', 'payment_plan_type',
+        'paid_amount', 'remaining_amount', 'balance', 'status',
+    )
+    list_filter = ('status', 'financial_status', 'payment_plan_type', 'currency')
+    inlines = [FinancialLineInline, InstallmentInline]
     search_fields = ('account_number', 'student_profile__user__email')
     autocomplete_fields = ('student_profile',)
-    inlines = [FinancialLineInline]
 
 
 @admin.register(FinancialLine)
@@ -107,6 +128,33 @@ class NotificationCampaignAdmin(admin.ModelAdmin):
     autocomplete_fields = ('created_by',)
 
 
+@admin.register(PaymentProofSubmission)
+class PaymentProofSubmissionAdmin(admin.ModelAdmin):
+    list_display = ('account', 'amount', 'status', 'submitted_by', 'reviewed_at', 'created_at')
+    list_filter = ('status',)
+    search_fields = ('reference_number', 'account__account_number')
+
+
+@admin.register(ProgramExamPeriod)
+class ProgramExamPeriodAdmin(admin.ModelAdmin):
+    list_display = ('filiere', 'academic_year', 'semester', 'exam_start', 'exam_end', 'is_active')
+    list_filter = ('is_active', 'semester')
+
+
+@admin.register(StudentAcademicAccess)
+class StudentAcademicAccessAdmin(admin.ModelAdmin):
+    list_display = (
+        'student_profile', 'can_take_exams', 'can_download_convention',
+        'internship_eligible', 'financial_clearance', 'computed_at',
+    )
+
+
+@admin.register(FinancialRiskAlert)
+class FinancialRiskAlertAdmin(admin.ModelAdmin):
+    list_display = ('student_profile', 'alert_type', 'severity', 'is_resolved', 'created_at')
+    list_filter = ('alert_type', 'severity', 'is_resolved')
+
+
 @admin.register(CashflowSnapshot)
 class CashflowSnapshotAdmin(admin.ModelAdmin):
     list_display = (
@@ -116,3 +164,34 @@ class CashflowSnapshotAdmin(admin.ModelAdmin):
     list_filter = ('currency',)
     readonly_fields = ('created_at',)
     date_hierarchy = 'snapshot_date'
+
+
+class FinancialImportAuditInline(admin.TabularInline):
+    model = FinancialImportAuditEvent
+    extra = 0
+    readonly_fields = ('action', 'actor', 'ip_address', 'message', 'created_at')
+    can_delete = False
+
+
+@admin.register(FinancialImportBatch)
+class FinancialImportBatchAdmin(admin.ModelAdmin):
+    list_display = (
+        'uuid', 'status', 'import_mode', 'source_filename',
+        'total_rows', 'success_rows', 'error_rows', 'started_by', 'started_at',
+    )
+    list_filter = ('status', 'import_mode', 'file_format')
+    search_fields = ('uuid', 'source_filename')
+    readonly_fields = ('uuid', 'file_checksum_sha256', 'created_at', 'updated_at')
+    inlines = [FinancialImportAuditInline]
+
+
+@admin.register(FinancialImportMappingProfile)
+class FinancialImportMappingProfileAdmin(admin.ModelAdmin):
+    list_display = ('name', 'source_system', 'is_default', 'created_by', 'created_at')
+    search_fields = ('name', 'source_system')
+
+
+@admin.register(FinancialImportSnapshot)
+class FinancialImportSnapshotAdmin(admin.ModelAdmin):
+    list_display = ('batch', 'account', 'row_number', 'applied', 'rolled_back', 'created_at')
+    list_filter = ('applied', 'rolled_back')

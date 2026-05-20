@@ -35,6 +35,9 @@ const AdminHeader: FunctionComponent<AdminHeaderProps> = ({ onMenuClick }) => {
     }
     if (pathname.startsWith('/admin/internship-offers')) return t('admin.header.titles.internshipOffers');
     if (pathname.startsWith('/admin/announcements')) return t('admin.header.titles.announcements');
+    if (pathname.startsWith('/admin/documents/catalog')) {
+      return t('admin.header.titles.documentsCatalog');
+    }
     if (pathname.startsWith('/admin/documents')) return t('admin.header.titles.documents');
     if (pathname.startsWith('/admin/srf')) return t('admin.header.titles.srf');
     if (pathname.startsWith('/admin/history')) return t('admin.header.titles.history');

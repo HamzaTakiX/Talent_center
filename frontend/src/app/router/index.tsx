@@ -6,6 +6,7 @@ import LoginPage from '../../features/auth/pages/LoginPage';
 import ConfirmIdentityPage from '../../features/auth/pages/ConfirmIdentityPage';
 import CompleteProfilePage from '../../features/auth/pages/CompleteProfilePage';
 import CallbackPage from '../../features/auth/pages/CallbackPage';
+import AccessDeniedPage from '../../features/auth/pages/AccessDeniedPage';
 
 // Admin Pages
 import AdminDashboardPage from '../../features/admin/pages/AdminDashboardPage';
@@ -28,6 +29,11 @@ import ViewAnnouncementPage from '../../features/admin/announcements-stage/pages
 import EditAnnouncementPage from '../../features/admin/announcements-stage/pages/EditAnnouncementPage';
 import AnnouncementsChatPage from '../../features/admin/announcements-stage/chat/pages/AnnouncementsChatPage';
 import AnnouncementsHistoryPage from '../../features/admin/announcements-stage/history/pages/AnnouncementsHistoryPage';
+import InternshipOffersAnnouncementsPage from '../../features/admin/announcements-stage/pages/InternshipOffersAnnouncementsPage';
+import AnnouncementTypesPage from '../../features/admin/announcements-stage/pages/AnnouncementTypesPage';
+import AnnouncementsAnalyticsPage from '../../features/admin/announcements-stage/pages/AnnouncementsAnalyticsPage';
+import AnnouncementsInsightsPage from '../../features/admin/announcements-stage/pages/AnnouncementsInsightsPage';
+import AnnouncementsEngagementPage from '../../features/admin/announcements-stage/pages/AnnouncementsEngagementPage';
 import DocumentsPage from '../../features/admin/Documents_admin/pages/DocumentsPage';
 import AllDocumentsListPage from '../../features/admin/Documents_admin/Documents_cards/all-documents/pages/AllDocumentsListPage';
 import PendingDocumentsListPage from '../../features/admin/Documents_admin/Documents_cards/pending-documents/pages/PendingDocumentsListPage';
@@ -44,13 +50,52 @@ import LatePaymentsDetailPage from '../../features/admin/SRF/srf_cards/late-paym
 import BlockedStudentsDetailPage from '../../features/admin/SRF/srf_cards/blocked-students/pages/BlockedStudentsDetailPage';
 import ExemptedStudentsDetailPage from '../../features/admin/SRF/srf_cards/exempted-students/pages/ExemptedStudentsDetailPage';
 import SRFChatPage from '../../features/admin/SRF/chat/pages/SRFChatPage';
+import FinancialImportCenterPage from '../../features/admin/SRF/import/pages/FinancialImportCenterPage';
+import SrfNotificationsConfigPage from '../../features/admin/SRF/config/pages/SrfNotificationsConfigPage';
+import StudentFinancialDetailPage from '../../features/admin/SRF/pages/StudentFinancialDetailPage';
+import PaymentValidationPage from '../../features/admin/SRF/pages/PaymentValidationPage';
+import SrfHistoryPage from '../../features/admin/SRF/history/pages/SrfHistoryPage';
+import EncadrantsHistoryPage from '../../features/admin/encadrant/history/pages/EncadrantsHistoryPage';
+import MeetingsHistoryPage from '../../features/admin/encadrant/meetings/history/pages/MeetingsHistoryPage';
+import SmartAssignmentHistoryPage from '../../features/admin/encadrant/smart-assignment/history/pages/SmartAssignmentHistoryPage';
 import EncadrantChatPage from '../../features/admin/encadrant/chat/pages/EncadrantChatPage';
 import EncadrantReportsPage from '../../features/admin/encadrant/reports/pages/EncadrantReportsPage';
+import ReportsInProgressListPage from '../../features/admin/encadrant/reports/pages/ReportsInProgressListPage';
+import ReportsPendingListPage from '../../features/admin/encadrant/reports/pages/ReportsPendingListPage';
+import ReportsApprovedListPage from '../../features/admin/encadrant/reports/pages/ReportsApprovedListPage';
+import ReportsOverdueListPage from '../../features/admin/encadrant/reports/pages/ReportsOverdueListPage';
+import ReportsCriticalListPage from '../../features/admin/encadrant/reports/pages/ReportsCriticalListPage';
+import ReportsPendingValidationListPage from '../../features/admin/encadrant/reports/pages/ReportsPendingValidationListPage';
+import ReportsRiskAlertsListPage from '../../features/admin/encadrant/reports/pages/ReportsRiskAlertsListPage';
+import SupervisionReportDetailPage from '../../features/admin/encadrant/reports/pages/SupervisionReportDetailPage';
+import EncadrantMeetingsPage from '../../features/admin/encadrant/meetings/pages/EncadrantMeetingsPage';
+import SupervisionMeetingDetailPage from '../../features/admin/encadrant/meetings/pages/SupervisionMeetingDetailPage';
 import StudentChatPage from '../../features/admin/student/chat/pages/StudentChatPage';
 import SousAdminChatPage from '../../features/admin/sous_Admin/pages/SousAdminChatPage';
 import AllStudentsPage from '../../features/admin/pages/AllStudentsPage';
+import CreateStudentPage from '../../features/admin/student/pages/CreateStudentPage';
+import EditStudentPage from '../../features/admin/student/pages/EditStudentPage';
+import EditInternshipOfferPage from '../../features/admin/offres-stage/pages/EditInternshipOfferPage';
+import EditAdministratorPage from '../../features/admin/sous_Admin/pages/EditAdministratorPage';
+import AssignAdminPermissionsPage from '../../features/admin/sous_Admin/pages/AssignAdminPermissionsPage';
+import EditEncadrantPage from '../../features/admin/encadrant/pages/EditEncadrantPage';
+import ReviewDocumentPage from '../../features/admin/Documents_admin/pages/ReviewDocumentPage';
+import AllRequestsPage from '../../features/admin/Documents_admin/pages/AllRequestsPage';
+import RequestDetailPage from '../../features/admin/Documents_admin/pages/RequestDetailPage';
+import DocumentTypesPage from '../../features/admin/Documents_admin/pages/DocumentTypesPage';
+import WorkflowsPage from '../../features/admin/Documents_admin/pages/WorkflowsPage';
+import ReservationCenterPage from '../../features/admin/Documents_admin/pages/ReservationCenterPage';
+import ResourcesPage from '../../features/admin/Documents_admin/pages/ResourcesPage';
+import TemplatesPage from '../../features/admin/Documents_admin/pages/TemplatesPage';
+import SlaAutomationPage from '../../features/admin/Documents_admin/pages/SlaAutomationPage';
+import DocumentsAnalyticsPage from '../../features/admin/Documents_admin/pages/DocumentsAnalyticsPage';
+import DeliveryMonitoringPage from '../../features/admin/Documents_admin/pages/DeliveryMonitoringPage';
+import WorkloadBoardPage from '../../features/admin/Documents_admin/pages/WorkloadBoardPage';
+import ServiceCatalogPage from '../../features/admin/Documents_admin/pages/ServiceCatalogPage';
+import ServiceCatalogFormPage from '../../features/admin/Documents_admin/pages/ServiceCatalogFormPage';
 import TotalStudentsListPage from '../../features/admin/student/student_cards/total_students/pages/TotalStudentsListPage';
 import ActiveStudentsListPage from '../../features/admin/student/student_cards/active_students/pages/ActiveStudentsListPage';
+import InactiveStudentsListPage from '../../features/admin/student/student_cards/inactive_students/pages/InactiveStudentsListPage';
 import WithoutInternshipListPage from '../../features/admin/student/student_cards/without_internship/pages/WithoutInternshipListPage';
 import WithInternshipListPage from '../../features/admin/student/student_cards/with_internship/pages/WithInternshipListPage';
 import EngagementLevelListPage from '../../features/admin/student/student_cards/engagement_level/pages/EngagementLevelListPage';
@@ -58,13 +103,11 @@ import AllEncadrantsPage from '../../features/admin/pages/AllEncadrantsPage';
 import AddEncadrantPage from '../../features/admin/encadrant/pages/AddEncadrantPage';
 import AllEncadrantsListPage from '../../features/admin/encadrant/encadrant_cards/all-encadrants/pages/AllEncadrantsListPage';
 import EncadrantsByAssignedStudentsListPage from '../../features/admin/encadrant/encadrant_cards/assigned-students/pages/EncadrantsByAssignedStudentsListPage';
-import ReportsInProgressListPage from '../../features/admin/encadrant/encadrant_cards/reports-in-progress/pages/ReportsInProgressListPage';
-import UpcomingMeetingsListPage from '../../features/admin/encadrant/encadrant_cards/upcoming-meetings/pages/UpcomingMeetingsListPage';
+import SmartAssignmentPage from '../../features/admin/encadrant/smart-assignment/pages/SmartAssignmentPage';
 import AllAdminsPage from '../../features/admin/pages/AllAdminsPage';
 import DashboardStudentsPage from '../../features/admin/pages/DashboardStudentsPage';
 import DashboardEncadrantsPage from '../../features/admin/pages/DashboardEncadrantsPage';
 import DashboardAdminsPage from '../../features/admin/pages/DashboardAdminsPage';
-import AllAdministratorsListPage from '../../features/admin/sous_Admin/pages/AllAdministratorsListPage';
 import StageAdministratorsListPage from '../../features/admin/sous_Admin/pages/StageAdministratorsListPage';
 import FinanceAdministratorsListPage from '../../features/admin/sous_Admin/pages/FinanceAdministratorsListPage';
 import DocumentsAdministratorsListPage from '../../features/admin/sous_Admin/pages/DocumentsAdministratorsListPage';
@@ -93,43 +136,73 @@ import AdminProfilePage from '../../features/admin/account/pages/AdminProfilePag
 import AdminSettingsPage from '../../features/admin/account/pages/AdminSettingsPage';
 
 // Student Pages
-import StudentDashboardPage from '../../features/student/pages/StudentDashboardPage';
+import StudentDashboardPage from '../../features/student/Dashboard/pages/StudentDashboardPage';
+import StudentInternshipOffersPage from '../../features/student/internship_offers/pages/StudentInternshipOffersPage';
+import AllInternshipOffersPage from '../../features/student/internship_offers/pages/AllInternshipOffersPage';
+import InternshipOfferDetailsPage from '../../features/student/internship_offers/pages/InternshipOfferDetailsPage';
+import ApplyToInternshipPage from '../../features/student/internship_offers/pages/ApplyToInternshipPage';
+import CvAnalysisPage from '../../features/student/internship_offers/pages/CvAnalysisPage';
+import { CvAnalysisToolPage } from '../../features/student/internship_offers/CV_Analyse';
+import { InterviewSimulatorPage } from '../../features/student/internship_offers/interview_Simulator';
+import { ChatPage } from '../../features/student/internship_offers/chat';
+import { HistoryPage } from '../../features/student/internship_offers/history';
+import {
+  AllAnnouncementsPage,
+  AnnouncementsChatPage as StudentAnnouncementsChatPage,
+  AnnouncementsHistoryPage as StudentAnnouncementsHistoryPage,
+  AnnouncementsPage as StudentAnnouncementsPage,
+} from '../../features/student/Annoucements';
+import { MainHistoryPage as StudentMainHistoryPage } from '../../features/student/main_history';
+import {
+  DocumentsChatPage as StudentDocumentsChatPage,
+  DocumentsPage as StudentDocumentsPage,
+} from '../../features/student/Documents';
+import {
+  EncadrantAgendaPage as StudentEncadrantAgendaPage,
+  EncadrantChatPage as StudentEncadrantChatPage,
+  EncadrantPage as StudentEncadrantPage,
+  EncadrantReportPage as StudentEncadrantReportPage,
+  EncadrantTaskPage as StudentEncadrantTaskPage,
+  EncadrantWorkspacePage as StudentEncadrantWorkspacePage,
+} from '../../features/student/Encadrant';
+import { SrfChatPage as StudentSrfChatPage, SrfPage as StudentSrfPage } from '../../features/student/SRF';
 
 // CV Pages
 import CVListPage from '../../features/cv/pages/CVListPage';
 import CVEditorPage from '../../features/cv/pages/CVEditorPage';
+import CVFinalizePage from '../../features/cv/pages/CVFinalizePage';
 import PublicCvPage from '../../features/cv/pages/PublicCvPage';
 
 // Hooks
 import { useAuth } from '../../features/auth/hooks/useAuth';
+import { getDefaultHomePath, normalizeRole } from '../../features/auth/utils/roleAuth';
 
 // Guards
 import { GuestGuard } from './guards/GuestGuard';
 import { OnboardingGuard } from './guards/OnboardingGuard';
 import { AuthGuard } from './guards/AuthGuard';
+import { RouteAccessGuard } from './guards/RouteAccessGuard';
+import { AuthLoadingGate } from './guards/AuthLoadingGate';
 import AdminAppProviders from '../../features/admin/providers/AdminAppProviders';
 
 const DashboardRedirect = () => {
-  const { user } = useAuth();
-  const userRole = user?.role?.toUpperCase();
+  const { user, isAuthReady } = useAuth();
 
-  // Frontend-only admin mode: redirect directly to admin dashboard
-  if (import.meta.env.VITE_FRONTEND_ONLY_ADMIN === 'true') {
-    return <Navigate to="/admin/dashboard" replace />;
+  if (!isAuthReady || !user) {
+    return <AuthLoadingGate />;
   }
 
-  if (userRole === 'STUDENT') {
-    return <Navigate to="/student-dashboard" replace />;
-  }
-
-  // Admin and other roles go to admin dashboard
-  return <Navigate to="/admin/dashboard" replace />;
+  return <Navigate to={getDefaultHomePath(normalizeRole(user.role))} replace />;
 };
 
 export const router = createBrowserRouter([
   {
     path: '/callback',
     element: <CallbackPage />
+  },
+  {
+    path: '/unauthorized',
+    element: <AccessDeniedPage />
   },
 
   {
@@ -163,6 +236,9 @@ export const router = createBrowserRouter([
     element: <AuthGuard />,
     children: [
       {
+        element: <RouteAccessGuard />,
+        children: [
+      {
         element: <AdminAppProviders />,
         children: [
       {
@@ -172,6 +248,102 @@ export const router = createBrowserRouter([
       {
         path: '/student-dashboard',
         element: <StudentDashboardPage />
+      },
+      {
+        path: '/student/announcements',
+        element: <StudentAnnouncementsPage />
+      },
+      {
+        path: '/student/announcements/all',
+        element: <AllAnnouncementsPage />
+      },
+      {
+        path: '/student/announcements/chat',
+        element: <StudentAnnouncementsChatPage />
+      },
+      {
+        path: '/student/announcements/history',
+        element: <StudentAnnouncementsHistoryPage />
+      },
+      {
+        path: '/student/main-history',
+        element: <StudentMainHistoryPage />
+      },
+      {
+        path: '/student/documents',
+        element: <StudentDocumentsPage />
+      },
+      {
+        path: '/student/documents/chat',
+        element: <StudentDocumentsChatPage />
+      },
+      {
+        path: '/student/srf',
+        element: <StudentSrfPage />
+      },
+      {
+        path: '/student/srf/chat',
+        element: <StudentSrfChatPage />
+      },
+      {
+        path: '/student/encadrant',
+        element: <StudentEncadrantPage />
+      },
+      {
+        path: '/student/encadrant/chat',
+        element: <StudentEncadrantChatPage />
+      },
+      {
+        path: '/student/encadrant/agenda',
+        element: <StudentEncadrantAgendaPage />
+      },
+      {
+        path: '/student/encadrant/task',
+        element: <StudentEncadrantTaskPage />
+      },
+      {
+        path: '/student/encadrant/workspace',
+        element: <StudentEncadrantWorkspacePage />
+      },
+      {
+        path: '/student/encadrant/report',
+        element: <StudentEncadrantReportPage />
+      },
+      {
+        path: '/student/internship-offers',
+        element: <StudentInternshipOffersPage />
+      },
+      {
+        path: '/student/internship-offers/all',
+        element: <AllInternshipOffersPage />
+      },
+      {
+        path: '/student/internship-offers/cv-analysis-tool',
+        element: <CvAnalysisToolPage />
+      },
+      {
+        path: '/student/internship-offers/interview-simulator',
+        element: <InterviewSimulatorPage />
+      },
+      {
+        path: '/student/internship-offers/chat',
+        element: <ChatPage />
+      },
+      {
+        path: '/student/internship-offers/history',
+        element: <HistoryPage />
+      },
+      {
+        path: '/student/internship-offers/:offerId/apply',
+        element: <ApplyToInternshipPage />
+      },
+      {
+        path: '/student/internship-offers/:offerId/cv-analysis',
+        element: <CvAnalysisPage />
+      },
+      {
+        path: '/student/internship-offers/:offerId',
+        element: <InternshipOfferDetailsPage />
       },
       {
         path: '/admin/dashboard',
@@ -208,6 +380,10 @@ export const router = createBrowserRouter([
       {
         path: '/admin/internship-offers/create',
         element: <CreateInternshipOfferPage />
+      },
+      {
+        path: '/admin/internship-offers/:id/edit',
+        element: <EditInternshipOfferPage />
       },
       {
         path: '/admin/internship-offers/all',
@@ -264,6 +440,26 @@ export const router = createBrowserRouter([
       {
         path: '/admin/announcements/history',
         element: <AnnouncementsHistoryPage />
+      },
+      {
+        path: '/admin/announcements/internships',
+        element: <InternshipOffersAnnouncementsPage />
+      },
+      {
+        path: '/admin/announcements/types',
+        element: <AnnouncementTypesPage />
+      },
+      {
+        path: '/admin/announcements/analytics',
+        element: <AnnouncementsAnalyticsPage />
+      },
+      {
+        path: '/admin/announcements/insights',
+        element: <AnnouncementsInsightsPage />
+      },
+      {
+        path: '/admin/announcements/engagement',
+        element: <AnnouncementsEngagementPage />
       },
       {
         path: '/admin/announcements/:id/edit',
@@ -330,6 +526,66 @@ export const router = createBrowserRouter([
         element: <MeetingsHistoryCardPage />
       },
       {
+        path: '/admin/documents/catalog/create',
+        element: <ServiceCatalogFormPage />
+      },
+      {
+        path: '/admin/documents/catalog/:id/edit',
+        element: <ServiceCatalogFormPage />
+      },
+      {
+        path: '/admin/documents/catalog',
+        element: <ServiceCatalogPage />
+      },
+      {
+        path: '/admin/documents/requests/:id',
+        element: <RequestDetailPage />
+      },
+      {
+        path: '/admin/documents/requests',
+        element: <AllRequestsPage />
+      },
+      {
+        path: '/admin/documents/types',
+        element: <DocumentTypesPage />
+      },
+      {
+        path: '/admin/documents/workflows',
+        element: <WorkflowsPage />
+      },
+      {
+        path: '/admin/documents/reservations',
+        element: <ReservationCenterPage />
+      },
+      {
+        path: '/admin/documents/resources',
+        element: <ResourcesPage />
+      },
+      {
+        path: '/admin/documents/templates',
+        element: <TemplatesPage />
+      },
+      {
+        path: '/admin/documents/sla',
+        element: <SlaAutomationPage />
+      },
+      {
+        path: '/admin/documents/analytics',
+        element: <DocumentsAnalyticsPage />
+      },
+      {
+        path: '/admin/documents/delivery',
+        element: <DeliveryMonitoringPage />
+      },
+      {
+        path: '/admin/documents/workload',
+        element: <WorkloadBoardPage />
+      },
+      {
+        path: '/admin/documents/:id/review',
+        element: <ReviewDocumentPage />
+      },
+      {
         path: '/admin/documents',
         element: <DocumentsPage />
       },
@@ -356,6 +612,14 @@ export const router = createBrowserRouter([
       {
         path: '/admin/documents/history',
         element: <DocumentsHistoryPage />
+      },
+      {
+        path: '/admin/srf/student/:accountId',
+        element: <StudentFinancialDetailPage />
+      },
+      {
+        path: '/admin/srf/validation/:paymentId',
+        element: <PaymentValidationPage />
       },
       {
         path: '/admin/srf/paid-students',
@@ -394,12 +658,76 @@ export const router = createBrowserRouter([
         element: <SRFChatPage />
       },
       {
+        path: '/admin/srf/imports',
+        element: <FinancialImportCenterPage />
+      },
+      {
+        path: '/admin/srf/config',
+        element: <SrfNotificationsConfigPage />
+      },
+      {
+        path: '/admin/srf/history',
+        element: <SrfHistoryPage />
+      },
+      {
         path: '/admin/encadrant/chat',
         element: <EncadrantChatPage />
       },
       {
+        path: '/admin/encadrant/meetings/history',
+        element: <MeetingsHistoryPage />
+      },
+      {
+        path: '/admin/encadrant/meetings',
+        element: <EncadrantMeetingsPage />
+      },
+      {
+        path: '/admin/encadrant/meetings/:id',
+        element: <SupervisionMeetingDetailPage />
+      },
+      {
         path: '/admin/encadrant/reports',
         element: <EncadrantReportsPage />
+      },
+      {
+        path: '/admin/encadrant/reports/in-progress',
+        element: <ReportsInProgressListPage />
+      },
+      {
+        path: '/admin/encadrant/reports/pending',
+        element: <ReportsPendingListPage />
+      },
+      {
+        path: '/admin/encadrant/reports/approved',
+        element: <ReportsApprovedListPage />
+      },
+      {
+        path: '/admin/encadrant/reports/overdue',
+        element: <ReportsOverdueListPage />
+      },
+      {
+        path: '/admin/encadrant/reports/critical',
+        element: <ReportsCriticalListPage />
+      },
+      {
+        path: '/admin/encadrant/reports/pending-validation',
+        element: <ReportsPendingValidationListPage />
+      },
+      {
+        path: '/admin/encadrant/reports/risk-alerts',
+        element: <ReportsRiskAlertsListPage />
+      },
+      {
+        path: '/admin/encadrant/reports/:id',
+        element: <SupervisionReportDetailPage />
+      },
+      {
+        path: '/admin/encadrant/smart-assignment/history',
+        element: <SmartAssignmentHistoryPage />
+      },
+      {
+        path: '/admin/encadrant/smart-assignment',
+        element: <SmartAssignmentPage />
       },
       {
         path: '/admin/student/chat',
@@ -422,6 +750,10 @@ export const router = createBrowserRouter([
         element: <ActiveStudentsListPage />
       },
       {
+        path: '/admin/students/inactive-students',
+        element: <InactiveStudentsListPage />
+      },
+      {
         path: '/admin/students/without-internship',
         element: <WithoutInternshipListPage />
       },
@@ -434,16 +766,36 @@ export const router = createBrowserRouter([
         element: <EngagementLevelListPage />
       },
       {
+        path: '/admin/students/create',
+        element: <CreateStudentPage />
+      },
+      {
+        path: '/admin/students/:id/edit',
+        element: <EditStudentPage />
+      },
+      {
         path: '/admin/students',
         element: <AllStudentsPage />
+      },
+      {
+        path: '/admin/encadrants/history',
+        element: <EncadrantsHistoryPage />
       },
       {
         path: '/admin/encadrants',
         element: <AllEncadrantsPage />
       },
       {
+        path: '/admin/encadrants/smart-assignment',
+        element: <Navigate to="/admin/encadrant/smart-assignment" replace />
+      },
+      {
         path: '/admin/encadrants/new',
         element: <AddEncadrantPage />
+      },
+      {
+        path: '/admin/encadrants/:id/edit',
+        element: <EditEncadrantPage />
       },
       {
         path: '/admin/encadrants/all',
@@ -455,11 +807,11 @@ export const router = createBrowserRouter([
       },
       {
         path: '/admin/encadrants/reports-in-progress',
-        element: <ReportsInProgressListPage />
+        element: <Navigate to="/admin/encadrant/reports/in-progress" replace />
       },
       {
         path: '/admin/encadrants/upcoming-meetings',
-        element: <UpcomingMeetingsListPage />
+        element: <Navigate to="/admin/encadrant/meetings" replace />
       },
       {
         path: '/admin/admins/stage-administrators',
@@ -478,12 +830,20 @@ export const router = createBrowserRouter([
         element: <CommunicationAdministratorsListPage />
       },
       {
+        path: '/admin/admins/create',
+        element: <Navigate to="/admin/admins/create-administrator" replace />
+      },
+      {
         path: '/admin/admins/create-administrator',
         element: <CreateAdministratorPage />
       },
       {
-        path: '/admin/admins/all-administrators',
-        element: <AllAdministratorsListPage />
+        path: '/admin/admins/:id/edit',
+        element: <EditAdministratorPage />
+      },
+      {
+        path: '/admin/admins/:id/permissions',
+        element: <AssignAdminPermissionsPage />
       },
       {
         path: '/admin/admins',
@@ -518,8 +878,14 @@ export const router = createBrowserRouter([
         element: <CVEditorPage />
       },
       {
+        path: '/cv/:id/finalize',
+        element: <CVFinalizePage />
+      },
+      {
         path: '/cv-editor',
         element: <CVEditorPage />
+      }
+        ]
       }
         ]
       }

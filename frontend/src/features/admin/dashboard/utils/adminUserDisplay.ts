@@ -8,6 +8,10 @@ export const getAdminRoleLabel = (role?: string | null): string => {
     return 'Encadrant';
   }
 
+  if (normalized === 'student') {
+    return 'Étudiant';
+  }
+
   if (
     normalized === 'admin' ||
     normalized === 'super_admin' ||
@@ -31,11 +35,17 @@ export const getAdminDisplayName = (user: User | null | undefined): string => {
     const fromProfile = `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim();
     if (fromProfile) return fromProfile;
   }
-  return user.email;
+  const student = user.student_profile;
+  if (student) {
+    const fromStudent = `${student.first_name ?? ''} ${student.last_name ?? ''}`.trim();
+    if (fromStudent) return fromStudent;
+  }
+  const email = (user.email ?? '').trim();
+  return email || 'Utilisateur';
 };
 
-export const getAdminUserInitials = (displayName: string, email?: string | null): string => {
-  const trimmed = displayName.trim();
+export const getAdminUserInitials = (displayName?: string | null, email?: string | null): string => {
+  const trimmed = (displayName ?? '').trim();
   const parts = trimmed.split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
     return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();

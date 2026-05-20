@@ -1,4 +1,5 @@
 import { FunctionComponent } from 'react';
+import AuthPreferencesBar from './AuthPreferencesBar';
 
 interface AuthImagePanelProps {
   imageSrc: string;
@@ -117,6 +118,7 @@ const AuthImagePanel: FunctionComponent<AuthImagePanelProps> = ({
         <div className="orb-2 absolute rounded-full pointer-events-none" style={{ width:130, height:130, bottom:'-30px', left:'-30px', background:'radial-gradient(circle,rgba(120,80,255,0.38) 0%,transparent 70%)', filter:'blur(20px)' }} />
         {/* top accent line */}
         <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background:'linear-gradient(90deg,transparent,rgba(140,160,255,0.7) 40%,rgba(180,200,255,0.9) 60%,transparent)' }} />
+        <AuthPreferencesBar placement="image" />
         {/* text */}
         <div className="absolute bottom-0 left-0 right-0 px-5 pb-4 pt-6" style={{ background:'linear-gradient(0deg,rgba(10,20,80,0.7) 0%,transparent 100%)' }}>
           <h2 className="panel-title m-0 tracking-tight" style={{ fontSize:20, fontWeight:800, lineHeight:1.25, textShadow:'0 2px 8px rgba(0,0,30,0.5)' }}>{title}</h2>
@@ -196,7 +198,7 @@ const AuthImagePanel: FunctionComponent<AuthImagePanelProps> = ({
           }}
         />
 
-
+        <AuthPreferencesBar placement="image" />
 
         {/* — Ticket / scrolling ticker at bottom strip */}
         <div

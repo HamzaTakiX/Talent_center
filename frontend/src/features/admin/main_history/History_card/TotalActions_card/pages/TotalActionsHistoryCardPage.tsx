@@ -1,12 +1,8 @@
 import { FunctionComponent } from 'react';
-import HistoryCardPageShell from '../../../components/HistoryCardPageShell';
-import { AdminStatChartSection } from '../../../../ui';
-import TotalActionsStatsGrid from '../components/TotalActionsStatsGrid';
-import TotalActionsTimelineList from '../components/TotalActionsTimelineList';
+import ModuleHistoryCardPage from '../../../pages/ModuleHistoryCardPage';
 
 const TotalActionsHistoryCardPage: FunctionComponent = () => (
-  <HistoryCardPageShell stats={<TotalActionsStatsGrid />} chart={<AdminStatChartSection chartId="history-total-actions" />}
-      timeline={<TotalActionsTimelineList />} />
+  <ModuleHistoryCardPage kpiKey="total_actions" />
 );
 
 export default TotalActionsHistoryCardPage;

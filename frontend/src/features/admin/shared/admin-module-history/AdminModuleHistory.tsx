@@ -1,9 +1,15 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, type ComponentType, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAdminCopy } from '../../i18n/useAdminCopy';
 import AdminLayout from '../../dashboard/components/AdminLayout';
 import { AdminEmptyState, AdminListToolbar } from '../../ui';
 import type { AdminHistoryRowDisplay, AdminHistoryFilterConfig } from './adminHistoryTypes';
+
+export type AdminModuleHistoryLayoutProps = {
+  children: ReactNode;
+  mainFillHeight?: boolean;
+  contentFlush?: boolean;
+};
 
 export interface AdminModuleHistoryProps {
   searchValue: string;
@@ -11,6 +17,8 @@ export interface AdminModuleHistoryProps {
   filters: readonly [AdminHistoryFilterConfig, AdminHistoryFilterConfig];
   rows: AdminHistoryRowDisplay[];
   emptyMessage?: string;
+  /** Shell layout (default: AdminLayout). Student portal passes StudentLayout. */
+  Layout?: ComponentType<AdminModuleHistoryLayoutProps>;
 }
 
 const AdminModuleHistory: FunctionComponent<AdminModuleHistoryProps> = ({
@@ -19,14 +27,15 @@ const AdminModuleHistory: FunctionComponent<AdminModuleHistoryProps> = ({
   filters,
   rows,
   emptyMessage,
+  Layout = AdminLayout,
 }) => {
   const { t } = useTranslation();
   const { emptyState } = useAdminCopy();
   const resolvedEmpty = emptyMessage ?? emptyState('historyFilters');
 
   return (
-    <AdminLayout mainFillHeight>
-      <div className="admin-history-page font-inter -my-4 flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden bg-[var(--admin-bg-elevated)] text-start sm:-my-5 md:-my-6">
+    <Layout mainFillHeight contentFlush>
+      <div className="admin-history-page font-inter flex h-0 min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden bg-[var(--admin-bg-elevated)] text-start">
         <header className="admin-history-page__header shrink-0 border-b border-[var(--admin-border)] px-4 pb-5 pt-3 sm:px-5 md:px-6 md:pb-6 md:pt-4">
           <AdminListToolbar
             searchValue={searchValue}
@@ -106,7 +115,7 @@ const AdminModuleHistory: FunctionComponent<AdminModuleHistoryProps> = ({
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </Layout>
   );
 };
 

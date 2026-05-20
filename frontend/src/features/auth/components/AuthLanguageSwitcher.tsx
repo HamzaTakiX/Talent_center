@@ -9,11 +9,10 @@ const LABELS: Record<AppLanguage, string> = {
   ar: 'ع',
 };
 
-const PILL_CLASS =
-  'flex items-center gap-1 rounded-xl border border-gainsboro bg-white/95 p-1 shadow-sm backdrop-blur-sm';
+const BTN_BASE =
+  'auth-lang-btn cursor-pointer rounded-md border-0 shadow-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--auth-brand)]/35';
 
 interface AuthLanguageSwitcherProps {
-  /** Sans position absolue — à placer dans la colonne formulaire (login). */
   embedded?: boolean;
   className?: string;
 }
@@ -38,25 +37,26 @@ const AuthLanguageSwitcher: FunctionComponent<AuthLanguageSwitcherProps> = ({
     <div
       role="group"
       aria-label={t('common.language')}
-      className={`${PILL_CLASS} ${positionClass} ${className}`.trim()}
+      className={`auth-lang-switch ${embedded ? 'inline-flex items-center gap-0.5' : 'inline-flex items-center gap-0.5'} ${positionClass} ${className}`.trim()}
     >
-      {APP_LANGUAGES.map((lang) => (
-        <button
-          key={lang}
-          type="button"
-          onClick={() => select(lang)}
-          aria-pressed={current === lang}
-          aria-label={t(`common.languages.${lang}`)}
-          title={t(`common.languages.${lang}`)}
-          className={`min-w-[2.25rem] rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-            current === lang
-              ? 'bg-mediumslateblue text-white shadow-sm'
-              : 'text-dimgray hover:bg-slate-50'
-          }`}
-        >
-          {LABELS[lang]}
-        </button>
-      ))}
+      {APP_LANGUAGES.map((lang) => {
+        const isActive = current === lang;
+        return (
+          <button
+            key={lang}
+            type="button"
+            onClick={() => select(lang)}
+            aria-pressed={isActive}
+            aria-label={t(`common.languages.${lang}`)}
+            title={t(`common.languages.${lang}`)}
+            className={`${BTN_BASE} ${isActive ? 'auth-lang-btn--active' : ''}`}
+          >
+            <span className="auth-lang-btn__label" aria-hidden>
+              {LABELS[lang]}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 };

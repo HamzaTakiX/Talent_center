@@ -44,7 +44,9 @@ void i18n.use(initReactI18next).init({
 
 // Load extended admin translations after i18n init (avoids circular import with config).
 import { registerAdminTranslations } from '../features/admin/i18n/registerAdminTranslations';
+import { registerStudentTranslations } from '../features/student/i18n/registerStudentTranslations';
 registerAdminTranslations();
+registerStudentTranslations();
 
 export const changeAppLanguage = async (lang: AppLanguage) => {
   applyDocumentLanguage(lang);

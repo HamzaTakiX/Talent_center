@@ -41,6 +41,11 @@ export interface AdminDonutSegment {
 export interface AdminDonutChartProps {
   segments: AdminDonutSegment[];
   ariaLabel: string;
+  /** Centre du donut (ex. total étudiants) quand ≠ somme des segments */
+  centerTotal?: number;
+  centerCaption?: string;
+  /** Style analytics fin (traits légers, séparation nette, sans glow) */
+  premiumGradients?: boolean;
 }
 
 export type StatPageChartId =
@@ -49,6 +54,7 @@ export type StatPageChartId =
   | 'students-without-internship'
   | 'students-with-internship'
   | 'students-engagement-distribution'
+  | 'students-internship-split'
   | 'offers-all-status'
   | 'offers-active-companies'
   | 'offers-expired-timeline'

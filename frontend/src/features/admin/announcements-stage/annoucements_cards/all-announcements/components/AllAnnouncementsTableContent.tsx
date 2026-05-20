@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { adminCrudRoutes } from '../../../../shared/navigation/adminCrudRoutes';
 import { Calendar, Eye, Pencil, Trash2, User } from 'lucide-react';
 import type { AnnouncementRow } from '../../../types';
 import AdminMobileRowCard from '../../../../shared/AdminMobileRowCard';
@@ -57,7 +58,7 @@ const AllAnnouncementsTableContent: FunctionComponent<AllAnnouncementsTableConte
                     <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                     View
                   </button>
-                  <button type="button" className={adminTableBtnMobile} onClick={() => console.log('Edit', row.id)}>
+                  <button type="button" className={adminTableBtnMobile} onClick={() => navigate(adminCrudRoutes.announcementEdit(row.id))}>
                     <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                     Edit
                   </button>
@@ -113,7 +114,7 @@ const AllAnnouncementsTableContent: FunctionComponent<AllAnnouncementsTableConte
                         <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                         View
                       </button>
-                      <button type="button" className={adminTableBtn} onClick={() => console.log('Edit', row.id)}>
+                      <button type="button" className={adminTableBtn} onClick={() => navigate(adminCrudRoutes.announcementEdit(row.id))}>
                         <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                         Edit
                       </button>

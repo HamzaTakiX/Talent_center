@@ -22,7 +22,15 @@ export type AdminNavSectionId =
   | 'student'
   | 'admin';
 
-export type AdminNavChildId = 'chat' | 'history' | 'reports';
+export type AdminNavChildId =
+  | 'catalog'
+  | 'chat'
+  | 'history'
+  | 'reports'
+  | 'meetings'
+  | 'smartAssignment'
+  | 'imports'
+  | 'config';
 
 export interface AdminNavItem {
   id: AdminNavSectionId;
@@ -36,9 +44,9 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { id: 'internshipOffers', icon: Briefcase, expandable: true, children: ['chat', 'history'] },
   { id: 'announcements', icon: Bell, expandable: true, children: ['chat', 'history'] },
   { id: 'history', icon: History },
-  { id: 'documents', icon: FileText, expandable: true, children: ['chat', 'history'] },
-  { id: 'srf', icon: DollarSign, expandable: true, children: ['chat'] },
-  { id: 'encadrant', icon: UserCheck, expandable: true, children: ['chat', 'reports'] },
+  { id: 'documents', icon: FileText, expandable: true, children: ['catalog', 'chat', 'history'] },
+  { id: 'srf', icon: DollarSign, expandable: true, children: ['config', 'imports', 'chat', 'history'] },
+  { id: 'encadrant', icon: UserCheck, expandable: true, children: ['chat', 'reports', 'meetings', 'smartAssignment', 'history'] },
   { id: 'student', icon: Users, expandable: true, children: ['chat'] },
   { id: 'admin', icon: Shield, expandable: true, children: ['chat'] },
 ];
@@ -68,7 +76,9 @@ export const getActiveSectionFromPath = (pathname: string): AdminNavSectionId =>
     return 'documents';
   }
   if (pathname === '/admin/srf' || pathname.startsWith('/admin/srf/')) return 'srf';
-  if (pathname.startsWith('/admin/encadrant')) return 'encadrant';
+  if (pathname.startsWith('/admin/encadrant') || pathname.startsWith('/admin/encadrants')) {
+    return 'encadrant';
+  }
   if (pathname.startsWith('/admin/student')) return 'student';
   if (pathname === '/admin/admins' || pathname.startsWith('/admin/admins/')) return 'admin';
   if (pathname.startsWith('/admin/sous-admin/')) return 'admin';
@@ -87,7 +97,9 @@ export const sectionToExpandForPath = (pathname: string): AdminNavSectionId | nu
     return 'documents';
   }
   if (pathname === '/admin/srf' || pathname.startsWith('/admin/srf/')) return 'srf';
-  if (pathname.startsWith('/admin/encadrant')) return 'encadrant';
+  if (pathname.startsWith('/admin/encadrant') || pathname.startsWith('/admin/encadrants')) {
+    return 'encadrant';
+  }
   if (pathname.startsWith('/admin/student')) return 'student';
   if (pathname === '/admin/admins' || pathname.startsWith('/admin/admins/')) return 'admin';
   if (pathname.startsWith('/admin/sous-admin/')) return 'admin';
@@ -107,15 +119,38 @@ export const getChildPath = (
     if (child === 'history') return '/admin/announcements/history';
   }
   if (section === 'documents') {
+    if (child === 'catalog') return '/admin/documents/catalog';
     if (child === 'chat') return '/admin/documents/chat';
     if (child === 'history') return '/admin/documents/history';
   }
+  if (section === 'srf' && child === 'config') return '/admin/srf/config';
+  if (section === 'srf' && child === 'imports') return '/admin/srf/imports';
   if (section === 'srf' && child === 'chat') return '/admin/srf/chat';
+  if (section === 'srf' && child === 'history') return '/admin/srf/history';
+  if (section === 'encadrant' && child === 'history') return '/admin/encadrants/history';
   if (section === 'encadrant' && child === 'chat') return '/admin/encadrant/chat';
   if (section === 'encadrant' && child === 'reports') return '/admin/encadrant/reports';
+  if (section === 'encadrant' && child === 'meetings') return '/admin/encadrant/meetings';
+  if (section === 'encadrant' && child === 'smartAssignment') {
+    return '/admin/encadrant/smart-assignment';
+  }
   if (section === 'student' && child === 'chat') return '/admin/student/chat';
   if (section === 'admin' && child === 'chat') return '/admin/sous-admin/chat';
   return undefined;
+};
+
+/** Whether a sidebar child link should appear active (includes sub-routes e.g. catalog/create). */
+export const isChildNavActive = (
+  section: AdminNavSectionId,
+  child: AdminNavChildId,
+  pathname: string,
+): boolean => {
+  const base = getChildPath(section, child);
+  if (!base) return false;
+  if (section === 'documents' && child === 'catalog') {
+    return pathname === base || pathname.startsWith(`${base}/`);
+  }
+  return pathname === base;
 };
 
 export const getSectionPath = (section: AdminNavSectionId): string | undefined => {

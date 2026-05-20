@@ -30,6 +30,13 @@ const REPORT_STATUS_KEY: Record<string, string> = {
 const ACCOUNT_STATUS_KEY: Record<string, string> = {
   Active: 'active',
   Inactive: 'inactive',
+  PENDING: 'pending',
+  AUTHORIZED: 'authorized',
+  ACTIVE: 'active',
+  SUSPENDED: 'suspended',
+  BLOCKED: 'blocked',
+  ARCHIVED: 'archived',
+  LOCKED: 'locked',
 };
 
 const INTERNSHIP_STATUS_KEY: Record<string, string> = {

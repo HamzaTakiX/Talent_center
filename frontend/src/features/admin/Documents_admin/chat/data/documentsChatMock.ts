@@ -8,6 +8,10 @@ export const documentsParticipants: AdminChatParticipant[] = [
     lastPreview: 'Student 2024-118 still missing signature page 3 on the convention PDF.',
     timeLabel: '11:02',
     unreadCount: 2,
+    contextKind: 'workflow_thread',
+    urgency: 'HIGH',
+    workflowStatus: 'pending_validation',
+    entityLabel: 'Demande convention #REQ-2024-118',
   },
   {
     id: 'doc2',
@@ -16,6 +20,10 @@ export const documentsParticipants: AdminChatParticipant[] = [
     lastPreview: 'We rejected the blurry scan; resent secure upload link?',
     timeLabel: 'Yesterday',
     unreadCount: 1,
+    contextKind: 'workflow_thread',
+    urgency: 'CRITICAL',
+    workflowStatus: 'correction_required',
+    entityLabel: 'Scan attestation — correction SLA',
   },
   {
     id: 'doc3',

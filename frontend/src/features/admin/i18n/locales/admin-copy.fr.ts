@@ -1,5 +1,46 @@
 /** Auto-generated admin copy — fr */
 export const adminCopyFr = {
+  "contextualChat": {
+    "loading": "Synchronisation des fils contextuels…",
+    "demoMode": "Connexion API impossible — affichage des données de démonstration. Vérifiez que le backend tourne et que vous êtes connecté.",
+    "emptyLive": "API connectée — aucun fil « {{module}} » pour votre compte. Exécutez : python manage.py seed_contextual_chat_demo",
+    "liveConnected": "Données live · API connectée",
+    "noThreadsYet": "Aucun fil contextuel — créez une conversation ou lancez le seed backend.",
+    "messageSent": "Message enregistré dans le fil workflow",
+    "actionApplied": "Action « {{action}} » appliquée",
+    "linkedEntity": "{{type}} · {{id}}",
+    "linkedStudent": "Étudiant lié",
+    "panelTitle": "Contexte opérationnel",
+    "panelEmpty": "Sélectionnez un fil pour voir le contexte métier",
+    "panelWorkflow": "Statut workflow",
+    "panelNoStatus": "Non défini",
+    "panelDeadline": "Échéance",
+    "panelParticipants": "Participants",
+    "panelFiles": "Fichiers liés",
+    "panelRecentActions": "Actions récentes",
+    "kind": {
+      "workflow_thread": "Fil workflow",
+      "channel": "Canal",
+      "direct": "Direct",
+      "announcement_thread": "Fil annonce",
+      "meeting_thread": "Fil réunion"
+    },
+    "urgency": {
+      "NONE": "Normal",
+      "NORMAL": "Normal",
+      "HIGH": "Priorité haute",
+      "CRITICAL": "Critique"
+    },
+    "actions": {
+      "create_task": "Créer tâche",
+      "create_meeting": "Planifier réunion",
+      "request_correction": "Demander correction",
+      "validate": "Valider",
+      "escalate": "Escalader",
+      "notify_admin": "Notifier admin",
+      "mark_urgent": "Marquer urgent"
+    }
+  },
   "back": {
     "dashboard": "Retour au tableau de bord",
     "announcements": "Retour aux annonces",
@@ -87,6 +128,28 @@ export const adminCopyFr = {
       "meetings": {
         "title": "Upcoming Meetings ({{count}})",
         "subtitle": "Detailed view of supervisors"
+      }
+    },
+    "reports": {
+      "all": {
+        "title": "Tous les rapports",
+        "subtitle": "Tous les rapports reçus des encadrants sur la plateforme"
+      },
+      "inProgress": {
+        "title": "Rapports en cours",
+        "subtitle": "Rapports soumis, en attente de traitement"
+      },
+      "pending": {
+        "title": "En attente de validation",
+        "subtitle": "Rapports en cours de revue par l'administration"
+      },
+      "approved": {
+        "title": "Rapports validés",
+        "subtitle": "Rapports approuvés par l'administration"
+      },
+      "overdue": {
+        "title": "Rapports en retard",
+        "subtitle": "Rapports dont la date limite est dépassée"
       }
     },
     "students": {
@@ -185,16 +248,39 @@ export const adminCopyFr = {
       "subtitle": "Ajouter un administrateur avec des permissions spécifiques",
       "fields": {
         "fullName": "Nom complet",
-        "email": "Adresse e-mail",
+        "email": "E-mail SSO école",
         "role": "Rôle administrateur",
         "phone": "Téléphone",
-        "notes": "Notes (facultatif)"
+        "notes": "Notes (facultatif)",
+        "filiere": "Filière",
+        "classGroup": "Classe",
+        "academicYear": "Année académique",
+        "scopeAcademicYear": "Année (filtre classes)",
+        "levels": "Niveaux",
+        "academicYears": "Années académiques",
+        "accountStatus": "Statut du compte",
+        "ssoEnabled": "Autoriser la connexion SSO",
+        "grantAccess": "Accès plateforme autorisé",
+        "isActive": "Compte actif"
       },
       "placeholders": {
         "fullName": "ex. Karim El Amrani",
-        "email": "ex. karim.amrani@dtc.ma",
+        "email": "ex. karim.amrani@esca.ma",
         "phone": "ex. +212 6 XX XX XX XX",
-        "notes": "Informations complémentaires sur cet administrateur"
+        "notes": "Informations complémentaires sur cet administrateur",
+        "selectFiliere": "Choisir une filière",
+        "selectClass": "Choisir une classe",
+        "levels": "ex. L1, M2, ING-2",
+        "academicYears": "ex. 2025-2026, 2024-2025"
+      },
+      "messages": {
+        "requiredIdentity": "Le nom complet et l'e-mail SSO sont obligatoires.",
+        "requiredRole": "Sélectionnez au moins un rôle administrateur.",
+        "loadFilieresError": "Impossible de charger les filières.",
+        "loadError": "Impossible de charger les administrateurs.",
+        "createSuccess": "Administrateur créé avec succès.",
+        "updateSuccess": "Administrateur mis à jour.",
+        "saveError": "Erreur lors de l'enregistrement."
       },
       "permissionsTitle": "Permissions",
       "permissions": {
@@ -210,55 +296,189 @@ export const adminCopyFr = {
       "roles": {
         "select": "Choisir un rôle",
         "stage": "Admin stage",
-        "finance": "Admin finance",
+        "finance": "Admin finance (SRF)",
         "documents": "Admin documents",
-        "communication": "Admin communication"
+        "communication": "Admin communication",
+        "coordinator": "Coordinateur encadrants",
+        "academic": "Affaires académiques / étudiants"
       },
       "actions": {
         "cancel": "Annuler",
-        "submit": "Créer l'admin"
+        "submit": "Créer l'admin",
+        "save": "Enregistrer",
+        "addFiliere": "Ajouter filière",
+        "addClass": "Ajouter classe"
+      },
+      "editTitle": "Modifier l'administrateur",
+      "editSubtitle": "Mettez à jour le profil et les permissions de cet administrateur.",
+      "assignPermissionsSubtitle": "Définissez les permissions pour {{name}}.",
+      "sections": {
+        "identity": "Identité",
+        "identityHint": "Nom complet et e-mail SSO école uniquement.",
+        "roles": "Rôles & permissions",
+        "rolesHint": "Types d'administrateur et permissions granulaires.",
+        "academicScope": "Périmètre académique",
+        "academicScopeHint": "Filières, classes, niveaux et années — liés dynamiquement selon vos sélections.",
+        "accessControl": "Contrôle d'accès",
+        "accessControlHint": "SSO, autorisation plateforme et statut du compte.",
+        "permissionsHint": "Activez les modules accessibles pour cet administrateur.",
+        "notesHint": "Notes internes optionnelles."
       }
+    },
+    "academicScope": {
+      "selectPlaceholder": "Sélectionner…",
+      "searchPlaceholder": "Rechercher…",
+      "emptyOptions": "Aucune option disponible",
+      "disabledHint": "Sélectionnez d'abord les éléments requis",
+      "selectedCount": "{{count}} sélectionné(s)",
+      "removeChip": "Retirer {{label}}",
+      "selectYearFilter": "Choisir une année (filtre classes)",
+      "yearFilterHint": "Filtre les classes affichées avant la sélection.",
+      "filiereHint": "Sélectionnez une ou plusieurs filières.",
+      "classHint": "Classes disponibles pour les filières et l'année choisies.",
+      "classNeedsYear": "Choisissez d'abord une filière et une année.",
+      "levelsHint": "Niveaux issus des classes sélectionnées.",
+      "levelsNeedClass": "Sélectionnez au moins une classe.",
+      "selectLevels": "Choisir les niveaux",
+      "academicYearsHint": "Années académiques couvertes par ce périmètre.",
+      "yearsNeedFiliere": "Sélectionnez d'abord une filière.",
+      "selectAcademicYears": "Choisir les années académiques",
+      "sectors": "Spécialisations",
+      "sectorsHint": "Limiter le périmètre à des secteurs précis (si applicable).",
+      "sectorsNeedLevel": "Sélectionnez d'abord au moins un niveau.",
+      "selectSectors": "Choisir les spécialisations"
+    },
+    "academicHierarchy": {
+      "program": "Programme / Filière",
+      "level": "Niveau (année)",
+      "sector": "Spécialisation",
+      "internshipType": "Type de stage",
+      "academicYear": "Année académique",
+      "classGroup": "Classe / groupe",
+      "selectProgram": "— Sélectionner un programme —",
+      "selectLevel": "— Sélectionner un niveau —",
+      "levelNeedsProgram": "— Choisir un programme d'abord —",
+      "selectSector": "— Sélectionner une spécialisation —",
+      "selectInternship": "— Sélectionner un type de stage —",
+      "internshipNeedsLevel": "— Choisir un niveau d'abord —",
+      "selectYear": "— Sélectionner l'année académique —",
+      "selectClass": "— Sélectionner une classe —",
+      "classNeedsProgram": "— Choisir un programme d'abord —",
+      "internshipAutoHint": "Déterminé automatiquement selon la filière et le niveau ESCA.",
+      "internshipResolving": "Calcul du type de stage…",
+      "internshipPending": "Complétez le niveau académique",
+      "internshipNeedsSector": "Sélectionnez une spécialisation pour déterminer le stage",
+      "internshipAmbiguous": "Plusieurs types possibles — précisez la spécialisation"
     },
     "createEncadrant": {
       "title": "Ajouter un encadrant",
-      "subtitle": "Enregistrer un nouvel encadrant sur la plateforme",
+      "subtitle": "Enregistrer un encadrant avec SSO ESCA et périmètre académique",
+      "editTitle": "Modifier l'encadrant",
+      "editSubtitle": "Mettre à jour l'identité, le périmètre, la capacité et l'accès.",
       "fields": {
-        "firstName": "Prénom",
-        "lastName": "Nom",
-        "email": "Adresse e-mail",
-        "phone": "Téléphone",
-        "department": "Département",
-        "roleTitle": "Rôle / Titre",
-        "specialization": "Spécialisation",
+        "fullName": "Nom complet",
+        "email": "E-mail SSO ESCA",
+        "emailHint": "Adresse @groupe-esca.ma obligatoire pour la connexion SSO.",
         "maxStudents": "Nombre max. d'étudiants",
-        "bio": "Bio / Expérience (optionnel)"
+        "specializationDomains": "Domaines de spécialisation",
+        "grantAccess": "Accès plateforme",
+        "grantAccessHint": "Autorise la connexion via SSO ESCA lorsque activé par le super admin.",
+        "isActive": "Encadrant actif",
+        "isActiveHint": "Les encadrants inactifs sont exclus des workflows d'affectation."
       },
       "placeholders": {
-        "firstName": "ex. Ahmed",
-        "lastName": "ex. Bennani",
-        "email": "ex. ahmed.bennani@universite.ma",
-        "phone": "ex. +212 6 XX XX XX XX",
-        "specialization": "ex. Machine Learning, Cloud",
-        "bio": "Brève description de l'expertise et de l'expérience"
+        "fullName": "ex. Ahmed Bennani",
+        "email": "prenom.nom@groupe-esca.ma",
+        "specializationDomains": "Sélectionner un ou plusieurs domaines (optionnel)"
       },
-      "departments": {
-        "select": "Choisir un département",
-        "computerScience": "Informatique",
-        "aiDataScience": "IA & Science des données",
-        "softwareEngineering": "Génie logiciel",
-        "networksSecurity": "Réseaux & Sécurité",
-        "businessIntelligence": "Business Intelligence"
+      "sections": {
+        "identity": "Informations de base",
+        "identityHint": "Nom légal et e-mail SSO ESCA officiel. Aucun mot de passe requis.",
+        "academicScope": "Périmètre académique",
+        "academicScopeHint": "Filière, niveaux, années académiques, domaines d'expertise et secteurs ESCA — chaque étape débloque la suivante.",
+        "supervision": "Capacité d'encadrement",
+        "supervisionHint": "Nombre maximal d'étudiants que cet encadrant peut superviser.",
+        "access": "Contrôle d'accès",
+        "accessHint": "Connexion SSO uniquement. L'accès est géré par le super admin."
       },
-      "roles": {
-        "select": "Choisir un rôle",
-        "professor": "Professeur",
-        "associateProfessor": "Professeur associé",
-        "doctor": "Dr.",
-        "lecturer": "Maître de conférences"
+      "domains": {
+        "webDevelopment": "Développement web",
+        "dataScience": "Science des données",
+        "cybersecurity": "Cybersécurité",
+        "ai": "Intelligence artificielle",
+        "cloud": "Cloud",
+        "networking": "Réseaux",
+        "finance": "Finance",
+        "marketing": "Marketing",
+        "commerce": "Commerce",
+        "hr": "Ressources humaines",
+        "supplyChain": "Supply chain"
+      },
+      "academicScope": {
+        "filiere": "Programme / Filière",
+        "filiereHint": "Sélectionnez au moins une filière ESCA.",
+        "selectFiliere": "Choisir une filière",
+        "academicYears": "Années académiques",
+        "academicYearsHint": "Années couvertes par ce périmètre (après les niveaux).",
+        "selectAcademicYears": "Choisir les années académiques",
+        "levels": "Niveaux",
+        "levelsHint": "Niveaux d'études ESCA (après la filière).",
+        "selectLevels": "Choisir les niveaux",
+        "specializationDomains": "Domaines de spécialisation",
+        "specializationDomainsHint": "Expertises métier liées aux programmes sélectionnés (Finance, Marketing, Audit…).",
+        "selectSpecializationDomains": "Choisir les domaines de spécialisation",
+        "technicalSpecializationDomains": "Domaines techniques (optionnel)",
+        "technicalSpecializationDomainsHint": "Stages ou compétences IT (développement, data, cybersécurité…). Affichés séparément du métier.",
+        "selectTechnicalSpecializationDomains": "Choisir les domaines techniques",
+        "sectors": "Secteur ESCA",
+        "sectorsHint": "Secteur ESCA du niveau sélectionné.",
+        "selectSectors": "Choisir la spécialisation",
+        "needsFiliere": "Sélectionnez d'abord une filière.",
+        "needsLevel": "Sélectionnez d'abord au moins un niveau."
+      },
+      "messages": {
+        "requiredIdentity": "Le nom complet et l'e-mail SSO ESCA sont obligatoires.",
+        "requiredFullName": "Le nom complet est obligatoire.",
+        "requiredEmail": "L'e-mail SSO est obligatoire.",
+        "invalidEmailDomain": "L'e-mail doit utiliser le domaine @groupe-esca.ma.",
+        "invalidEmailFormat": "Format d'e-mail invalide.",
+        "requiredFiliere": "Sélectionnez au moins une filière.",
+        "requiredAcademicYear": "Sélectionnez au moins une année académique.",
+        "requiredLevel": "Sélectionnez au moins un niveau.",
+        "requiredSector": "Sélectionnez une spécialisation pour ce niveau.",
+        "requiredSupervisedInternships": "Sélectionnez au moins un type de stage supervisé.",
+        "requiredMaxStudents": "Le nombre maximal d'étudiants est obligatoire.",
+        "invalidMaxStudents": "Le nombre maximal d'étudiants doit être un entier positif.",
+        "maxStudentsMin": "La capacité doit être au moins de 1 étudiant.",
+        "validationSummary": "Corrigez les champs en surbrillance avant d'enregistrer.",
+        "createSuccess": "Encadrant créé avec succès.",
+        "updateSuccess": "Encadrant mis à jour avec succès.",
+        "saveError": "Impossible d'enregistrer l'encadrant. Réessayez."
+      },
+      "supervisedInternships": {
+        "label": "Types de stage supervisés",
+        "hint": "L'affectation intelligente n'assignera que des étudiants dont le type de stage correspond.",
+        "placeholder": "Choisir les types de stage…"
+      },
+      "detail": {
+        "filieres": "Programmes / filières",
+        "levels": "Niveaux",
+        "classes": "Classes",
+        "sectors": "Secteurs",
+        "academicYears": "Années académiques",
+        "assignedStudents": "Étudiants assignés",
+        "accountStatus": "Statut du compte",
+        "firstLoginCompleted": "Première connexion SSO effectuée",
+        "generalSupervision": "Général / tous domaines",
+        "accessDisabled": "Accès désactivé",
+        "workloadOk": "{{current}} / {{max}} étudiants",
+        "workloadHigh": "{{current}} / {{max}} étudiants (charge élevée)",
+        "workloadFull": "{{current}} / {{max}} étudiants (capacité atteinte)"
       },
       "actions": {
         "cancel": "Annuler",
-        "submit": "Ajouter l'encadrant"
+        "submit": "Créer l'encadrant",
+        "save": "Enregistrer les modifications"
       }
     },
     "createAnnouncement": {
@@ -305,7 +525,16 @@ export const adminCopyFr = {
       },
       "actions": {
         "draft": "Enregistrer comme brouillon",
-        "publish": "Publier maintenant"
+        "publish": "Publier maintenant",
+        "cancel": "Annuler",
+        "save": "Enregistrer"
+      },
+      "editTitle": "Modifier l'annonce",
+      "editSubtitle": "Mettez à jour le contenu et la diffusion de l'annonce.",
+      "sections": {
+        "general": "Informations générales",
+        "generalHint": "Titre, type, audience et paramètres de diffusion.",
+        "messageHint": "Contenu principal visible par les étudiants."
       }
     },
     "createOffer": {
@@ -343,18 +572,181 @@ export const adminCopyFr = {
       },
       "actions": {
         "draft": "Enregistrer comme brouillon",
-        "publish": "Publier l'offre"
+        "publish": "Publier l'offre",
+        "cancel": "Annuler",
+        "save": "Enregistrer"
+      },
+      "editTitle": "Modifier l'offre de stage",
+      "editSubtitle": "Mettez à jour les informations de l'offre publiée.",
+      "sections": {
+        "details": "Détails de l'offre",
+        "detailsHint": "Entreprise, lieu, type et échéance.",
+        "content": "Description & compétences",
+        "contentHint": "Présentation de l'offre et compétences recherchées."
+      }
+    },
+    "createStudent": {
+      "title": "Ajouter un étudiant",
+      "subtitle": "Créez un compte et assignez filière, classe et accès plateforme.",
+      "editTitle": "Gérer le compte étudiant",
+      "editSubtitle": "Modifiez l'accès, l'affectation académique et les identifiants.",
+      "fields": {
+        "email": "Email",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "studentNumber": "N° étudiant",
+        "academicYear": "Année académique",
+        "filiere": "Filière",
+        "class": "Classe",
+        "accountStatus": "Statut du compte",
+        "ssoAccess": "Accès SSO (école)",
+        "grantPlatformAccess": "Autoriser l'accès plateforme immédiatement",
+        "platformAccess": "Accès plateforme autorisé"
+      },
+      "placeholders": {
+        "email": "etudiant@esca.ma",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "studentNumber": "ESC-2025-001",
+        "academicYear": "2025-2026"
+      },
+      "sections": {
+        "personal": "Informations personnelles",
+        "personalHint": "Coordonnées et identifiant de l'étudiant.",
+        "academic": "Affectation académique",
+        "academicHint": "Programme, niveau, spécialisation, type de stage, année et classe — données ESCA.",
+        "access": "Accès & statut",
+        "accessHint": "SSO, accès plateforme et statut du compte.",
+        "credentials": "Identifiants & onboarding",
+        "credentialsHint": "Suivi de connexion et gestion des identifiants."
+      },
+      "select": {
+        "filiere": "— Sélectionner une filière —",
+        "class": "— Sélectionner une classe —",
+        "classNeedsFiliere": "— Choisir une filière d'abord —"
+      },
+      "accountStatus": {
+        "PENDING": "En attente",
+        "AUTHORIZED": "Autorisé",
+        "ACTIVE": "Actif",
+        "SUSPENDED": "Suspendu",
+        "BLOCKED": "Bloqué",
+        "ARCHIVED": "Archivé"
+      },
+      "credentials": {
+        "firstLogin": "Première connexion",
+        "onboarding": "Onboarding",
+        "lastLogin": "Dernière connexion",
+        "alerts": "Alertes",
+        "regeneratePassword": "Régénérer le mot de passe",
+        "revealCredential": "Afficher l'identifiant"
+      },
+      "actions": {
+        "cancel": "Annuler",
+        "create": "Créer l'étudiant",
+        "save": "Enregistrer"
+      },
+      "messages": {
+        "loadFilieresError": "Impossible de charger les filières.",
+        "createSuccess": "Étudiant créé avec succès.",
+        "createError": "Échec de la création.",
+        "updateSuccess": "Modifications enregistrées.",
+        "updateError": "Échec de la mise à jour.",
+        "regenerateSuccess": "Mot de passe régénéré.",
+        "regenerateError": "Échec de la régénération du mot de passe.",
+        "revealError": "Aucun identifiant disponible. Régénérez le mot de passe.",
+        "invalidStudentId": "Identifiant étudiant invalide.",
+        "loadStudentError": "Impossible de charger l'étudiant."
+      }
+    },
+    "reviewDocument": {
+      "title": "Validation du document",
+      "subtitle": "Examinez la demande et validez ou rejetez le document soumis.",
+      "sections": {
+        "request": "Détails de la demande",
+        "requestHint": "Informations sur la demande et l'étudiant.",
+        "file": "Fichier joint",
+        "fileHint": "Aperçu du document soumis.",
+        "note": "Note de validation",
+        "noteHint": "Commentaire optionnel pour l'étudiant."
+      },
+      "fields": {
+        "type": "Type",
+        "student": "Étudiant",
+        "class": "Classe",
+        "submittedAt": "Soumis le",
+        "status": "Statut"
+      },
+      "placeholders": {
+        "note": "Commentaire optionnel pour l'étudiant…"
+      },
+      "previewPlaceholder": "Aperçu du document — branchez l'API pour afficher le fichier réel.",
+      "actions": {
+        "reject": "Rejeter",
+        "approve": "Valider",
+        "backToList": "Retour à la liste"
+      },
+      "messages": {
+        "notFound": "Demande introuvable.",
+        "approved": "Document validé (simulation front-end).",
+        "rejected": "Document rejeté (simulation front-end)."
       }
     }
   },
   "modules": {
     "students": {
       "title": "Étudiants",
-      "subtitle": "Gérer les profils étudiants et le statut de stage"
+      "subtitle": "Gérer les profils étudiants et le statut de stage",
+      "import": {
+        "title": "Importer des étudiants",
+        "description": "Créez plusieurs comptes étudiants à partir d'un fichier CSV ou Excel.",
+        "hint": "Colonnes : email (obligatoire), prénom, nom, numéro étudiant, code filière (ex. pge), code classe (ex. pge-y1-a-2025-2026 — laisser vide pour ignorer), année académique (ex. 2025-2026), SSO (true/false), accès plateforme (true/false).",
+        "downloadTemplate": "Télécharger le modèle CSV",
+        "fileLabel": "Fichier à importer",
+        "actions": {
+          "cancel": "Annuler",
+          "close": "Fermer",
+          "import": "Lancer l'import"
+        },
+        "errors": {
+          "noFile": "Sélectionnez un fichier CSV ou Excel (.xlsx).",
+          "generic": "L'import a échoué. Vérifiez le fichier et réessayez."
+        },
+        "result": {
+          "summary": "{{success}} / {{total}} étudiant(s) créé(s), {{errors}} erreur(s).",
+          "rowError": "Ligne {{row}} ({{email}}) : {{message}}",
+          "moreErrors": "… et {{count}} autre(s) erreur(s)."
+        }
+      }
     },
     "encadrants": {
       "title": "Encadrants",
-      "subtitle": "Gérer les encadrants et leurs étudiants assignés"
+      "subtitle": "Gérer les encadrants et leurs étudiants assignés",
+      "repairScopes": "Compléter les niveaux",
+      "repairScopesSuccess": "{{count}} encadrant(s) mis à jour avec niveaux, année et types de stage.",
+      "repairScopesError": "Impossible de compléter les périmètres académiques.",
+      "incompleteScopeBanner": "{{count}} encadrant(s) ont un périmètre académique incomplet (niveaux, année ou types de stage). Cliquez pour compléter automatiquement.",
+      "import": {
+        "title": "Importer des encadrants",
+        "description": "Créer plusieurs comptes encadrants à partir d'un fichier CSV ou Excel.",
+        "hint": "Colonnes : email (@groupe-esca.ma), nom complet, codes filière (pge), codes niveau (y4,y5 — optionnel, inférés si vide), années académiques (2025-2026), codes types de stage (optionnel, inférés), max étudiants, accès plateforme, actif, domaines (optionnel).",
+        "downloadTemplate": "Télécharger le modèle CSV",
+        "fileLabel": "Fichier à importer",
+        "actions": {
+          "cancel": "Annuler",
+          "close": "Fermer",
+          "import": "Lancer l'import"
+        },
+        "errors": {
+          "noFile": "Sélectionnez un fichier CSV ou Excel (.xlsx).",
+          "generic": "Échec de l'import. Vérifiez le fichier et réessayez."
+        },
+        "result": {
+          "summary": "{{success}} / {{total}} encadrant(s) créé(s), {{errors}} erreur(s).",
+          "rowError": "Ligne {{row}} ({{email}}) : {{message}}",
+          "moreErrors": "… et {{count}} autre(s) erreur(s)."
+        }
+      }
     },
     "offers": {
       "title": "Offres de stage",
@@ -366,15 +758,397 @@ export const adminCopyFr = {
     },
     "srf": {
       "title": "SRF",
-      "subtitle": "Suivre et gérer le statut de paiement des étudiants"
+      "subtitle": "Suivre et gérer le statut de paiement des étudiants",
+      "importCenter": {
+        "title": "Centre d'import des données financières",
+        "subtitle": "Synchronisez les exports ERP, comptabilité ou fichiers Excel avec validation, aperçu et rollback.",
+        "backToSrf": "Retour au SRF",
+        "secureBadge": "Espace sécurisé",
+        "noPayments": "Aucun paiement en ligne — données institutionnelles uniquement",
+        "academicYear": "Année académique",
+        "academicYearPlaceholder": "2025-2026",
+        "importMode": "Mode d'import",
+        "dropzone": "Glissez un fichier CSV, XLSX ou JSON",
+        "fileFormatsHint": "CSV · XLSX · JSON — max 25 Mo",
+        "browse": "Parcourir",
+        "mappingTitle": "Correspondance des colonnes",
+        "mappingHint": "Associez chaque colonne importée à un champ financier SRF.",
+        "rowCount": "{{count}} lignes",
+        "sourceCol": "Colonne source",
+        "targetField": "Champ SRF",
+        "ignore": "Ignorer",
+        "back": "Retour",
+        "runValidation": "Valider et prévisualiser",
+        "previewTitle": "Aperçu des modifications",
+        "studentsAffected": "étudiants concernés",
+        "conflicts": "{{count}} conflit(s)",
+        "fixErrors": "Corrigez les erreurs avant d'appliquer l'import.",
+        "noValidRows": "Aucune ligne valide. Vérifiez la correspondance des colonnes (numéro étudiant ou email) et que les étudiants existent dans la plateforme.",
+        "partialImportHint": "{{valid}} ligne(s) valide(s) seront importées. {{errors}} ligne(s) en erreur seront ignorées.",
+        "runDryRun": "Lancer le test (dry-run)",
+        "applyImport": "Appliquer l'import",
+        "newImport": "Nouvel import",
+        "rollback": "Annuler cet import",
+        "retryRollback": "Réessayer le rollback",
+        "rollbackSuccess": "{{count}} compte(s) restauré(s). Ouvrez ou actualisez la page SRF (F5) pour voir les montants à jour.",
+        "history": "Historique des imports",
+        "historySubtitle": "Imports précédents sur la plateforme — annulation possible si disponible",
+        "clearHistory": "Vider l'historique",
+        "removeFromHistory": "Retirer de l'historique",
+        "clearHistoryAllTitle": "Vider tout l'historique ?",
+        "clearHistoryAllDescription": "Toutes les entrées supprimables seront retirées de la liste. Les imports en cours seront conservés.",
+        "clearHistoryOneTitle": "Retirer cet import ?",
+        "clearHistoryOneDescription": "Le fichier et les métadonnées de cet import seront supprimés de l'historique.",
+        "clearHistoryForceLabel": "Supprimer aussi les imports déjà appliqués (sans rollback)",
+        "clearHistoryForceHint": "Les données financières en base ne seront pas annulées automatiquement. Préférez le rollback si disponible.",
+        "purgeFinancialLabel": "Annuler les effets de cet import (rollback) avant suppression",
+        "purgeFinancialHint": "Restaure les comptes étudiants puis retire l'entrée de l'historique. Actualisez la page SRF (F5) après l'opération.",
+        "purgeFinancialAllLabel": "Annuler les effets financiers de chaque import avant suppression",
+        "purgeFinancialAllHint": "Tente un rollback pour chaque lot appliqué, puis vide l'historique.",
+        "wipeSrfModule": "Vider tout le SRF",
+        "wipeSrfTitle": "Réinitialiser tout le module SRF ?",
+        "wipeSrfDescription": "Supprime tous les comptes financiers étudiants, tranches, paiements, preuves, alertes et l'historique d'import. La page SRF sera vide. Action irréversible.",
+        "wipeSrfConfirmLabel": "Tapez {{phrase}} pour confirmer :",
+        "confirmWipeSrf": "Vider tout le SRF",
+        "importPurgedSuccess": "Import supprimé et données SRF annulées. Actualisez la page SRF (F5).",
+        "wipeSrfSuccess": "{{count}} compte(s) supprimé(s). Actualisez la page SRF (F5) si les données s'affichent encore.",
+        "confirmClear": "Confirmer la suppression",
+        "cancel": "Annuler",
+        "cannotDeleteActive": "Import en cours — suppression impossible",
+        "noHistoryTitle": "Aucun import enregistré",
+        "noHistoryDescription": "Les fichiers importés apparaîtront ici avec leur statut, leur progression et les actions de rollback.",
+        "loadingWorkspace": "Chargement de l'espace d'import…",
+        "loadingHistory": "Chargement de l'historique…",
+        "processingImport": "Traitement de l'import en cours…",
+        "openCenter": "Imports financiers",
+        "kpi": {
+          "totalRows": "Lignes",
+          "valid": "Valides",
+          "errors": "Erreurs",
+          "warnings": "Avertissements",
+          "success": "Succès",
+          "affected": "Impactés"
+        },
+        "table": {
+          "student": "Étudiant",
+          "status": "Statut",
+          "issues": "Problèmes"
+        },
+        "stepsLabel": "Étapes de l'import en cours",
+        "steps": {
+          "upload": "Téléversement",
+          "mapping": "Correspondance",
+          "preview": "Aperçu",
+          "execute": "Import",
+          "done": "Terminé"
+        },
+        "modes": {
+          "CREATE_ONLY": "Création uniquement",
+          "UPDATE": "Mise à jour",
+          "MERGE": "Fusion",
+          "DRY_RUN": "Test (dry-run)"
+        },
+        "batchStatus": {
+          "UPLOADED": "Téléversé",
+          "MAPPING": "Correspondance",
+          "VALIDATING": "Validation",
+          "PREVIEW_READY": "Aperçu prêt",
+          "QUEUED": "En file",
+          "PROCESSING": "En cours",
+          "COMPLETED": "Terminé",
+          "PARTIAL": "Partiel",
+          "FAILED": "Échoué",
+          "ROLLED_BACK": "Annulé",
+          "CANCELLED": "Annulé"
+        },
+        "fields": {
+          "student_number": "Numéro étudiant",
+          "email": "Email",
+          "academic_year": "Année académique",
+          "payment_plan_type": "Plan de paiement",
+          "total_amount": "Montant total",
+          "paid_amount": "Montant payé",
+          "remaining_amount": "Montant restant",
+          "financial_status": "Statut financier",
+          "currency": "Devise",
+          "installment_1_amount": "Tranche 1 — montant",
+          "installment_1_status": "Tranche 1 — statut",
+          "installment_1_due_date": "Tranche 1 — échéance",
+          "installment_2_amount": "Tranche 2 — montant",
+          "installment_2_status": "Tranche 2 — statut",
+          "installment_2_due_date": "Tranche 2 — échéance",
+          "installment_3_amount": "Tranche 3 — montant",
+          "installment_3_status": "Tranche 3 — statut",
+          "installment_3_due_date": "Tranche 3 — échéance",
+          "installment_4_amount": "Tranche 4 — montant",
+          "installment_4_status": "Tranche 4 — statut",
+          "installment_4_due_date": "Tranche 4 — échéance"
+        },
+        "messages": {
+          "uploadFailed": "Échec du téléversement",
+          "previewFailed": "Échec de la validation",
+          "executeFailed": "Impossible de démarrer l'import",
+          "rollbackFailed": "Rollback impossible",
+          "rollbackNoSnapshots": "Aucun compte restauré — pas de sauvegarde pour ce lot. Corrigez les données manuellement dans le SRF.",
+          "deleteHistoryFailed": "Impossible de retirer cet import de l'historique",
+          "clearHistoryFailed": "Impossible de vider l'historique",
+          "wipeSrfFailed": "Impossible de réinitialiser le module SRF"
+        }
+      },
+      "detail": {
+        "loading": "Chargement du dossier financier…",
+        "back": "Retour au SRF",
+        "studentSummary": "Profil étudiant",
+        "financialSummary": "Situation financière",
+        "accessRights": "Droits d'accès",
+        "paymentProofs": "Preuves de paiement",
+        "timeline": "Historique des actions",
+        "riskSection": "Risques et restrictions",
+        "program": "Filière / programme",
+        "level": "Niveau académique",
+        "classGroup": "Groupe / classe",
+        "academicYear": "Année académique",
+        "total": "Montant total",
+        "paid": "Montant payé",
+        "remaining": "Reste à payer",
+        "installmentProgress": "{{paid}} / {{total}} tranches payées ({{pct}} %)",
+        "overdueCount": "{{count}} en retard",
+        "canTakeExams": "Peut passer les examens",
+        "canConvention": "Convention de stage",
+        "internship": "Éligibilité stage",
+        "noRisk": "Aucune alerte active",
+        "overdueState": "Situation en retard ou bloquée",
+        "noProofs": "Aucune preuve de paiement",
+        "noTimeline": "Aucun événement enregistré",
+        "openValidation": "Ouvrir la validation",
+        "heroEyebrow": "Profil financier SRF",
+        "heroCompletion": "Progression paiement",
+        "heroRemaining": "Reste à payer",
+        "heroRiskScore": "Score de risque",
+        "heroProgram": "Programme",
+        "financialIntelligence": "Intelligence financière",
+        "eligibilityScore": "Score d'éligibilité",
+        "eligibilityLabel": "Éligibilité académique",
+        "eligibilityClear": "Situation régularisée",
+        "eligibilityPending": "En cours de régularisation",
+        "chartPaid": "Payé",
+        "chartRemaining": "Restant",
+        "riskIntelligence": "Intelligence des risques",
+        "smartInsights": "Analyses intelligentes",
+        "riskLow": "Faible",
+        "riskHigh": "Élevé",
+        "installmentVisual": "Progression des tranches",
+        "installmentLabel": "Tranche {{n}}",
+        "validateDisabledTooltip": "Validation indisponible tant qu'aucune preuve de paiement n'est déposée",
+        "validateEnabled": "Ouvrir la validation du reçu en attente",
+        "emptyProofsTitle": "Aucune preuve de paiement",
+        "emptyProofsDesc": "Les justificatifs déposés par l'étudiant apparaîtront ici pour validation administrative.",
+        "emptyTimelineTitle": "Aucune activité enregistrée",
+        "emptyTimelineDesc": "Paiements, validations, rappels et restrictions s'afficheront sur cette frise chronologique.",
+        "riskLevel": {
+          "low": "Risque faible",
+          "medium": "Risque modéré",
+          "high": "Risque élevé"
+        },
+        "riskInsight": {
+          "low": "Profil financier stable — surveillance standard.",
+          "medium": "Signaux de tension détectés — suivi renforcé recommandé.",
+          "high": "Risque financier élevé — action administrative prioritaire."
+        },
+        "access": {
+          "examsTitle": "Accès aux examens",
+          "conventionTitle": "Convention de stage",
+          "internshipTitle": "Éligibilité stage",
+          "granted": "Autorisé",
+          "restricted": "Restreint",
+          "noRestriction": "Aucune restriction financière active.",
+          "defaultReason": "Restriction liée au statut financier ou aux tranches impayées."
+        },
+        "insights": {
+          "empty": "Aucune alerte contextuelle pour le moment.",
+          "examsBlocked": "Accès aux examens bloqué pour motif financier.",
+          "examsRisk": "L'étudiant approche d'une restriction d'examen.",
+          "conventionBlocked": "Téléchargement de la convention désactivé.",
+          "internshipBlocked": "Éligibilité au stage non confirmée financièrement.",
+          "overdue": "{{count}} tranche(s) en retard — risque de blocage.",
+          "pendingProof": "{{count}} preuve(s) en attente de validation.",
+          "clear": "Situation financière régularisée — accès académiques ouverts."
+        }
+      },
+      "validation": {
+        "title": "Validation du paiement",
+        "loading": "Chargement de la preuve…",
+        "back": "Retour au SRF",
+        "backToStudent": "Retour au dossier étudiant",
+        "studentInfo": "Informations étudiant",
+        "paymentInfo": "Détails du paiement",
+        "adminActions": "Décision administrateur",
+        "receiptPreview": "Aperçu du reçu",
+        "zoomIn": "Zoom avant",
+        "zoomOut": "Zoom arrière",
+        "fullscreen": "Plein écran",
+        "exitFullscreen": "Quitter le plein écran",
+        "download": "Télécharger le fichier",
+        "reference": "Référence",
+        "submittedAt": "Date de dépôt",
+        "installment": "Tranche {{n}} — {{status}}",
+        "internalNote": "Note interne",
+        "rejectionReason": "Motif de rejet",
+        "markUnderReview": "En cours d'examen",
+        "requestCorrection": "Demander une correction",
+        "reject": "Rejeter",
+        "approve": "Approuver",
+        "rejectionRequired": "Le motif de rejet est obligatoire.",
+        "submitFailed": "Impossible d'enregistrer la décision.",
+        "alreadyReviewed": "Cette preuve a déjà été traitée.",
+        "noFile": "Aucun fichier joint",
+        "openReview": "Valider"
+      },
+      "configCenter": {
+        "title": "Notifications & configuration examens",
+        "subtitle": "Centre de pilotage financier et académique — périodes d'examens, alertes automatisées et restrictions.",
+        "heroEyebrow": "Centre d'opérations SRF",
+        "backToSrf": "Retour au SRF",
+        "secureBadge": "Espace de configuration sécurisé",
+        "openCenter": "Configuration SRF",
+        "errors": {
+          "load_failed": "Impossible de charger la configuration.",
+          "save_failed": "Enregistrement impossible.",
+          "simulate_failed": "Simulation impossible."
+        },
+        "analytics": {
+          "approaching": "Proches restriction",
+          "risks": "Risques en attente",
+          "exams": "Examens à venir",
+          "campaigns": "Campagnes actives",
+          "blocked": "Étudiants bloqués",
+          "atRisk": "À risque"
+        },
+        "examPlanning": {
+          "title": "Planification des examens",
+          "subtitle": "Définissez les fenêtres d'examens par programme, niveau et semestre.",
+          "addPeriod": "Ajouter une période",
+          "editPeriod": "Modifier la période",
+          "program": "Programme",
+          "level": "Niveau",
+          "allLevels": "Tous les niveaux",
+          "semester": "Semestre",
+          "dates": "Dates d'examen",
+          "deadlines": "Échéances",
+          "status": "Statut",
+          "payment": "Paiement",
+          "convention": "Convention",
+          "active": "Actif",
+          "inactive": "Inactif",
+          "empty": "Aucune période configurée.",
+          "emptyTitle": "Aucune période d'examen",
+          "emptyDesc": "Configurez les fenêtres d'examens par programme pour activer rappels et restrictions automatiques.",
+          "timelineLabel": "Fenêtre d'examen",
+          "examWindow": "Session",
+          "academicYear": "Année académique",
+          "examStart": "Début des examens",
+          "examEnd": "Fin des examens",
+          "paymentDeadline": "Date limite de paiement",
+          "conventionBlock": "Blocage convention",
+          "warningDays": "Jours d'alerte (secours)",
+          "notes": "Notes",
+          "cancel": "Annuler",
+          "save": "Enregistrer"
+        },
+        "warningTiers": {
+          "title": "Règles d'alerte & fréquence",
+          "subtitle": "Escalade automatique des rappels avant les examens.",
+          "daysBefore": "{{days}} jours avant",
+          "everyDays": "tous les {{days}} jours",
+          "blockConvention": "Bloquer convention",
+          "blockExams": "Bloquer examens",
+          "escalation": "escalade",
+          "empty": "Aucun palier configuré — des valeurs par défaut seront proposées.",
+          "emptyTitle": "Aucune règle de rappel",
+          "emptyDesc": "Définissez des paliers d'escalade pour automatiser les relances avant les examens.",
+          "addTierHint": "Créez un palier avec seuil, fréquence et actions de restriction.",
+          "addTier": "Ajouter un palier",
+          "label": "Libellé",
+          "daysBeforeLabel": "Seuil (jours avant)",
+          "interval": "Intervalle (jours)",
+          "severity": "Sévérité",
+          "severityOptions": {
+            "LOW": "Faible",
+            "MEDIUM": "Moyenne",
+            "HIGH": "Élevée",
+            "CRITICAL": "Critique"
+          }
+        },
+        "restrictions": {
+          "title": "Politiques de restriction",
+          "subtitle": "Règles appliquées automatiquement par le moteur SRF.",
+          "stopOnPayment": "Arrêter les rappels après paiement",
+          "markAtRisk": "Marquer AT_RISK lors des alertes",
+          "blockExams": "Impayés : bloquer les examens",
+          "blockConvention": "Impayés : bloquer la convention",
+          "emailNotif": "Notifications e-mail",
+          "inAppNotif": "Notifications in-app"
+        },
+        "simulation": {
+          "title": "Simulation du flux",
+          "subtitle": "Testez le calendrier d'alertes pour un étudiant impayé.",
+          "cardTitle": "Scénario de test",
+          "cardDesc": "Simulez les actions automatiques selon le statut financier et la proximité des examens.",
+          "daysLabel": "Jours avant examen",
+          "statusLabel": "Statut financier",
+          "dayOffset": "J-{{days}}",
+          "empty": "Lancez une simulation pour visualiser la chronologie des actions.",
+          "run": "Lancer la simulation",
+          "statusOptions": {
+            "PARTIAL": "Partiellement payé",
+            "OVERDUE": "En retard",
+            "BLOCKED": "Bloqué"
+          }
+        },
+        "templates": {
+          "title": "Modèles de messages",
+          "subtitle": "Personnalisez les e-mails et notifications.",
+          "emptyTitle": "Aucun modèle",
+          "emptyDesc": "Les modèles système seront disponibles après initialisation du module.",
+          "preview": "Aperçu",
+          "variables": "Variables : {{student_name}}, {{remaining_amount}}, {{exam_date}}, {{program}}, {{payment_deadline}}"
+        },
+        "audit": {
+          "title": "Journal d'audit",
+          "subtitle": "Historique immuable des modifications de configuration.",
+          "emptyTitle": "Journal vide",
+          "empty": "Les modifications de configuration apparaîtront ici."
+        }
+      }
     },
     "history": {
-      "title": "Historique",
-      "subtitle": "Historique complet de toutes les actions sur la plateforme"
+      "title": "Historique & Audit",
+      "subtitle": "Centre d'intelligence opérationnelle — activité transversale, investigations et traçabilité conformité"
     },
     "administrators": {
       "title": "Administrateurs",
-      "subtitle": "Gérer les utilisateurs admin et leurs permissions"
+      "subtitle": "Gérer les utilisateurs admin et leurs permissions",
+      "import": {
+        "title": "Importer des administrateurs",
+        "description": "Créer plusieurs comptes administrateurs à partir d'un fichier CSV ou Excel.",
+        "hint": "Colonnes : email (obligatoire), nom complet (obligatoire), rôles (séparés par des virgules : stage, finance, documents, communication, coordinator, academic), codes filière (optionnel), accès plateforme (true/false), SSO (true/false).",
+        "downloadTemplate": "Télécharger le modèle CSV",
+        "fileLabel": "Fichier à importer",
+        "actions": {
+          "cancel": "Annuler",
+          "close": "Fermer",
+          "import": "Lancer l'import"
+        },
+        "errors": {
+          "noFile": "Sélectionnez un fichier CSV ou Excel (.xlsx).",
+          "generic": "Échec de l'import. Vérifiez le fichier et réessayez."
+        },
+        "result": {
+          "summary": "{{success}} / {{total}} administrateur(s) créé(s), {{errors}} erreur(s).",
+          "rowError": "Ligne {{row}} ({{email}}) : {{message}}",
+          "moreErrors": "… et {{count}} autre(s) erreur(s)."
+        }
+      }
     },
     "administratorsFiltered": {
       "subtitle": "Liste filtrée des utilisateurs admin"
@@ -385,13 +1159,194 @@ export const adminCopyFr = {
     },
     "reports": {
       "title": "Rapports encadrants",
-      "subtitle": "Suivre et gérer les rapports et évaluations des encadrants"
+      "subtitle": "Rapports soumis par les encadrants pour leurs étudiants — réception et validation admin",
+      "source": {
+        "loading": "Chargement des rapports soumis par les encadrants…",
+        "received": "{{count}} rapport(s) reçu(s) des encadrants. Consultez, filtrez et validez les soumissions.",
+        "empty": "Aucun rapport pour le moment. Les rapports apparaîtront ici dès qu’un encadrant les soumet pour un étudiant."
+      },
+      "detail": {
+        "title": "Détail du rapport",
+        "general": "Informations générales",
+        "dates": "Dates"
+      }
+    },
+    "meetings": {
+      "title": "Réunions de supervision",
+      "subtitle": "Agenda académique — suivi des rencontres encadrant / étudiant",
+      "back": "Retour aux réunions",
+      "overview": {
+        "title": "Vue d'ensemble des réunions",
+        "badge": "Opérations de supervision",
+        "activePipeline": "Pipeline actif",
+        "activityRate": "Taux d'activité de supervision",
+        "encadrantLoad": "Charge de supervision par encadrant",
+        "empty": "Aucune activité de supervision",
+        "emptyDesc": "Les indicateurs apparaîtront lorsque des séances seront planifiées.",
+        "rowStats": "{{completed}} / {{total}} terminées · {{students}} étudiants",
+        "total": "Total",
+        "completed": "Terminées",
+        "missed": "Manquées",
+        "students": "Étudiants actifs",
+        "rate": "Taux"
+      },
+      "kpi": {
+        "total": "Total réunions",
+        "active": "Réunions actives",
+        "upcoming": "À venir",
+        "completed": "Terminées",
+        "delayed": "Retardées",
+        "cancelled": "Annulées",
+        "overdue": "En retard",
+        "missed": "Manquées",
+        "completionRate": "Taux d'activité"
+      },
+      "analytics": {
+        "title": "Analytique de supervision",
+        "completedVsDelayed": "Terminées vs retardées",
+        "distribution": "Répartition des réunions",
+        "totalCaption": "total"
+      },
+      "insights": {
+        "title": "Insights intelligents",
+        "empty": "Les indicateurs de supervision sont sains — aucune alerte.",
+        "needsFollowup": "{{count}} réunions nécessitent un suivi",
+        "overdue": "{{count}} réunions sont en retard",
+        "overloadedEncadrants": "{{count}} encadrants ont une charge élevée cette période",
+        "cancellationHigh": "Le taux d'annulation est élevé ({{count}} %)",
+        "coverageBalanced": "La couverture de suivi est équilibrée",
+        "noUpcoming": "Aucune réunion à venir — vérifiez l'agenda",
+        "alert": "{{message}}"
+      },
+      "empty": {
+        "period": "Aucune réunion sur cette période",
+        "agenda": "Aucun élément d'agenda à venir",
+        "agendaDesc": "Les réunions planifiées apparaîtront sur cette frise.",
+        "day": "Aucune réunion ce jour",
+        "dayDesc": "Choisissez une autre date ou passez en vue mois.",
+        "list": "Aucune réunion pour le moment",
+        "listDesc": "Les réunions de supervision planifiées s'afficheront ici.",
+        "search": "Aucune réunion correspondante",
+        "searchDesc": "Ajustez les filtres ou la recherche."
+      },
+      "views": {
+        "month": "Mois",
+        "week": "Semaine",
+        "day": "Jour",
+        "agenda": "Agenda",
+        "today": "Aujourd'hui"
+      },
+      "filters": {
+        "search": "Rechercher une réunion…",
+        "allStatuses": "Tous les statuts",
+        "allTypes": "Tous les types",
+        "dateFrom": "Du",
+        "dateTo": "Au",
+        "advanced": "Filtres",
+        "statusLabel": "Statut",
+        "typeLabel": "Type de réunion",
+        "upcomingOnly": "À venir uniquement",
+        "overdueOnly": "En retard uniquement"
+      },
+      "table": {
+        "sectionTitle": "Liste des réunions",
+        "title": "Titre",
+        "encadrant": "Encadrant",
+        "student": "Étudiant",
+        "when": "Date",
+        "status": "Statut",
+        "type": "Type",
+        "items": "réunions"
+      },
+      "detail": {
+        "student": "Étudiant",
+        "encadrant": "Encadrant",
+        "encadrantHint": "Encadrant principal pour cette séance de suivi académique.",
+        "agenda": "Agenda",
+        "notes": "Notes",
+        "followUp": "Actions de suivi",
+        "timeline": "Historique",
+        "timelineEmpty": "Aucun événement dans l'historique.",
+        "attachments": "Pièces jointes",
+        "notFound": "Réunion introuvable",
+        "filiere": "Filière",
+        "level": "Niveau",
+        "group": "Groupe",
+        "year": "Année",
+        "internshipType": "Type de stage",
+        "plannedStart": "Début planifié",
+        "plannedEnd": "Fin planifiée",
+        "location": "Lieu",
+        "mode": "Mode"
+      },
+      "statusTooltip": {
+        "SCHEDULED": "Réunion planifiée, en attente de confirmation",
+        "CONFIRMED": "Les participants ont confirmé leur présence",
+        "IN_PROGRESS": "Réunion en cours",
+        "COMPLETED": "Réunion terminée avec succès",
+        "DELAYED": "Réunion décalée par rapport au planning",
+        "RESCHEDULED": "Réunion reportée à un nouveau créneau",
+        "CANCELLED": "Réunion annulée",
+        "MISSED": "Réunion non tenue comme prévu",
+        "NEEDS_FOLLOWUP": "Un suivi supplémentaire est requis"
+      },
+      "actions": {
+        "complete": "Marquer terminée"
+      },
+      "status": {
+        "SCHEDULED": "Planifiée",
+        "CONFIRMED": "Confirmée",
+        "IN_PROGRESS": "En cours",
+        "COMPLETED": "Terminée",
+        "DELAYED": "Retardée",
+        "RESCHEDULED": "Reportée",
+        "CANCELLED": "Annulée",
+        "MISSED": "Manquée",
+        "NEEDS_FOLLOWUP": "Suivi requis"
+      },
+      "type": {
+        "FOLLOW_UP": "Suivi",
+        "INTERNSHIP_COACHING": "Coaching stage",
+        "PROGRESS_REVIEW": "Revue de progression",
+        "MID_TERM_EVAL": "Évaluation mi-parcours",
+        "FINAL_EVAL": "Évaluation finale",
+        "PROBLEM_RESOLUTION": "Résolution de problème",
+        "EMERGENCY": "Urgence",
+        "ORIENTATION": "Orientation",
+        "ONLINE": "En ligne",
+        "COMPANY_FOLLOWUP": "Suivi entreprise"
+      }
     }
   },
   "common": {
+    "loading": "Chargement…",
+    "yes": "Oui",
+    "no": "Non",
+    "breadcrumbs": {
+      "students": "Étudiants",
+      "newStudent": "Nouvel étudiant",
+      "offers": "Offres de stage",
+      "announcements": "Annonces",
+      "encadrants": "Encadrants",
+      "administrators": "Administrateurs",
+      "newAdministrator": "Nouvel administrateur",
+      "documents": "Documents",
+      "rolesPermissions": "Rôles & permissions"
+    },
+    "notFound": {
+      "student": "Étudiant introuvable.",
+      "offer": "Offre introuvable.",
+      "announcement": "Annonce introuvable.",
+      "encadrant": "Encadrant introuvable.",
+      "administrator": "Administrateur introuvable.",
+      "document": "Demande introuvable."
+    },
     "actions": {
       "view": "Voir",
       "edit": "Modifier",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "backToList": "Retour à la liste",
       "delete": "Supprimer",
       "assign": "Assigner",
       "download": "Télécharger",
@@ -404,6 +1359,65 @@ export const adminCopyFr = {
       "managePermissions": "Gérer les permissions",
       "importExcel": "Importer Excel",
       "validate": "Valider"
+    },
+    "delete": {
+      "confirm": "Supprimer définitivement",
+      "confirmWithCount": "Supprimer ({{count}})",
+      "startSelection": "Sélectionner pour supprimer",
+      "cancelSelection": "Annuler",
+      "selectedCount": "{{count}} sélectionné(s)",
+      "clearSelection": "Tout désélectionner",
+      "deleteSelected": "Supprimer la sélection",
+      "studentTitle": "Supprimer l'étudiant",
+      "studentDescription": "Supprimer définitivement « {{name}} » ? Cette action est irréversible.",
+      "studentBulkDescription": "Supprimer définitivement {{count}} étudiant(s) ? Cette action est irréversible.",
+      "adminTitle": "Supprimer l'administrateur",
+      "adminDescription": "Supprimer définitivement « {{name}} » ? Cette action est irréversible.",
+      "adminBulkDescription": "Supprimer définitivement {{count}} administrateur(s) ? Cette action est irréversible.",
+      "encadrantTitle": "Supprimer l'encadrant",
+      "encadrantDescription": "Supprimer définitivement « {{name}} » ? Cette action est irréversible.",
+      "encadrantBulkDescription": "Supprimer définitivement {{count}} encadrant(s) ? Cette action est irréversible.",
+      "nothingSelected": "Aucun élément sélectionné.",
+      "allFailed": "Aucun compte n'a pu être supprimé.",
+      "requestFailed": "La suppression a échoué. Réessayez ou contactez un administrateur.",
+      "success": "{{count}} compte(s) supprimé(s).",
+      "partialSuccess": "{{deleted}} supprimé(s), {{failed}} en échec."
+    },
+    "detailModal": {
+      "close": "Fermer",
+      "readOnlyHint": "Consultation seule. Utilisez Modifier pour changer les données.",
+      "sections": {
+        "identity": "Identité",
+        "roles": "Rôles et permissions",
+        "academicScope": "Périmètre académique",
+        "access": "Contrôle d'accès",
+        "overview": "Aperçu",
+        "assignment": "Affectation académique"
+      },
+      "fields": {
+        "sso": "SSO activé",
+        "platformAccess": "Accès plateforme",
+        "active": "Compte actif",
+        "lastLogin": "Dernière connexion",
+        "createdAt": "Créé le",
+        "onboardingPercent": "Progression onboarding",
+        "applicants": "Candidatures"
+      },
+      "administrator": {
+        "title": "Détails administrateur"
+      },
+      "student": {
+        "title": "Détails étudiant"
+      },
+      "encadrant": {
+        "title": "Détails encadrant"
+      },
+      "announcement": {
+        "title": "Détails de l'annonce"
+      },
+      "offer": {
+        "title": "Détails de l'offre de stage"
+      }
     },
     "chatChannels": {
       "students": {
@@ -497,10 +1511,45 @@ export const adminCopyFr = {
       "amountPaid": "Montant payé",
       "remaining": "Restant",
       "status": "Statut",
+      "scopes": "Périmètre",
+      "lastLogin": "Dernière connexion",
+      "onboarding": "Onboarding",
       "actions": "Actions",
       "allClasses": "Toutes les classes",
       "filterByClass": "Filtrer par classe",
-      "noStudentsMatch": "Aucun étudiant ne correspond à votre recherche."
+      "noStudentsMatch": "Aucun étudiant ne correspond à votre recherche.",
+      "filieres": "Programmes",
+      "levels": "Niveaux",
+      "specializations": "Spécialisations",
+      "studentsWorkload": "Étudiants",
+      "accountStatus": "Compte",
+      "activeStatus": "Statut"
+    },
+    "reports": {
+      "filterByStatus": "Filtrer par statut",
+      "filterByType": "Filtrer par type de rapport"
+    },
+    "encadrants": {
+      "filterAllStatuses": "Tous les statuts",
+      "filterByStatus": "Filtrer par statut de compte",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "incompleteScope": "Périmètre incomplet",
+      "missingLevels": "Niveaux manquants",
+      "levelsCount": "{{count}} niveau(x)",
+      "scopeGap": {
+        "PROGRAMS": "programmes",
+        "LEVELS": "niveaux",
+        "ACADEMIC_YEARS": "années",
+        "SUPERVISED_INTERNSHIP_TYPES": "types de stage"
+      }
+    },
+    "administrators": {
+      "scopeGlobal": "Global",
+      "neverLoggedIn": "Jamais connecté",
+      "onboardingComplete": "Terminé",
+      "onboardingPending": "En attente",
+      "superAdminProtected": "Les comptes Super Admin ne peuvent pas être modifiés depuis cette page."
     },
     "filter": {
       "allTypes": "Tous les types",
@@ -541,19 +1590,35 @@ export const adminCopyFr = {
   "values": {
     "accountStatus": {
       "active": "Actif",
-      "inactive": "Inactif"
+      "inactive": "Inactif",
+      "pending": "En attente",
+      "authorized": "Autorisé",
+      "suspended": "Suspendu",
+      "blocked": "Bloqué",
+      "archived": "Archivé",
+      "locked": "Verrouillé"
     },
     "adminRoles": {
+      "super": "Super Admin",
       "stage": "Admin stage",
       "finance": "Admin finance",
       "documents": "Admin documents",
-      "communication": "Admin communication"
+      "communication": "Admin communication",
+      "coordinator": "Coordinateur",
+      "academic": "Affaires académiques"
     },
     "adminPermissions": {
       "internshipManagement": "Gestion des stages",
       "financialOperations": "Opérations financières",
       "documentValidation": "Validation des documents",
-      "announcementsNotifications": "Annonces et notifications"
+      "announcementsNotifications": "Annonces et notifications",
+      "manageInternshipOffers": "Gérer les offres de stage",
+      "createAnnouncements": "Créer des annonces",
+      "userManagement": "Gestion des utilisateurs",
+      "manageStudents": "Gérer les étudiants",
+      "validateDocuments": "Valider les documents",
+      "accessReports": "Accéder aux rapports",
+      "platformSettings": "Paramètres plateforme"
     },
     "offerStatus": {
       "active": "Active",
@@ -586,6 +1651,109 @@ export const adminCopyFr = {
       "high": "Élevé",
       "medium": "Moyen",
       "low": "Faible"
+    }
+  },
+  "auditCenter": {
+    "loadError": "Impossible de charger l'historique. Vérifiez que l'API tourne et que vous êtes connecté.",
+    "moduleEmpty": "Aucune activité enregistrée pour {{module}}.",
+    "openEntity": "Ouvrir la fiche",
+    "analyticsTitle": "Intelligence opérationnelle",
+    "analyticsSubtitle": "Activité plateforme, signaux critiques et automatisation",
+    "insightsTitle": "Insights intelligents",
+    "exportCsv": "Exporter CSV",
+    "exporting": "Export…",
+    "entityTimelineTitle": "Historique d'activité",
+    "entityTimelineEmpty": "Aucune activité enregistrée pour cet objet.",
+    "filters": { "criticality": "Criticité", "automated": "Origine" },
+    "automated": { "all": "Toutes origines", "yes": "Système", "no": "Humain" },
+    "criticality": {
+      "all": "Tous niveaux",
+      "INFO": "Info",
+      "IMPORTANT": "Important",
+      "CRITICAL": "Critique",
+      "AUTOMATED": "Automatisé"
+    },
+    "kpis": {
+      "totalEvents": "Événements totaux",
+      "critical24h": "Critiques (24h)",
+      "automated7d": "Automatisés (7d)",
+      "activeActors": "Acteurs actifs (7d)"
+    },
+    "charts": {
+      "activityTrend": "Tendance d'activité",
+      "moduleDistribution": "Répartition par module",
+      "empty": "Données insuffisantes"
+    },
+    "modules": {
+      "stage": "Stage",
+      "internship": "Stage",
+      "announcements": "Annonces",
+      "documents": "Documents",
+      "srf": "SRF",
+      "encadrant": "Encadrement",
+      "meetings": "Réunions",
+      "reports": "Rapports",
+      "chat": "Chat",
+      "tasks": "Tâches",
+      "auth": "Authentification",
+      "students": "Étudiants",
+      "smart_assignment": "Affectation intelligente",
+      "notifications": "Notifications",
+      "history": "Historique"
+    },
+    "drawer": {
+      "close": "Fermer",
+      "context": "Contexte",
+      "module": "Module",
+      "entity": "Entité",
+      "changes": "Modifications"
+    },
+    "insights": {
+      "activitySpike": "Pic d'activité inhabituel",
+      "activitySpikeDetail": "{{recent}} événements en 24h vs {{previous}} auparavant.",
+      "criticalCluster": "Cluster d'incidents critiques",
+      "criticalClusterDetail": "{{count}} événements critiques/erreur en 24h.",
+      "moduleHotspot": "Module très actif",
+      "moduleHotspotDetail": "{{module}} : {{count}} événements aujourd'hui.",
+      "stalledWorkflows": "Workflows bloqués",
+      "stalledWorkflowsDetail": "{{count}} actions en attente depuis plus de 7 jours."
+    }
+  },
+  "localHistory": {
+    "analyticsTitle": "Intelligence module",
+    "analyticsSubtitle": "Activité, signaux critiques et automatisation — périmètre module uniquement",
+    "empty": "Aucune activité enregistrée pour ce module. Les actions apparaîtront au fil des workflows.",
+    "eventsLabel": "événements",
+    "charts": {
+      "actionDistribution": "Répartition des actions (7j)"
+    },
+    "srf": {
+      "title": "Historique SRF",
+      "subtitle": "Paiements, validations, blocages, tranches et restrictions financières"
+    },
+    "documents": {
+      "title": "Historique Documents",
+      "subtitle": "Demandes, validations, réservations, retraits et alertes SLA"
+    },
+    "announcements": {
+      "title": "Historique Annonces",
+      "subtitle": "Publications, planification, ciblage, recommandations et engagement"
+    },
+    "internshipOffers": {
+      "title": "Historique Offres de stage",
+      "subtitle": "Cycle de vie des offres, candidatures et affectations"
+    },
+    "smartAssignment": {
+      "title": "Historique Smart Assignment",
+      "subtitle": "Exécutions d'affectation, équilibrage, conflits et réaffectations manuelles"
+    },
+    "encadrants": {
+      "title": "Historique Encadrants",
+      "subtitle": "Profils, affectations, spécialisations et allocations étudiants"
+    },
+    "meetings": {
+      "title": "Historique Réunions",
+      "subtitle": "Création, replanification, annulation et présence"
     }
   },
   "historyUi": {
@@ -850,65 +2018,89 @@ export const adminCopyFr = {
     }
   },
   "charts": {
-    "students-total-enrollment": {
-      "title": "Tendance des inscriptions",
-      "subtitle": "Nouvelles inscriptions sur les 6 derniers mois",
-      "ariaLabel": "Line chart of student enrollment by month",
-      "labels": {
-        "0": "Oct",
-        "1": "Nov",
-        "2": "Dec",
-        "3": "Jan",
-        "4": "Feb",
-        "5": "Mar"
+    "encadrant-reports": {
+      "centerCaption": "rapports",
+      "status": {
+        "title": "Répartition par statut",
+        "subtitle": "Tous les rapports de la plateforme",
+        "ariaLabel": "Graphique circulaire des statuts de rapports"
       },
-      "series": {
-        "new": "New students"
+      "inProgress": {
+        "title": "Types de rapports en cours",
+        "subtitle": "Répartition par type parmi les rapports soumis",
+        "ariaLabel": "Graphique des types de rapports en cours"
+      },
+      "pending": {
+        "title": "Types en attente de validation",
+        "subtitle": "Répartition par type de rapport",
+        "ariaLabel": "Graphique des rapports en attente"
+      },
+      "approved": {
+        "title": "Types de rapports validés",
+        "subtitle": "Répartition par type de rapport validé",
+        "ariaLabel": "Graphique des rapports validés"
+      },
+      "overdue": {
+        "title": "Types de rapports en retard",
+        "subtitle": "Répartition par type de rapport en retard",
+        "ariaLabel": "Graphique des rapports en retard"
+      }
+    },
+    "students-total-enrollment": {
+      "title": "Répartition par filière",
+      "subtitle": "Part de chaque filière sur l'ensemble des étudiants",
+      "ariaLabel": "Graphique circulaire des étudiants par filière"
+    },
+    "students-field-distribution": {
+      "ariaLabel": "Graphique circulaire des étudiants par filière",
+      "segments": {
+        "others": "Autres filières"
       }
     },
     "students-active-split": {
       "title": "Répartition d'activité",
-      "subtitle": "Comptes actifs vs inactifs",
-      "ariaLabel": "Donut chart of active and inactive students",
+      "subtitle": "Actifs et inactifs par rapport au total des étudiants",
+      "ariaLabel": "Actifs et inactifs sur le total des étudiants",
       "segments": {
-        "active": "Active",
-        "inactive": "Inactive"
+        "active": "Actifs",
+        "inactive": "Inactifs"
+      }
+    },
+    "students-internship-split": {
+      "title": "Affectation stage",
+      "subtitle": "Étudiants avec ou sans stage",
+      "ariaLabel": "Graphique des étudiants avec et sans stage",
+      "segments": {
+        "with": "Avec stage",
+        "without": "Sans stage"
       }
     },
     "students-without-internship": {
-      "title": "Statut de recherche",
-      "subtitle": "Étudiants sans stage par statut",
-      "ariaLabel": "Bar chart of students without internship by search status",
-      "labels": {
-        "0": "Searching",
-        "1": "Need support",
-        "2": "On hold"
-      },
-      "series": {
-        "count": "Students"
-      }
+      "title": "Sans stage",
+      "subtitle": "Avec ou sans stage par rapport au total des étudiants",
+      "ariaLabel": "Avec ou sans stage sur le total des étudiants"
     },
     "students-with-internship": {
-      "title": "Avancement du stage",
-      "subtitle": "Étudiants affectés par étape",
-      "ariaLabel": "Bar chart of internship progress stages",
-      "labels": {
-        "0": "In progress",
-        "1": "Completed",
-        "2": "Extended"
-      },
-      "series": {
-        "students": "Students"
-      }
+      "title": "Avec stage",
+      "subtitle": "Avec ou sans stage par rapport au total des étudiants",
+      "ariaLabel": "Avec ou sans stage sur le total des étudiants"
     },
     "students-engagement-distribution": {
       "title": "Niveaux d'engagement",
-      "subtitle": "Répartition Élevé, Moyen et Faible",
-      "ariaLabel": "Donut chart of student engagement levels",
+      "subtitle": "Élevé, moyen et faible sur l'ensemble des étudiants",
+      "ariaLabel": "Niveaux d'engagement sur le total des étudiants",
       "segments": {
-        "high": "High",
-        "medium": "Medium",
-        "low": "Low"
+        "high": "Élevé",
+        "medium": "Moyen",
+        "low": "Faible"
+      }
+    },
+    "students-onboarding-steps": {
+      "ariaLabel": "Progression du profil (étapes d'onboarding)",
+      "labels": {
+        "step0": "0 %",
+        "step50": "50 %",
+        "step100": "100 %"
       }
     },
     "offers-all-status": {
@@ -1093,57 +2285,34 @@ export const adminCopyFr = {
       }
     },
     "encadrants-department-load": {
-      "title": "Charge par département",
-      "subtitle": "Encadrants par département",
-      "ariaLabel": "Bar chart of encadrants by department",
-      "labels": {
-        "0": "IT",
-        "1": "Business",
-        "2": "Engineering",
-        "3": "Design"
-      },
-      "series": {
-        "count": "Encadrants"
+      "title": "Répartition par filière",
+      "subtitle": "Encadrants par filière sur le total",
+      "ariaLabel": "Encadrants par filière sur le total",
+      "segments": {
+        "others": "Autres filières"
       }
     },
     "encadrants-top-assigned": {
       "title": "Top affectations",
-      "subtitle": "Étudiants par encadrant (top 5)",
-      "ariaLabel": "Bar chart of top encadrants by assigned students",
-      "labels": {
-        "0": "Alami",
-        "1": "Benani",
-        "2": "Chraibi",
-        "3": "Idrissi",
-        "4": "Tazi"
-      },
-      "series": {
-        "students": "Students"
+      "subtitle": "Étudiants assignés par encadrant sur le total",
+      "ariaLabel": "Répartition des étudiants assignés par encadrant",
+      "centerCaption": "étudiants assignés"
+    },
+    "encadrants-with-students": {
+      "segments": {
+        "with": "Avec étudiants",
+        "without": "Sans étudiants"
       }
     },
     "encadrants-reports-split": {
-      "title": "Statut des rapports",
-      "subtitle": "En cours vs soumis",
-      "ariaLabel": "Donut chart of encadrant reports status",
-      "segments": {
-        "progress": "In progress",
-        "done": "Submitted",
-        "overdue": "Overdue"
-      }
+      "title": "Rapports en cours",
+      "subtitle": "Suivi des rapports étudiants (bientôt disponible)",
+      "ariaLabel": "Statut des rapports encadrants"
     },
     "encadrants-meetings-weekly": {
-      "title": "Réunions à venir",
-      "subtitle": "Réunions planifiées par semaine",
-      "ariaLabel": "Bar chart of upcoming encadrant meetings",
-      "labels": {
-        "0": "This wk",
-        "1": "Next wk",
-        "2": "W+2",
-        "3": "W+3"
-      },
-      "series": {
-        "meetings": "Meetings"
-      }
+      "title": "Affectations étudiants",
+      "subtitle": "Encadrants avec ou sans étudiants assignés",
+      "ariaLabel": "Encadrants avec ou sans étudiants assignés"
     },
     "announcements-type-mix": {
       "title": "Types d'annonces",
@@ -1439,6 +2608,20 @@ export const adminCopyFr = {
       "validated": "Validés",
       "rejected": "Rejetés"
     },
+    "encadrants": {
+      "total": "Total encadrants",
+      "assigned": "Étudiants assignés",
+      "meetings": "Réunions à venir",
+      "totalReports": "Total rapports",
+      "reportsCritical": "Alertes critiques",
+      "reportsInProgress": "Rapports en cours",
+      "reportsPending": "En cours de revue",
+      "reportsPendingValidation": "Validations en attente",
+      "reportsApproved": "Rapports validés",
+      "reportsOverdue": "Rapports en retard",
+      "reportsRiskAlerts": "Alertes risque",
+      "reports": "Rapports en cours"
+    },
     "administrators": {
       "totalAdmins": "Total admins",
       "stage": "Admin stage",
@@ -1576,6 +2759,239 @@ export const adminCopyFr = {
       }
     }
   },
+  "smartAssignment": {
+    "title": "Affectation intelligente",
+    "open": "Ouvrir",
+    "subtitle": "Analyse ESCA et distribution automatique des étudiants vers les encadrants",
+    "academicYear": "Année académique",
+    "currentYear": "en cours",
+    "respectLocks": "Respecter les affectations verrouillées",
+    "refresh": "Actualiser",
+    "preview": "Aperçu",
+    "runEngine": "Lancer le moteur",
+    "engineHint": "Priorité : type de stage, filière, niveau, secteur, domaines, charge",
+    "exclude": "Exclure",
+    "lock": "Verrouiller",
+    "unlock": "Déverrouiller",
+    "dragHandle": "Glisser pour réaffecter",
+    "matchScore": "Score {{score}}%",
+    "workload": "{{current}} / {{max}} étudiants",
+    "dropStudentsHere": "Déposez des étudiants ici",
+    "unassignedTitle": "Non affectés ({{count}})",
+    "unassignedHint": "Étudiants éligibles sans encadrant assigné",
+    "allAssigned": "Tous les étudiants éligibles sont affectés",
+    "loading": "Chargement des affectations…",
+    "stats": {
+      "assigned": "Affectés",
+      "unassigned": "Non affectés",
+      "eligible": "Éligibles",
+      "overloaded": "Surchargés",
+      "available": "Disponibles",
+      "accuracy": "Précision"
+    },
+    "encadrants": {
+      "sectionTitle": "Encadrants",
+      "sectionSubtitle": "{{count}} affiché(s) sur {{total}}",
+      "filtersAria": "Filtres des encadrants",
+      "filterAria": "Filtrer les encadrants",
+      "filterAll": "Tous",
+      "filterAvailable": "Disponibles",
+      "filterOverloaded": "Surchargés",
+      "filterExcluded": "Exclus du moteur",
+      "paginationLabel": "encadrants",
+      "emptyFilters": "Aucun encadrant ne correspond à vos critères.",
+      "studentsCount": "{{count}} étudiant(s)",
+      "expandStudents": "Afficher la liste des étudiants ({{count}})",
+      "collapseStudents": "Masquer la liste des étudiants"
+    },
+    "charts": {
+      "workloadTitle": "Répartition de la charge",
+      "workloadSubtitle": "Étudiants assignés par encadrant",
+      "workloadCount": "{{count}} affiché(s) sur {{total}}",
+      "workloadFiltersAria": "Filtres du graphique de charge",
+      "workloadPaginationLabel": "encadrants",
+      "workloadAria": "Graphique de charge des encadrants",
+      "noData": "Aucune donnée"
+    },
+    "success": {
+      "applied": "Affectations enregistrées avec succès.",
+      "preview": "{{changes}} modification(s) proposée(s) (aperçu sans enregistrement).",
+      "reassigned": "Étudiant réaffecté."
+    },
+    "errors": {
+      "loadFailed": "Impossible de charger les affectations.",
+      "engineFailed": "Le moteur d'affectation a échoué.",
+      "precheckFailed": "La validation préalable a échoué.",
+      "reassignFailed": "Réaffectation impossible.",
+      "lockFailed": "Impossible de modifier le verrou."
+    },
+    "validation": {
+      "viewDetails": "Voir les détails",
+      "detailsTitle": "Rapport de validation d'affectation",
+      "detailsDescription": "Consultez les étudiants, encadrants concernés et les actions recommandées.",
+      "count": "{{count}} concerné(s)",
+      "expandDetails": "Afficher les enregistrements",
+      "collapseDetails": "Masquer les enregistrements",
+      "noIssues": "Aucun problème à afficher.",
+      "blockedToast": "Affectation bloquée — corrigez les problèmes critiques avant de lancer.",
+      "confirmTitle": "Continuer malgré les avertissements ?",
+      "confirmDescription": "Des problèmes ont été détectés. Vous pouvez continuer ou ajuster les paramètres.",
+      "confirmWarningsIntro": "Des avertissements ont été détectés. Vérifiez la liste ci-dessous avant de continuer.",
+      "continueRun": "Lancer l'affectation",
+      "continuePreview": "Lancer l'aperçu",
+      "strategyLegend": "Comment traiter les affectations existantes ?",
+      "banner": {
+        "blockedTitle": "L'affectation ne peut pas être lancée",
+        "warningTitle": "Avertissements détectés",
+        "subtitle": "{{blocking}} critique(s) · {{warnings}} avertissement(s)"
+      },
+      "phase": {
+        "validating": "Validation des prérequis…",
+        "running": "Exécution du moteur d'affectation…",
+        "previewing": "Génération de l'aperçu…"
+      },
+      "severity": {
+        "critical": "Critique",
+        "warning": "Avertissement",
+        "info": "Info"
+      },
+      "summary": {
+        "eligible": "Étudiants éligibles",
+        "encadrants": "Encadrants actifs",
+        "alreadyAssigned": "Déjà affectés"
+      },
+      "strategy": {
+        "full": {
+          "title": "Écraser les affectations",
+          "description": "Relancer le moteur pour tous les étudiants éligibles, y compris ceux déjà affectés."
+        },
+        "skipAssigned": {
+          "title": "Ignorer les affectations existantes",
+          "description": "Conserver les affectations actuelles et ne traiter que les non affectés."
+        },
+        "unassignedOnly": {
+          "title": "Réexécution intelligente (non affectés uniquement)",
+          "description": "Affecter uniquement les étudiants sans encadrant."
+        }
+      },
+      "recommendations": {
+        "ADD_ELIGIBLE_STUDENTS": "Ajoutez des étudiants éligibles avec stage actif et groupe pour cette année.",
+        "ACTIVATE_ENCADRANTS": "Activez les encadrants et vérifiez qu'ils acceptent des étudiants.",
+        "ADJUST_ENCADRANT_SCOPES": "Alignez les périmètres et spécialisations des encadrants avec les filières.",
+        "COMPLETE_STUDENT_ACADEMIC_DATA": "Complétez filière, niveau, année ou type de stage manquants.",
+        "CONFIGURE_SUPERVISED_INTERNSHIP_TYPES": "Configurez les types de stage supervisés sur les encadrants concernés.",
+        "INCREASE_ENCADRANT_CAPACITY": "Augmentez la capacité ou redistribuez la charge.",
+        "REVIEW_ASSIGNMENT_STRATEGY": "Choisissez d'écraser, ignorer ou relancer intelligemment les affectations."
+      },
+      "issues": {
+        "NO_ELIGIBLE_STUDENTS": {
+          "title": "Aucun étudiant éligible pour l'affectation",
+          "description": "Aucun étudiant actif avec une affectation active (groupe + année {{academic_year}}). Vérifiez l'année sélectionnée et les affectations dans la gestion des étudiants."
+        },
+        "NO_ENCADRANTS": {
+          "title": "Aucun encadrant disponible",
+          "description": "Il n'y a pas d'encadrants actifs acceptant des étudiants."
+        },
+        "NO_COMPATIBLE_ENCADRANTS": {
+          "title": "Aucun encadrant compatible pour les étudiants sélectionnés",
+          "description": "Les périmètres ou spécialisations ne correspondent à aucun étudiant."
+        },
+        "MISSING_FILIERE": {
+          "title": "{{count}} étudiant(s) sans filière",
+          "description": "Attribuez une filière avant l'affectation automatique."
+        },
+        "MISSING_LEVEL": {
+          "title": "{{count}} étudiant(s) sans niveau",
+          "description": "Le niveau académique est requis pour le matching."
+        },
+        "MISSING_ACADEMIC_YEAR": {
+          "title": "{{count}} étudiant(s) sans année académique",
+          "description": "L'année académique doit être renseignée."
+        },
+        "MISSING_INTERNSHIP_TYPE": {
+          "title": "{{count}} étudiant(s) sans type de stage",
+          "description": "Le type de stage est requis pour le workflow ESCA."
+        },
+        "ALL_ENCADRANTS_OVERLOADED": {
+          "title": "Tous les encadrants compatibles ont atteint leur capacité maximale",
+          "description": "{{count}} encadrant(s) sont à leur limite d'étudiants."
+        },
+        "ALL_MATCHING_ENCADRANTS_INACTIVE": {
+          "title": "Les encadrants compatibles sont inactifs",
+          "description": "Les encadrants correspondants sont désactivés ou n'acceptent pas d'étudiants."
+        },
+        "EXISTING_ASSIGNMENTS": {
+          "title": "{{count}} étudiant(s) déjà affectés cette année",
+          "description": "Choisissez comment gérer les affectations existantes avant de relancer."
+        },
+        "PARTIAL_UNASSIGNABLE": {
+          "title": "{{count}} étudiant(s) ne peuvent pas être affectés",
+          "description": "Certains étudiants n'ont pas d'encadrant compatible."
+        },
+        "UNSUPPORTED_INTERNSHIP_CATEGORY": {
+          "title": "{{count}} étudiant(s) avec catégorie de stage non prise en charge",
+          "description": "La filière ou le programme ne correspond pas au catalogue ESCA (PGE, LME, IBA, Master)."
+        },
+        "NO_SUPERVISORS_FOR_INTERNSHIP_TYPE": {
+          "title": "Aucun encadrant pour {{internship_type}}",
+          "description": "{{count}} étudiant(s) ont ce type de stage mais aucun encadrant ne le supervise."
+        },
+        "ENCADRANTS_WITHOUT_SUPERVISED_TYPES": {
+          "title": "{{count}} encadrant(s) sans types de stage configurés",
+          "description": "Indiquez les types de stage que chaque encadrant peut superviser."
+        }
+      },
+      "runtime": {
+        "RUNTIME_UNASSIGNED_STUDENTS": "{{count}} étudiant(s) n'ont pas pu être affectés après l'exécution."
+      }
+    },
+    "analytics": {
+      "title": "Analytique par type de stage",
+      "subtitle": "Répartition étudiants / encadrants et types non couverts",
+      "missingInternship": "Sans type de stage",
+      "unsupportedCategory": "Catégories non supportées",
+      "encadrantsWithoutTypes": "Encadrants sans types",
+      "uncoveredTypes": "Types sans encadrant",
+      "studentsByType": "Étudiants par type de stage",
+      "encadrantsByType": "Encadrants par type de stage",
+      "studentsCardSubtitle": "Répartition par types de stage actifs",
+      "encadrantsCardSubtitle": "Encadrants uniques et couverture par type (un encadrant peut couvrir plusieurs types)",
+      "encadrantsMultiTypeNote": "{{slots}} créneaux d'encadrement",
+      "percentOfSupervisors": "{{percent}} % des encadrants couvrent ce type",
+      "loadingAnalytics": "Chargement des analytiques de stage…",
+      "excludedNonOfficial": "Hors catalogue ESCA (ex. Master)",
+      "officialCatalogNote": "Catalogue officiel ESCA : 11 types (PGE, LME, IBA)",
+      "noData": "Aucune donnée",
+      "totalStudents": "Total étudiants",
+      "totalEncadrants": "Total encadrants",
+      "largestCategory": "Catégorie dominante",
+      "smallestCategory": "Catégorie minoritaire",
+      "coverageRatio": "Taux de couverture",
+      "supervisedTypes": "Types supervisés",
+      "missingCoverage": "Lacunes d'encadrement",
+      "studentsLabel": "étudiants",
+      "encadrantsLabel": "encadrants",
+      "shareOfTotal": "{{percent}} % du total",
+      "donutCenterStudents": "Étudiants",
+      "donutCenterEncadrants": "Encadrants",
+      "statusBalanced": "Équilibré",
+      "statusLowCoverage": "Couverture faible",
+      "statusOverCapacity": "À risque",
+      "statusSurplus": "Surplus",
+      "statusNoSupervisor": "Sans encadrant",
+      "insightsTitle": "Insights intelligents",
+      "insightLowCoverage": "{{type}} : couverture encadrant insuffisante",
+      "insightBalanced": "{{type}} : répartition équilibrée",
+      "insightLimitedSupervisors": "{{type}} : encadrants limités",
+      "insightOverCapacity": "{{type}} : risque de dépassement de capacité",
+      "insightSurplusSupervisors": "{{type}} : surplus d'encadrants",
+      "insightUncovered": "{{type}} : {{count}} étudiant(s) sans type d'encadrement",
+      "insightDominant": "{{type}} est la plus grande cohorte ({{count}} %)",
+      "insightDiversified": "Les types de stage sont répartis de façon équilibrée",
+      "uncoveredTitle": "Types de stage sans encadrant disponible",
+      "uncoveredRow": "{{type}} — {{count}} étudiant(s)"
+    }
+  },
   "empty": {
     "noResults": "Aucun résultat",
     "tryAdjusting": "Essayez de modifier la recherche ou les filtres pour trouver ce dont vous avez besoin.",
@@ -1583,14 +2999,38 @@ export const adminCopyFr = {
     "studentsSearch": "Aucun étudiant ne correspond à votre recherche.",
     "offersFilters": "Aucune offre ne correspond à vos filtres.",
     "encadrantsFilters": "Aucun encadrant ne correspond à vos filtres.",
+    "encadrantsSearch": "Aucun encadrant trouvé.",
+    "encadrantsNoReports": "Aucun rapport en cours",
+    "encadrantsNoReportsDesc": "Les rapports des encadrants s'afficheront ici lorsqu'ils seront disponibles sur la plateforme.",
     "announcementsFilters": "Aucune annonce ne correspond à vos filtres.",
     "administratorsSearch": "Aucun administrateur ne correspond à votre recherche.",
     "activitiesSearch": "Aucune activité ne correspond à votre recherche.",
     "historyFilters": "Aucune entrée d'historique ne correspond à vos filtres.",
     "reportsSearch": "Aucun rapport ne correspond à votre recherche.",
+    "reportsInProgress": "Aucun rapport en cours",
+    "reportsPending": "Aucun rapport en attente de validation",
+    "reportsApproved": "Aucun rapport validé",
+    "reportsOverdue": "Aucun rapport en retard",
     "applicationsFilters": "Aucune candidature ne correspond à vos filtres.",
     "adminsFilters": "Aucun administrateur ne correspond à vos filtres.",
     "documentsFilters": "Aucun document ne correspond à vos filtres.",
-    "srfStudentsFilters": "Aucun étudiant ne correspond à vos filtres."
+    "srfStudentsFilters": "Aucun étudiant ne correspond à vos filtres.",
+    "srfSearchFilters": "Aucun résultat pour cette recherche.",
+    "srfNoAccounts": "Aucun dossier financier",
+    "srfNoAccountsDesc": "Les comptes SRF apparaîtront ici une fois les profils financiers créés pour les étudiants.",
+    "srfPaidStudents": "Aucun étudiant en règle",
+    "srfPaidStudentsDesc": "Aucun étudiant n'a encore le statut financier « en règle ».",
+    "srfUnpaidStudents": "Aucun étudiant impayé",
+    "srfUnpaidStudentsDesc": "Tous les étudiants sont à jour sur leurs obligations financières.",
+    "srfPartialStudents": "Aucun paiement partiel",
+    "srfPartialStudentsDesc": "Aucun étudiant en statut de paiement partiel.",
+    "srfPendingValidation": "Aucune validation en attente",
+    "srfPendingValidationDesc": "Toutes les preuves de paiement ont été traitées.",
+    "srfLatePayments": "Aucun retard de paiement",
+    "srfLatePaymentsDesc": "Aucune tranche en retard pour le moment.",
+    "srfBlockedStudents": "Aucun étudiant bloqué",
+    "srfBlockedStudentsDesc": "Aucun étudiant n'est actuellement bloqué pour les examens ou conventions.",
+    "srfExemptedStudents": "Aucun étudiant exempté",
+    "srfExemptedStudentsDesc": "Aucune exemption ou bourse active enregistrée."
   }
 } as const;

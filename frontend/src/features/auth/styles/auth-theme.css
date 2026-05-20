@@ -1,0 +1,255 @@
+/* Auth onboarding theme tokens — synced with admin-dashboard-theme via AuthThemeProvider */
+
+.auth-screen[data-auth-theme='light'] {
+  color-scheme: light;
+  --auth-bg: #ffffff;
+  --auth-bg-muted: #f3f3f5;
+  --auth-bg-elevated: #ffffff;
+  --auth-text: #364153;
+  --auth-text-heading: #101828;
+  --auth-text-muted: #4a5565;
+  --auth-text-subtle: #6a7282;
+  --auth-border: #d1d5dc;
+  --auth-border-strong: #e5e7eb;
+  --auth-brand: #155dfc;
+  --auth-brand-muted: rgba(21, 93, 252, 0.1);
+  --auth-input-bg: #f3f3f5;
+  --auth-input-bg-focus: #ffffff;
+  --auth-pref-bg: #ffffff;
+  --auth-pref-border: #e5e7eb;
+  --auth-pref-text: #6a7282;
+  --auth-pref-text-active: #ffffff;
+  --auth-pref-active-bg: #155dfc;
+  --auth-pref-hover: #f3f3f5;
+  --auth-alert-info-bg: #eff6ff;
+  --auth-alert-info-border: #bedbff;
+  --auth-alert-info-text: #193cb8;
+  --auth-alert-error-bg: #fef2f2;
+  --auth-alert-error-border: #fecaca;
+  --auth-alert-error-text: #dc2626;
+  --auth-alert-success-bg: #f0fdf4;
+  --auth-alert-success-border: #bbf7d0;
+  --auth-alert-success-text: #15803d;
+  --auth-chip-bg: #f3f3f5;
+  --auth-chip-bg-hover: #e2e8f0;
+  --auth-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.auth-screen[data-auth-theme='dark'] {
+  color-scheme: dark;
+  --auth-bg: #0b1220;
+  --auth-bg-muted: #111827;
+  --auth-bg-elevated: #151d2e;
+  --auth-text: #e2e8f0;
+  --auth-text-heading: #f8fafc;
+  --auth-text-muted: #94a3b8;
+  --auth-text-subtle: #64748b;
+  --auth-border: #2d3a52;
+  --auth-border-strong: #334155;
+  --auth-brand: #3b82f6;
+  --auth-brand-muted: rgba(59, 130, 246, 0.15);
+  --auth-input-bg: #1e293b;
+  --auth-input-bg-focus: #0f172a;
+  --auth-pref-bg: #151d2e;
+  --auth-pref-border: #334155;
+  --auth-pref-text: #94a3b8;
+  --auth-pref-text-active: #ffffff;
+  --auth-pref-active-bg: #3b82f6;
+  --auth-pref-hover: #1e293b;
+  --auth-alert-info-bg: rgba(30, 58, 138, 0.4);
+  --auth-alert-info-border: #3b82f6;
+  --auth-alert-info-text: #dbeafe;
+  --auth-alert-error-bg: rgba(127, 29, 29, 0.35);
+  --auth-alert-error-border: #b91c1c;
+  --auth-alert-error-text: #fecaca;
+  --auth-alert-success-bg: rgba(20, 83, 45, 0.35);
+  --auth-alert-success-border: #16a34a;
+  --auth-alert-success-text: #bbf7d0;
+  --auth-chip-bg: #1e293b;
+  --auth-chip-bg-hover: #334155;
+  --auth-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.auth-bg {
+  background-color: var(--auth-bg);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.auth-screen {
+  text-align: start;
+}
+
+[dir='rtl'] .auth-screen .auth-section-heading,
+[dir='rtl'] .auth-screen .auth-form-field__label,
+[dir='rtl'] .auth-screen .auth-text-heading,
+[dir='rtl'] .auth-screen .auth-text-muted,
+[dir='rtl'] .auth-screen .auth-alert-info,
+[dir='rtl'] .auth-screen .auth-alert-error,
+[dir='rtl'] .auth-screen .auth-alert-success {
+  text-align: right;
+}
+
+.auth-ltr-field {
+  direction: ltr;
+  text-align: left;
+}
+
+.auth-text {
+  color: var(--auth-text);
+}
+
+.auth-text-heading {
+  color: var(--auth-text-heading);
+}
+
+.auth-text-muted {
+  color: var(--auth-text-muted);
+}
+
+.auth-border {
+  border-color: var(--auth-border);
+}
+
+.auth-surface-muted {
+  background-color: var(--auth-bg-muted);
+}
+
+.auth-surface-elevated {
+  background-color: var(--auth-bg-elevated);
+  border: 1px solid var(--auth-border);
+}
+
+.auth-btn-secondary {
+  background-color: var(--auth-bg-elevated);
+  border: 1px solid var(--auth-border);
+  color: var(--auth-text);
+}
+
+.auth-btn-secondary:hover:not(:disabled) {
+  background-color: var(--auth-bg-muted);
+}
+
+.auth-chip {
+  background-color: var(--auth-chip-bg);
+  color: var(--auth-text);
+}
+
+.auth-chip:hover {
+  background-color: var(--auth-chip-bg-hover);
+}
+
+.auth-chip--active {
+  background-color: var(--auth-brand);
+  color: #fff;
+}
+
+.auth-alert-info {
+  background-color: var(--auth-alert-info-bg);
+  border: 1px solid var(--auth-alert-info-border);
+  color: var(--auth-alert-info-text);
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+.auth-screen[data-auth-theme='light'] .auth-alert-info {
+  background-color: var(--auth-alert-info-bg);
+  border-color: var(--auth-alert-info-border);
+  color: var(--auth-alert-info-text);
+}
+
+.auth-screen[data-auth-theme='dark'] .auth-alert-info {
+  background-color: var(--auth-alert-info-bg);
+  border-color: var(--auth-alert-info-border);
+  color: var(--auth-alert-info-text);
+}
+
+.auth-alert-info__icon {
+  color: var(--auth-brand);
+}
+
+.auth-screen[data-auth-theme='dark'] .auth-alert-info__icon {
+  color: var(--auth-alert-info-text);
+}
+
+.auth-alert-error {
+  background-color: var(--auth-alert-error-bg);
+  border: 1px solid var(--auth-alert-error-border);
+  color: var(--auth-alert-error-text);
+}
+
+.auth-alert-success {
+  background-color: var(--auth-alert-success-bg);
+  border: 1px solid var(--auth-alert-success-border);
+  color: var(--auth-alert-success-text);
+}
+
+.auth-pref-bar {
+  direction: ltr;
+  flex-shrink: 0;
+  background-color: var(--auth-pref-bg);
+  border: 1px solid var(--auth-pref-border);
+  box-shadow: var(--auth-shadow-sm);
+}
+
+.auth-pref-bar--on-image {
+  backdrop-filter: blur(8px);
+  background-color: color-mix(in srgb, var(--auth-pref-bg) 92%, transparent);
+}
+
+.auth-lang-switch {
+  direction: ltr;
+  flex-shrink: 0;
+}
+
+.auth-lang-btn,
+.auth-lang-btn--active {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 1.875rem;
+  height: 1.875rem;
+  min-width: 1.875rem;
+  max-width: 1.875rem;
+  padding: 0;
+  font-size: 0.6875rem;
+  line-height: 1;
+  font-weight: 600;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.auth-lang-btn__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
+}
+
+.auth-pref-btn {
+  flex-shrink: 0;
+  color: var(--auth-text-muted);
+}
+
+.auth-pref-btn:hover {
+  background-color: var(--auth-pref-hover);
+  color: var(--auth-brand);
+}
+
+.auth-lang-btn {
+  color: var(--auth-pref-text);
+}
+
+.auth-lang-btn:hover {
+  background-color: var(--auth-pref-hover);
+  color: var(--auth-text-heading);
+}
+
+.auth-lang-btn--active {
+  background-color: var(--auth-pref-active-bg);
+  color: var(--auth-pref-text-active);
+}
+
+.auth-divider {
+  background-color: var(--auth-border-strong);
+}

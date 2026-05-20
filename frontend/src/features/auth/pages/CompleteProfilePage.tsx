@@ -1,13 +1,32 @@
-import { FunctionComponent, useState, useRef } from 'react';
+import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { AlertCircle, Save, Link, AlignLeft, Briefcase, MapPin, Clock, CheckCircle2, Check, X } from 'lucide-react';
+import {
+  AlertCircle,
+  Save,
+  Link,
+  AlignLeft,
+  Briefcase,
+  MapPin,
+  Clock,
+  CheckCircle2,
+  Check,
+  X,
+  Copy,
+  ArrowRight,
+} from 'lucide-react';
 import profileCover from '../assets/images/complete-profile/campus_esca_2023 (1).webp';
 import { useAuth } from '../hooks/useAuth';
 import { authApi } from '../api';
+import { markOnboardingCvPending } from '../utils/onboardingCvGate';
 import { AuthHeader } from '../components/AuthHeader';
 import { AuthFooter } from '../components/AuthFooter';
 import AuthImagePanel from '../components/AuthImagePanel';
+import { AuthScreenShell, AuthFormColumn } from '../components/AuthScreenShell';
+import AuthInfoBanner from '../components/AuthInfoBanner';
+import { FormInput } from '../components/FormInput';
+import '../styles/auth-form.css';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -22,16 +41,53 @@ const itemVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
 };
 
-const skillOptions = [
-  'Digital Marketing', 'Data Analysis', 'Project Management', 'Microsoft Office',
-  'Leadership', 'Communication', 'Problem Solving', 'Social Media Marketing',
-  'Google Analytics', 'Teamwork', 'Business Strategy', 'Financial Analysis',
-  'Python', 'Excel', 'PowerPoint', 'Photoshop', 'Illustrator'
-];
+const SKILL_KEYS = [
+  'digitalMarketing', 'dataAnalysis', 'projectManagement', 'microsoftOffice',
+  'leadership', 'communication', 'problemSolving', 'socialMediaMarketing',
+  'googleAnalytics', 'teamwork', 'businessStrategy', 'financialAnalysis',
+  'python', 'excel', 'powerpoint', 'photoshop', 'illustrator',
+] as const;
 
-const mobilityOptions = ['Within City', 'National', 'International', 'Remote'];
+type SkillKey = (typeof SKILL_KEYS)[number];
+
+const SKILL_API_VALUE: Record<SkillKey, string> = {
+  digitalMarketing: 'Digital Marketing',
+  dataAnalysis: 'Data Analysis',
+  projectManagement: 'Project Management',
+  microsoftOffice: 'Microsoft Office',
+  leadership: 'Leadership',
+  communication: 'Communication',
+  problemSolving: 'Problem Solving',
+  socialMediaMarketing: 'Social Media Marketing',
+  googleAnalytics: 'Google Analytics',
+  teamwork: 'Teamwork',
+  businessStrategy: 'Business Strategy',
+  financialAnalysis: 'Financial Analysis',
+  python: 'Python',
+  excel: 'Excel',
+  powerpoint: 'PowerPoint',
+  photoshop: 'Photoshop',
+  illustrator: 'Illustrator',
+};
+
+const MOBILITY_KEYS = ['withinCity', 'national', 'international', 'remote'] as const;
+
+type MobilityKey = (typeof MOBILITY_KEYS)[number];
+
+const MOBILITY_API_VALUE: Record<MobilityKey, string> = {
+  withinCity: 'Within City',
+  national: 'National',
+  international: 'International',
+  remote: 'Remote',
+};
+
+type RequiredFieldKey = 'linkedin' | 'professionalSummary' | 'careerObjective' | 'startDate' | 'city';
+
+const choiceBtnClass = (selected: boolean, extra = '') =>
+  `auth-choice flex items-center justify-center font-medium ${extra} ${selected ? 'auth-choice--selected' : ''}`.trim();
 
 const CompleteProfilePage: FunctionComponent = () => {
+  const { t } = useTranslation();
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   
@@ -44,13 +100,13 @@ const CompleteProfilePage: FunctionComponent = () => {
   const [careerObjective, setCareerObjective] = useState('');
   
   // Skills
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<SkillKey[]>([]);
   
   // Availability & Location
   const [availability, setAvailability] = useState<'immediately' | 'specific' | ''>('');
   const [startDate, setStartDate] = useState('');
   const [city, setCity] = useState('');
-  const [mobility, setMobility] = useState<string[]>([]);
+  const [mobility, setMobility] = useState<MobilityKey[]>([]);
   
   // Experience
   const [hasApplied, setHasApplied] = useState<boolean | null>(null);
@@ -58,20 +114,41 @@ const CompleteProfilePage: FunctionComponent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [loginRecapEmail, setLoginRecapEmail] = useState<string | null>(null);
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const toggleSkill = (skill: string) => {
-    setSelectedSkills(prev => 
-      prev.includes(skill) 
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
+  /** Délai auto avant CV editor (dev : laisser le temps de copier les identifiants test). */
+  const cvEditorRedirectMs = import.meta.env.DEV ? 5000 : 1200;
+
+  const goToCvEditor = useCallback(() => {
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = null;
+    }
+    markOnboardingCvPending();
+    navigate('/cv-editor', { replace: true });
+  }, [navigate]);
+
+  useEffect(
+    () => () => {
+      if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    },
+    []
+  );
+
+  const devTestPassword =
+    (import.meta.env.VITE_DEV_STUDENT_PASSWORD as string | undefined) ||
+    (import.meta.env.DEV ? 'TalentCenter2026!' : undefined);
+
+  const toggleSkill = (skill: SkillKey) => {
+    setSelectedSkills((prev) =>
+      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill],
     );
   };
 
-  const toggleMobility = (option: string) => {
-    setMobility(prev => 
-      prev.includes(option)
-        ? prev.filter(m => m !== option)
-        : [...prev, option]
+  const toggleMobility = (option: MobilityKey) => {
+    setMobility((prev) =>
+      prev.includes(option) ? prev.filter((m) => m !== option) : [...prev, option],
     );
   };
 
@@ -83,7 +160,7 @@ const CompleteProfilePage: FunctionComponent = () => {
 
   const handleLinkedInBlur = () => {
     if (linkedinUrl.trim() && !validateLinkedInUrl(linkedinUrl)) {
-      setLinkedinError('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-name)');
+      setLinkedinError(t('auth.completeProfile.errors.linkedinInvalid'));
     } else {
       setLinkedinError('');
     }
@@ -97,29 +174,30 @@ const CompleteProfilePage: FunctionComponent = () => {
   };
 
   const validateForm = () => {
-    const missingFields: string[] = [];
+    const missingKeys: RequiredFieldKey[] = [];
     const invalidFields: string[] = [];
-    
+
     if (!linkedinUrl.trim()) {
-      missingFields.push('LinkedIn URL');
+      missingKeys.push('linkedin');
     } else if (!validateLinkedInUrl(linkedinUrl)) {
-      invalidFields.push('LinkedIn URL must be a valid LinkedIn profile (e.g., https://linkedin.com/in/your-name)');
+      invalidFields.push(t('auth.completeProfile.errors.linkedinInvalidField'));
     }
-    if (!professionalSummary.trim()) missingFields.push('Professional Summary');
-    if (!careerObjective.trim()) missingFields.push('Career Objective');
-    if (availability === 'specific' && !startDate) missingFields.push('Start Date');
-    if (!city.trim()) missingFields.push('City');
-    
-    return { missingFields, invalidFields };
+    if (!professionalSummary.trim()) missingKeys.push('professionalSummary');
+    if (!careerObjective.trim()) missingKeys.push('careerObjective');
+    if (availability === 'specific' && !startDate) missingKeys.push('startDate');
+    if (!city.trim()) missingKeys.push('city');
+
+    return { missingKeys, invalidFields };
   };
 
   const handleSave = async (e?: React.FormEvent) => {
     e?.preventDefault();
     
     // Validate required fields
-    const { missingFields, invalidFields } = validateForm();
-    if (missingFields.length > 0) {
-      setError(`Please fill in the following required fields: ${missingFields.join(', ')}`);
+    const { missingKeys, invalidFields } = validateForm();
+    if (missingKeys.length > 0) {
+      const fields = missingKeys.map((key) => t(`auth.completeProfile.fields.${key}`)).join(', ');
+      setError(t('auth.completeProfile.errors.missingFields', { fields }));
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -138,32 +216,34 @@ const CompleteProfilePage: FunctionComponent = () => {
       if (linkedinUrl) formData.append('linkedin_url', linkedinUrl);
       if (professionalSummary) formData.append('professional_summary', professionalSummary);
       if (careerObjective) formData.append('career_objective', careerObjective);
-      if (selectedSkills.length) formData.append('skills', selectedSkills.join(','));
+      if (selectedSkills.length) {
+        formData.append('skills', selectedSkills.map((k) => SKILL_API_VALUE[k]).join(','));
+      }
       if (availability) formData.append('availability', availability);
       if (startDate) formData.append('start_date', startDate);
       if (city) formData.append('city', city);
-      if (mobility.length) formData.append('mobility', mobility.join(','));
+      if (mobility.length) {
+        formData.append('mobility', mobility.map((k) => MOBILITY_API_VALUE[k]).join(','));
+      }
       if (hasApplied !== null) formData.append('has_applied', hasApplied.toString());
 
       const updatedUser = await authApi.completeProfile(formData);
       updateUser(updatedUser);
-      setSuccessMsg('Profile completed successfully!');
-      
-      // Redirect to CV editor after short delay
-      setTimeout(() => navigate('/cv-editor'), 1500);
+      setSuccessMsg(t('auth.completeProfile.success'));
+      setLoginRecapEmail(updatedUser.email ?? user?.email ?? null);
+      redirectTimerRef.current = setTimeout(goToCvEditor, cvEditorRedirectMs);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to complete profile. Please try again.');
+      setError(err.response?.data?.detail || t('auth.completeProfile.errors.submitFailed'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full min-h-screen overflow-x-hidden lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row bg-white text-left font-inter text-sm text-darkslategray">
-      {/* Form Container */}
-      <div className="w-full flex-1 lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center px-5 sm:px-8 pb-6 lg:p-2 box-border">
-        <motion.div 
-          className="w-full max-w-[576px] flex flex-col relative m-auto py-4 lg:py-1"
+    <AuthScreenShell>
+      <AuthFormColumn maxWidth="576px">
+        <motion.div
+          className="w-full flex flex-col"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -173,20 +253,12 @@ const CompleteProfilePage: FunctionComponent = () => {
           </motion.div>
 
           <motion.div variants={itemVariants} className="w-full flex flex-col gap-0 mb-4 mt-2">
-            <h1 className="text-lg font-bold tracking-tight -mb-1">Complete Your Profile</h1>
-            <p className="text-[13px] text-dimgray leading-tight">Add your professional information before accessing internship opportunities.</p>
+            <h1 className="auth-text-heading text-lg font-bold tracking-tight -mb-1">{t('auth.completeProfile.title')}</h1>
+            <p className="auth-text-muted text-[13px] leading-tight">{t('auth.completeProfile.subtitle')}</p>
           </motion.div>
 
-          {/* Info Badge */}
-          <motion.div variants={itemVariants} className="w-full mb-4">
-            <div className="w-full h-[74px] relative rounded-[10px] bg-aliceblue border-lightsteelblue border-solid border-[1px] box-border text-left text-sm text-slateblue font-inter flex items-center px-4">
-              <svg className="absolute top-[19px] left-[17px] w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-              </svg>
-              <div className="absolute top-[17px] left-[49px] w-[510px] h-10">
-                <div className="absolute top-[-1px] left-[0px] leading-5 inline-block w-[471px]">This information helps improve your matching score with relevant internship opportunities.</div>
-              </div>
-            </div>
+          <motion.div variants={itemVariants} className="mb-4 w-full">
+            <AuthInfoBanner>{t('auth.completeProfile.infoBanner')}</AuthInfoBanner>
           </motion.div>
 
           {/* Messages */}
@@ -199,7 +271,7 @@ const CompleteProfilePage: FunctionComponent = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="w-full mb-4"
               >
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium">
+                <div className="auth-alert-error flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -211,98 +283,125 @@ const CompleteProfilePage: FunctionComponent = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="w-full mb-4"
+                className="w-full mb-4 space-y-3"
               >
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium">
+                <div className="auth-alert-success flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{successMsg}</span>
                 </div>
+                {loginRecapEmail && (
+                  <div className="auth-login-recap rounded-xl border border-[var(--auth-border)] bg-[var(--auth-input-bg)] p-4 text-sm">
+                    <p className="font-semibold text-[var(--auth-text)] mb-1">
+                      {t('auth.completeProfile.loginRecapTitle')}
+                    </p>
+                    <p className="text-[12px] text-[var(--auth-text-muted)] mb-3">
+                      {import.meta.env.DEV && devTestPassword
+                        ? t('auth.completeProfile.loginRecapHintDev', {
+                            seconds: Math.ceil(cvEditorRedirectMs / 1000),
+                          })
+                        : t('auth.completeProfile.loginRecapHint')}
+                    </p>
+                    <div className="space-y-2 font-mono text-[13px]">
+                      <div className="flex items-center justify-between gap-2 rounded-lg bg-[var(--auth-surface)] px-3 py-2">
+                        <span className="text-[var(--auth-text-muted)]">{t('auth.completeProfile.loginRecapEmail')}</span>
+                        <span className="auth-ltr-field truncate text-[var(--auth-text)]">{loginRecapEmail}</span>
+                      </div>
+                      {import.meta.env.DEV && devTestPassword && (
+                        <div className="flex items-center justify-between gap-2 rounded-lg bg-[var(--auth-surface)] px-3 py-2">
+                          <span className="text-[var(--auth-text-muted)]">
+                            {t('auth.completeProfile.loginRecapPassword')}
+                          </span>
+                          <span className="auth-ltr-field text-[var(--auth-text)]">{devTestPassword}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="auth-btn-primary inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold"
+                        onClick={goToCvEditor}
+                      >
+                        {t('auth.completeProfile.continueToCvEditor')}
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                      {import.meta.env.DEV && devTestPassword ? (
+                        <button
+                          type="button"
+                          className="auth-btn-secondary inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium"
+                          onClick={() => {
+                            const lines = [`${t('auth.completeProfile.loginRecapEmail')}: ${loginRecapEmail}`];
+                            lines.push(`${t('auth.completeProfile.loginRecapPassword')}: ${devTestPassword}`);
+                            void navigator.clipboard.writeText(lines.join('\n'));
+                          }}
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          {t('auth.completeProfile.copyCredentials')}
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Professional Information */}
           <motion.div variants={itemVariants} className="w-full flex flex-col gap-5 mb-6">
-            <div className="text-gray uppercase text-sm font-semibold tracking-wide">Professional Information</div>
+            <div className="auth-section-heading">{t('auth.completeProfile.sections.professional')}</div>
             
             {/* LinkedIn */}
-            <div className="flex flex-col gap-2">
-              <label className="font-medium text-darkslategray text-sm">LinkedIn Profile URL</label>
-              <div className={`h-11 rounded-lg bg-whitesmoke border box-border overflow-hidden flex items-center py-1 px-3 transition-colors ${linkedinError ? 'border-red-400 bg-red-50' : 'border-lightgray'}`}>
-                <Link className={`w-4 h-4 mr-3 ${linkedinError ? 'text-red-400' : 'text-slategray'}`} />
-                <motion.input 
-                  whileFocus={{ scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
-                  type="url"
-                  value={linkedinUrl}
-                  onChange={(e) => handleLinkedInChange(e.target.value)}
-                  onBlur={handleLinkedInBlur}
-                  placeholder="https://linkedin.com/in/your-profile"
-                  className={`flex-1 bg-transparent outline-none ${linkedinError ? 'text-red-600 placeholder-red-300' : 'text-darkslategray'}`}
-                />
-              </div>
-              {linkedinError && (
-                <motion.span 
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-red-500 text-xs flex items-center gap-1"
-                >
-                  <AlertCircle className="w-3 h-3" />
-                  {linkedinError}
-                </motion.span>
-              )}
-            </div>
+            <FormInput
+              label={t('auth.completeProfile.fields.linkedin')}
+              type="url"
+              Icon={Link}
+              value={linkedinUrl}
+              onChange={(e) => handleLinkedInChange(e.target.value)}
+              onBlur={handleLinkedInBlur}
+              placeholder={t('auth.completeProfile.placeholders.linkedin')}
+              error={linkedinError || undefined}
+            />
 
-            {/* Professional Summary */}
-            <div className="flex flex-col gap-2">
-              <label className="font-medium text-darkslategray text-sm">Short Professional Summary</label>
-              <div className="h-[100px] rounded-lg bg-whitesmoke border-lightgray border-solid border box-border overflow-hidden flex items-start py-2 px-3">
-                <AlignLeft className="w-4 h-4 text-slategray mr-3 mt-1" />
-                <motion.textarea
-                  whileFocus={{ scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
-                  value={professionalSummary}
-                  onChange={(e) => setProfessionalSummary(e.target.value)}
-                  placeholder="Share a brief overview of your academic background, skills, and career goals..."
-                  className="flex-1 bg-transparent outline-none text-darkslategray resize-none h-full font-inter"
-                />
-              </div>
-            </div>
+            <FormInput
+              label={t('auth.completeProfile.fields.professionalSummary')}
+              isTextArea
+              Icon={AlignLeft}
+              boxClassName="min-h-[100px]"
+              rows={4}
+              value={professionalSummary}
+              onChange={(e) => setProfessionalSummary(e.target.value)}
+              placeholder={t('auth.completeProfile.placeholders.professionalSummary')}
+            />
           </motion.div>
 
           {/* Career Objective */}
-          <motion.div variants={itemVariants} className="w-full border-t border-gainsboro pt-5 mb-6">
+          <motion.div variants={itemVariants} className="auth-section-divider w-full pt-5 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <Briefcase className="w-5 h-5 text-mediumslateblue" />
-              <div className="text-gray uppercase text-sm font-semibold tracking-wide">Career Objective</div>
+              <Briefcase className="auth-section-icon h-5 w-5" />
+              <div className="auth-section-heading">{t('auth.completeProfile.sections.careerObjective')}</div>
             </div>
             
-            <div className="flex flex-col gap-2">
-              <label className="font-medium text-darkslategray text-sm">Type of Internship You're Looking For</label>
-              <div className="h-[80px] rounded-lg bg-whitesmoke border-lightgray border-solid border box-border overflow-hidden flex items-start py-2 px-3">
-                <motion.textarea
-                  whileFocus={{ scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
-                  value={careerObjective}
-                  onChange={(e) => setCareerObjective(e.target.value)}
-                  placeholder="e.g., Marketing internship in a multinational company, focusing on digital strategy..."
-                  className="flex-1 bg-transparent outline-none text-darkslategray resize-none h-full font-inter"
-                />
-              </div>
-            </div>
+            <FormInput
+              label={t('auth.completeProfile.fields.careerObjective')}
+              isTextArea
+              boxClassName="min-h-[80px]"
+              rows={3}
+              value={careerObjective}
+              onChange={(e) => setCareerObjective(e.target.value)}
+              placeholder={t('auth.completeProfile.placeholders.careerObjective')}
+            />
           </motion.div>
 
           {/* Skills */}
-          <motion.div variants={itemVariants} className="w-full border-t border-gainsboro pt-5 mb-6">
+          <motion.div variants={itemVariants} className="auth-section-divider w-full pt-5 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <CheckCircle2 className="w-5 h-5 text-mediumslateblue" />
-              <div className="text-gray uppercase text-sm font-semibold tracking-wide">Skills</div>
+              <CheckCircle2 className="auth-section-icon h-5 w-5" />
+              <div className="auth-section-heading">{t('auth.completeProfile.sections.skills')}</div>
             </div>
             
             <div className="flex flex-col gap-3">
-              <label className="font-medium text-darkslategray text-sm">Select Your Skills</label>
+              <label className="auth-form-field__label text-sm font-medium">{t('auth.completeProfile.fields.skills')}</label>
               <div className="flex flex-wrap gap-2">
-                {skillOptions.map(skill => (
+                {SKILL_KEYS.map((skill) => (
                   <motion.button
                     type="button"
                     key={skill}
@@ -310,13 +409,9 @@ const CompleteProfilePage: FunctionComponent = () => {
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 shadow-sm ${
-                      selectedSkills.includes(skill)
-                        ? 'bg-mediumslateblue text-white shadow-mediumslateblue/30'
-                        : 'bg-whitesmoke text-darkslategray hover:bg-slate-200 hover:shadow-md'
-                    }`}
+                    className={choiceBtnClass(selectedSkills.includes(skill), 'auth-chip-pill px-3 py-1.5 text-sm')}
                   >
-                    {skill}
+                    {t(`auth.completeProfile.skills.${skill}`)}
                   </motion.button>
                 ))}
               </div>
@@ -324,15 +419,15 @@ const CompleteProfilePage: FunctionComponent = () => {
           </motion.div>
 
           {/* Availability & Location */}
-          <motion.div variants={itemVariants} className="w-full border-t border-gainsboro pt-5 mb-6">
+          <motion.div variants={itemVariants} className="auth-section-divider w-full pt-5 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-5 h-5 text-mediumslateblue" />
-              <div className="text-gray uppercase text-sm font-semibold tracking-wide">Availability & Location</div>
+              <Clock className="auth-section-icon h-5 w-5" />
+              <div className="auth-section-heading">{t('auth.completeProfile.sections.availability')}</div>
             </div>
             
             {/* Availability */}
             <div className="flex flex-col gap-2 mb-4">
-              <label className="font-medium text-darkslategray text-sm">When Can You Start?</label>
+              <label className="auth-form-field__label text-sm font-medium">{t('auth.completeProfile.fields.whenStart')}</label>
               <div className="flex gap-3">
                 <motion.button
                   type="button"
@@ -340,13 +435,9 @@ const CompleteProfilePage: FunctionComponent = () => {
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
-                  className={`flex-1 h-11 rounded-lg flex items-center justify-center font-medium transition-all duration-300 shadow-sm ${
-                    availability === 'immediately'
-                      ? 'bg-mediumslateblue text-white shadow-mediumslateblue/30'
-                      : 'bg-whitesmoke text-darkslategray hover:bg-slate-200 hover:shadow-md'
-                  }`}
+                  className={choiceBtnClass(availability === 'immediately', 'h-11 flex-1 rounded-lg')}
                 >
-                  Immediately
+                  {t('auth.completeProfile.availability.immediately')}
                 </motion.button>
                 <motion.button
                   type="button"
@@ -354,13 +445,9 @@ const CompleteProfilePage: FunctionComponent = () => {
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
-                  className={`flex-1 h-11 rounded-lg flex items-center justify-center font-medium transition-all duration-300 shadow-sm ${
-                    availability === 'specific'
-                      ? 'bg-mediumslateblue text-white shadow-mediumslateblue/30'
-                      : 'bg-whitesmoke text-darkslategray hover:bg-slate-200 hover:shadow-md'
-                  }`}
+                  className={choiceBtnClass(availability === 'specific', 'h-11 flex-1 rounded-lg')}
                 >
-                  Specific Date
+                  {t('auth.completeProfile.availability.specificDate')}
                 </motion.button>
               </div>
               {availability === 'specific' && (
@@ -368,35 +455,30 @@ const CompleteProfilePage: FunctionComponent = () => {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="mt-2 h-11 rounded-lg bg-whitesmoke border-lightgray border-solid border px-3"
+                  className="auth-date-input auth-ltr-field" dir="ltr"
                 />
               )}
             </div>
 
-            {/* City */}
-            <div className="flex flex-col gap-2 mb-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-slategray" />
-                <label className="font-medium text-darkslategray text-sm">Current City</label>
-              </div>
-              <div className="h-11 rounded-lg bg-whitesmoke border-lightgray border-solid border box-border overflow-hidden flex items-center py-1 px-3">
-                <motion.input 
-                  whileFocus={{ scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
+            <div className="auth-form-field mb-4 flex flex-col gap-1.5">
+              <label className="auth-form-field__label text-sm font-medium">{t('auth.completeProfile.fields.city')}</label>
+              <div className="auth-form-field__box flex h-11 items-center overflow-hidden rounded-xl border box-border px-3.5">
+                <MapPin className="auth-form-field__icon me-2.5 h-4 w-4 shrink-0" strokeWidth={2} />
+                <input
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="e.g., Casablanca"
-                  className="flex-1 bg-transparent outline-none text-darkslategray"
+                  placeholder={t('auth.completeProfile.placeholders.city')}
+                  className="auth-form-input flex-1"
                 />
               </div>
             </div>
 
             {/* Mobility */}
             <div className="flex flex-col gap-2">
-              <label className="font-medium text-darkslategray text-sm">Mobility Preferences</label>
+              <label className="auth-form-field__label text-sm font-medium">{t('auth.completeProfile.fields.mobility')}</label>
               <div className="grid grid-cols-2 gap-3">
-                {mobilityOptions.map(option => (
+                {MOBILITY_KEYS.map((option) => (
                   <motion.button
                     type="button"
                     key={option}
@@ -404,33 +486,29 @@ const CompleteProfilePage: FunctionComponent = () => {
                     whileHover={{ scale: 1.02, y: -1 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.2 }}
-                    className={`h-11 rounded-lg flex items-center justify-center font-medium transition-all duration-300 shadow-sm ${
-                      mobility.includes(option)
-                        ? 'bg-mediumslateblue text-white shadow-mediumslateblue/30'
-                        : 'bg-whitesmoke text-darkslategray hover:bg-slate-200 hover:shadow-md'
-                    }`}
+                    className={choiceBtnClass(mobility.includes(option), 'h-11 rounded-lg')}
                   >
-                    {option}
+                    {t(`auth.completeProfile.mobility.${option}`)}
                   </motion.button>
                 ))}
               </div>
             </div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="w-full border-t border-gainsboro pt-5 mb-6">
+          <motion.div variants={itemVariants} className="auth-section-divider w-full pt-5 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <svg className="w-5 h-5 text-mediumslateblue shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="auth-section-icon h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/>
                 <line x1="16" y1="17" x2="8" y2="17"/>
                 <polyline points="10 9 9 9 8 9"/>
               </svg>
-              <div className="text-gray uppercase text-sm font-semibold tracking-wide">Application Experience</div>
+              <div className="auth-section-heading">{t('auth.completeProfile.sections.applicationExperience')}</div>
             </div>
             
             <div className="flex flex-col gap-2">
-              <label className="font-medium text-darkslategray text-sm">Have you already applied to internships?</label>
+              <label className="auth-form-field__label text-sm font-medium">{t('auth.completeProfile.fields.hasApplied')}</label>
               <div className="flex gap-3">
                 <motion.button
                   type="button"
@@ -438,14 +516,10 @@ const CompleteProfilePage: FunctionComponent = () => {
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
-                  className={`flex-1 h-11 rounded-lg flex items-center justify-center gap-2 font-medium transition-all duration-300 shadow-sm ${
-                    hasApplied === true
-                      ? 'bg-mediumslateblue text-white shadow-mediumslateblue/30'
-                      : 'bg-whitesmoke text-darkslategray hover:bg-slate-200 hover:shadow-md'
-                  }`}
+                  className={choiceBtnClass(hasApplied === true, 'h-11 flex-1 gap-2 rounded-lg')}
                 >
                   {hasApplied === true && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 30 }}><Check className="w-4 h-4" /></motion.div>}
-                  Yes
+                  {t('auth.completeProfile.yes')}
                 </motion.button>
                 <motion.button
                   type="button"
@@ -453,14 +527,10 @@ const CompleteProfilePage: FunctionComponent = () => {
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2 }}
-                  className={`flex-1 h-11 rounded-lg flex items-center justify-center gap-2 font-medium transition-all duration-300 shadow-sm ${
-                    hasApplied === false
-                      ? 'bg-mediumslateblue text-white shadow-mediumslateblue/30'
-                      : 'bg-whitesmoke text-darkslategray hover:bg-slate-200 hover:shadow-md'
-                  }`}
+                  className={choiceBtnClass(hasApplied === false, 'h-11 flex-1 gap-2 rounded-lg')}
                 >
                   {hasApplied === false && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 30 }}><X className="w-4 h-4" /></motion.div>}
-                  No
+                  {t('auth.completeProfile.no')}
                 </motion.button>
               </div>
             </div>
@@ -473,9 +543,7 @@ const CompleteProfilePage: FunctionComponent = () => {
               whileTap={{ scale: 0.98 }}
               disabled={loading} 
               onClick={handleSave} 
-              className={`w-full h-11 rounded-lg bg-mediumslateblue text-white flex items-center justify-center font-medium transition-all ${
-                loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-slateblue'
-              }`}
+              className="auth-btn-primary flex h-11 w-full items-center justify-center gap-2 rounded-lg font-medium"
             >
               {loading ? (
                 <motion.div 
@@ -485,8 +553,8 @@ const CompleteProfilePage: FunctionComponent = () => {
                 />
               ) : (
                 <>
-                  <Save className="w-4 h-4 mr-2" />
-                  <span>Save and Continue</span>
+                  <Save className="w-4 h-4 shrink-0" />
+                  <span>{t('auth.completeProfile.save')}</span>
                 </>
               )}
             </motion.button>
@@ -496,16 +564,16 @@ const CompleteProfilePage: FunctionComponent = () => {
             <AuthFooter />
           </motion.div>
         </motion.div>
-      </div>
+      </AuthFormColumn>
 
       <AuthImagePanel
         imageSrc={profileCover}
-        imageAlt="Profile Cover"
-        badge="Profile Setup"
-        title="Build Your Professional Profile"
-        subtitle="Complete your profile, use the official ESCA CV template, and prepare for unique ecosystem opportunities."
+        imageAlt={t('auth.completeProfile.panelCoverAlt')}
+        badge={t('auth.completeProfile.panelBadge')}
+        title={t('auth.completeProfile.panelTitle')}
+        subtitle={t('auth.completeProfile.panelSubtitle')}
       />
-    </div>
+    </AuthScreenShell>
   );
 };
 export default CompleteProfilePage;

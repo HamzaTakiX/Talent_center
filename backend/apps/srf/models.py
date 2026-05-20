@@ -25,6 +25,16 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.accounts_et_roles.models import StudentProfile, TimestampedModel
 
+from .compliance_models import (  # noqa: F401 — re-export for Django
+    FinancialComplianceStatus,
+    FinancialRiskAlert,
+    Installment,
+    PaymentPlanType,
+    PaymentProofSubmission,
+    ProgramExamPeriod,
+    StudentAcademicAccess,
+)
+
 
 # ============================================================================
 # 1. FEE TYPE
@@ -125,13 +135,38 @@ class FinancialAccount(TimestampedModel):
         db_index=True,
     )
     last_payment_at = models.DateTimeField(null=True, blank=True)
+    payment_plan_type = models.CharField(
+        max_length=16,
+        choices=PaymentPlanType.choices,
+        default=PaymentPlanType.FULL,
+        db_index=True,
+    )
+    financial_status = models.CharField(
+        max_length=24,
+        choices=FinancialComplianceStatus.choices,
+        default=FinancialComplianceStatus.PENDING_VALIDATION,
+        db_index=True,
+    )
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    remaining_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    current_academic_year = models.CharField(max_length=16, blank=True, default='', db_index=True)
     metadata_json = models.JSONField(default=dict, blank=True)
 
     class Meta(TimestampedModel.Meta):
         ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['financial_status', 'payment_plan_type']),
+        ]
 
     def __str__(self) -> str:
         return f'FinAccount<{self.account_number}>'
+
+    def sync_amounts_from_ledger(self) -> None:
+        """Recompute paid/remaining from installments or lines."""
+        from apps.srf.services.financial_profile import sync_account_amounts
+
+        sync_account_amounts(self)
 
 
 # ============================================================================

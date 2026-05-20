@@ -1,4 +1,5 @@
 import { FunctionComponent, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
@@ -11,7 +12,8 @@ import { AuthHeader } from '../components/AuthHeader';
 import { AuthFooter } from '../components/AuthFooter';
 import { FormInput } from '../components/FormInput';
 import AuthImagePanel from '../components/AuthImagePanel';
-import AuthLanguageSwitcher from '../components/AuthLanguageSwitcher';
+import { AuthScreenShell, AuthFormColumn } from '../components/AuthScreenShell';
+import '../styles/auth-form.css';
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 15 },
@@ -31,7 +33,11 @@ const containerVariants: Variants = {
 
 const LoginPage: FunctionComponent = () => {
   const { t } = useTranslation();
-  const { login, legacyLogin } = useAuth(); // login = Auth0, legacyLogin = custom form mock
+  const location = useLocation();
+  const { login, legacyLogin, authError, clearAuthError } = useAuth();
+  const returnTo =
+    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ??
+    '/';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -115,14 +121,10 @@ const LoginPage: FunctionComponent = () => {
   };
 
   return (
-    <div className="relative w-full min-h-screen overflow-x-hidden lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row bg-white text-start font-inter text-sm text-darkslategray">
-      {/* Form Container */}
-      <div className="relative w-full flex-1 lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center px-5 sm:px-8 pb-12 lg:p-4 box-border">
-        <div className="absolute end-5 top-5 z-20 sm:end-8 sm:top-6">
-          <AuthLanguageSwitcher embedded />
-        </div>
-        <motion.div 
-          className="w-full max-w-[500px] flex flex-col relative m-auto py-6 lg:py-2"
+    <AuthScreenShell>
+      <AuthFormColumn>
+        <motion.div
+          className="w-full flex flex-col"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -130,6 +132,23 @@ const LoginPage: FunctionComponent = () => {
           <motion.div variants={itemVariants}>
             <AuthHeader />
           </motion.div>
+
+          <AnimatePresence>
+            {authError && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="w-full mb-4 overflow-hidden"
+              >
+                <div className="auth-alert-error flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-sm">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{authError}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Error Message Animation */}
           <AnimatePresence>
@@ -141,35 +160,40 @@ const LoginPage: FunctionComponent = () => {
                 transition={{ duration: 0.2 }}
                 className="w-full mb-4 overflow-hidden"
               >
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium shadow-sm">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                <div className="auth-alert-error flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-sm">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
                   <span>{error}</span>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <motion.div variants={itemVariants} 
-            whileHover={{ y: -1, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+          <motion.div
+            variants={itemVariants}
+            whileHover={{ y: -1 }}
             whileTap={{ scale: 0.98 }}
-            onClick={login}
-            className="w-full rounded-xl bg-white border-lightgray border-solid border-[1px] box-border h-12 flex items-center justify-center gap-3 cursor-pointer hover:bg-slate-50 transition-all duration-300 mb-4 mt-2 shadow-sm relative overflow-hidden group"
+            onClick={() => {
+              clearAuthError();
+              login(returnTo);
+            }}
+            className="auth-btn-secondary mb-4 mt-2 box-border flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl shadow-sm transition-all duration-300"
           >
-            <div className="absolute inset-0 bg-slate-50 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
-            <img className="w-5 h-5 relative z-10" alt="Microsoft" src={microsoftIcon} />
-            <div className="leading-5 font-medium text-[14px] relative z-10">{t('auth.login.microsoft')}</div>
+            <img className="h-5 w-5 shrink-0" alt="Microsoft" src={microsoftIcon} />
+            <div className="text-[14px] font-medium leading-5">{t('auth.login.microsoft')}</div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="w-full flex items-center mb-4 text-slategray-200">
-            <div className="flex-1 bg-gainsboro h-[1px]" />
-            <div className="px-3 text-[10px] font-bold uppercase tracking-widest text-slategray-100">{t('auth.login.or')}</div>
-            <div className="flex-1 bg-gainsboro h-[1px]" />
+          <motion.div variants={itemVariants} className="mb-4 flex w-full items-center">
+            <div className="auth-divider h-px flex-1" />
+            <div className="auth-section-heading px-3 text-[10px] tracking-widest">{t('auth.login.or')}</div>
+            <div className="auth-divider h-px flex-1" />
           </motion.div>
 
           <motion.div variants={itemVariants} className="w-full flex flex-col gap-4">
             <FormInput 
               label={t('auth.login.emailLabel')}
               type="email"
+              name="email"
+              autoComplete="email"
               value={email}
               Icon={Mail}
               onChange={(e) => { setEmail(e.target.value); setError(''); }}
@@ -178,24 +202,28 @@ const LoginPage: FunctionComponent = () => {
             <FormInput 
               label={t('auth.login.passwordLabel')}
               type="password"
+              name="password"
+              autoComplete="current-password"
               value={password}
               Icon={Lock}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t('auth.login.passwordPlaceholder')}
             />
-            <div className="w-full flex justify-end mt-[-10px] text-mediumslateblue">
-              <span className="text-xs font-medium cursor-pointer hover:underline transition-all">{t('auth.login.forgotPassword')}</span>
+            <div className="mt-[-10px] flex w-full justify-end">
+              <span className="cursor-pointer text-xs font-medium text-[var(--auth-brand)] transition-all hover:underline">
+                {t('auth.login.forgotPassword')}
+              </span>
             </div>
-            
-            <motion.button 
-              whileHover={{ y: -1, boxShadow: '0 6px 16px rgba(99, 102, 241, 0.25)' }}
+
+            <motion.button
+              type="button"
+              whileHover={{ y: -1 }}
               whileTap={{ scale: 0.98 }}
-              disabled={loading} 
-              onClick={handleLogin} 
-              className={`w-full h-[48px] rounded-xl bg-mediumslateblue outline-none border-none text-white flex items-center justify-center mt-1 shadow-md active:opacity-90 relative overflow-hidden group ${loading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-slateblue'} transition-all duration-300`}
+              disabled={loading}
+              onClick={handleLogin}
+              className={`auth-btn-primary relative mt-1 flex h-12 w-full items-center justify-center overflow-hidden rounded-xl border-none shadow-md outline-none transition-all duration-300 ${loading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
             >
-              <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-full transition-transform duration-700 ease-in-out skew-x-12"></div>
-              <div className="flex items-center gap-2 relative z-10">
+              <div className="relative z-10 flex items-center gap-2">
                 {loading ? (
                   <motion.div 
                     animate={{ rotate: 360 }} 
@@ -214,7 +242,7 @@ const LoginPage: FunctionComponent = () => {
             <AuthFooter />
           </motion.div>
         </motion.div>
-      </div>
+      </AuthFormColumn>
 
       <AuthImagePanel
         imageSrc={loginCover}
@@ -224,7 +252,7 @@ const LoginPage: FunctionComponent = () => {
         subtitle={t('auth.login.panelSubtitle')}
       />
 
-    </div>
+    </AuthScreenShell>
   );
 };
 export default LoginPage;

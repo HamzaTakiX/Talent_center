@@ -45,6 +45,13 @@ class DocumentType(TimestampedModel):
         help_text=_('If false, requests are auto-approved.'),
     )
     default_validity_days = models.PositiveIntegerField(null=True, blank=True)
+    icon_key = models.CharField(max_length=48, blank=True, default='file-text')
+    color_theme = models.CharField(max_length=32, blank=True, default='brand')
+    service_config_json = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_('Full service catalog configuration (availability, delivery, workflow, etc.).'),
+    )
 
     class Meta(TimestampedModel.Meta):
         ordering = ['code']

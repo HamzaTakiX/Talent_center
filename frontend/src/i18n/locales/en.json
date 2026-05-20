@@ -15,7 +15,8 @@
   "roles": {
     "superAdmin": "Super Admin",
     "encadrant": "Supervisor",
-    "administrator": "Administrator"
+    "administrator": "Administrator",
+    "student": "Student"
   },
   "admin": {
     "brand": {
@@ -33,8 +34,13 @@
       "encadrant": "Supervisors",
       "student": "Students",
       "admin": "Administrators",
+      "catalog": "Service catalog",
       "chat": "Chat",
       "reports": "Reports",
+      "smartAssignment": "Smart Assignment",
+      "meetings": "Meetings",
+      "imports": "Financial imports",
+      "config": "Exam & alerts config",
       "closeMenu": "Close navigation menu"
     },
     "header": {
@@ -51,9 +57,45 @@
         "internshipOffers": "Internship Offers",
         "announcements": "Announcements",
         "documents": "Documents",
+        "documentsCatalog": "Service catalog",
         "srf": "SRF",
         "history": "History",
         "account": "My account"
+      }
+    },
+    "toast": {
+      "successTitle": "Success",
+      "errorTitle": "Error",
+      "infoTitle": "Information",
+      "warningTitle": "Warning"
+    },
+    "common": {
+      "loading": "Loading…",
+      "actions": {
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete",
+        "assign": "Assign",
+        "deactivate": "Deactivate",
+        "importExcel": "Import Excel"
+      },
+      "delete": {
+        "confirm": "Delete permanently",
+        "confirmWithCount": "Delete ({{count}})",
+        "startSelection": "Select users to delete",
+        "cancelSelection": "Cancel",
+        "selectedCount": "{{count}} selected",
+        "clearSelection": "Clear selection",
+        "deleteSelected": "Delete selected",
+        "studentTitle": "Delete student",
+        "studentDescription": "Permanently delete \"{{name}}\"? This cannot be undone.",
+        "studentBulkDescription": "Permanently delete {{count}} student(s)? This cannot be undone.",
+        "adminTitle": "Delete administrator",
+        "adminDescription": "Permanently delete \"{{name}}\"? This cannot be undone.",
+        "adminBulkDescription": "Permanently delete {{count}} administrator(s)? This cannot be undone.",
+        "encadrantTitle": "Delete supervisor",
+        "encadrantDescription": "Permanently delete \"{{name}}\"? This cannot be undone.",
+        "encadrantBulkDescription": "Permanently delete {{count}} supervisor(s)? This cannot be undone."
       }
     },
     "userMenu": {
@@ -424,6 +466,8 @@
       "microsoft": "Sign in with Microsoft (ESCA SSO)",
       "or": "Or sign in with email",
       "forgotPassword": "Forgot password?",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "footerNeedHelp": "Need help? Contact",
       "panelBadge": "ESCA Talent Center",
       "panelTitle": "Empowering ESCA Students",
@@ -459,6 +503,475 @@
       "welcome": "Welcome, Student!",
       "subtitle": "Student area under development.",
       "logout": "Sign out"
+    },
+    "preferences": {
+      "darkMode": "Enable dark mode",
+      "lightMode": "Enable light mode"
+    },
+    "confirmIdentity": {
+      "title": "Confirm your identity",
+      "subtitle": "Please verify your academic information before accessing the platform.",
+      "panelBadge": "Identity verification",
+      "panelTitle": "Verify your student profile",
+      "panelSubtitle": "Confirm your personal and academic information to continue on the ESCA platform.",
+      "panelCoverAlt": "Identity verification cover",
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "dateOfBirth": "Date of birth",
+        "programMajor": "Program / Major",
+        "currentClass": "Current class"
+      },
+      "placeholders": {
+        "selectOption": "Select an option…",
+        "selectProgramFirst": "Select a program first",
+        "loading": "Loading…",
+        "emptyValue": "—"
+      },
+      "actions": {
+        "save": "Save information",
+        "saving": "Saving…",
+        "confirm": "Confirm information",
+        "processing": "Processing…",
+        "edit": "Edit information",
+        "cancelEdit": "Cancel edit"
+      },
+      "success": "Your information has been successfully verified and saved.",
+      "errors": {
+        "network": "Unable to connect to the server. Please check your internet connection or try again later.",
+        "validation": "Please check your input and try again.",
+        "invalidInput": "Invalid input. Please verify all fields are filled correctly.",
+        "sessionExpired": "Your session has expired. Please log in again.",
+        "identityAlreadyConfirmed": "Identity already confirmed. You cannot modify this information.",
+        "forbidden": "You do not have permission to perform this action.",
+        "notFound": "User profile not found. Please contact support.",
+        "conflict": "This information conflicts with existing records. Please verify your details.",
+        "unprocessable": "Unable to process your request. Please check your information.",
+        "rateLimit": "Too many requests. Please wait a moment before trying again.",
+        "server": "Something went wrong on our end. Please try again later or contact support if the problem persists.",
+        "unexpected": "An unexpected error occurred. Please try again.",
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "dateOfBirthRequired": "Date of birth is required.",
+        "programRequired": "Please select your ESCA program.",
+        "classRequired": "Please select your class group.",
+        "referenceLoadFailed": "Unable to load ESCA programs and classes. Check your connection and try again."
+      }
+    },
+    "completeProfile": {
+      "title": "Complete your profile",
+      "subtitle": "Add your professional information before accessing internship opportunities.",
+      "infoBanner": "This information helps improve your matching score with relevant internship opportunities.",
+      "panelBadge": "Profile setup",
+      "panelTitle": "Build your professional profile",
+      "panelSubtitle": "Complete your profile, use the official ESCA CV template, and prepare for unique opportunities.",
+      "panelCoverAlt": "Profile setup cover",
+      "sections": {
+        "professional": "Professional information",
+        "careerObjective": "Career objective",
+        "skills": "Skills",
+        "availability": "Availability & location",
+        "applicationExperience": "Application experience"
+      },
+      "fields": {
+        "linkedin": "LinkedIn profile URL",
+        "professionalSummary": "Short professional summary",
+        "careerObjective": "Type of internship you're looking for",
+        "skills": "Select your skills",
+        "whenStart": "When can you start?",
+        "startDate": "Start date",
+        "city": "Current city",
+        "mobility": "Mobility preferences",
+        "hasApplied": "Have you already applied to internships?"
+      },
+      "placeholders": {
+        "linkedin": "https://linkedin.com/in/your-profile",
+        "professionalSummary": "Share a brief overview of your academic background, skills, and career goals…",
+        "careerObjective": "e.g., Marketing internship in a multinational company, focusing on digital strategy…",
+        "city": "e.g., Casablanca"
+      },
+      "availability": {
+        "immediately": "Immediately",
+        "specificDate": "Specific date"
+      },
+      "mobility": {
+        "withinCity": "Within city",
+        "national": "National",
+        "international": "International",
+        "remote": "Remote"
+      },
+      "skills": {
+        "digitalMarketing": "Digital Marketing",
+        "dataAnalysis": "Data Analysis",
+        "projectManagement": "Project Management",
+        "microsoftOffice": "Microsoft Office",
+        "leadership": "Leadership",
+        "communication": "Communication",
+        "problemSolving": "Problem Solving",
+        "socialMediaMarketing": "Social Media Marketing",
+        "googleAnalytics": "Google Analytics",
+        "teamwork": "Teamwork",
+        "businessStrategy": "Business Strategy",
+        "financialAnalysis": "Financial Analysis",
+        "python": "Python",
+        "excel": "Excel",
+        "powerpoint": "PowerPoint",
+        "photoshop": "Photoshop",
+        "illustrator": "Illustrator"
+      },
+      "yes": "Yes",
+      "no": "No",
+      "save": "Save and continue",
+      "success": "Profile saved! You will be redirected to the CV builder to prepare your CV before the dashboard.",
+      "loginRecapTitle": "Your login credentials",
+      "loginRecapHint": "Redirecting you to the CV builder…",
+      "loginRecapHintDev": "Local test account — copy credentials if needed. Auto-redirect in {{seconds}} s, or click Continue.",
+      "continueToCvEditor": "Continue — build my CV",
+      "loginRecapEmail": "Email",
+      "loginRecapPassword": "Password",
+      "loginRecapDevPassword": "Local test account",
+      "loginRecapGoLogin": "Go to login page",
+      "copyCredentials": "Copy credentials",
+      "errors": {
+        "missingFields": "Please fill in the following required fields: {{fields}}",
+        "linkedinInvalid": "Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-name)",
+        "linkedinInvalidField": "LinkedIn URL must be a valid LinkedIn profile (e.g., https://linkedin.com/in/your-name)",
+        "submitFailed": "Failed to complete profile. Please try again."
+      }
+    },
+    "loading": {
+      "session": "Verifying your session…"
+    },
+    "configMissing": {
+      "title": "Auth0 configuration missing",
+      "body": "Add VITE_AUTH0_DOMAIN and VITE_AUTH0_CLIENT_ID to .env.local (development) or the Vercel dashboard (production), then redeploy.",
+      "secretHint": "Never expose AUTH0_CLIENT_SECRET in frontend code."
+    },
+    "accessDenied": {
+      "title": "Access denied",
+      "body": "Your role cannot access this section.",
+      "back": "Back to my workspace"
+    },
+    "callback": {
+      "title": "Authenticating…",
+      "subtitle": "Please wait while we verify your credentials."
+    }
+  },
+  "cv": {
+    "onboarding": {
+      "banner": "Next step: complete your ESCA CV. After finalizing, you can access the student dashboard."
+    },
+    "list": {
+      "title": "My CVs",
+      "openEditor": "Open CV builder"
+    },
+    "public": {
+      "loading": "Loading CV…",
+      "loadFailed": "Could not load this public CV.",
+      "missingToken": "Invalid link.",
+      "defaultTitle": "Shared CV",
+      "previewSoon": "Detailed preview coming soon. Use the CV builder to edit your document."
+    },
+    "quickBuilder": {
+      "loading": "Loading CV builder…",
+      "unavailable": "The QuickCV builder is not available.",
+      "devHint": "Reload the page. The CV builder is included in this app.",
+      "frameTitle": "QuickCV builder"
+    },
+    "toolbar": {
+      "zoom": "Preview zoom",
+      "demo": "Demo data",
+      "viewMode": "View mode",
+      "split": "Split",
+      "tabbed": "Tabs",
+      "download": "Download PDF"
+    },
+    "editor": {
+      "title": "CV Editor",
+      "subtitle": "Digital Talent Center",
+      "calmSubtitle": "Fill in your CV — simple and focused",
+      "calmHint": "Preview updates live. AI analysis and export come at the end.",
+      "back": "Back",
+      "finalizeCta": "Finish & view result",
+      "finalizeHint": "Add your name and at least one education or experience entry to continue.",
+      "finalizeReady": "Your CV is ready — go to the final step to analyze and export.",
+      "defaultTitle": "CV Template",
+      "saveVersionNote": "Manual save from editor",
+      "score": {
+        "label": "CV Score",
+        "excellent": "Excellent",
+        "good": "Good",
+        "fair": "Fair",
+        "needsWork": "Needs improvement"
+      },
+      "loading": "Loading your CV…",
+      "saving": "Saving…",
+      "actions": {
+        "analyze": "Analyze with AI",
+        "save": "Save",
+        "saved": "Saved",
+        "continueDashboard": "Continue to dashboard",
+        "saveError": "Save failed",
+        "download": "Download PDF"
+      },
+      "groups": {
+        "styling": "CV styling",
+        "addSection": "Add section",
+        "manageSections": "Manage sections",
+        "textStyling": "Text styling",
+        "layout": "Layout options"
+      },
+      "hints": {
+        "duplicate": "Drag to reorder. Use the eye icon to hide sections."
+      },
+      "empty": {
+        "title": "Start building your CV",
+        "description": "Fill in the structured forms on the left. Your professional preview updates automatically."
+      },
+      "fields": {
+        "title": "CV title",
+        "titlePlaceholder": "CV title",
+        "accentColor": "Accent color",
+        "fontSize": "Font size",
+        "fontWeight": "Font weight",
+        "alignment": "Alignment",
+        "aiSuggestions": "AI suggestions"
+      },
+      "fontSize": {
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large"
+      },
+      "fontWeight": {
+        "regular": "Regular"
+      },
+      "layout": {
+        "executive": "Modern Professional",
+        "minimal": "ATS Minimal",
+        "creative": "Creative Split",
+        "elegant": "Executive",
+        "corporate": "Compact Corporate"
+      },
+      "sections": {
+        "experience": "Experience",
+        "education": "Education",
+        "skills": "Skills",
+        "projects": "Projects",
+        "add": {
+          "experience": "Add experience",
+          "education": "Add education",
+          "skills": "Add skills",
+          "projects": "Add project"
+        }
+      }
+    },
+    "forms": {
+      "panelTitle": "Build your CV",
+      "panelSubtitle": "Structured forms · Live preview",
+      "nav": { "label": "CV sections" },
+      "mobile": { "form": "Form", "preview": "Preview" },
+      "wizard": { "prev": "Previous", "next": "Next" },
+      "empty": {
+        "description": "Add at least one section (experience, education, skills…) using the form."
+      },
+      "steps": {
+        "personal": "Personal information",
+        "summary": "Professional summary",
+        "social": "Social links",
+        "education": "Education",
+        "experience": "Experience",
+        "skills": "Skills",
+        "languages": "Languages",
+        "projects": "Projects",
+        "certifications": "Certifications",
+        "awards": "Awards",
+        "custom": "Custom sections",
+        "template": "Template & style"
+      },
+      "photo": { "upload": "Upload photo", "remove": "Remove" },
+      "personal": {
+        "fullName": "Full name",
+        "headline": "Professional title",
+        "email": "Email",
+        "phone": "Phone",
+        "location": "Location"
+      },
+      "summary": {
+        "label": "Summary",
+        "hint": "2–4 sentences tailored for internships or entry-level roles.",
+        "aiSuggest": "Suggest with AI"
+      },
+      "social": {
+        "linkedin": "LinkedIn",
+        "github": "GitHub",
+        "twitter": "X / Twitter",
+        "website": "Website",
+        "portfolio": "Portfolio"
+      },
+      "common": { "start": "Start", "end": "End", "date": "Date" },
+      "education": {
+        "add": "Add education",
+        "new": "New education",
+        "degree": "Degree",
+        "school": "School",
+        "location": "Location",
+        "description": "Description"
+      },
+      "experience": {
+        "add": "Add experience",
+        "new": "New experience",
+        "title": "Job title",
+        "company": "Company",
+        "location": "Location",
+        "bullets": "Achievements",
+        "addBullet": "Add bullet"
+      },
+      "skills": { "add": "Add skill", "new": "Skill", "name": "Name", "level": "Level" },
+      "languages": { "add": "Add language", "new": "Language", "name": "Language", "level": "Level" },
+      "projects": {
+        "add": "Add project",
+        "new": "Project",
+        "name": "Name",
+        "tech": "Technologies",
+        "url": "URL",
+        "description": "Description"
+      },
+      "certifications": {
+        "add": "Add certification",
+        "new": "Certification",
+        "name": "Name",
+        "issuer": "Issuer"
+      },
+      "awards": {
+        "add": "Add award",
+        "new": "Award",
+        "title": "Title",
+        "organization": "Organization",
+        "description": "Description"
+      },
+      "custom": { "add": "Add section", "new": "Section", "title": "Title", "content": "Content" },
+      "template": {
+        "pick": "Choose a premium template",
+        "desc": {
+          "executive": "Modern balanced columns — tech & business",
+          "minimal": "Ultra-readable, ATS parsing optimized",
+          "creative": "Bold split layout — design & marketing",
+          "elegant": "Authoritative & sober — leadership roles",
+          "corporate": "Compact dense layout — max info per page"
+        }
+      }
+    },
+    "ai": {
+      "validation": {
+        "title": "Complete your CV before AI analysis",
+        "subtitle": "Some essential sections are still empty.",
+        "missingFullName": "Add your full name",
+        "missingTitle": "Add a professional title",
+        "missingContact": "Add at least one contact method (email, phone, LinkedIn…)",
+        "missingSummary": "Your CV needs a professional summary",
+        "missingEducation": "Add at least one education entry",
+        "missingExperience": "Add at least one experience or project",
+        "missingSkills": "Skills section is empty",
+        "missingLanguages": "Add at least one language"
+      },
+      "overview": {
+        "title": "Recruiter review",
+        "subtitle": "Analysis tuned for your ESCA profile and internship goals.",
+        "scoresLabel": "Key indicators",
+        "overall": "Overall",
+        "ats": "ATS",
+        "readiness": "Internship readiness",
+        "strongest": "Strength",
+        "weakest": "Focus area",
+        "strengthsTitle": "Strengths",
+        "improvementsTitle": "Improvements"
+      },
+      "priority": {
+        "critical": "Critical",
+        "important": "Important",
+        "optional": "Optional"
+      },
+      "recruiter_impact_critical": "Direct impact on ATS pass-through and shortlisting.",
+      "recruiter_impact_important": "Strengthens recruiter perception and role fit.",
+      "recruiter_impact_optional": "Recommended polish, not blocking.",
+      "panel": {
+        "show": "Show recruiter review",
+        "hide": "Minimize panel"
+      },
+      "config": {
+        "title": "AI analysis unavailable",
+        "hint": "Set ANTHROPIC_API_KEY and CV_ANALYSIS_PROVIDER=claude in backend (.env)."
+      },
+      "analyzing": "Analyzing…"
+    },
+    "finalize": {
+      "title": "Your CV is ready",
+      "cvIdLabel": "CV #{{id}}",
+      "subtitle": "Review the final render, optimize with AI, and export professionally.",
+      "previewLabel": "Final preview",
+      "actions": {
+        "downloadPdf": "Download PDF",
+        "downloadDocx": "DOCX",
+        "docxSoon": "Word export coming soon",
+        "save": "Save version",
+        "share": "Copy share link",
+        "edit": "Edit content",
+        "changeTemplate": "Change template",
+        "duplicate": "Duplicate",
+        "duplicateSoon": "Duplicate coming soon",
+        "analyze": "Analyze with AI",
+        "goDashboard": "Go to dashboard"
+      },
+      "share": {
+        "defaultLabel": "Public link",
+        "copied": "Link copied to clipboard"
+      },
+      "analytics": {
+        "sectionTitle": "ATS analysis & optimization",
+        "sectionDesc": "Recruiter insights, keywords, and tips — only on this page.",
+        "reanalyze": "Run analysis again",
+        "emptyTitle": "Optimize your CV with AI",
+        "emptyDesc": "Get an ATS score, strengths, weaknesses, and tailored tips for internships and entry-level roles.",
+        "atsScore": "ATS score",
+        "readability": "Readability",
+        "readabilityGood": "Clear structure and professional hierarchy",
+        "readabilityFair": "Add measurable bullets and tighten sections",
+        "keywords": "Keywords",
+        "keywordDefault": "Fair coverage — add more technical skills",
+        "internship": "Internship fit",
+        "internshipDefault": "Profile suited for junior / internship applications",
+        "strengths": "Strengths",
+        "weaknesses": "Areas to improve",
+        "optimization": "Recommendations",
+        "historyCount": "{{count}} analyses saved"
+      }
+    },
+    "preview": {
+      "canvas": "CV preview",
+      "uploadPhoto": "Upload photo",
+      "phone": "Phone",
+      "location": "Location",
+      "placeholders": {
+        "jobTitle": "Job title",
+        "company": "Company name",
+        "degree": "Degree or program",
+        "school": "School or university",
+        "startDate": "Start",
+        "endDate": "End",
+        "bullet": "Describe your achievement…",
+        "description": "Describe your studies…",
+        "fullName": "Your full name",
+        "headline": "Professional title",
+        "summary": "Write a short professional summary…",
+        "skill": "Skill name",
+        "language": "Language",
+        "level": "Proficiency level",
+        "email": "email@example.com",
+        "phone": "+1 234 567 890",
+        "linkedin": "linkedin.com/in/you",
+        "website": "yoursite.com",
+        "location": "City, Country"
+      }
     }
   }
 }

@@ -1,0 +1,8 @@
+/** Tokens UI — module SRF étudiant (design system admin). */
+export {
+  STUDENT_OUTLINE_BUTTON as SRF_OUTLINE_BTN,
+  STUDENT_PRIMARY_BUTTON as SRF_PRIMARY_BTN,
+  STUDENT_SEGMENT_TABS as SRF_TAB_BAR,
+  STUDENT_SEGMENT_TAB_ACTIVE as SRF_TAB_ACTIVE,
+  STUDENT_SEGMENT_TAB_INACTIVE as SRF_TAB_INACTIVE,
+} from '../../design-system/studentTokens';

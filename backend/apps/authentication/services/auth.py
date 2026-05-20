@@ -20,6 +20,7 @@ from ..tokens import TokenPair, decode_refresh, issue_token_pair
 from ..utils import get_client_ip
 from .security import is_locked, log_event, record_attempt
 from .sessions import create_session, revoke_all_sessions
+from .platform_access import can_access_platform
 from .users import resolve_or_link_user
 
 
@@ -74,7 +75,7 @@ def perform_login(
 
     # 3. Resolve (or JIT-create) the local user.
     try:
-        user = resolve_or_link_user(identity)
+        user = resolve_or_link_user(identity, after_sso=(provider_name != 'LOCAL'))
     except AuthenticationFailed as exc:
         record_attempt(
             identifier=identifier or identity.email, ip=ip, success=False,
@@ -147,7 +148,7 @@ def refresh_session(*, raw_refresh: str, request=None) -> tuple:
     from django.contrib.auth import get_user_model
     User = get_user_model()
     user = User.objects.filter(pk=old['user_id']).first()
-    if user is None or getattr(user, 'account_status', 'ACTIVE') != 'ACTIVE':
+    if user is None or not can_access_platform(user):
         raise AuthenticationFailed('Invalid refresh token.')
 
     # Revoke any sessions still tied to the old refresh's companion access jti.

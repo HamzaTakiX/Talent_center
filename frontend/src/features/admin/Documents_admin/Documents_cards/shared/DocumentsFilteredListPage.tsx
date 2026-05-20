@@ -5,7 +5,12 @@ import type { DocumentRequestStatus } from '../../types';
 import { documentRequestsMockData } from '../../data/documentRequestsMockData';
 import DocumentsRequestsTable from '../../components/DocumentsRequestsTable';
 
-export type DocumentsListStatusFilter = 'all' | DocumentRequestStatus;
+export type DocumentsListStatusFilter =
+  | 'all'
+  | DocumentRequestStatus
+  | 'Pending'
+  | 'Validated'
+  | 'Rejected';
 
 interface DocumentsFilteredListPageProps {
   statusFilter: DocumentsListStatusFilter;

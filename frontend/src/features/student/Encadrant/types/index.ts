@@ -1,0 +1,48 @@
+import type { LucideIcon } from 'lucide-react';
+
+export type EncadrantStatIconKey = 'tasks' | 'meetings' | 'report' | 'deadline';
+
+export interface EncadrantStatItem {
+  label: string;
+  value: string;
+  iconKey: EncadrantStatIconKey;
+}
+
+export type EncadrantTaskPriority = 'high' | 'medium';
+export type EncadrantTaskStatus = 'in_progress' | 'todo' | 'in_review';
+
+export interface EncadrantMeetingItem {
+  id: string;
+  title: string;
+  dateTime: string;
+}
+
+export interface EncadrantTaskItem {
+  id: string;
+  title: string;
+  priority: EncadrantTaskPriority;
+  dueDate: string;
+  status: EncadrantTaskStatus;
+}
+
+export interface EncadrantReportChapter {
+  id: string;
+  label: string;
+  progress: number;
+}
+
+export interface EncadrantQuickAction {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: LucideIcon;
+  iconClassName: string;
+}
+
+export interface EncadrantSupervisor {
+  initials: string;
+  name: string;
+  department: string;
+  specialty: string;
+  email: string;
+}

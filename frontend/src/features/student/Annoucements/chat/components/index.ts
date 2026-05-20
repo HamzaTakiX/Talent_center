@@ -1,0 +1,1 @@
+/** Components — Announcements Chat (placeholder). */

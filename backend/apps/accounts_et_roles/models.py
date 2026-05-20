@@ -17,6 +17,9 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError(_('The Email must be set'))
         email = self.normalize_email(email)
+        if password:
+            extra_fields.setdefault('platform_access_granted', True)
+            extra_fields.setdefault('account_status', User.AccountStatus.AUTHORIZED)
         user = self.model(email=email, **extra_fields)
         if password:
             user.set_password(password)
@@ -61,9 +64,12 @@ class User(AbstractUser):
         SSO = 'SSO', _('SSO')
 
     class AccountStatus(models.TextChoices):
-        ACTIVE = 'ACTIVE', _('Active')
         PENDING = 'PENDING', _('Pending')
+        AUTHORIZED = 'AUTHORIZED', _('Authorized')
+        ACTIVE = 'ACTIVE', _('Active')
         SUSPENDED = 'SUSPENDED', _('Suspended')
+        BLOCKED = 'BLOCKED', _('Blocked')
+        ARCHIVED = 'ARCHIVED', _('Archived')
         LOCKED = 'LOCKED', _('Locked')
 
     username = None
@@ -91,8 +97,31 @@ class User(AbstractUser):
     account_status = models.CharField(
         max_length=16,
         choices=AccountStatus.choices,
-        default=AccountStatus.ACTIVE,
+        default=AccountStatus.PENDING,
         db_index=True,
+    )
+    platform_access_granted = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text=_('Admin-granted permission to use the platform (independent of SSO identity).'),
+    )
+    platform_access_granted_at = models.DateTimeField(null=True, blank=True)
+    platform_access_granted_by = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='platform_access_grants',
+    )
+    sso_enabled = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text=_('Student may authenticate via school SSO (Auth0).'),
+    )
+    first_login_completed = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text=_('True after the first successful SSO login and credential provisioning.'),
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -212,6 +241,68 @@ class StudentProfile(TimestampedModel):
     # Academic
     program_major = models.CharField(max_length=255, blank=True, default='')
     current_class = models.CharField(max_length=100, blank=True, default='')
+    filiere = models.ForeignKey(
+        'admin_management.Filiere',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+    )
+    class_group = models.ForeignKey(
+        'admin_management.ClassGroup',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+    )
+    academic_level = models.ForeignKey(
+        'admin_management.AcademicLevel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+    )
+    academic_sector = models.ForeignKey(
+        'admin_management.AcademicSector',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+    )
+    internship_type = models.ForeignKey(
+        'admin_management.InternshipType',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+        help_text=_('Auto-derived from program and level — not set manually by admins.'),
+    )
+    internship_duration = models.CharField(
+        max_length=64,
+        blank=True,
+        default='',
+        help_text=_('Denormalized duration hint from the resolved internship type.'),
+    )
+    internship_category = models.CharField(
+        max_length=32,
+        blank=True,
+        default='',
+        db_index=True,
+        help_text=_('ESCA program family (PGE, LME, IBA, MASTER) for the resolved internship.'),
+    )
+    academic_year_ref = models.ForeignKey(
+        'admin_management.AcademicYear',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+    )
+    academic_year = models.CharField(
+        max_length=16,
+        blank=True,
+        default='',
+        help_text=_('Format: 2025-2026'),
+    )
     student_number = models.CharField(max_length=64, blank=True, default='', db_index=True)
     enrollment_year = models.PositiveSmallIntegerField(null=True, blank=True)
     expected_graduation_year = models.PositiveSmallIntegerField(null=True, blank=True)

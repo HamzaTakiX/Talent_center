@@ -1,6 +1,8 @@
 import { FunctionComponent, ReactNode, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useAdminTheme } from '../dashboard/context/AdminThemeContext';
 import { easePremium } from '../dashboard/ui/animations';
 
 interface AdminModalProps {
@@ -11,6 +13,8 @@ interface AdminModalProps {
   children: ReactNode;
   footer?: ReactNode;
   maxWidthClass?: string;
+  dir?: 'ltr' | 'rtl';
+  closeAriaLabel?: string;
 }
 
 const AdminModal: FunctionComponent<AdminModalProps> = ({
@@ -21,7 +25,13 @@ const AdminModal: FunctionComponent<AdminModalProps> = ({
   children,
   footer,
   maxWidthClass = 'max-w-[680px]',
+  dir,
+  closeAriaLabel = 'Close',
 }) => {
+  const { theme } = useAdminTheme();
+  const { i18n } = useTranslation();
+  const resolvedDir = dir ?? (i18n.dir() === 'rtl' ? 'rtl' : 'ltr');
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -56,22 +66,24 @@ const AdminModal: FunctionComponent<AdminModalProps> = ({
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.28, ease: easePremium }}
             className={`admin-modal ${maxWidthClass}`}
+            data-admin-theme={theme}
+            dir={resolvedDir}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="admin-modal-header">
-              <div className="min-w-0">
-                <h3 id="admin-modal-title" className="text-lg font-semibold text-[var(--admin-text)]">
+              <div className="admin-modal-header__content min-w-0">
+                <h3 id="admin-modal-title" className="admin-modal-header__title">
                   {title}
                 </h3>
-                {description && (
-                  <p className="mt-1 text-sm text-[var(--admin-text-secondary)]">{description}</p>
-                )}
+                {description ? (
+                  <p className="admin-modal-header__description">{description}</p>
+                ) : null}
               </div>
               <button
                 type="button"
                 onClick={onClose}
                 className="admin-modal-close"
-                aria-label="Close"
+                aria-label={closeAriaLabel}
               >
                 <X className="h-5 w-5" strokeWidth={2} />
               </button>

@@ -9,7 +9,11 @@ import {
 
 const InternshipOffersChatPage: FunctionComponent = () => {
   const chat = useAdminChatChannel('offers');
-  const mock = useAdminChatMockData('offers', internshipOffersParticipants, internshipOffersInitialMessages);
+  const mock = useAdminChatMockData(
+    'offers',
+    internshipOffersParticipants,
+    internshipOffersInitialMessages
+  );
 
   return (
     <AdminModuleChat

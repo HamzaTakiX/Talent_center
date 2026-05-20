@@ -39,6 +39,7 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
   return (
     <div className="space-y-6">
       <AccountSection
+        sectionKey="personal"
         sectionId="settings-language"
         title={t('admin.settings.language.title')}
         description={t('admin.settings.language.description')}
@@ -51,6 +52,7 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
       </AccountSection>
 
       <AccountSection
+        sectionKey="activity"
         sectionId="settings-notifications"
         title={t('admin.settings.notifications.title')}
         description={t('admin.settings.notifications.description')}

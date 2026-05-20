@@ -15,7 +15,8 @@
   "roles": {
     "superAdmin": "Super Admin",
     "encadrant": "Encadrant",
-    "administrator": "Administrateur"
+    "administrator": "Administrateur",
+    "student": "Étudiant"
   },
   "admin": {
     "brand": {
@@ -33,8 +34,13 @@
       "encadrant": "Encadrants",
       "student": "Étudiants",
       "admin": "Administrateurs",
+      "catalog": "Catalogue des services",
       "chat": "Chat",
       "reports": "Rapports",
+      "smartAssignment": "Affectation intelligente",
+      "meetings": "Réunions",
+      "imports": "Imports financiers",
+      "config": "Config. examens & alertes",
       "closeMenu": "Fermer le menu"
     },
     "header": {
@@ -51,9 +57,45 @@
         "internshipOffers": "Offres de stage",
         "announcements": "Annonces",
         "documents": "Documents",
+        "documentsCatalog": "Catalogue des services",
         "srf": "SRF",
         "history": "Historique",
         "account": "Mon compte"
+      }
+    },
+    "toast": {
+      "successTitle": "Succès",
+      "errorTitle": "Erreur",
+      "infoTitle": "Information",
+      "warningTitle": "Avertissement"
+    },
+    "common": {
+      "loading": "Chargement…",
+      "actions": {
+        "view": "Voir",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "assign": "Assigner",
+        "deactivate": "Désactiver",
+        "importExcel": "Importer Excel"
+      },
+      "delete": {
+        "confirm": "Supprimer définitivement",
+        "confirmWithCount": "Supprimer ({{count}})",
+        "startSelection": "Sélectionner des utilisateurs à supprimer",
+        "cancelSelection": "Annuler",
+        "selectedCount": "{{count}} sélectionné(s)",
+        "clearSelection": "Tout désélectionner",
+        "deleteSelected": "Supprimer la sélection",
+        "studentTitle": "Supprimer l'étudiant",
+        "studentDescription": "Supprimer définitivement « {{name}} » ? Cette action est irréversible.",
+        "studentBulkDescription": "Supprimer définitivement {{count}} étudiant(s) ? Cette action est irréversible.",
+        "adminTitle": "Supprimer l'administrateur",
+        "adminDescription": "Supprimer définitivement « {{name}} » ? Cette action est irréversible.",
+        "adminBulkDescription": "Supprimer définitivement {{count}} administrateur(s) ? Cette action est irréversible.",
+        "encadrantTitle": "Supprimer l'encadrant",
+        "encadrantDescription": "Supprimer définitivement « {{name}} » ? Cette action est irréversible.",
+        "encadrantBulkDescription": "Supprimer définitivement {{count}} encadrant(s) ? Cette action est irréversible."
       }
     },
     "userMenu": {
@@ -424,6 +466,8 @@
       "microsoft": "Se connecter avec Microsoft (ESCA SSO)",
       "or": "Ou connectez-vous par email",
       "forgotPassword": "Mot de passe oublié ?",
+      "showPassword": "Afficher le mot de passe",
+      "hidePassword": "Masquer le mot de passe",
       "footerNeedHelp": "Besoin d'aide ? Contactez",
       "panelBadge": "ESCA Talent Center",
       "panelTitle": "Accompagner les étudiants ESCA",
@@ -459,6 +503,475 @@
       "welcome": "Bienvenue, Étudiant !",
       "subtitle": "Espace étudiant en cours de développement.",
       "logout": "Se déconnecter"
+    },
+    "preferences": {
+      "darkMode": "Activer le mode sombre",
+      "lightMode": "Activer le mode clair"
+    },
+    "confirmIdentity": {
+      "title": "Confirmer votre identité",
+      "subtitle": "Veuillez vérifier vos informations académiques avant d'accéder à la plateforme.",
+      "panelBadge": "Vérification d'identité",
+      "panelTitle": "Vérifiez votre profil étudiant",
+      "panelSubtitle": "Confirmez vos informations personnelles et académiques pour continuer sur la plateforme ESCA.",
+      "panelCoverAlt": "Illustration vérification d'identité",
+      "fields": {
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "dateOfBirth": "Date de naissance",
+        "programMajor": "Filière / Programme",
+        "currentClass": "Classe actuelle"
+      },
+      "placeholders": {
+        "selectOption": "Sélectionnez une option…",
+        "selectProgramFirst": "Choisissez d'abord une filière",
+        "loading": "Chargement…",
+        "emptyValue": "—"
+      },
+      "actions": {
+        "save": "Enregistrer les informations",
+        "saving": "Enregistrement…",
+        "confirm": "Confirmer les informations",
+        "processing": "Traitement…",
+        "edit": "Modifier les informations",
+        "cancelEdit": "Annuler la modification"
+      },
+      "success": "Vos informations ont été vérifiées et enregistrées.",
+      "errors": {
+        "network": "Impossible de joindre le serveur. Vérifiez votre connexion ou réessayez plus tard.",
+        "validation": "Veuillez vérifier vos saisies et réessayer.",
+        "invalidInput": "Saisie invalide. Vérifiez que tous les champs sont correctement remplis.",
+        "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+        "identityAlreadyConfirmed": "Identité déjà confirmée. Vous ne pouvez plus modifier ces informations.",
+        "forbidden": "Vous n'avez pas l'autorisation d'effectuer cette action.",
+        "notFound": "Profil utilisateur introuvable. Contactez le support.",
+        "conflict": "Ces informations entrent en conflit avec des données existantes. Vérifiez vos détails.",
+        "unprocessable": "Impossible de traiter votre demande. Vérifiez vos informations.",
+        "rateLimit": "Trop de requêtes. Patientez un instant avant de réessayer.",
+        "server": "Une erreur est survenue de notre côté. Réessayez plus tard ou contactez le support.",
+        "unexpected": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+        "firstNameRequired": "Le prénom est obligatoire.",
+        "lastNameRequired": "Le nom est obligatoire.",
+        "dateOfBirthRequired": "La date de naissance est obligatoire.",
+        "programRequired": "Veuillez sélectionner votre filière ESCA.",
+        "classRequired": "Veuillez sélectionner votre classe.",
+        "referenceLoadFailed": "Impossible de charger les filières et classes ESCA. Vérifiez votre connexion ou réessayez."
+      }
+    },
+    "completeProfile": {
+      "title": "Compléter votre profil",
+      "subtitle": "Ajoutez vos informations professionnelles avant d'accéder aux offres de stage.",
+      "infoBanner": "Ces informations améliorent votre score de correspondance avec les offres de stage pertinentes.",
+      "panelBadge": "Configuration du profil",
+      "panelTitle": "Construisez votre profil professionnel",
+      "panelSubtitle": "Complétez votre profil, utilisez le modèle CV ESCA officiel et préparez vos opportunités.",
+      "panelCoverAlt": "Illustration configuration du profil",
+      "sections": {
+        "professional": "Informations professionnelles",
+        "careerObjective": "Objectif de carrière",
+        "skills": "Compétences",
+        "availability": "Disponibilité et localisation",
+        "applicationExperience": "Expérience de candidature"
+      },
+      "fields": {
+        "linkedin": "URL du profil LinkedIn",
+        "professionalSummary": "Résumé professionnel court",
+        "careerObjective": "Type de stage recherché",
+        "skills": "Sélectionnez vos compétences",
+        "whenStart": "Quand pouvez-vous commencer ?",
+        "startDate": "Date de début",
+        "city": "Ville actuelle",
+        "mobility": "Préférences de mobilité",
+        "hasApplied": "Avez-vous déjà postulé à des stages ?"
+      },
+      "placeholders": {
+        "linkedin": "https://linkedin.com/in/votre-profil",
+        "professionalSummary": "Présentez brièvement votre parcours académique, vos compétences et vos objectifs…",
+        "careerObjective": "ex. Stage en marketing dans une multinationale, orienté stratégie digitale…",
+        "city": "ex. Casablanca"
+      },
+      "availability": {
+        "immediately": "Immédiatement",
+        "specificDate": "Date précise"
+      },
+      "mobility": {
+        "withinCity": "En ville",
+        "national": "National",
+        "international": "International",
+        "remote": "À distance"
+      },
+      "skills": {
+        "digitalMarketing": "Marketing digital",
+        "dataAnalysis": "Analyse de données",
+        "projectManagement": "Gestion de projet",
+        "microsoftOffice": "Microsoft Office",
+        "leadership": "Leadership",
+        "communication": "Communication",
+        "problemSolving": "Résolution de problèmes",
+        "socialMediaMarketing": "Marketing réseaux sociaux",
+        "googleAnalytics": "Google Analytics",
+        "teamwork": "Travail d'équipe",
+        "businessStrategy": "Stratégie d'entreprise",
+        "financialAnalysis": "Analyse financière",
+        "python": "Python",
+        "excel": "Excel",
+        "powerpoint": "PowerPoint",
+        "photoshop": "Photoshop",
+        "illustrator": "Illustrator"
+      },
+      "yes": "Oui",
+      "no": "Non",
+      "save": "Enregistrer et continuer",
+      "success": "Profil complété ! Vous allez être redirigé vers le créateur de CV pour préparer votre CV avant le tableau de bord.",
+      "loginRecapTitle": "Vos identifiants de connexion",
+      "loginRecapHint": "Redirection automatique vers le créateur de CV…",
+      "loginRecapHintDev": "Compte de test local — copiez les identifiants si besoin. Redirection automatique dans {{seconds}} s, ou cliquez sur Continuer.",
+      "continueToCvEditor": "Continuer — créer mon CV",
+      "loginRecapEmail": "Email",
+      "loginRecapPassword": "Mot de passe",
+      "loginRecapDevPassword": "Compte de test local",
+      "loginRecapGoLogin": "Aller à la page de connexion",
+      "copyCredentials": "Copier les identifiants",
+      "errors": {
+        "missingFields": "Veuillez remplir les champs obligatoires suivants : {{fields}}",
+        "linkedinInvalid": "Veuillez saisir une URL LinkedIn valide (ex. https://linkedin.com/in/votre-nom)",
+        "linkedinInvalidField": "L'URL LinkedIn doit être un profil LinkedIn valide (ex. https://linkedin.com/in/votre-nom)",
+        "submitFailed": "Échec de la complétion du profil. Veuillez réessayer."
+      }
+    },
+    "loading": {
+      "session": "Vérification de la session…"
+    },
+    "configMissing": {
+      "title": "Configuration Auth0 manquante",
+      "body": "Ajoutez VITE_AUTH0_DOMAIN et VITE_AUTH0_CLIENT_ID dans .env.local (développement) ou dans le tableau de bord Vercel (production), puis redéployez.",
+      "secretHint": "Ne jamais exposer AUTH0_CLIENT_SECRET côté frontend."
+    },
+    "accessDenied": {
+      "title": "Accès non autorisé",
+      "body": "Votre rôle ne permet pas d'accéder à cette section.",
+      "back": "Retour à mon espace"
+    },
+    "callback": {
+      "title": "Authentification…",
+      "subtitle": "Veuillez patienter pendant la vérification de vos identifiants."
+    }
+  },
+  "cv": {
+    "onboarding": {
+      "banner": "Étape suivante : complétez votre CV ESCA. Une fois finalisé, vous accéderez au tableau de bord."
+    },
+    "list": {
+      "title": "Mes CV",
+      "openEditor": "Ouvrir le créateur de CV"
+    },
+    "public": {
+      "loading": "Chargement du CV…",
+      "loadFailed": "Impossible de charger ce CV public.",
+      "missingToken": "Lien invalide.",
+      "defaultTitle": "CV partagé",
+      "previewSoon": "L’aperçu détaillé sera bientôt disponible. Utilisez le créateur de CV pour modifier votre document."
+    },
+    "quickBuilder": {
+      "loading": "Chargement du créateur de CV…",
+      "unavailable": "Le créateur de CV QuickCV n'est pas disponible.",
+      "devHint": "Rechargez la page. Le créateur de CV est inclus dans l’application.",
+      "frameTitle": "Créateur de CV QuickCV"
+    },
+    "toolbar": {
+      "zoom": "Zoom aperçu",
+      "demo": "Données démo",
+      "viewMode": "Mode affichage",
+      "split": "Split",
+      "tabbed": "Onglets",
+      "download": "Télécharger PDF"
+    },
+    "editor": {
+      "title": "Éditeur de CV",
+      "subtitle": "Digital Talent Center",
+      "calmSubtitle": "Remplissez votre CV — simple et sans distraction",
+      "calmHint": "L'aperçu se met à jour automatiquement. L'analyse IA et l'export arrivent à la fin.",
+      "back": "Retour",
+      "finalizeCta": "Terminer et voir le résultat",
+      "finalizeHint": "Ajoutez votre nom et au moins une formation ou expérience pour continuer.",
+      "finalizeReady": "Votre CV est prêt — passez à l'étape finale pour analyser et exporter.",
+      "defaultTitle": "Modèle de CV",
+      "saveVersionNote": "Sauvegarde manuelle depuis l'éditeur",
+      "score": {
+        "label": "Score CV",
+        "excellent": "Excellent",
+        "good": "Bon",
+        "fair": "Correct",
+        "needsWork": "À améliorer"
+      },
+      "loading": "Chargement du CV…",
+      "saving": "Enregistrement…",
+      "actions": {
+        "analyze": "Analyser avec l'IA",
+        "save": "Enregistrer",
+        "saved": "Enregistré",
+        "continueDashboard": "Continuer vers le tableau de bord",
+        "saveError": "Échec de l'enregistrement",
+        "download": "Télécharger PDF"
+      },
+      "groups": {
+        "styling": "Style du CV",
+        "addSection": "Ajouter une section",
+        "manageSections": "Gérer les sections",
+        "textStyling": "Style du texte",
+        "layout": "Options de mise en page"
+      },
+      "hints": {
+        "duplicate": "Glissez pour réordonner. Utilisez l'icône œil pour masquer une section."
+      },
+      "empty": {
+        "title": "Commencez votre CV",
+        "description": "Remplissez les formulaires structurés à gauche. L'aperçu professionnel se met à jour automatiquement."
+      },
+      "fields": {
+        "title": "Titre du CV",
+        "titlePlaceholder": "Titre du CV",
+        "accentColor": "Couleur d'accent",
+        "fontSize": "Taille de police",
+        "fontWeight": "Épaisseur",
+        "alignment": "Alignement",
+        "aiSuggestions": "Suggestions IA"
+      },
+      "fontSize": {
+        "small": "Petit",
+        "medium": "Moyen",
+        "large": "Grand"
+      },
+      "fontWeight": {
+        "regular": "Normal"
+      },
+      "layout": {
+        "executive": "Moderne Professionnel",
+        "minimal": "ATS Minimal",
+        "creative": "Créatif Split",
+        "elegant": "Executive",
+        "corporate": "Corporate Compact"
+      },
+      "sections": {
+        "experience": "Expérience",
+        "education": "Formation",
+        "skills": "Compétences",
+        "projects": "Projets",
+        "add": {
+          "experience": "Ajouter une expérience",
+          "education": "Ajouter une formation",
+          "skills": "Ajouter des compétences",
+          "projects": "Ajouter un projet"
+        }
+      }
+    },
+    "forms": {
+      "panelTitle": "Construire votre CV",
+      "panelSubtitle": "Formulaires structurés · Aperçu en direct",
+      "nav": { "label": "Sections du CV" },
+      "mobile": { "form": "Formulaire", "preview": "Aperçu" },
+      "wizard": { "prev": "Précédent", "next": "Suivant" },
+      "empty": {
+        "description": "Ajoutez au moins une section (expérience, formation, compétences…) via le formulaire."
+      },
+      "steps": {
+        "personal": "Informations personnelles",
+        "summary": "Résumé professionnel",
+        "social": "Liens sociaux",
+        "education": "Formation",
+        "experience": "Expérience",
+        "skills": "Compétences",
+        "languages": "Langues",
+        "projects": "Projets",
+        "certifications": "Certifications",
+        "awards": "Distinctions",
+        "custom": "Sections personnalisées",
+        "template": "Modèle & style"
+      },
+      "photo": { "upload": "Ajouter une photo", "remove": "Supprimer" },
+      "personal": {
+        "fullName": "Nom complet",
+        "headline": "Titre professionnel",
+        "email": "E-mail",
+        "phone": "Téléphone",
+        "location": "Localisation"
+      },
+      "summary": {
+        "label": "Résumé",
+        "hint": "2–4 phrases orientées stage ou premier emploi.",
+        "aiSuggest": "Suggérer avec l'IA"
+      },
+      "social": {
+        "linkedin": "LinkedIn",
+        "github": "GitHub",
+        "twitter": "X / Twitter",
+        "website": "Site web",
+        "portfolio": "Portfolio"
+      },
+      "common": { "start": "Début", "end": "Fin", "date": "Date" },
+      "education": {
+        "add": "Ajouter une formation",
+        "new": "Nouvelle formation",
+        "degree": "Diplôme",
+        "school": "Établissement",
+        "location": "Lieu",
+        "description": "Description"
+      },
+      "experience": {
+        "add": "Ajouter une expérience",
+        "new": "Nouvelle expérience",
+        "title": "Poste",
+        "company": "Entreprise",
+        "location": "Lieu",
+        "bullets": "Réalisations",
+        "addBullet": "Ajouter une puce"
+      },
+      "skills": { "add": "Ajouter une compétence", "new": "Compétence", "name": "Nom", "level": "Niveau" },
+      "languages": { "add": "Ajouter une langue", "new": "Langue", "name": "Langue", "level": "Niveau" },
+      "projects": {
+        "add": "Ajouter un projet",
+        "new": "Projet",
+        "name": "Nom",
+        "tech": "Technologies",
+        "url": "URL",
+        "description": "Description"
+      },
+      "certifications": {
+        "add": "Ajouter une certification",
+        "new": "Certification",
+        "name": "Nom",
+        "issuer": "Organisme"
+      },
+      "awards": {
+        "add": "Ajouter une distinction",
+        "new": "Distinction",
+        "title": "Titre",
+        "organization": "Organisation",
+        "description": "Description"
+      },
+      "custom": { "add": "Ajouter une section", "new": "Section", "title": "Titre", "content": "Contenu" },
+      "template": {
+        "pick": "Choisir un modèle premium",
+        "desc": {
+          "executive": "Moderne, colonnes équilibrées, idéal tech & business",
+          "minimal": "Ultra lisible, optimisé ATS et parsing automatique",
+          "creative": "Mise en page split audacieuse, profils design & marketing",
+          "elegant": "Sobre et autoritaire, cadres et consultants",
+          "corporate": "Dense et compact, maximum d'infos par page"
+        }
+      }
+    },
+    "ai": {
+      "validation": {
+        "title": "Complétez votre CV avant l'analyse IA",
+        "subtitle": "Quelques sections essentielles sont encore vides.",
+        "missingFullName": "Indiquez votre nom complet",
+        "missingTitle": "Ajoutez un titre professionnel",
+        "missingContact": "Ajoutez au moins un moyen de contact (e-mail, téléphone, LinkedIn…)",
+        "missingSummary": "Votre CV a besoin d'un résumé professionnel",
+        "missingEducation": "Ajoutez au moins une formation",
+        "missingExperience": "Ajoutez au moins une expérience ou un projet",
+        "missingSkills": "La section compétences est vide",
+        "missingLanguages": "Ajoutez au moins une langue"
+      },
+      "overview": {
+        "title": "Revue recruteur",
+        "subtitle": "Analyse calibrée pour votre profil ESCA et vos stages.",
+        "scoresLabel": "Indicateurs clés",
+        "overall": "Global",
+        "ats": "ATS",
+        "readiness": "Préparation stage",
+        "strongest": "Point fort",
+        "weakest": "Priorité",
+        "strengthsTitle": "Points forts",
+        "improvementsTitle": "À améliorer"
+      },
+      "priority": {
+        "critical": "Critique",
+        "important": "Important",
+        "optional": "Optionnel"
+      },
+      "recruiter_impact_critical": "Impact direct sur le passage ATS et la shortlist.",
+      "recruiter_impact_important": "Renforce la perception recruteur et l'alignement métier.",
+      "recruiter_impact_optional": "Affinage recommandé, non bloquant.",
+      "panel": {
+        "show": "Afficher la revue recruteur",
+        "hide": "Réduire le panneau"
+      },
+      "config": {
+        "title": "Analyse IA non disponible",
+        "hint": "Configurez ANTHROPIC_API_KEY et CV_ANALYSIS_PROVIDER=claude dans le backend (.env)."
+      },
+      "analyzing": "Analyse en cours…"
+    },
+    "finalize": {
+      "title": "Votre CV est prêt",
+      "cvIdLabel": "CV n°{{id}}",
+      "subtitle": "Consultez le rendu final, optimisez avec l'IA et exportez en toute confiance.",
+      "previewLabel": "Aperçu final",
+      "actions": {
+        "downloadPdf": "Télécharger PDF",
+        "downloadDocx": "DOCX",
+        "docxSoon": "Export Word bientôt disponible",
+        "save": "Enregistrer une version",
+        "share": "Copier le lien de partage",
+        "edit": "Modifier le contenu",
+        "changeTemplate": "Changer de modèle",
+        "duplicate": "Dupliquer",
+        "duplicateSoon": "Duplication bientôt disponible",
+        "analyze": "Analyser avec l'IA",
+        "goDashboard": "Accéder au tableau de bord"
+      },
+      "share": {
+        "defaultLabel": "Lien public",
+        "copied": "Lien copié dans le presse-papiers"
+      },
+      "analytics": {
+        "sectionTitle": "Analyse & optimisation ATS",
+        "sectionDesc": "Insights recruteur, mots-clés et recommandations — uniquement sur cette page.",
+        "reanalyze": "Relancer l'analyse",
+        "emptyTitle": "Optimisez votre CV avec l'IA",
+        "emptyDesc": "Obtenez un score ATS, des forces, des faiblesses et des conseils personnalisés pour les stages et premiers emplois.",
+        "atsScore": "Score ATS",
+        "readability": "Lisibilité",
+        "readabilityGood": "Structure claire et hiérarchie professionnelle",
+        "readabilityFair": "Améliorez la densité et les puces mesurables",
+        "keywords": "Mots-clés",
+        "keywordDefault": "Couverture correcte — enrichissez les compétences techniques",
+        "internship": "Adéquation stage",
+        "internshipDefault": "Profil adapté aux candidatures junior / stage",
+        "strengths": "Points forts",
+        "weaknesses": "Axes d'amélioration",
+        "optimization": "Recommandations",
+        "historyCount": "{{count}} analyses enregistrées"
+      }
+    },
+    "preview": {
+      "canvas": "Aperçu du CV",
+      "uploadPhoto": "Ajouter une photo",
+      "phone": "Téléphone",
+      "location": "Lieu",
+      "placeholders": {
+        "jobTitle": "Intitulé du poste",
+        "company": "Nom de l'entreprise",
+        "degree": "Diplôme ou formation",
+        "school": "École ou université",
+        "startDate": "Début",
+        "endDate": "Fin",
+        "bullet": "Décrivez votre réalisation…",
+        "description": "Décrivez votre parcours…",
+        "fullName": "Votre nom complet",
+        "headline": "Titre professionnel",
+        "summary": "Rédigez un résumé professionnel…",
+        "skill": "Compétence",
+        "language": "Langue",
+        "level": "Niveau",
+        "email": "email@exemple.com",
+        "phone": "+33 6 12 34 56 78",
+        "linkedin": "linkedin.com/in/vous",
+        "website": "votresite.com",
+        "location": "Ville, Pays"
+      }
     }
   }
 }

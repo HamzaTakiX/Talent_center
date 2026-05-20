@@ -82,8 +82,31 @@ def confirm_identity(user: User, data: dict) -> UserProfile:
             student_profile.program_major = data['program_major']
         if 'current_class' in data:
             student_profile.current_class = data['current_class']
-            
-        student_profile.save(update_fields=['identity_confirmed', 'program_major', 'current_class'])
+        if 'filiere_id' in data and data['filiere_id']:
+            from apps.admin_management.models import Filiere
+            filiere = Filiere.objects.filter(pk=data['filiere_id']).first()
+            if filiere:
+                student_profile.filiere = filiere
+                student_profile.program_major = filiere.name
+        if 'class_group_id' in data and data['class_group_id']:
+            from apps.admin_management.models import ClassGroup
+            cg = ClassGroup.objects.filter(pk=data['class_group_id']).select_related('filiere').first()
+            if cg:
+                student_profile.class_group = cg
+                student_profile.current_class = cg.name
+                if cg.filiere_id:
+                    student_profile.filiere = cg.filiere
+                    student_profile.program_major = cg.filiere.name
+                if cg.academic_year_ref_id:
+                    student_profile.academic_year = cg.academic_year_ref.code
+                elif getattr(cg, 'academic_year', None):
+                    student_profile.academic_year = cg.academic_year
+                if cg.academic_level_id:
+                    student_profile.academic_level = cg.academic_level
+                if cg.academic_sector_id:
+                    student_profile.academic_sector = cg.academic_sector
+
+        student_profile.save()
 
     return profile
 
@@ -314,10 +337,17 @@ def suspend_account(user: User, changed_by: Optional[User] = None, reason: str =
 
 
 def activate_account(user: User, changed_by: Optional[User] = None, reason: str = '') -> None:
-    """Activate/reactivate a user account."""
-    change_account_status(
-        user, User.AccountStatus.ACTIVE, changed_by, reason
-    )
+    """Activate/reactivate a user account and grant platform access."""
+    from apps.authentication.services.platform_access import grant_platform_access
+
+    grant_platform_access(user, granted_by=changed_by)
+    if user.account_status not in (
+        User.AccountStatus.AUTHORIZED,
+        User.AccountStatus.ACTIVE,
+    ):
+        change_account_status(
+            user, User.AccountStatus.AUTHORIZED, changed_by, reason
+        )
 
 
 # =============================================================================

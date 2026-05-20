@@ -1,0 +1,1 @@
+/** Constants — Student Documents (placeholder). */

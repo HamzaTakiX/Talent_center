@@ -11,16 +11,14 @@ export interface EncadrantSummaryStat {
 export const encadrantsSummaryStats: EncadrantSummaryStat[] = [
   { label: 'Total Encadrants', value: 89, Icon: User, iconBgClass: 'bg-[#a855f7]' },
   { label: 'Assigned Students', value: 1245, Icon: Users, iconBgClass: 'bg-[#3b82f6]' },
-  { label: 'Reports in Progress', value: 234, Icon: FileEdit, iconBgClass: 'bg-[#f97316]' },
-  { label: 'Meetings', value: 156, Icon: Video, iconBgClass: 'bg-[#22c55e]' }
+  { label: 'Meetings', value: 156, Icon: Video, iconBgClass: 'bg-[#22c55e]' },
 ];
 
-/** Ordre identique à `encadrantsSummaryStats` : carte 1 → page détail 1, etc. */
+/** Cartes encadrants (hors rapports) — ordre = index navigation. */
 export const ENCADRANT_CARD_ROUTES = [
   '/admin/encadrants/all',
   '/admin/encadrants/assigned-students',
-  '/admin/encadrants/reports-in-progress',
-  '/admin/encadrants/upcoming-meetings'
+  '/admin/encadrant/meetings',
 ] as const;
 
 export interface EncadrantRow {

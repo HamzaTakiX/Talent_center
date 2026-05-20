@@ -130,3 +130,39 @@ class SecurityEvent(models.Model):
 
     def __str__(self):
         return f'Event<{self.event_type} user={self.user_id}>'
+
+
+class StudentCredential(models.Model):
+    """
+    Encrypted admin-viewable credential record for a student.
+
+    The user's Django password field stores a bcrypt hash for authentication.
+    This table stores a Fernet-encrypted copy so admins can reveal the generated
+    password once after provisioning or reset.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='student_credentials',
+    )
+    password_ciphertext = models.TextField()
+    generated_at = models.DateTimeField(auto_now_add=True)
+    generated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+    is_current = models.BooleanField(default=True, db_index=True)
+    revealed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-generated_at']
+        indexes = [
+            models.Index(fields=['user', 'is_current']),
+        ]
+
+    def __str__(self):
+        return f'StudentCredential<{self.user_id} current={self.is_current}>'

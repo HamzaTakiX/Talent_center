@@ -1,5 +1,7 @@
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { adminCrudRoutes } from '../../shared/navigation/adminCrudRoutes';
 import { useAdminCopy } from '../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
 import AdminRowActions from '../../ui/AdminRowActions';
@@ -33,6 +35,7 @@ const DocumentsRequestsTable: FunctionComponent<DocumentsRequestsTableProps> = (
   showClassColumn = false,
   searchPlaceholder,
 }) => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { tableColumn, emptyState } = useAdminCopy();
   const { documentStatus } = useAdminTableValues();
@@ -59,13 +62,16 @@ const DocumentsRequestsTable: FunctionComponent<DocumentsRequestsTableProps> = (
     return rows.filter((r) => r.documentType === documentTypeFilter);
   }, [rows, documentTypeFilter]);
 
+  const goToReview = (row: DocumentRequestRow) =>
+    navigate(adminCrudRoutes.documentReview(row.id));
+
   const rowActions = (row: DocumentRequestRow, variant: 'mobile' | 'desktop' = 'desktop') => (
     <AdminRowActions
       variant={variant}
-      onView={() => {}}
+      onView={() => goToReview(row)}
       onDownload={row.status === 'Validated' ? () => {} : undefined}
-      onApprove={row.status === 'Pending' ? () => {} : undefined}
-      onReject={row.status === 'Pending' ? () => {} : undefined}
+      onApprove={row.status === 'Pending' ? () => goToReview(row) : undefined}
+      onReject={row.status === 'Pending' ? () => goToReview(row) : undefined}
     />
   );
 

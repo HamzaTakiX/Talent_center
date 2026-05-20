@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    Auth0ExchangeView,
     ChangePasswordView,
     ForgotPasswordView,
     LoginView,
@@ -33,4 +34,5 @@ urlpatterns = [
     path('providers', ProviderListView.as_view(), name='auth-providers'),
     path('providers/<str:provider>/begin', ProviderBeginView.as_view(), name='auth-provider-begin'),
     path('providers/<str:provider>/callback', ProviderCallbackView.as_view(), name='auth-provider-callback'),
+    path('providers/auth0/exchange', Auth0ExchangeView.as_view(), name='auth-auth0-exchange'),
 ]

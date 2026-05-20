@@ -1,10 +1,6 @@
 import { FunctionComponent } from 'react';
-import HistoryCardPageShell from '../../../components/HistoryCardPageShell';
-import AdminsStatsGrid from '../components/AdminsStatsGrid';
-import AdminsTimelineList from '../components/AdminsTimelineList';
+import ModuleHistoryCardPage from '../../../pages/ModuleHistoryCardPage';
 
-const AdminsHistoryCardPage: FunctionComponent = () => (
-  <HistoryCardPageShell stats={<AdminsStatsGrid />} timeline={<AdminsTimelineList />} />
-);
+const AdminsHistoryCardPage: FunctionComponent = () => <ModuleHistoryCardPage kpiKey="admins" />;
 
 export default AdminsHistoryCardPage;

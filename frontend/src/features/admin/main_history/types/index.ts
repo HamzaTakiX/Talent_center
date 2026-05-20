@@ -29,6 +29,8 @@ export interface HistoryStatItem {
   colorClassName: string;
 }
 
+export type HistoryCriticality = 'INFO' | 'IMPORTANT' | 'CRITICAL' | 'AUTOMATED';
+
 export interface HistoryActionRow {
   id: string;
   module: HistoryModule;
@@ -38,4 +40,13 @@ export interface HistoryActionRow {
   title: string;
   actor: string;
   timestamp: string;
+  criticality?: HistoryCriticality;
+  sourceApp?: string;
+  entityType?: string;
+  entityId?: number | null;
+  entityPath?: string;
+  oldValues?: Record<string, unknown>;
+  newValues?: Record<string, unknown>;
+  isAutomated?: boolean;
+  raw?: unknown;
 }

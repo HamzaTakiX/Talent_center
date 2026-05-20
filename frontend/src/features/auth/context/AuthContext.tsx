@@ -1,30 +1,47 @@
-import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
+import { isAxiosError } from 'axios';
 import { User } from '../types';
 import { authApi } from '../api';
+import { getAuth0EnvConfig } from '../config/auth0Env';
+import {
+  hasPersistedAccessToken,
+  readCachedAuthUser,
+  writeCachedAuthUser,
+} from '../utils/authSessionCache';
+import {
+  clearPersistedAuthTokens,
+  refreshAccessToken,
+} from '../utils/authTokenRefresh';
+import { clearRoleScopedStorage } from '../utils/clearRoleScopedStorage';
+import { AUTH_SESSION_EXPIRED_EVENT } from '../utils/authSessionEvents';
+import { resolveAuth0ExchangeToken } from '../utils/resolveAuth0Token';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
+  /** True once JWT/session resolution finished (success or hard failure). */
+  isAuthReady: boolean;
+  authError: string | null;
   user: User | null;
-  login: () => void;
+  login: (returnTo?: string) => void;
   legacyLogin: (token: string, userData: User, refreshToken?: string) => void;
   logout: () => Promise<void>;
   updateUser: (userData: User) => void;
+  clearAuthError: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-// Check if frontend-only admin mode is enabled
 const isFrontendOnlyAdmin = import.meta.env.VITE_FRONTEND_ONLY_ADMIN === 'true';
 
-// Fake admin user for frontend-only mode
 const fakeAdminUser: User = {
   id: 999,
   email: 'admin.demo@talentcenter.local',
   role: 'ADMIN',
   full_name: 'Super Admin',
   account_status: 'ACTIVE',
+  platform_access_granted: true,
   profile: {
     id: 1,
     first_name: 'Super',
@@ -32,86 +49,190 @@ const fakeAdminUser: User = {
   },
 };
 
+async function loadCurrentUser(): Promise<User> {
+  return authApi.me();
+}
+
+async function restoreSessionWithRefresh(): Promise<User | null> {
+  if (!hasPersistedAccessToken()) return null;
+
+  try {
+    return await loadCurrentUser();
+  } catch (error) {
+    const unauthorized = isAxiosError(error) && error.response?.status === 401;
+    if (!unauthorized) {
+      return null;
+    }
+  }
+
+  const refreshed = await refreshAccessToken();
+  if (!refreshed) return null;
+
+  try {
+    return await loadCurrentUser();
+  } catch {
+    return refreshed.user ?? null;
+  }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const { 
-    isAuthenticated: isAuth0Authenticated, 
-    isLoading: isAuth0Loading, 
-    loginWithRedirect, 
+  const auth0Configured = getAuth0EnvConfig().isConfigured;
+  const {
+    isAuthenticated: isAuth0Authenticated,
+    isLoading: isAuth0Loading,
+    loginWithRedirect,
     logout: auth0Logout,
-    getAccessTokenSilently
+    getAccessTokenSilently,
+    getIdTokenClaims,
   } = useAuth0();
 
-  const [user, setUser] = useState<User | null>(null);
-  const [isBackendLoading, setIsBackendLoading] = useState(true);
+  const [user, setUserState] = useState<User | null>(() =>
+    isFrontendOnlyAdmin ? fakeAdminUser : readCachedAuthUser(),
+  );
+  const [isBackendLoading, setIsBackendLoading] = useState(
+    () => !isFrontendOnlyAdmin && hasPersistedAccessToken(),
+  );
+  const [isAuthReady, setIsAuthReady] = useState(
+    () => isFrontendOnlyAdmin || !hasPersistedAccessToken(),
+  );
+  const [authError, setAuthError] = useState<string | null>(null);
+  const sessionRestoredRef = useRef(false);
 
-  const fetchBackendUser = useCallback(async () => {
-    try {
-      const token = await getAccessTokenSilently();
-      // Store token so legacy authApi logic still works
-      localStorage.setItem('access_token', token);
+  const setUser = useCallback((next: User | null) => {
+    setUserState(next);
+    writeCachedAuthUser(next);
+  }, []);
 
-      const userData = await authApi.me();
-      setUser(userData);
-    } catch (error) {
-      console.error('Failed to get token or backend user', error);
-      setUser(null);
-      localStorage.removeItem('access_token');
-    } finally {
+  const clearLocalAuth = useCallback(() => {
+    clearPersistedAuthTokens();
+    clearRoleScopedStorage();
+    setUser(null);
+    sessionRestoredRef.current = false;
+    setIsAuthReady(true);
+  }, [setUser]);
+
+  const hydrateFromBackendToken = useCallback(async () => {
+    if (!hasPersistedAccessToken()) {
       setIsBackendLoading(false);
-    }
-  }, [getAccessTokenSilently]);
-
-  useEffect(() => {
-    // Frontend-only admin mode: Set fake user immediately
-    if (isFrontendOnlyAdmin) {
-      setUser(fakeAdminUser);
-      setIsBackendLoading(false);
+      setIsAuthReady(true);
       return;
     }
 
-    // Normal auth flow
-    if (isAuth0Loading) return;
+    const restored = await restoreSessionWithRefresh();
+    if (restored) {
+      setUser(restored);
+      sessionRestoredRef.current = true;
+    } else {
+      clearLocalAuth();
+    }
+    setIsBackendLoading(false);
+    setIsAuthReady(true);
+  }, [clearLocalAuth, setUser]);
+
+  const fetchBackendUser = useCallback(async () => {
+    try {
+      setAuthError(null);
+      const auth0Token = await resolveAuth0ExchangeToken(
+        getAccessTokenSilently,
+        getIdTokenClaims,
+      );
+      const session = await authApi.auth0Exchange(auth0Token);
+      localStorage.setItem('access_token', session.access);
+      if (session.refresh) {
+        localStorage.setItem('refresh_token', session.refresh);
+      }
+      setUser(session.user);
+      sessionRestoredRef.current = true;
+    } catch (error) {
+      console.error('Failed to exchange Auth0 token or load user', error);
+      const message = isAxiosError(error)
+        ? (error.response?.data as { message?: string })?.message ??
+          'Échec de la connexion Auth0.'
+        : 'Échec de la connexion Auth0.';
+      setAuthError(message);
+      const fallback = await restoreSessionWithRefresh();
+      if (fallback) {
+        setUser(fallback);
+        setAuthError(null);
+        sessionRestoredRef.current = true;
+      } else {
+        clearLocalAuth();
+      }
+    } finally {
+      setIsBackendLoading(false);
+      setIsAuthReady(true);
+    }
+  }, [getAccessTokenSilently, getIdTokenClaims, setUser, clearLocalAuth]);
+
+  useEffect(() => {
+    if (isFrontendOnlyAdmin) {
+      setUser(fakeAdminUser);
+      setIsBackendLoading(false);
+      setIsAuthReady(true);
+      return;
+    }
+
+    if (isAuth0Loading) {
+      if (hasPersistedAccessToken()) {
+        void hydrateFromBackendToken();
+      } else {
+        setIsBackendLoading(false);
+        setIsAuthReady(true);
+      }
+      return;
+    }
 
     if (isAuth0Authenticated) {
-      fetchBackendUser();
+      void fetchBackendUser();
     } else {
-      // Fallback: Check if there is a legacy mock token in localStorage
-      const initLegacyAuth = async () => {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-          try {
-            const userData = await authApi.me();
-            setUser(userData);
-          } catch (error) {
-            localStorage.removeItem('access_token');
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
-        setIsBackendLoading(false);
-      };
-      initLegacyAuth();
+      void hydrateFromBackendToken();
     }
-  }, [isAuth0Authenticated, isAuth0Loading, fetchBackendUser]);
+  }, [
+    isAuth0Authenticated,
+    isAuth0Loading,
+    fetchBackendUser,
+    hydrateFromBackendToken,
+    setUser,
+  ]);
 
-  const login = () => {
-    loginWithRedirect();
-  };
+  useEffect(() => {
+    const onSessionExpired = () => {
+      clearLocalAuth();
+      window.location.replace(`${window.location.origin}/login`);
+    };
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () => window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
+  }, [clearLocalAuth]);
+
+  const login = useCallback(
+    (returnTo?: string) => {
+      setAuthError(null);
+      const destination =
+        returnTo && returnTo !== '/login' && returnTo !== '/callback'
+          ? returnTo
+          : '/';
+      loginWithRedirect({
+        appState: { returnTo: destination },
+      });
+    },
+    [loginWithRedirect],
+  );
+
+  const clearAuthError = useCallback(() => setAuthError(null), []);
 
   const legacyLogin = (token: string, userData: User, refreshToken?: string) => {
+    clearRoleScopedStorage();
+    clearPersistedAuthTokens();
     localStorage.setItem('access_token', token);
     if (refreshToken) {
       localStorage.setItem('refresh_token', refreshToken);
     }
     setUser(userData);
+    sessionRestoredRef.current = true;
+    setIsAuthReady(true);
+    setIsBackendLoading(false);
+    setAuthError(null);
   };
-
-  const clearLocalAuth = useCallback(() => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    setUser(null);
-  }, []);
 
   const logout = useCallback(async () => {
     const loginUrl = `${window.location.origin}/login`;
@@ -124,33 +245,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const hadLocalToken = Boolean(localStorage.getItem('access_token'));
 
-    // Revoke backend session while the access token is still valid.
     if (hadLocalToken) {
-      await authApi.logout();
+      try {
+        await authApi.logout();
+      } catch {
+        // proceed with local + Auth0 logout
+      }
     }
 
     clearLocalAuth();
 
-    if (isAuth0Authenticated) {
+    if (auth0Configured && isAuth0Authenticated) {
       auth0Logout({ logoutParams: { returnTo: loginUrl } });
       return;
     }
 
     window.location.replace(loginUrl);
-  }, [isAuth0Authenticated, auth0Logout, clearLocalAuth]);
+  }, [isAuth0Authenticated, auth0Logout, clearLocalAuth, auth0Configured]);
 
   const updateUser = (userData: User) => {
     setUser(userData);
   };
 
-  // The application is loading if Auth0 is loading or we are fetching the backend user
-  const isLoading = isAuth0Loading || isBackendLoading;
-  
-  // We are fully authenticated if Auth0 is authenticated, OR if we successfully fetched a backend user (legacy fallback)
-  const isAuthenticated = isAuth0Authenticated || !!user;
+  const hasToken = hasPersistedAccessToken();
+  const isLoading =
+    !isFrontendOnlyAdmin &&
+    !isAuthReady &&
+    (isAuth0Loading || isBackendLoading || hasToken);
+
+  const isAuthenticated =
+    isFrontendOnlyAdmin || isAuth0Authenticated || !!user;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, legacyLogin, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated: auth0Configured ? isAuthenticated : !!user,
+        isLoading,
+        isAuthReady,
+        authError,
+        user,
+        login,
+        legacyLogin,
+        logout,
+        updateUser,
+        clearAuthError,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

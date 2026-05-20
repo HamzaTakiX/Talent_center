@@ -1,16 +1,29 @@
-import { FunctionComponent, useMemo, useState } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, CircleCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye } from 'lucide-react';
+import SrfValidateButton from './student-detail/SrfValidateButton';
+import { srfRoutes } from '../../api/srf';
 import { useAdminCopy, useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
 import type {
   StudentFinancialRowStatus,
   StudentFinancialTableRow,
-} from '../data/srfFinancialMock';
+} from '../../api/srf';
 import AdminMobileRowCard from '../../shared/AdminMobileRowCard';
 import AdminBadge, { type AdminBadgeVariant } from '../../ui/AdminBadge';
-import { AdminEmptyState, AdminListToolbar, AdminModuleHeader, AdminTableEmptyState, AdminTableScroll } from '../../ui';
-import { adminTableBtn, adminTableBtnMobile, adminTableBtnMobilePrimary } from '../../ui/adminTableButtons';
+import { useAdminPagination } from '../../shared/hooks/useAdminPagination';
+import {
+  AdminListToolbar,
+  AdminModuleHeader,
+  AdminPagination,
+  AdminSearchEmptyState,
+  AdminTableEmptyState,
+  AdminTableScroll,
+} from '../../ui';
+import { AdminMobileTableSkeleton, AdminTableSkeletonRows } from '../../ui/AdminTableSkeleton';
+import { SrfEmptyState } from './SrfModuleStates';
+import { adminTableBtn, adminTableBtnMobile } from '../../ui/adminTableButtons';
 
 const statusBadgeVariant: Record<StudentFinancialRowStatus, AdminBadgeVariant> = {
   Paid: 'success',
@@ -24,17 +37,26 @@ const mad = (n: number) => `${n} MAD`;
 
 interface StudentFinancialStatusTableProps {
   rows: StudentFinancialTableRow[];
+  loading?: boolean;
   query: string;
   onQueryChange: (value: string) => void;
+  emptyTitleKey?: string;
+  emptyDescriptionKey?: string;
+  searchEmptyTitleKey?: string;
 }
 
 const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTableProps> = ({
   rows,
+  loading = false,
   query,
   onQueryChange,
+  emptyTitleKey = 'admin.empty.srfNoAccounts',
+  emptyDescriptionKey = 'admin.empty.srfNoAccountsDesc',
+  searchEmptyTitleKey = 'admin.empty.srfSearchFilters',
 }) => {
   const { t } = useTranslation();
-  const { tableColumn, emptyState, filterLabel } = useAdminCopy();
+  const navigate = useNavigate();
+  const { tableColumn, filterLabel } = useAdminCopy();
   const { srfPaymentStatus } = useAdminTableValues();
   const searchPh = useAdminSearchPlaceholder('srf');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -71,6 +93,24 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
     });
   }, [rows, query, statusFilter, srfPaymentStatus]);
 
+  const {
+    page,
+    setPage,
+    paginatedItems,
+    totalItems,
+    totalPages,
+    pageSize,
+    resetPage,
+  } = useAdminPagination(filteredRows);
+
+  useEffect(() => {
+    resetPage();
+  }, [query, statusFilter, resetPage]);
+
+  const isEmpty = !loading && rows.length === 0;
+  const isSearchEmpty = !loading && rows.length > 0 && filteredRows.length === 0;
+  const showPagination = !loading && !isEmpty && !isSearchEmpty;
+
   return (
     <div className="box-border flex w-full min-w-0 flex-col admin-module-panel text-start font-inter shadow-sm">
       <AdminModuleHeader
@@ -95,10 +135,18 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
       />
 
       <div className="space-y-3 px-4 pb-6 pt-3 sm:px-6 lg:hidden">
-        {filteredRows.length === 0 ? (
-          <AdminEmptyState title={emptyState('srfStudentsFilters')} />
+        {loading ? (
+          <AdminMobileTableSkeleton count={4} />
+        ) : isEmpty ? (
+          <SrfEmptyState titleKey={emptyTitleKey} descriptionKey={emptyDescriptionKey} />
+        ) : isSearchEmpty ? (
+          <AdminSearchEmptyState
+            variant="panel"
+            titleKey={searchEmptyTitleKey}
+            descriptionKey="admin.empty.tryAdjusting"
+          />
         ) : (
-          filteredRows.map((row) => (
+          paginatedItems.map((row) => (
             <AdminMobileRowCard
               key={row.id}
               title={row.studentName}
@@ -110,16 +158,17 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
               ]}
               actions={
                 <>
-                  <button type="button" className={adminTableBtnMobile}>
+                  <button
+                    type="button"
+                    className={adminTableBtnMobile}
+                    onClick={() => navigate(srfRoutes.student(row.id))}
+                  >
                     <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} />
                     {t('admin.common.actions.viewDetails')}
                   </button>
-                  {row.status === 'Pending Validation' && (
-                    <button type="button" className={adminTableBtnMobilePrimary}>
-                      <CircleCheck className="h-4 w-4 shrink-0" strokeWidth={2} />
-                      {t('admin.common.actions.validate')}
-                    </button>
-                  )}
+                  {row.status === 'Pending Validation' ? (
+                    <SrfValidateButton pendingProofId={row.pendingProofId} size="sm" />
+                  ) : null}
                 </>
               }
             />
@@ -140,10 +189,22 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
             </tr>
           </thead>
           <tbody>
-            {filteredRows.length === 0 ? (
-              <AdminTableEmptyState colSpan={6} title={emptyState('srfStudentsFilters')} />
+            {loading ? (
+              <AdminTableSkeletonRows colSpan={6} rows={8} />
+            ) : isEmpty ? (
+              <tr>
+                <td colSpan={6} className="admin-table-empty-cell p-0">
+                  <SrfEmptyState titleKey={emptyTitleKey} descriptionKey={emptyDescriptionKey} />
+                </td>
+              </tr>
+            ) : isSearchEmpty ? (
+              <AdminTableEmptyState
+                colSpan={6}
+                titleKey={searchEmptyTitleKey}
+                descriptionKey="admin.empty.tryAdjusting"
+              />
             ) : (
-              filteredRows.map((row) => (
+              paginatedItems.map((row) => (
                 <tr key={row.id}>
                   <td className="font-medium text-[var(--admin-text)]">{row.studentName}</td>
                   <td>{row.className}</td>
@@ -154,19 +215,17 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
                   </td>
                   <td className="text-end">
                     <div className="flex flex-wrap items-center justify-end gap-2">
-                      <button type="button" className={adminTableBtn}>
+                      <button
+                        type="button"
+                        className={adminTableBtn}
+                        onClick={() => navigate(srfRoutes.student(row.id))}
+                      >
                         <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} />
                         {t('admin.common.actions.viewDetails')}
                       </button>
-                      {row.status === 'Pending Validation' && (
-                        <button
-                          type="button"
-                          className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg admin-btn-primary px-3 py-2 font-inter text-sm font-medium leading-5 text-white transition-opacity hover:opacity-90"
-                        >
-                          <CircleCheck className="h-4 w-4 shrink-0" strokeWidth={2} />
-                          {t('admin.common.actions.validate')}
-                        </button>
-                      )}
+                      {row.status === 'Pending Validation' ? (
+                        <SrfValidateButton pendingProofId={row.pendingProofId} size="sm" />
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -175,8 +234,22 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
           </tbody>
         </AdminTableScroll>
       </div>
+
+      {showPagination ? (
+        <div className="px-4 pb-6 sm:px-6 lg:px-6">
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            itemLabel={t('admin.pagination.srfAccounts', { defaultValue: 'comptes' })}
+          />
+        </div>
+      ) : null}
     </div>
   );
 };
 
 export default StudentFinancialStatusTable;
+

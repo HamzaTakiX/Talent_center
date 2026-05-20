@@ -1,24 +1,17 @@
 import type { LucideIcon } from 'lucide-react';
+import type {
+  AdminAccountStatus,
+  AdminAdministratorRow,
+  AdminPermissionKey,
+  AdminRoleSlug,
+} from '../../api/types';
 
-export type PlatformAdminRoleVariant = 'stage' | 'finance' | 'documents' | 'communication';
+export type PlatformAdminRoleVariant = AdminRoleSlug;
 
-export type AdminPermissionKey =
-  | 'internshipManagement'
-  | 'financialOperations'
-  | 'documentValidation'
-  | 'announcementsNotifications';
+export type { AdminPermissionKey, AdminAdministratorRow, AdminAccountStatus, AdminRoleSlug };
 
-export interface PlatformAdministratorRow {
-  id: string;
-  name: string;
-  /** Legacy display string — prefer roleVariant + i18n. */
-  roleLabel: string;
-  roleVariant: PlatformAdminRoleVariant;
-  /** Legacy display string — prefer permissionKey + i18n. */
-  permissionLabel: string;
-  permissionKey: AdminPermissionKey;
-  status: 'Active';
-}
+/** Table row — API-backed administrator record. */
+export type PlatformAdministratorRow = AdminAdministratorRow;
 
 export type PlatformAdminKpiStatKey = 'total' | PlatformAdminRoleVariant;
 

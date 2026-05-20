@@ -8,40 +8,58 @@ import {
   AdminFormInput,
   AdminFormTextarea,
 } from '../../shared/forms/AdminFormPrimitives';
+import AdminFormPanelHeader from '../../shared/forms/AdminFormPanelHeader';
+import AdminFormSection from '../../shared/forms/AdminFormSection';
 import {
-  adminFormActionsClass,
-  adminFormBodyClass,
+  adminFormActionsFooterClass,
+  adminFormBodyScrollClass,
+  adminFormPanelFlexClass,
   adminFormBtnPrimaryClass,
   adminFormBtnSecondaryClass,
   adminFormGridClass,
-  adminFormHeaderClass,
-  adminFormPanelClass,
-  adminFormSubtitleClass,
-  adminFormTitleClass,
+  adminFormSectionsStackClass,
 } from '../../shared/forms/adminFormClasses';
 import { OFFER_TYPE_OPTIONS } from '../constants/createInternshipOffer';
 
 const FORM_PREFIX = 'admin.forms.createOffer';
 
+export interface InternshipOfferFormValues {
+  offerTitle: string;
+  company: string;
+  location: string;
+  offerType: string;
+  deadline: string;
+  duration: string;
+  description: string;
+  skills: string;
+  tags: string;
+}
+
 interface CreateInternshipOfferFormProps {
+  variant?: 'create' | 'edit';
+  initialValues?: Partial<InternshipOfferFormValues>;
+  hidePanelHeader?: boolean;
   onCancel: () => void;
   onPublish: () => void;
 }
 
 const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProps> = ({
+  variant = 'create',
+  initialValues,
+  hidePanelHeader = false,
   onCancel,
   onPublish,
 }) => {
   const { t } = useTranslation();
-  const [offerTitle, setOfferTitle] = useState('');
-  const [company, setCompany] = useState('');
-  const [location, setLocation] = useState('');
-  const [offerType, setOfferType] = useState('');
-  const [deadline, setDeadline] = useState('');
-  const [duration, setDuration] = useState('');
-  const [description, setDescription] = useState('');
-  const [skills, setSkills] = useState('');
-  const [tags, setTags] = useState('');
+  const [offerTitle, setOfferTitle] = useState(initialValues?.offerTitle ?? '');
+  const [company, setCompany] = useState(initialValues?.company ?? '');
+  const [location, setLocation] = useState(initialValues?.location ?? '');
+  const [offerType, setOfferType] = useState(initialValues?.offerType ?? '');
+  const [deadline, setDeadline] = useState(initialValues?.deadline ?? '');
+  const [duration, setDuration] = useState(initialValues?.duration ?? '');
+  const [description, setDescription] = useState(initialValues?.description ?? '');
+  const [skills, setSkills] = useState(initialValues?.skills ?? '');
+  const [tags, setTags] = useState(initialValues?.tags ?? '');
 
   const typeOptions = useMemo(
     () =>
@@ -57,17 +75,28 @@ const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProp
     onPublish();
   };
 
-  return (
-    <form className={adminFormPanelClass} onSubmit={handlePublish} noValidate>
-      <div className={adminFormBodyClass}>
-        <header className={adminFormHeaderClass}>
-          <h1 className={adminFormTitleClass}>{t(`${FORM_PREFIX}.title`)}</h1>
-          <p className={adminFormSubtitleClass}>{t(`${FORM_PREFIX}.subtitle`)}</p>
-        </header>
+  const formTitle =
+    variant === 'edit'
+      ? t(`${FORM_PREFIX}.editTitle`)
+      : t(`${FORM_PREFIX}.title`);
+  const formSubtitle =
+    variant === 'edit' ? t(`${FORM_PREFIX}.editSubtitle`) : t(`${FORM_PREFIX}.subtitle`);
 
+  return (
+    <form className={adminFormPanelFlexClass} onSubmit={handlePublish} noValidate>
+      {!hidePanelHeader && <AdminFormPanelHeader title={formTitle} subtitle={formSubtitle} />}
+
+      <div className={adminFormBodyScrollClass}>
+        <div className={adminFormSectionsStackClass}>
+        <AdminFormSection
+          sectionKey="offer"
+          title={t(`${FORM_PREFIX}.sections.details`)}
+          description={t(`${FORM_PREFIX}.sections.detailsHint`)}
+        >
         <div className={adminFormGridClass}>
-          <AdminFormField label={t(`${FORM_PREFIX}.fields.offerTitle`)} htmlFor="offer-title" required>
+          <AdminFormField fieldKey="offerTitle" label={t(`${FORM_PREFIX}.fields.offerTitle`)} htmlFor="offer-title" required>
             <AdminFormInput
+              fieldKey="offerTitle"
               id="offer-title"
               value={offerTitle}
               onChange={(e) => setOfferTitle(e.target.value)}
@@ -76,8 +105,9 @@ const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProp
             />
           </AdminFormField>
 
-          <AdminFormField label={t(`${FORM_PREFIX}.fields.company`)} htmlFor="company" required>
+          <AdminFormField fieldKey="company" label={t(`${FORM_PREFIX}.fields.company`)} htmlFor="company" required>
             <AdminFormInput
+              fieldKey="company"
               id="company"
               value={company}
               onChange={(e) => setCompany(e.target.value)}
@@ -87,8 +117,9 @@ const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProp
             />
           </AdminFormField>
 
-          <AdminFormField label={t(`${FORM_PREFIX}.fields.location`)} htmlFor="location" required>
+          <AdminFormField fieldKey="location" label={t(`${FORM_PREFIX}.fields.location`)} htmlFor="location" required>
             <AdminFormInput
+              fieldKey="location"
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
@@ -105,7 +136,7 @@ const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProp
             options={typeOptions}
           />
 
-          <AdminFormField label={t(`${FORM_PREFIX}.fields.deadline`)} htmlFor="deadline" required>
+          <AdminFormField fieldKey="deadline" label={t(`${FORM_PREFIX}.fields.deadline`)} htmlFor="deadline" required>
             <AdminFormDateInput
               id="deadline"
               value={deadline}
@@ -114,8 +145,9 @@ const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProp
             />
           </AdminFormField>
 
-          <AdminFormField label={t(`${FORM_PREFIX}.fields.duration`)} htmlFor="duration">
+          <AdminFormField fieldKey="duration" label={t(`${FORM_PREFIX}.fields.duration`)} htmlFor="duration">
             <AdminFormInput
+              fieldKey="duration"
               id="duration"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
@@ -123,62 +155,75 @@ const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProp
             />
           </AdminFormField>
         </div>
+        </AdminFormSection>
 
-        <AdminFormField
-          className="mt-6"
-          label={t(`${FORM_PREFIX}.fields.description`)}
-          htmlFor="description"
-          required
+        <AdminFormSection
+          sectionKey="content"
+          title={t(`${FORM_PREFIX}.sections.content`)}
+          description={t(`${FORM_PREFIX}.sections.contentHint`)}
         >
-          <AdminFormTextarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={t(`${FORM_PREFIX}.placeholders.description`)}
-            rows={4}
+          <AdminFormField
+            fieldKey="message"
+            label={t(`${FORM_PREFIX}.fields.description`)}
+            htmlFor="description"
             required
-          />
-        </AdminFormField>
+          >
+            <AdminFormTextarea
+              fieldKey="message"
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t(`${FORM_PREFIX}.placeholders.description`)}
+              rows={4}
+              required
+            />
+          </AdminFormField>
 
-        <AdminFormField
-          className="mt-6"
-          label={t(`${FORM_PREFIX}.fields.skills`)}
-          htmlFor="skills"
-          required
-          hint={t(`${FORM_PREFIX}.hints.skills`)}
-        >
-          <AdminFormInput
-            id="skills"
-            value={skills}
-            onChange={(e) => setSkills(e.target.value)}
-            placeholder={t(`${FORM_PREFIX}.placeholders.skills`)}
+          <AdminFormField
+            fieldKey="skills"
+            className="mt-6"
+            label={t(`${FORM_PREFIX}.fields.skills`)}
+            htmlFor="skills"
             required
-          />
-        </AdminFormField>
+            hint={t(`${FORM_PREFIX}.hints.skills`)}
+          >
+            <AdminFormInput
+              fieldKey="skills"
+              id="skills"
+              value={skills}
+              onChange={(e) => setSkills(e.target.value)}
+              placeholder={t(`${FORM_PREFIX}.placeholders.skills`)}
+              required
+            />
+          </AdminFormField>
 
-        <AdminFormField
-          className="mt-6"
-          label={t(`${FORM_PREFIX}.fields.tags`)}
-          htmlFor="tags"
-          hint={t(`${FORM_PREFIX}.hints.tags`)}
-        >
-          <AdminFormInput
-            id="tags"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder={t(`${FORM_PREFIX}.placeholders.tags`)}
-          />
-        </AdminFormField>
+          <AdminFormField
+            className="mt-6"
+            label={t(`${FORM_PREFIX}.fields.tags`)}
+            htmlFor="tags"
+            hint={t(`${FORM_PREFIX}.hints.tags`)}
+          >
+            <AdminFormInput
+              id="tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder={t(`${FORM_PREFIX}.placeholders.tags`)}
+            />
+          </AdminFormField>
+        </AdminFormSection>
+        </div>
       </div>
 
-      <div className={adminFormActionsClass}>
+      <div className={adminFormActionsFooterClass}>
         <button type="button" onClick={onCancel} className={adminFormBtnSecondaryClass}>
           <FileText className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-          {t(`${FORM_PREFIX}.actions.draft`)}
+          {variant === 'edit'
+            ? t(`${FORM_PREFIX}.actions.cancel`)
+            : t(`${FORM_PREFIX}.actions.draft`)}
         </button>
         <button type="submit" className={adminFormBtnPrimaryClass}>
           <CheckCircle className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-          {t(`${FORM_PREFIX}.actions.publish`)}
+          {variant === 'edit' ? t(`${FORM_PREFIX}.actions.save`) : t(`${FORM_PREFIX}.actions.publish`)}
         </button>
       </div>
     </form>

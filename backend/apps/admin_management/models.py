@@ -24,23 +24,151 @@ from apps.accounts_et_roles.models import (
 
 
 # ============================================================================
-# 1. ACADEMIC TAXONOMY — Filiere, ClassGroup
+# 1. ACADEMIC TAXONOMY — ESCA hierarchy
 # ============================================================================
 
 class Filiere(TimestampedModel):
-    """Academic program / major (e.g. ING-INFO, MASTER-DATA)."""
+    """Academic program / filière (PGE, LME, IBA, or a Master track)."""
+
+    class ProgramFamily(models.TextChoices):
+        PGE = 'PGE', _('Programme Grande École')
+        LME = 'LME', _('Licence en Management des Entreprises')
+        IBA = 'IBA', _('International Business Administration')
+        MASTER = 'MASTER', _('Master')
 
     code = models.SlugField(max_length=64, unique=True)
     name = models.CharField(max_length=255)
+    name_i18n = models.JSONField(default=dict, blank=True)
     description = models.TextField(blank=True, default='')
+    program_family = models.CharField(
+        max_length=16,
+        choices=ProgramFamily.choices,
+        blank=True,
+        default='',
+        db_index=True,
+    )
     department = models.CharField(max_length=128, blank=True, default='', db_index=True)
+    sort_order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
 
     class Meta(TimestampedModel.Meta):
-        ordering = ['code']
+        ordering = ['sort_order', 'code']
 
     def __str__(self) -> str:
         return f'Filiere<{self.code}>'
+
+
+class AcademicYear(TimestampedModel):
+    """Canonical academic year (e.g. 2025-2026)."""
+
+    code = models.CharField(max_length=16, unique=True, help_text=_('Format: 2025-2026'))
+    label = models.CharField(max_length=32, blank=True, default='')
+    start_year = models.PositiveSmallIntegerField()
+    end_year = models.PositiveSmallIntegerField()
+    is_current = models.BooleanField(default=False, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['-start_year']
+        verbose_name_plural = _('Academic years')
+
+    def __str__(self) -> str:
+        return self.code
+
+
+class AcademicLevel(TimestampedModel):
+    """Year / level within a program (e.g. PGE 4ème année)."""
+
+    filiere = models.ForeignKey(
+        Filiere,
+        on_delete=models.CASCADE,
+        related_name='academic_levels',
+    )
+    code = models.SlugField(max_length=64)
+    name = models.CharField(max_length=255)
+    name_i18n = models.JSONField(default=dict, blank=True)
+    year_number = models.PositiveSmallIntegerField(default=1)
+    has_sectors = models.BooleanField(
+        default=False,
+        help_text=_('Whether this level offers specialization tracks.'),
+    )
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True, db_index=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['filiere', 'sort_order', 'year_number']
+        constraints = [
+            UniqueConstraint(
+                fields=['filiere', 'code'],
+                name='uniq_academic_level_per_filiere',
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f'AcademicLevel<{self.filiere.code}:{self.code}>'
+
+
+class AcademicSector(TimestampedModel):
+    """Specialization / sector within a level (optional)."""
+
+    academic_level = models.ForeignKey(
+        AcademicLevel,
+        on_delete=models.CASCADE,
+        related_name='sectors',
+    )
+    code = models.SlugField(max_length=64)
+    name = models.CharField(max_length=255)
+    name_i18n = models.JSONField(default=dict, blank=True)
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True, db_index=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['academic_level', 'sort_order', 'code']
+        constraints = [
+            UniqueConstraint(
+                fields=['academic_level', 'code'],
+                name='uniq_sector_per_level',
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f'AcademicSector<{self.code}>'
+
+
+class InternshipType(TimestampedModel):
+    """Internship type for a level (and optionally a sector)."""
+
+    academic_level = models.ForeignKey(
+        AcademicLevel,
+        on_delete=models.CASCADE,
+        related_name='internship_types',
+    )
+    academic_sector = models.ForeignKey(
+        AcademicSector,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='internship_types',
+        help_text=_('When set, this type applies only to students in that sector.'),
+    )
+    code = models.SlugField(max_length=64)
+    name = models.CharField(max_length=255)
+    name_i18n = models.JSONField(default=dict, blank=True)
+    duration_hint = models.CharField(max_length=64, blank=True, default='')
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True, db_index=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['academic_level', 'sort_order', 'code']
+        constraints = [
+            UniqueConstraint(
+                fields=['academic_level', 'academic_sector', 'code'],
+                name='uniq_internship_type_per_level_sector',
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f'InternshipType<{self.code}>'
 
 
 class ClassGroup(TimestampedModel):
@@ -58,16 +186,37 @@ class ClassGroup(TimestampedModel):
         on_delete=models.PROTECT,
         related_name='class_groups',
     )
+    academic_level = models.ForeignKey(
+        AcademicLevel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='class_groups',
+    )
+    academic_sector = models.ForeignKey(
+        AcademicSector,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='class_groups',
+    )
+    academic_year_ref = models.ForeignKey(
+        AcademicYear,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='class_groups',
+    )
     academic_year = models.CharField(
         max_length=16,
         db_index=True,
         help_text=_('Format: 2025-2026'),
     )
     level = models.CharField(
-        max_length=16,
+        max_length=64,
         blank=True,
         default='',
-        help_text=_('e.g. L1, L2, M1, M2, ING-1'),
+        help_text=_('Denormalized level code for legacy filters.'),
     )
     student_capacity = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
@@ -120,12 +269,84 @@ class AdminProfile(TimestampedModel):
     )
     notes = models.TextField(blank=True, default='')
     is_active = models.BooleanField(default=True, db_index=True)
+    extra_permission_codes = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('Granular permission codes granted beyond role bundles.'),
+    )
+    scope_levels = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('Academic levels this admin may operate on (e.g. L1, M2).'),
+    )
+    scope_academic_years = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('Academic years this admin may operate on (e.g. 2025-2026).'),
+    )
+    scope_level_ids = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('AcademicLevel IDs this admin may operate on.'),
+    )
+    scope_sector_ids = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('AcademicSector IDs this admin may operate on.'),
+    )
 
     class Meta(TimestampedModel.Meta):
         ordering = ['-updated_at']
 
     def __str__(self) -> str:
         return f'AdminProfile<{self.user_id}:{self.admin_level}>'
+
+
+class SpecializationDomain(TimestampedModel):
+    """
+    Professional / technical expertise domain for encadrant–student matching.
+
+    Not an ESCA filière — used by the intelligent assignment engine.
+    """
+
+    class Category(models.TextChoices):
+        BUSINESS = 'BUSINESS', _('Business & management')
+        TECH = 'TECH', _('Technology & IT')
+
+    code = models.SlugField(max_length=64, unique=True)
+    name = models.CharField(max_length=255)
+    name_i18n = models.JSONField(default=dict, blank=True)
+    category = models.CharField(
+        max_length=16,
+        choices=Category.choices,
+        default=Category.BUSINESS,
+        db_index=True,
+    )
+    program_families = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('ESCA program families (PGE, LME, IBA, MASTER). Empty = all programs.'),
+    )
+    master_tracks = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('Optional master track codes (ASCM, MD, MRH, …).'),
+    )
+    keywords = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('Lowercase tokens for matching student skills and interests.'),
+    )
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True, db_index=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['category', 'sort_order', 'name']
+        verbose_name = _('Specialization domain')
+        verbose_name_plural = _('Specialization domains')
+
+    def __str__(self) -> str:
+        return f'SpecializationDomain<{self.code}>'
 
 
 class EncadrantProfile(TimestampedModel):
@@ -148,8 +369,29 @@ class EncadrantProfile(TimestampedModel):
     )
     max_concurrent_students = models.PositiveSmallIntegerField(default=0)
     availability_calendar_json = models.JSONField(default=dict, blank=True)
-    expertise_areas = models.JSONField(default=list, blank=True)
+    expertise_areas = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('Denormalized domain codes synced from specialization_domains M2M.'),
+    )
+    specialization_domains = models.ManyToManyField(
+        SpecializationDomain,
+        blank=True,
+        related_name='encadrants',
+        help_text=_('Professional expertise domains for intelligent assignment.'),
+    )
+    supervised_internship_types = models.ManyToManyField(
+        InternshipType,
+        blank=True,
+        related_name='supervising_encadrants',
+        help_text=_('Internship/stage types this encadrant is allowed to supervise.'),
+    )
     internal_notes = models.TextField(blank=True, default='')
+    scope_filiere_ids = models.JSONField(default=list, blank=True)
+    scope_level_ids = models.JSONField(default=list, blank=True)
+    scope_sector_ids = models.JSONField(default=list, blank=True)
+    scope_class_group_ids = models.JSONField(default=list, blank=True)
+    scope_academic_years = models.JSONField(default=list, blank=True)
     is_active = models.BooleanField(default=True, db_index=True)
 
     class Meta(TimestampedModel.Meta):
@@ -189,6 +431,20 @@ class AdminRoleAssignment(TimestampedModel):
     )
     class_group = models.ForeignKey(
         ClassGroup,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='role_assignments',
+    )
+    academic_level = models.ForeignKey(
+        AcademicLevel,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='role_assignments',
+    )
+    academic_sector = models.ForeignKey(
+        AcademicSector,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -248,6 +504,11 @@ class Assignment(TimestampedModel):
     academic_year). Use is_active=False to keep history.
     """
 
+    class AssignmentSource(models.TextChoices):
+        LEGACY = 'LEGACY', _('Legacy')
+        AUTO = 'AUTO', _('Automatic')
+        MANUAL = 'MANUAL', _('Manual')
+
     student_profile = models.ForeignKey(
         StudentProfile,
         on_delete=models.CASCADE,
@@ -277,6 +538,24 @@ class Assignment(TimestampedModel):
         blank=True,
         related_name='+',
     )
+    assignment_source = models.CharField(
+        max_length=16,
+        choices=AssignmentSource.choices,
+        default=AssignmentSource.LEGACY,
+        db_index=True,
+    )
+    match_score = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text=_('Smart assignment compatibility score (0–100).'),
+    )
+    is_locked = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text=_('When locked, automatic reassignment skips this row.'),
+    )
 
     class Meta(TimestampedModel.Meta):
         ordering = ['-academic_year', '-created_at']
@@ -291,6 +570,7 @@ class Assignment(TimestampedModel):
             models.Index(fields=['student_profile', 'academic_year']),
             models.Index(fields=['class_group', 'academic_year']),
             models.Index(fields=['encadrant_profile', 'is_active']),
+            models.Index(fields=['is_locked', 'is_active']),
         ]
 
     def __str__(self) -> str:

@@ -1,0 +1,196 @@
+/* Contextual enterprise chat — extends admin-dashboard chat tokens */
+
+.ctx-chat-enterprise-shell {
+  position: relative;
+}
+
+.ctx-chat-loading-bar {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--admin-brand);
+  background: linear-gradient(90deg, transparent, var(--admin-brand-muted), transparent);
+  animation: ctx-chat-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ctx-chat-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.ctx-chat-demo-banner {
+  background: var(--admin-brand-muted);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.ctx-chat-live-banner {
+  background: color-mix(in srgb, var(--admin-brand) 8%, transparent);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.ctx-chat-layout--with-panel .admin-chat-thread {
+  border-inline-end: none;
+}
+
+.ctx-chat-context-header {
+  flex-shrink: 0;
+}
+
+.ctx-chat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ctx-chat-badge--workflow {
+  background: rgba(91, 163, 255, 0.15);
+  color: #5ba3ff;
+}
+
+.ctx-chat-badge--channel {
+  background: rgba(34, 211, 238, 0.12);
+  color: #22d3ee;
+}
+
+.ctx-chat-badge--direct {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+}
+
+.ctx-chat-badge--announcement {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.ctx-chat-badge--meeting {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+
+.ctx-chat-urgency {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.ctx-chat-urgency--high {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.ctx-chat-urgency--critical {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.ctx-chat-workflow-status {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.375rem;
+}
+
+.ctx-chat-context-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: var(--admin-row-hover);
+  color: var(--admin-text-secondary);
+}
+
+.ctx-chat-panel-card {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-subtle);
+}
+
+.ctx-chat-file-chip {
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.5rem;
+  background: var(--admin-row-hover);
+  color: var(--admin-text);
+}
+
+.ctx-chat-smart-actions {
+  flex-shrink: 0;
+  background: var(--admin-bg-elevated);
+}
+
+.ctx-chat-smart-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-subtle);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.ctx-chat-smart-action-btn:hover:not(:disabled) {
+  color: var(--admin-brand);
+  border-color: var(--admin-brand);
+  background: var(--admin-brand-muted);
+}
+
+.ctx-chat-smart-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ctx-chat-list-urgency {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.ctx-chat-list-urgency--high {
+  background: #f59e0b;
+}
+
+.ctx-chat-list-urgency--critical {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+}
+
+.admin-chat-bubble--in.ctx-chat-bubble--event,
+.admin-chat-bubble--out.ctx-chat-bubble--event {
+  font-style: italic;
+  opacity: 0.9;
+  border: 1px dashed var(--admin-border);
+  background: var(--admin-bg-subtle) !important;
+  color: var(--admin-text-secondary) !important;
+}

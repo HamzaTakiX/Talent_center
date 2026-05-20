@@ -1,18 +1,16 @@
-import { FunctionComponent, useMemo, useState } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
 import { Search } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
-import type { AdministratorListFilter } from '../types/platformAdministrators';
-import { platformAdministratorsRows } from '../data/platformAdministratorsMock';
-import {
-  PLATFORM_ADMIN_PRIMARY_ACTION_BTN_SUBLIST_ALL_CLASS,
-  PLATFORM_ADMIN_PRIMARY_ACTION_BTN_SUBLIST_ROLE_CLASS
-} from '../constants/platformAdministratorsUi';
+import { adminAdministratorsApi } from '../../api/administrators';
+import type { AdminAdministratorRow, AdministratorListFilter } from '../types/platformAdministrators';
 import { AdminStatChartSection, type StatPageChartId } from '../../ui';
 import BackToAdminButton from './BackToAdminButton';
-import AdministratorSublistTable from './AdministratorSublistTable';
+import AdministratorsRoleDistributionChart from './AdministratorsRoleDistributionChart';
+import PlatformAdministratorsMainTable from './PlatformAdministratorsMainTable';
+import { useAdminPagination } from '../../shared/hooks/useAdminPagination';
 
 interface AdministratorFilteredListLayoutProps {
   filter: AdministratorListFilter;
@@ -27,11 +25,19 @@ const AdministratorFilteredListLayout: FunctionComponent<AdministratorFilteredLi
   const searchPh = useAdminSearchPlaceholder('admins');
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [apiRows, setApiRows] = useState<AdminAdministratorRow[]>([]);
+
+  useEffect(() => {
+    adminAdministratorsApi
+      .list({ role: filter === 'all' ? undefined : filter, page: 1, page_size: 500 })
+      .then((data) => setApiRows(data.items))
+      .catch(() => setApiRows([]));
+  }, [filter]);
 
   const baseRows = useMemo(() => {
-    if (filter === 'all') return platformAdministratorsRows;
-    return platformAdministratorsRows.filter((r) => r.roleVariant === filter);
-  }, [filter]);
+    if (filter === 'all') return apiRows;
+    return apiRows.filter((r) => r.role_slugs.includes(filter));
+  }, [filter, apiRows]);
 
   const totalCount = baseRows.length;
 
@@ -40,16 +46,20 @@ const AdministratorFilteredListLayout: FunctionComponent<AdministratorFilteredLi
     if (!q) return baseRows;
     return baseRows.filter(
       (r) =>
-        r.name.toLowerCase().includes(q) ||
-        r.roleLabel.toLowerCase().includes(q) ||
-        r.permissionLabel.toLowerCase().includes(q)
+        r.full_name.toLowerCase().includes(q) ||
+        r.email.toLowerCase().includes(q) ||
+        r.role_slugs.some((slug) => slug.includes(q)),
     );
   }, [query, baseRows]);
 
-  const primaryBtnClass =
-    filter === 'all'
-      ? PLATFORM_ADMIN_PRIMARY_ACTION_BTN_SUBLIST_ALL_CLASS
-      : PLATFORM_ADMIN_PRIMARY_ACTION_BTN_SUBLIST_ROLE_CLASS;
+  const {
+    page,
+    setPage,
+    paginatedItems,
+    totalItems,
+    totalPages,
+    pageSize,
+  } = useAdminPagination(filteredRows);
 
   const listTitle = t(`admin.pages.administrators.list.${filter}`);
 
@@ -58,7 +68,11 @@ const AdministratorFilteredListLayout: FunctionComponent<AdministratorFilteredLi
       <div className="mx-auto w-full min-w-0 max-w-[1600px] space-y-5 pb-8 pt-0 font-inter">
         <BackToAdminButton onClick={() => navigate('/admin/admins')} />
 
-        {chartId ? <AdminStatChartSection chartId={chartId} /> : null}
+        {chartId ? (
+          <AdminStatChartSection chartId={chartId}>
+            <AdministratorsRoleDistributionChart rows={apiRows} />
+          </AdminStatChartSection>
+        ) : null}
 
         <div className="box-border flex w-full min-w-0 flex-col gap-6 admin-module-panel text-left text-base text-[var(--admin-text)] shadow-sm">
           <div className="flex flex-col gap-4 px-3 pb-0 pt-6 sm:px-5 md:px-6">
@@ -86,7 +100,14 @@ const AdministratorFilteredListLayout: FunctionComponent<AdministratorFilteredLi
             </div>
           </div>
 
-          <AdministratorSublistTable rows={filteredRows} primaryActionButtonClassName={primaryBtnClass} />
+          <PlatformAdministratorsMainTable
+            rows={paginatedItems}
+            page={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setPage}
+          />
         </div>
       </div>
     </AdminLayout>

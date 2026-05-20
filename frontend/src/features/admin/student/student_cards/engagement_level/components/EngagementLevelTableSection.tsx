@@ -68,7 +68,7 @@ const EngagementLevelTableSection: FunctionComponent<EngagementLevelTableSection
 
     <div className="overflow-x-auto px-4 pb-6 pt-2 sm:px-6">
       <div className="text-left text-num-14 font-inter text-[var(--admin-text)]">
-        <table className="w-full min-w-[900px] border-collapse">
+        <table className="admin-table w-full min-w-[900px] border-collapse">
           <thead>
             <tr className="h-10 border-b border-solid border-[var(--admin-border)]">
               <th className="box-border py-[8.75px] pl-2 pr-4 text-left font-medium leading-num-20">Name</th>

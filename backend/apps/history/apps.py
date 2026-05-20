@@ -6,3 +6,6 @@ class HistoryConfig(AppConfig):
     name = 'apps.history'
     label = 'history'
     verbose_name = 'History / Audit Trail'
+
+    def ready(self) -> None:
+        import apps.history.signals  # noqa: F401

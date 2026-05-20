@@ -1,28 +1,37 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { AuthInitLoader } from '../components/AuthInitLoader';
+import { useAuth } from '../hooks/useAuth';
+import { getDefaultHomePath, normalizeRole } from '../utils/roleAuth';
 
 export const CallbackPage = () => {
-  const { error } = useAuth0();
+  const { error, isLoading: isAuth0Loading } = useAuth0();
+  const { user, isAuthReady, authError } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (error) {
       console.error('Auth0 callback error:', error);
-      // In a real app we might redirect to a dedicated error page,
-      // but going back to login with a clean state is a good fallback.
-      navigate('/login');
+      navigate('/login', { replace: true });
+      return;
     }
-  }, [error, navigate]);
+
+    if (!isAuth0Loading && isAuthReady) {
+      if (user) {
+        navigate(getDefaultHomePath(normalizeRole(user.role)), { replace: true });
+      } else {
+        navigate('/login', { replace: true, state: { authError } });
+      }
+    }
+  }, [error, isAuth0Loading, isAuthReady, user, authError, navigate]);
 
   return (
-    <div className="flex bg-gray-50 items-center justify-center min-h-screen">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-        <h2 className="text-xl font-semibold text-gray-800">Authenticating...</h2>
-        <p className="text-gray-500 mt-2">Please wait while we verify your credentials.</p>
-      </div>
-    </div>
+    <AuthInitLoader
+      message={t('auth.callback.title', { defaultValue: 'Connexion en cours…' })}
+    />
   );
 };
 

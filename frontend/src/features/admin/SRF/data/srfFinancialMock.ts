@@ -8,12 +8,10 @@ import {
   Award,
 } from 'lucide-react';
 
-export type StudentFinancialRowStatus =
-  | 'Paid'
-  | 'Unpaid'
-  | 'Partially Paid'
-  | 'Pending Validation'
-  | 'Late';
+export type {
+  StudentFinancialRowStatus,
+  StudentFinancialTableRow,
+} from '../../api/srf';
 
 export interface StudentFinancialSummaryStat {
   label: string;
@@ -75,14 +73,7 @@ export const studentFinancialSummaryStats: StudentFinancialSummaryStat[] = [
   },
 ];
 
-export interface StudentFinancialTableRow {
-  id: string;
-  studentName: string;
-  className: string;
-  amountDue: number;
-  amountPaid: number;
-  status: StudentFinancialRowStatus;
-}
+import type { StudentFinancialTableRow } from '../../api/srf';
 
 export const studentFinancialTableRows: StudentFinancialTableRow[] = [
   {

@@ -1,5 +1,7 @@
 import { FunctionComponent, MouseEvent } from 'react';
-import { Eye, FileText, Users, UserPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, FileText, Pencil, Users, UserPlus } from 'lucide-react';
+import { adminCrudRoutes } from '../../../../shared/navigation/adminCrudRoutes';
 import type { EncadrantRow } from '../../../data/encadrantsMockData';
 import AdminMobileRowCard from '../../../../shared/AdminMobileRowCard';
 import { AdminSearchEmptyState, AdminTableEmptyState, AdminTableScroll } from '../../../../ui';
@@ -13,7 +15,9 @@ interface EncadrantListTableContentProps {
 
 
 const EncadrantListTableContent: FunctionComponent<EncadrantListTableContentProps> = ({ rows }) => {
+  const navigate = useNavigate();
   const stopBtn = (e: MouseEvent) => e.stopPropagation();
+  const goEdit = (name: string) => navigate(adminCrudRoutes.encadrantEdit(name));
 
   return (
     <>
@@ -48,9 +52,13 @@ const EncadrantListTableContent: FunctionComponent<EncadrantListTableContentProp
               ]}
               actions={
                 <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap" onClick={stopBtn}>
-                  <button type="button" className={adminTableBtnMobile}>
+                  <button type="button" className={adminTableBtnMobile} onClick={() => goEdit(row.name)}>
                     <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                     <span>View Details</span>
+                  </button>
+                  <button type="button" className={adminTableBtnMobile} onClick={() => goEdit(row.name)}>
+                    <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                    <span>Edit</span>
                   </button>
                   <button type="button" className={adminTableBtnMobilePrimary}>
                     <UserPlus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
@@ -100,9 +108,13 @@ const EncadrantListTableContent: FunctionComponent<EncadrantListTableContentProp
                   </td>
                   <td className="py-3 pl-4 pr-2 text-right align-middle">
                     <div className="flex flex-wrap items-center justify-end gap-2" onClick={stopBtn}>
-                      <button type="button" className={adminTableBtn}>
+                      <button type="button" className={adminTableBtn} onClick={() => goEdit(row.name)}>
                         <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                         <span>View Details</span>
+                      </button>
+                      <button type="button" className={adminTableBtn} onClick={() => goEdit(row.name)}>
+                        <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                        <span>Edit</span>
                       </button>
                       <button type="button" className={adminTableBtnPrimary}>
                         <UserPlus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />

@@ -1,33 +1,31 @@
 import { RouterProvider } from 'react-router-dom';
+import type { AppState } from '@auth0/auth0-react';
 import { AuthProvider } from '../features/auth/context/AuthContext';
 import { router } from './router';
 import { Auth0ProviderWithNavigate } from '../features/auth/components/Auth0ProviderWithNavigate';
 import LanguageProvider from '../i18n/LanguageProvider';
+import { AuthThemeProvider } from '../features/auth/context/AuthThemeContext';
 import '../i18n/config';
 
-// This wrapper handles the redirection logically after Auth0 provides the state
-// We create a tiny component to use the router hook inside the router context if we needed to
-// But since Auth0Provider wraps the router, we actually need to pass the redirect callback.
-// A simpler approach is to use window.location.replace, but it's better to leverage the router history.
-// However, RouterProvider is down the tree. Let's redirect using window.location if needed, or
-// even better, let our generic CallbackPage handle it.
-// We'll pass a simple callback that uses window.history to avoid a full page reload if possible.
-const onRedirectCallback = (appState: any) => {
-  window.history.replaceState(
-    {},
-    document.title,
-    appState?.returnTo || window.location.pathname
-  );
+const onRedirectCallback = (appState?: AppState) => {
+  const returnTo = appState?.returnTo;
+  const target =
+    returnTo && returnTo !== '/callback' && returnTo !== '/login'
+      ? returnTo
+      : '/';
+  window.history.replaceState({}, document.title, target);
 };
 
 export const App = () => {
   return (
     <LanguageProvider>
-      <Auth0ProviderWithNavigate onRedirectCallback={onRedirectCallback}>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
-      </Auth0ProviderWithNavigate>
+      <AuthThemeProvider>
+        <Auth0ProviderWithNavigate onRedirectCallback={onRedirectCallback}>
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </Auth0ProviderWithNavigate>
+      </AuthThemeProvider>
     </LanguageProvider>
   );
 };

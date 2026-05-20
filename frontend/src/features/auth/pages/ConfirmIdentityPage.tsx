@@ -1,5 +1,6 @@
-import { FunctionComponent, useState, useEffect } from 'react';
+import { FunctionComponent, useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ShieldCheck, Edit3, AlertCircle, CheckCircle2, User, Calendar, BookOpen, GraduationCap, X } from 'lucide-react';
 import identityCover from '../assets/images/confirm-identity/istockphoto-2105100634-612x612.jpg';
@@ -10,8 +11,26 @@ import { AuthHeader } from '../components/AuthHeader';
 import { AuthFooter } from '../components/AuthFooter';
 import { ReadOnlyField } from '../components/ReadOnlyField';
 import AuthImagePanel from '../components/AuthImagePanel';
+import { AuthScreenShell, AuthFormColumn } from '../components/AuthScreenShell';
 import { FormInput } from '../components/FormInput';
 import { FormSelect } from '../components/FormSelect';
+import { academicReferenceApi } from '../../admin/api/reference';
+import type { AcademicYearOption, ClassGroupOption, FiliereOption } from '../../admin/api/types';
+import type { StudentProfile } from '../types';
+
+const profileFiliereId = (sp?: StudentProfile | null): number | null => {
+  if (!sp) return null;
+  if (sp.filiere_id != null) return sp.filiere_id;
+  if (typeof sp.filiere === 'number') return sp.filiere;
+  return null;
+};
+
+const profileClassGroupId = (sp?: StudentProfile | null): number | null => {
+  if (!sp) return null;
+  if (sp.class_group_id != null) return sp.class_group_id;
+  if (typeof sp.class_group === 'number') return sp.class_group;
+  return null;
+};
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -27,6 +46,8 @@ const itemVariants: Variants = {
 };
 
 const ConfirmIdentityPage: FunctionComponent = () => {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.split('-')[0] || 'fr';
   const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -42,39 +63,153 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   const [dateOfBirth, setDateOfBirth] = useState(profile.date_of_birth || '');
   const [programMajor, setProgramMajor] = useState(profile.program_major || '');
   const [currentClass, setCurrentClass] = useState(profile.current_class || '');
+  const [filiereId, setFiliereId] = useState('');
+  const [classGroupId, setClassGroupId] = useState('');
+  const [filieres, setFilieres] = useState<FiliereOption[]>([]);
+  const [classGroups, setClassGroups] = useState<ClassGroupOption[]>([]);
+  const [academicYearCode, setAcademicYearCode] = useState('2025-2026');
+  const [loadingFilieres, setLoadingFilieres] = useState(true);
+  const [loadingClasses, setLoadingClasses] = useState(false);
+  const [referenceError, setReferenceError] = useState(false);
 
-  // Predefined options
-  const programMajorOptions = [
-    { value: 'Programme Grande École – Marketing Digital & Communication', label: 'Programme Grande École – Marketing Digital & Communication' },
-    { value: 'Programme Grande École – Finance Audit & Contrôle', label: 'Programme Grande École – Finance Audit & Contrôle' },
-    { value: 'Programme Grande École – International Business', label: 'Programme Grande École – International Business' },
-    { value: 'Programme Grande École – Entrepreneuriat & Innovation', label: 'Programme Grande École – Entrepreneuriat & Innovation' },
-    { value: 'Programme Grande École – Ingénierie Financière', label: 'Programme Grande École – Ingénierie Financière' },
-    { value: 'Licence – E-Business & Marketing Digital', label: 'Licence – E-Business & Marketing Digital' },
-    { value: 'Licence – Achats & Logistique Internationale', label: 'Licence – Achats & Logistique Internationale' },
-    { value: 'Licence – Gestion Comptable & Financière', label: 'Licence – Gestion Comptable & Financière' },
-    { value: 'Licence – International Business Administration', label: 'Licence – International Business Administration' },
-    { value: 'Master Spécialisé – Management de Projets', label: 'Master Spécialisé – Management de Projets' },
-    { value: 'Master Spécialisé – Management des Ressources Humaines', label: 'Master Spécialisé – Management des Ressources Humaines' },
-    { value: 'Master Spécialisé – Management Financier', label: 'Master Spécialisé – Management Financier' },
-    { value: 'Master Spécialisé – Audit et Contrôle de Gestion', label: 'Master Spécialisé – Audit et Contrôle de Gestion' },
-    { value: 'Master Spécialisé – Marketing Digital', label: 'Master Spécialisé – Marketing Digital' },
-    { value: 'Master Spécialisé – Achats et Supply Chain Management', label: 'Master Spécialisé – Achats et Supply Chain Management' },
-    { value: 'Master Spécialisé – Ingénierie Juridique, Financière et Fiscale', label: 'Master Spécialisé – Ingénierie Juridique, Financière et Fiscale' }
-  ];
+  useEffect(() => {
+    setLoadingFilieres(true);
+    setReferenceError(false);
+    academicReferenceApi
+      .listFilieres({ lang, student_catalog: true })
+      .then((data) => {
+        setFilieres(data);
+        if (!data.length) setReferenceError(true);
+      })
+      .catch(() => {
+        setFilieres([]);
+        setReferenceError(true);
+      })
+      .finally(() => setLoadingFilieres(false));
+  }, [lang]);
 
-  const currentClassOptions = [
-    { value: '1st Year', label: '1st Year' },
-    { value: '2nd Year', label: '2nd Year' },
-    { value: '3rd Year', label: '3rd Year' },
-    { value: '4th Year', label: '4th Year' },
-    { value: '5th Year', label: '5th Year' },
-    { value: 'Licence 1', label: 'Licence 1' },
-    { value: 'Licence 2', label: 'Licence 2' },
-    { value: 'Licence 3', label: 'Licence 3' },
-    { value: 'Master 1', label: 'Master 1' },
-    { value: 'Master 2', label: 'Master 2' }
-  ];
+  useEffect(() => {
+    academicReferenceApi
+      .listAcademicYears({ structured: true, lang })
+      .then((data) => {
+        const years = data as AcademicYearOption[];
+        const fromProfile = (profile as { academic_year?: string }).academic_year?.trim();
+        if (fromProfile) {
+          setAcademicYearCode(fromProfile);
+          return;
+        }
+        const current = years.find((y) => y.is_current) ?? years[0];
+        if (current?.code) setAcademicYearCode(current.code);
+      })
+      .catch(() => undefined);
+  }, [lang, profile]);
+
+  // Déjà confirmé → ne pas réafficher cette étape
+  useEffect(() => {
+    const sp = user?.student_profile;
+    if (!sp?.identity_confirmed) return;
+    if (sp.profile_completed) {
+      navigate('/cv-editor', { replace: true });
+      return;
+    }
+    navigate('/complete-profile', { replace: true });
+  }, [user?.student_profile?.identity_confirmed, user?.student_profile?.profile_completed, navigate]);
+
+  useEffect(() => {
+    if (!filiereId) {
+      setClassGroups([]);
+      return;
+    }
+    setLoadingClasses(true);
+    academicReferenceApi
+      .listClassGroups({
+        filiere_id: Number(filiereId),
+        academic_year: academicYearCode,
+        lang,
+      })
+      .then(setClassGroups)
+      .catch(() => setClassGroups([]))
+      .finally(() => setLoadingClasses(false));
+  }, [filiereId, academicYearCode, lang]);
+
+  const syncAcademicIdsFromProfile = useCallback(
+    (sp?: StudentProfile | null) => {
+      if (!sp) return;
+      const fid = profileFiliereId(sp);
+      const cid = profileClassGroupId(sp);
+      if (fid) setFiliereId(String(fid));
+      if (cid) setClassGroupId(String(cid));
+    },
+    []
+  );
+
+  useEffect(() => {
+    syncAcademicIdsFromProfile(user?.student_profile);
+  }, [user?.student_profile, syncAcademicIdsFromProfile]);
+
+  useEffect(() => {
+    if (!filieres.length || !filiereId) return;
+    if (!filieres.some((f) => String(f.id) === filiereId)) {
+      setFiliereId('');
+      setClassGroupId('');
+    }
+  }, [filieres, filiereId]);
+
+  useEffect(() => {
+    if (!filieres.length || filiereId) return;
+    const sp = user?.student_profile;
+    const fid = profileFiliereId(sp);
+    if (fid) {
+      setFiliereId(String(fid));
+      return;
+    }
+    const major = sp?.program_major?.trim();
+    if (!major) return;
+    const match = filieres.find(
+      (f) =>
+        f.name === major ||
+        f.code === major ||
+        major.toLowerCase().includes(f.code.toLowerCase()) ||
+        major.toLowerCase().includes(f.name.toLowerCase())
+    );
+    if (match) setFiliereId(String(match.id));
+  }, [filieres, filiereId, user?.student_profile]);
+
+  useEffect(() => {
+    if (!classGroups.length || classGroupId) return;
+    const cid = profileClassGroupId(user?.student_profile);
+    if (cid) setClassGroupId(String(cid));
+  }, [classGroups, classGroupId, user?.student_profile]);
+
+  const programMajorOptions = filieres.map((f) => ({
+    value: String(f.id),
+    label: f.name,
+  }));
+  const currentClassOptions = classGroups.map((c) => ({
+    value: String(c.id),
+    label: c.code ? `${c.code} — ${c.name}` : c.name,
+  }));
+
+  const programMajorLabel = useMemo(() => {
+    if (filiereId) {
+      const f = filieres.find((x) => String(x.id) === filiereId);
+      if (f) return f.name;
+    }
+    return profile.program_major || t('auth.confirmIdentity.placeholders.emptyValue');
+  }, [filiereId, filieres, profile.program_major, t]);
+
+  const currentClassLabel = useMemo(() => {
+    if (classGroupId) {
+      const c = classGroups.find((x) => String(x.id) === classGroupId);
+      if (c) return c.code ? `${c.code} — ${c.name}` : c.name;
+    }
+    return profile.current_class || t('auth.confirmIdentity.placeholders.emptyValue');
+  }, [classGroupId, classGroups, profile.current_class, t]);
+
+  const onFiliereChange = (next: string) => {
+    setFiliereId(next);
+    setClassGroupId('');
+  };
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -84,7 +219,6 @@ const ConfirmIdentityPage: FunctionComponent = () => {
     return () => clearTimeout(timeout);
   }, [successMsg]);
 
-  // Sync form state with user profile when it updates (e.g., after API call)
   useEffect(() => {
     const studentProfile = user?.student_profile;
     if (studentProfile) {
@@ -93,14 +227,15 @@ const ConfirmIdentityPage: FunctionComponent = () => {
       setDateOfBirth(studentProfile.date_of_birth || '');
       setProgramMajor(studentProfile.program_major || '');
       setCurrentClass(studentProfile.current_class || '');
+      syncAcademicIdsFromProfile(studentProfile);
+      const year = studentProfile.academic_year?.trim();
+      if (year) setAcademicYearCode(year);
     }
-  }, [user?.student_profile]);
+  }, [user?.student_profile, syncAcademicIdsFromProfile]);
 
-  // Comprehensive error message handler
   const getErrorMessage = (err: any): string => {
-    // No response = network error (backend not running)
     if (!err.response) {
-      return 'Unable to connect to the server. Please check your internet connection or try again later.';
+      return t('auth.confirmIdentity.errors.network');
     }
 
     const status = err.response.status;
@@ -110,54 +245,43 @@ const ConfirmIdentityPage: FunctionComponent = () => {
 
     switch (status) {
       case 400:
-        // Bad request - validation errors
         if (errors) {
           const fieldErrors = Object.entries(errors)
-            .map(([field, msgs]) => {
-              const messages = Array.isArray(msgs) ? msgs.join(', ') : msgs;
-              return `${messages}`;
-            })
+            .map(([, msgs]) => `${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
             .join('; ');
-          return fieldErrors || 'Please check your input and try again.';
+          return fieldErrors || t('auth.confirmIdentity.errors.validation');
         }
-        return backendMessage || 'Invalid input. Please verify all fields are filled correctly.';
+        return backendMessage || t('auth.confirmIdentity.errors.invalidInput');
 
       case 401:
-        // Unauthorized - session expired or not authenticated
-        return 'Your session has expired. Please log in again.';
+        return t('auth.confirmIdentity.errors.sessionExpired');
 
       case 403:
-        // Forbidden - not allowed to perform this action
         if (backendMessage.toLowerCase().includes('identity')) {
-          return 'Identity already confirmed. You cannot modify this information.';
+          return t('auth.confirmIdentity.errors.identityAlreadyConfirmed');
         }
-        return 'You do not have permission to perform this action.';
+        return t('auth.confirmIdentity.errors.forbidden');
 
       case 404:
-        // Not found - user profile not found
-        return 'User profile not found. Please contact support.';
+        return t('auth.confirmIdentity.errors.notFound');
 
       case 409:
-        // Conflict - data conflict (e.g., duplicate entry)
-        return 'This information conflicts with existing records. Please verify your details.';
+        return t('auth.confirmIdentity.errors.conflict');
 
       case 422:
-        // Unprocessable entity - validation failed
-        return backendMessage || 'Unable to process your request. Please check your information.';
+        return backendMessage || t('auth.confirmIdentity.errors.unprocessable');
 
       case 429:
-        // Rate limited
-        return 'Too many requests. Please wait a moment before trying again.';
+        return t('auth.confirmIdentity.errors.rateLimit');
 
       case 500:
       case 502:
       case 503:
       case 504:
-        // Server errors
-        return 'Something went wrong on our end. Please try again later or contact support if the problem persists.';
+        return t('auth.confirmIdentity.errors.server');
 
       default:
-        return backendMessage || 'An unexpected error occurred. Please try again.';
+        return backendMessage || t('auth.confirmIdentity.errors.unexpected');
     }
   };
 
@@ -170,28 +294,42 @@ const ConfirmIdentityPage: FunctionComponent = () => {
       // Frontend validation
       if (isEditing) {
         if (!firstName.trim()) {
-          setError('First name is required.');
+          setError(t('auth.confirmIdentity.errors.firstNameRequired'));
           setLoading(false);
           return;
         }
         if (!lastName.trim()) {
-          setError('Last name is required.');
+          setError(t('auth.confirmIdentity.errors.lastNameRequired'));
           setLoading(false);
           return;
         }
         if (!dateOfBirth) {
-          setError('Date of birth is required.');
+          setError(t('auth.confirmIdentity.errors.dateOfBirthRequired'));
+          setLoading(false);
+          return;
+        }
+        if (!filiereId) {
+          setError(t('auth.confirmIdentity.errors.programRequired'));
+          setLoading(false);
+          return;
+        }
+        if (!classGroupId) {
+          setError(t('auth.confirmIdentity.errors.classRequired'));
           setLoading(false);
           return;
         }
       }
       
+      const selectedFiliere = filieres.find((f) => String(f.id) === filiereId);
+      const selectedClass = classGroups.find((c) => String(c.id) === classGroupId);
       const payload = {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         date_of_birth: dateOfBirth,
-        program_major: programMajor,
-        current_class: currentClass
+        program_major: selectedFiliere?.name || programMajor,
+        current_class: selectedClass?.name || currentClass,
+        filiere_id: filiereId ? Number(filiereId) : null,
+        class_group_id: classGroupId ? Number(classGroupId) : null,
       };
 
       const updatedUser = await authApi.confirmIdentity(payload);
@@ -201,7 +339,7 @@ const ConfirmIdentityPage: FunctionComponent = () => {
       markIdentityJustConfirmed();
       
       setIsEditing(false);
-      setSuccessMsg('Your information has been successfully verified and saved.');
+      setSuccessMsg(t('auth.confirmIdentity.success'));
       
       // Only redirect if explicitly requested (Confirm button, not Save)
       if (shouldRedirect) {
@@ -223,6 +361,7 @@ const ConfirmIdentityPage: FunctionComponent = () => {
       setDateOfBirth(profile.date_of_birth || '');
       setProgramMajor(profile.program_major || '');
       setCurrentClass(profile.current_class || '');
+      syncAcademicIdsFromProfile(user?.student_profile);
     }
     setIsEditing(!isEditing);
     setError('');
@@ -230,12 +369,10 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   };
 
   return (
-    <div className="w-full min-h-screen overflow-x-hidden lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row bg-white text-left font-inter text-sm text-darkslategray">
-      
-      {/* Form Container */}
-      <div className="w-full flex-1 lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center px-5 sm:px-8 pb-6 lg:p-2 box-border relative">
-        <motion.div 
-          className="w-full max-w-[500px] flex flex-col relative m-auto py-4 lg:py-1"
+    <AuthScreenShell>
+      <AuthFormColumn>
+        <motion.div
+          className="w-full flex flex-col"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -246,10 +383,18 @@ const ConfirmIdentityPage: FunctionComponent = () => {
 
           <motion.div variants={itemVariants} className="w-full flex flex-col gap-1 mb-6 mt-2">
             <div className="flex justify-between items-center text-gray">
-              <h1 className="text-lg font-bold m-0 tracking-tight">Confirm Your Identity</h1>
+              <h1 className="auth-text-heading text-lg font-bold m-0 tracking-tight">{t('auth.confirmIdentity.title')}</h1>
             </div>
-            <p className="text-[13px] text-dimgray m-0 leading-tight">Please verify your academic information before accessing the platform.</p>
+            <p className="auth-text-muted text-[13px] m-0 leading-tight">{t('auth.confirmIdentity.subtitle')}</p>
           </motion.div>
+
+          {referenceError && (
+            <motion.div variants={itemVariants} className="w-full mb-4">
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl text-sm font-medium">
+                {t('auth.confirmIdentity.errors.referenceLoadFailed')}
+              </div>
+            </motion.div>
+          )}
 
           {/* Messages Animation */}
           <AnimatePresence mode="wait">
@@ -300,23 +445,37 @@ const ConfirmIdentityPage: FunctionComponent = () => {
                   className="flex flex-col gap-4"
                 >
                   <div className="flex gap-3">
-                    <FormInput label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} Icon={User} />
-                    <FormInput label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                    <FormInput label={t('auth.confirmIdentity.fields.firstName')} value={firstName} onChange={(e) => setFirstName(e.target.value)} Icon={User} />
+                    <FormInput label={t('auth.confirmIdentity.fields.lastName')} value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   </div>
-                  <FormInput label="Date of Birth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} Icon={Calendar} />
+                  <FormInput label={t('auth.confirmIdentity.fields.dateOfBirth')} type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} Icon={Calendar} />
                   <FormSelect 
-                    label="Program / Major" 
-                    value={programMajor} 
-                    onChange={setProgramMajor} 
+                    label={t('auth.confirmIdentity.fields.programMajor')} 
+                    value={filiereId} 
+                    onChange={onFiliereChange} 
                     Icon={BookOpen} 
                     options={programMajorOptions}
+                    placeholder={
+                      loadingFilieres
+                        ? t('auth.confirmIdentity.placeholders.loading')
+                        : t('auth.confirmIdentity.placeholders.selectOption')
+                    }
+                    disabled={loadingFilieres || !programMajorOptions.length}
                   />
                   <FormSelect 
-                    label="Current Class" 
-                    value={currentClass} 
-                    onChange={setCurrentClass} 
+                    label={t('auth.confirmIdentity.fields.currentClass')} 
+                    value={classGroupId} 
+                    onChange={setClassGroupId} 
                     Icon={GraduationCap} 
                     options={currentClassOptions}
+                    placeholder={
+                      !filiereId
+                        ? t('auth.confirmIdentity.placeholders.selectProgramFirst')
+                        : loadingClasses
+                          ? t('auth.confirmIdentity.placeholders.loading')
+                          : t('auth.confirmIdentity.placeholders.selectOption')
+                    }
+                    disabled={!filiereId || loadingClasses || !currentClassOptions.length}
                   />
                 </motion.div>
               ) : (
@@ -328,11 +487,11 @@ const ConfirmIdentityPage: FunctionComponent = () => {
                   transition={{ duration: 0.3 }}
                   className="flex flex-col gap-2.5"
                 >
-                  <ReadOnlyField label="First Name" value={profile.first_name || '...'} />
-                  <ReadOnlyField label="Last Name" value={profile.last_name || '...'} />
-                  <ReadOnlyField label="Date of Birth" value={profile.date_of_birth || '...'} />
-                  <ReadOnlyField label="Program / Major" value={profile.program_major || '...'} />
-                  <ReadOnlyField label="Current Class" value={profile.current_class || '...'} />
+                  <ReadOnlyField label={t('auth.confirmIdentity.fields.firstName')} value={profile.first_name || t('auth.confirmIdentity.placeholders.emptyValue')} />
+                  <ReadOnlyField label={t('auth.confirmIdentity.fields.lastName')} value={profile.last_name || t('auth.confirmIdentity.placeholders.emptyValue')} />
+                  <ReadOnlyField label={t('auth.confirmIdentity.fields.dateOfBirth')} value={profile.date_of_birth || t('auth.confirmIdentity.placeholders.emptyValue')} />
+                  <ReadOnlyField label={t('auth.confirmIdentity.fields.programMajor')} value={programMajorLabel} />
+                  <ReadOnlyField label={t('auth.confirmIdentity.fields.currentClass')} value={currentClassLabel} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -359,7 +518,7 @@ const ConfirmIdentityPage: FunctionComponent = () => {
                   ) : (
                     <CheckCircle2 className="w-[18px] h-[18px] opacity-90" strokeWidth={2.5} />
                   )}
-                  <span className="font-semibold text-[15px]">{loading ? 'Saving...' : 'Save Information'}</span>
+                  <span className="font-semibold text-[15px]">{loading ? t('auth.confirmIdentity.actions.saving') : t('auth.confirmIdentity.actions.save')}</span>
                 </div>
               </motion.button>
             ) : (
@@ -382,7 +541,7 @@ const ConfirmIdentityPage: FunctionComponent = () => {
                   ) : (
                     <ShieldCheck className="w-[18px] h-[18px] opacity-90" strokeWidth={2.5}/>
                   )}
-                  <span className="font-semibold text-[15px]">{loading ? 'Processing...' : 'Confirm Information'}</span>
+                  <span className="font-semibold text-[15px]">{loading ? t('auth.confirmIdentity.actions.processing') : t('auth.confirmIdentity.actions.confirm')}</span>
                 </div>
               </motion.button>
             )}
@@ -396,12 +555,12 @@ const ConfirmIdentityPage: FunctionComponent = () => {
               {isEditing ? (
                 <>
                   <X className="w-4 h-4 text-slategray-200" />
-                  <span className="font-semibold text-[14px]">Cancel Edit</span>
+                  <span className="font-semibold text-[14px]">{t('auth.confirmIdentity.actions.cancelEdit')}</span>
                 </>
               ) : (
                 <>
                   <Edit3 className="w-4 h-4 text-slategray-200 group-hover:text-mediumslateblue transition-colors" />
-                  <span className="font-semibold text-[14px] group-hover:text-mediumslateblue transition-colors">Edit Information</span>
+                  <span className="font-semibold text-[14px] group-hover:text-mediumslateblue transition-colors">{t('auth.confirmIdentity.actions.edit')}</span>
                 </>
               )}
             </motion.button>
@@ -411,17 +570,16 @@ const ConfirmIdentityPage: FunctionComponent = () => {
             <AuthFooter />
           </motion.div>
         </motion.div>
-      </div>
+      </AuthFormColumn>
 
       <AuthImagePanel
         imageSrc={identityCover}
-        imageAlt="Identity Cover"
-        badge="Identity Verification"
-        title="Verify Your Student Profile"
-        subtitle="Confirm your personal and academic information to continue utilizing the ESCA platform network."
+        imageAlt={t('auth.confirmIdentity.panelCoverAlt')}
+        badge={t('auth.confirmIdentity.panelBadge')}
+        title={t('auth.confirmIdentity.panelTitle')}
+        subtitle={t('auth.confirmIdentity.panelSubtitle')}
       />
-
-    </div>
+    </AuthScreenShell>
   );
 };
 export default ConfirmIdentityPage;

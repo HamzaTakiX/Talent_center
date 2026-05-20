@@ -1,100 +1,120 @@
-import { FunctionComponent, useCallback, useMemo, useRef, useState } from 'react';
+import { FunctionComponent, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminModulePageShell from '../../ui/AdminModulePageShell';
-import { announcementsMockData } from '../data/announcementsMockData';
-import { AnnouncementRow } from '../types';
-import AnnouncementsStats from '../components/AnnouncementsStats';
-import AnnouncementsTable from '../components/AnnouncementsTable';
-import type { AnnouncementTypeFilter } from '../components/AnnouncementsToolbar';
+import AdminModulePageSkeleton from '../../ui/AdminModulePageSkeleton';
+import AnnouncementsOverviewHeader from '../components/AnnouncementsOverviewHeader';
+import AnnouncementsKpiStrip from '../components/AnnouncementsKpiStrip';
+import AnnouncementsAnalyticsPanel from '../components/AnnouncementsAnalyticsPanel';
+import AnnouncementsInsightsPanel from '../components/AnnouncementsInsightsPanel';
+import AnnouncementsFiltersBar, { type AnnListFilters } from '../components/AnnouncementsFiltersBar';
+import AnnouncementsFeedSection from '../components/AnnouncementsFeedSection';
+import AnnouncementsNavStrip from '../components/AnnouncementsNavStrip';
+import { useAnnouncementsDashboard, useAnnouncementsList } from '../hooks/useAnnouncements';
+import type { AnnouncementListParams } from '../types/announcement';
+import '../styles/admin-announcements.css';
 
 const AnnouncementsPage: FunctionComponent = () => {
   const navigate = useNavigate();
-  const tableSectionRef = useRef<HTMLDivElement>(null);
-  const [query, setQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<AnnouncementTypeFilter>('all');
-  const [rows, setRows] = useState<AnnouncementRow[]>(() => [...announcementsMockData]);
+  const [filters, setFilters] = useState<AnnListFilters>({});
+  const { data: dashboard, loading: dashLoading } = useAnnouncementsDashboard();
 
-  const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return rows.filter((row) => {
-      const matchType = typeFilter === 'all' || row.type === typeFilter;
-      if (!q) return matchType;
-      const matchQuery =
-        row.title.toLowerCase().includes(q) ||
-        row.type.toLowerCase().includes(q) ||
-        row.targetAudience.toLowerCase().includes(q) ||
-        row.date.includes(q);
-      return matchType && matchQuery;
-    });
-  }, [query, rows, typeFilter]);
-
-  const scrollToTable = useCallback(() => {
-    tableSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
-
-  const handleStatCardClick = useCallback(
-    (statKey: string) => {
-      if (statKey === 'total' || statKey === 'admin.kpi.announcements.total') {
-        navigate('/admin/announcements/all');
-        return;
-      }
-      if (statKey === 'active' || statKey === 'admin.kpi.announcements.active') {
-        navigate('/admin/announcements/active');
-        return;
-      }
-      scrollToTable();
-      if (statKey === 'admin.kpi.announcements.engagementRate' || statKey === 'Engagement Rate') {
-        setQuery('');
-        setTypeFilter('Interview');
-        return;
-      }
-      if (statKey === 'admin.kpi.announcements.avgReach' || statKey === 'Avg Reach') {
-        setQuery('');
-        setTypeFilter('Info');
-      }
-    },
-    [navigate, scrollToTable]
+  const listParams = useMemo<AnnouncementListParams>(
+    () => ({
+      page: 1,
+      page_size: 12,
+      search: filters.search || undefined,
+      status: filters.status,
+      priority: filters.priority,
+      type: filters.type,
+      internship_only: filters.internship_only,
+    }),
+    [filters],
   );
 
-  const handleCreate = useCallback(() => {
-    navigate('/admin/announcements/create');
-  }, [navigate]);
+  const { items, total, loading: listLoading } = useAnnouncementsList(listParams);
 
-  const handleView = useCallback(
-    (row: AnnouncementRow) => {
-      navigate(`/admin/announcements/${row.id}`);
-    },
-    [navigate]
+  const hasSearch = Boolean(
+    filters.search?.trim() ||
+      filters.status ||
+      filters.priority ||
+      filters.type ||
+      filters.internship_only,
   );
 
-  const handleEdit = useCallback(
-    (row: AnnouncementRow) => {
-      navigate(`/admin/announcements/${row.id}/edit`);
+  const handleKpiNavigate = useCallback(
+    (key: string) => {
+      if (key === 'internships') {
+        navigate('/admin/announcements/internships');
+        return;
+      }
+      if (key === 'drafts') setFilters((f) => ({ ...f, status: 'DRAFT' }));
+      else if (key === 'scheduled') setFilters((f) => ({ ...f, status: 'SCHEDULED' }));
+      else if (key === 'urgent') setFilters((f) => ({ ...f, priority: 'URGENT' }));
+      else if (key === 'active') setFilters((f) => ({ ...f, status: 'PUBLISHED' }));
+      else navigate('/admin/announcements/all');
     },
-    [navigate]
+    [navigate],
   );
 
-  const handleDelete = useCallback((row: AnnouncementRow) => {
-    if (!window.confirm(`Supprimer l'annonce « ${row.title} » ?`)) return;
-    setRows((prev) => prev.filter((r) => r.id !== row.id));
-  }, []);
+  if (dashLoading && !dashboard) {
+    return (
+      <AdminModulePageShell width="wide">
+        <AdminModulePageSkeleton />
+      </AdminModulePageShell>
+    );
+  }
+
+  const summary = dashboard?.summary;
+  const engagement = dashboard?.engagement ?? {
+    views: 0,
+    clicks: 0,
+    saves: 0,
+    engagementRate: 0,
+    clickThroughRate: 0,
+  };
 
   return (
     <AdminModulePageShell width="wide">
-      <div data-admin-search-id="announcements-stats">
-        <AnnouncementsStats onStatCardClick={handleStatCardClick} />
-      </div>
-      <div ref={tableSectionRef} data-admin-search-id="announcements-table">
-        <AnnouncementsTable
-          rows={filteredRows}
-          query={query}
-          onQueryChange={setQuery}
-          typeFilter={typeFilter}
-          onTypeFilterChange={setTypeFilter}
-          onCreate={handleCreate}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+      <div className="admin-ann-workspace" data-admin-search-id="announcements-hub">
+        <AnnouncementsOverviewHeader
+          summary={summary ?? null}
+          engagement={engagement}
+          loading={dashLoading}
+        />
+
+        <AnnouncementsKpiStrip
+          summary={summary ?? null}
+          engagement={engagement}
+          loading={dashLoading}
+          onNavigate={handleKpiNavigate}
+        />
+
+        <AnnouncementsNavStrip />
+
+        <section className="admin-ann-ops-section" aria-label="Analytics overview">
+        <div className="admin-ann-ops-grid">
+          {dashboard ? (
+            <div className="admin-ann-ops-cell">
+              <AnnouncementsAnalyticsPanel
+                typeDistribution={dashboard.typeDistribution}
+                engagement={engagement}
+                loading={dashLoading}
+              />
+            </div>
+          ) : null}
+          <div className="admin-ann-ops-cell">
+            <AnnouncementsInsightsPanel insights={dashboard?.insights ?? []} />
+          </div>
+        </div>
+        </section>
+
+        <AnnouncementsFiltersBar filters={filters} onChange={setFilters} />
+
+        <AnnouncementsFeedSection
+          items={items}
+          loading={listLoading}
+          total={total}
+          hasSearch={hasSearch}
         />
       </div>
     </AdminModulePageShell>

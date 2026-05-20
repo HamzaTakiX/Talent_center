@@ -1,12 +1,6 @@
 import { FunctionComponent } from 'react';
-import HistoryCardPageShell from '../../../components/HistoryCardPageShell';
-import { AdminStatChartSection } from '../../../../ui';
-import SrfStatsGrid from '../components/SrfStatsGrid';
-import SrfTimelineList from '../components/SrfTimelineList';
+import ModuleHistoryCardPage from '../../../pages/ModuleHistoryCardPage';
 
-const SrfHistoryCardPage: FunctionComponent = () => (
-  <HistoryCardPageShell stats={<SrfStatsGrid />} chart={<AdminStatChartSection chartId="history-srf" />}
-      timeline={<SrfTimelineList />} />
-);
+const SrfHistoryCardPage: FunctionComponent = () => <ModuleHistoryCardPage kpiKey="srf" />;
 
 export default SrfHistoryCardPage;

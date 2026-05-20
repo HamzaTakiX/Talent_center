@@ -1,10 +1,14 @@
 import { FunctionComponent, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { useAdminCopy, useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
 import { internshipOffersMockData } from '../data/internshipOffersMockData';
 import InternshipOfferActions from './InternshipOfferActions';
+import InternshipOfferDetailModal from './InternshipOfferDetailModal';
+import type { InternshipOffer } from '../types';
+import { adminCrudRoutes } from '../../shared/navigation/adminCrudRoutes';
 import InternshipOffersToolbar, { type InternshipOfferStatusFilter } from './InternshipOffersToolbar';
 import AdminMobileRowCard from '../../shared/AdminMobileRowCard';
 import AdminBadge from '../../ui/AdminBadge';
@@ -20,6 +24,7 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'
 };
 
 const InternshipOffersTable: FunctionComponent = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { tableColumn, emptyState, filterLabel } = useAdminCopy();
   const { offerStatus } = useAdminTableValues();
@@ -27,6 +32,7 @@ const InternshipOffersTable: FunctionComponent = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<InternshipOfferStatusFilter>('all');
   const [companyFilter, setCompanyFilter] = useState('all');
+  const [viewOffer, setViewOffer] = useState<InternshipOffer | null>(null);
 
   const companyOptions = useMemo(() => {
     const companies = [...new Set(internshipOffersMockData.map((o) => o.company))].sort();
@@ -51,6 +57,16 @@ const InternshipOffersTable: FunctionComponent = () => {
   }, [search, statusFilter, companyFilter]);
 
   return (
+    <>
+      <InternshipOfferDetailModal
+        open={viewOffer != null}
+        offer={viewOffer}
+        onClose={() => setViewOffer(null)}
+        onEdit={(id) => {
+          setViewOffer(null);
+          navigate(adminCrudRoutes.internshipOfferEdit(id));
+        }}
+      />
     <AdminModulePanel
       header={
         <AdminModuleHeader
@@ -97,7 +113,7 @@ const InternshipOffersTable: FunctionComponent = () => {
               ]}
               actions={
                 <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end [&_button]:w-full sm:[&_button]:w-auto">
-                  <InternshipOfferActions offer={offer} />
+                  <InternshipOfferActions offer={offer} onView={setViewOffer} />
                 </div>
               }
             />
@@ -136,7 +152,7 @@ const InternshipOffersTable: FunctionComponent = () => {
                   </td>
                   <td>{offer.deadline}</td>
                   <td className="text-right">
-                    <InternshipOfferActions offer={offer} />
+                    <InternshipOfferActions offer={offer} onView={setViewOffer} />
                   </td>
                 </tr>
               ))
@@ -145,6 +161,7 @@ const InternshipOffersTable: FunctionComponent = () => {
         </AdminTableScroll>
       </div>
     </AdminModulePanel>
+    </>
   );
 };
 

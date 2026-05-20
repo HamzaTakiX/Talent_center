@@ -45,6 +45,16 @@ export const STUDENT_ACCOUNT_STATUS_BADGE: Record<string, AdminBadgeVariant> = {
   Inactive: 'neutral',
 };
 
+export const PLATFORM_ACCOUNT_STATUS_BADGE: Record<string, AdminBadgeVariant> = {
+  PENDING: 'warning',
+  AUTHORIZED: 'info',
+  ACTIVE: 'success',
+  SUSPENDED: 'warning',
+  BLOCKED: 'danger',
+  ARCHIVED: 'neutral',
+  LOCKED: 'danger',
+};
+
 export const ENGAGEMENT_BAND_BADGE: Record<string, AdminBadgeVariant> = {
   High: 'success',
   Medium: 'warning',
@@ -52,10 +62,13 @@ export const ENGAGEMENT_BAND_BADGE: Record<string, AdminBadgeVariant> = {
 };
 
 export const PLATFORM_ADMIN_ROLE_BADGE: Record<string, AdminBadgeVariant> = {
+  super: 'info',
   stage: 'event',
   finance: 'success',
   documents: 'warning',
   communication: 'interview',
+  coordinator: 'info',
+  academic: 'neutral',
 };
 
 export const REPORT_STATUS_BADGE: Record<string, AdminBadgeVariant> = {
@@ -101,6 +114,10 @@ export function reportStatusTableBadge(status: string): string {
 
 export function studentAccountTableBadge(status: string): string {
   return tableBadge(STUDENT_ACCOUNT_STATUS_BADGE[status] ?? 'neutral');
+}
+
+export function platformAccountStatusTableBadge(status: string): string {
+  return tableBadge(PLATFORM_ACCOUNT_STATUS_BADGE[status] ?? 'neutral');
 }
 
 export function engagementBandTableBadge(band: string): string {

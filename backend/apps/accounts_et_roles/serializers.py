@@ -29,6 +29,9 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'first_name', 'last_name', 'date_of_birth', 'phone',
             'student_number', 'program_major', 'current_class',
+            'filiere', 'class_group', 'academic_level', 'academic_sector',
+            'internship_type', 'internship_duration', 'internship_category',
+            'academic_year_ref', 'academic_year',
             'enrollment_year', 'expected_graduation_year',
             'linkedin_url', 'professional_summary', 'cv_file',
             'career_objective', 'skills', 'availability', 'start_date', 'city', 'mobility', 'has_applied',
@@ -108,6 +111,8 @@ class ConfirmIdentitySerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=32, required=False, allow_blank=True)
     program_major = serializers.CharField(max_length=255, required=False, allow_blank=True)
     current_class = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    filiere_id = serializers.IntegerField(required=False, allow_null=True)
+    class_group_id = serializers.IntegerField(required=False, allow_null=True)
 
 
 class CompleteStudentProfileSerializer(serializers.Serializer):

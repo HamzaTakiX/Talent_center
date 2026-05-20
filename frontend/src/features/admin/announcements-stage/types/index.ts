@@ -1,11 +1,18 @@
-export type AnnouncementType = 'Event' | 'Interview' | 'Info';
+export type AnnouncementType = string;
 
 export interface AnnouncementRow {
   id: string;
   title: string;
-  type: AnnouncementType;
+  type: string;
+  typeCode?: string;
+  status?: string;
+  priority?: string;
   targetAudience: string;
   date: string;
+  views?: number;
+  engagement?: number;
+  company?: string;
+  deadline?: string | null;
 }
 
 export interface AnnouncementStat {

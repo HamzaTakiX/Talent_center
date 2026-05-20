@@ -31,6 +31,8 @@ export const AdminThemeProvider: FunctionComponent<{ children: ReactNode }> = ({
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, theme);
+    document.documentElement.setAttribute('data-admin-theme', theme);
+    document.documentElement.style.colorScheme = theme;
   }, [theme]);
 
   const setTheme = useCallback((next: AdminTheme) => setThemeState(next), []);

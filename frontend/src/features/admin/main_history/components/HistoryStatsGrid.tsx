@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { historyStatsMock } from '../data/historyMockData';
+import type { HistoryStatItem } from '../types';
 import HistoryStatCard from './HistoryStatCard';
 import AdminKpiGrid from '../../ui/AdminKpiGrid';
 
@@ -20,14 +20,26 @@ const routeByKey: Record<string, string> = {
   meetings: '/admin/history/meetings',
 };
 
-const HistoryStatsGrid: FunctionComponent = () => {
+interface HistoryStatsGridProps {
+  stats?: HistoryStatItem[];
+  loading?: boolean;
+}
+
+const HistoryStatsGrid: FunctionComponent<HistoryStatsGridProps> = ({
+  stats = [],
+  loading = false,
+}) => {
   const navigate = useNavigate();
 
-  const primaryStats = historyStatsMock.slice(0, 7);
-  const secondaryStats = historyStatsMock.slice(7);
+  if (!loading && stats.length === 0) {
+    return null;
+  }
+
+  const primaryStats = stats.slice(0, 7);
+  const secondaryStats = stats.slice(7);
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-5 md:gap-7">
+    <div className="flex w-full min-w-0 flex-col gap-5 md:gap-7" aria-busy={loading}>
     <AdminKpiGrid columns={4}>
       {primaryStats.map((item, index) => (
         <HistoryStatCard

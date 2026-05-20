@@ -54,15 +54,38 @@ class MeSerializer(serializers.ModelSerializer):
     student_profile = StudentProfileSerializer(read_only=True)
     staff_profile = StaffProfileSerializer(read_only=True)
     supervisor_profile = SupervisorProfileSerializer(read_only=True)
+    role_codes = serializers.SerializerMethodField()
+    permission_codes = serializers.SerializerMethodField()
+    admin_level = serializers.SerializerMethodField()
+    is_super_admin = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
             'id', 'email', 'account_status', 'auth_provider',
+            'platform_access_granted', 'sso_enabled', 'first_login_completed',
             'last_login_at', 'created_at', 'full_name', 'role',
             'profile', 'student_profile', 'staff_profile', 'supervisor_profile',
+            'role_codes', 'permission_codes', 'admin_level', 'is_super_admin',
         ]
         read_only_fields = fields
+
+    def get_role_codes(self, obj) -> list[str]:
+        return obj.active_role_codes()
+
+    def get_permission_codes(self, obj) -> list[str]:
+        if obj.role == obj.RoleChoices.ADMIN:
+            from apps.admin_management.services.admins import get_admin_effective_permissions
+            return sorted(get_admin_effective_permissions(obj))
+        return sorted(obj.permission_codes())
+
+    def get_admin_level(self, obj) -> str | None:
+        profile = getattr(obj, 'admin_profile', None)
+        return profile.admin_level if profile else None
+
+    def get_is_super_admin(self, obj) -> bool:
+        from apps.admin_management.services.scopes import is_super_admin
+        return is_super_admin(obj)
 
 
 class UpdateMeSerializer(serializers.Serializer):

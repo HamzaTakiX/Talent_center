@@ -1,51 +1,86 @@
-import { FunctionComponent, useMemo } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import AdminLayout from '../../components/AdminLayout';
+import { useAdminBackLabel } from '../../i18n/useAdminCopy';
+import AdminFormPageShell from '../../ui/AdminFormPageShell';
+import CreateAnnouncementForm from '../components/CreateAnnouncementForm';
 import { announcementsMockData } from '../data/announcementsMockData';
+
+const FORM_PREFIX = 'admin.forms.createAnnouncement';
 
 const EditAnnouncementPage: FunctionComponent = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
+  const backLabel = useAdminBackLabel('announcements');
+  const goBack = () => navigate('/admin/announcements');
 
   const row = useMemo(
     () => announcementsMockData.find((a) => a.id === id),
-    [id]
+    [id],
   );
 
-  return (
-    <AdminLayout>
-      <div className="mx-auto w-full min-w-0 max-w-[1600px] space-y-5 font-inter">
-        <button
-          type="button"
-          onClick={() => navigate('/admin/announcements')}
-          className="inline-flex h-9 items-center justify-center gap-2 admin-btn-surface rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-4 text-center text-sm font-medium text-[var(--admin-text)] transition-colors hover:bg-[var(--admin-row-hover)]"
-        >
-          <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
-          <span className="leading-5">Back to Announcements</span>
-        </button>
+  const [title, setTitle] = useState('');
+  const [type, setType] = useState('');
+  const [audience, setAudience] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [priority, setPriority] = useState('');
+  const [visibility, setVisibility] = useState('');
+  const [message, setMessage] = useState('');
 
-        <div className="box-border flex w-full flex-col gap-4 admin-module-panel px-6 py-6 text-left text-[var(--admin-text)]">
-          {row ? (
-            <>
-              <h1 className="m-0 text-base font-medium leading-4">Edit announcement</h1>
-              <p className="m-0 text-base leading-6 text-[var(--admin-text-secondary)]">
-                « {row.title} » — front-end only; wire your form and API here.
-              </p>
-              <button
-                type="button"
-                onClick={() => navigate(`/admin/announcements/${row.id}`)}
-                className="inline-flex h-9 w-fit items-center admin-btn-surface rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-4 text-sm font-medium text-[var(--admin-text)] hover:admin-field border border-[var(--admin-border)] bg-[var(--admin-input-bg)]"
-              >
-                View details
-              </button>
-            </>
-          ) : (
-            <p className="m-0 text-[var(--admin-text-secondary)]">Announcement not found.</p>
-          )}
-        </div>
-      </div>
-    </AdminLayout>
+  useEffect(() => {
+    if (!row) return;
+    setTitle(row.title);
+    setType(row.type);
+    setAudience(row.targetAudience);
+    setEventDate(row.date);
+    setPriority('normal');
+    setVisibility('public');
+    setMessage('');
+  }, [row]);
+
+  if (!row) {
+    return (
+      <AdminFormPageShell backLabel={backLabel} onBack={goBack}>
+        <p className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-muted)]/30 px-4 py-6 text-sm text-[var(--admin-text-secondary)]">
+          {t('admin.common.notFound.announcement')}
+        </p>
+      </AdminFormPageShell>
+    );
+  }
+
+  return (
+    <AdminFormPageShell
+      backLabel={backLabel}
+      onBack={goBack}
+      heroTitle={t(`${FORM_PREFIX}.editTitle`)}
+      heroSubtitle={t(`${FORM_PREFIX}.editSubtitle`)}
+      breadcrumbs={[
+        { label: t('admin.common.breadcrumbs.announcements'), onClick: goBack },
+        { label: row.title },
+      ]}
+    >
+      <CreateAnnouncementForm
+        hidePanelHeader
+        variant="edit"
+        title={title}
+        type={type}
+        audience={audience}
+        eventDate={eventDate}
+        priority={priority}
+        visibility={visibility}
+        message={message}
+        onTitleChange={setTitle}
+        onTypeChange={setType}
+        onAudienceChange={setAudience}
+        onEventDateChange={setEventDate}
+        onPriorityChange={setPriority}
+        onVisibilityChange={setVisibility}
+        onMessageChange={setMessage}
+        onDraft={goBack}
+        onPublish={goBack}
+      />
+    </AdminFormPageShell>
   );
 };
 
