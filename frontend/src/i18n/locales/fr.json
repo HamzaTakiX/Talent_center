@@ -644,7 +644,13 @@
     },
     "configMissing": {
       "title": "Configuration Auth0 manquante",
-      "body": "Ajoutez VITE_AUTH0_DOMAIN et VITE_AUTH0_CLIENT_ID dans .env.local (développement) ou dans le tableau de bord Vercel (production), puis redéployez.",
+      "body": "Les variables VITE_AUTH0_* doivent être définies dans Vercel (Production + Preview), puis redéployez sans cache.",
+      "clientIdOnly": "VITE_AUTH0_DOMAIN est détecté, mais VITE_AUTH0_CLIENT_ID est absent du build Vercel. Ajoutez-le dans Environment Variables, puis redéployez sans cache.",
+      "domainOnly": "VITE_AUTH0_CLIENT_ID est détecté, mais VITE_AUTH0_DOMAIN est absent. Vérifiez le nom exact de la variable sur Vercel.",
+      "detected": "Détecté",
+      "missing": "Manquant",
+      "vercelStepsTitle": "Sur Vercel",
+      "nameExact": "Le nom doit être exact (préfixe VITE_, pas AUTH0_CLIENT_ID seul).",
       "secretHint": "Ne jamais exposer AUTH0_CLIENT_SECRET côté frontend."
     },
     "accessDenied": {

@@ -97,6 +97,17 @@ export function logAuth0EnvDiagnostics(config: Auth0EnvConfig): void {
   console.info('[Auth0 env diagnostic]', payload);
 }
 
+export function getAuth0MissingKeys(
+  diagnostics: Auth0EnvConfig['diagnostics'],
+): Array<'VITE_AUTH0_DOMAIN' | 'VITE_AUTH0_CLIENT_ID'> {
+  const missing: Array<'VITE_AUTH0_DOMAIN' | 'VITE_AUTH0_CLIENT_ID'> = [];
+  const hasDomain = diagnostics.domainFromMeta || diagnostics.domainFromRuntime;
+  const hasClientId = diagnostics.clientIdFromMeta || diagnostics.clientIdFromRuntime;
+  if (!hasDomain) missing.push('VITE_AUTH0_DOMAIN');
+  if (!hasClientId) missing.push('VITE_AUTH0_CLIENT_ID');
+  return missing;
+}
+
 export function getAuth0EnvConfig(): Auth0EnvConfig {
   const domainMeta = readEnv(import.meta.env.VITE_AUTH0_DOMAIN);
   const clientIdMeta = readEnv(import.meta.env.VITE_AUTH0_CLIENT_ID);
