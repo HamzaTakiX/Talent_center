@@ -231,13 +231,63 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ---------- CORS ----------
-FRONTEND_ORIGIN = env('FRONTEND_ORIGIN', 'http://localhost:5173')
-if DEBUG and not FRONTEND_ORIGIN:
+# ---------- CORS (django-cors-headers) ----------
+def _normalize_origin(url: str) -> str:
+    return url.strip().rstrip('/')
+
+
+_frontend_default = 'http://localhost:5173' if DEBUG else ''
+FRONTEND_ORIGIN = _normalize_origin(env('FRONTEND_ORIGIN', _frontend_default))
+
+_cors_origins: set[str] = set()
+for _origin in env_list('CORS_ALLOWED_ORIGINS', ''):
+    _cors_origins.add(_normalize_origin(_origin))
+if FRONTEND_ORIGIN:
+    _cors_origins.add(FRONTEND_ORIGIN)
+
+if DEBUG and not _cors_origins:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
-    CORS_ALLOWED_ORIGINS = [FRONTEND_ORIGIN] if FRONTEND_ORIGIN else []
+    if not _cors_origins:
+        raise RuntimeError(
+            'Production CORS: set FRONTEND_ORIGIN and/or CORS_ALLOWED_ORIGINS '
+            '(comma-separated Vercel URLs, no trailing slash). '
+            'Example: FRONTEND_ORIGIN=https://your-app.vercel.app'
+        )
+    CORS_ALLOWED_ORIGINS = sorted(_cors_origins)
+
+# Vercel production + preview deployments (*.vercel.app)
+_cors_origin_regexes = env_list('CORS_ALLOWED_ORIGIN_REGEXES', '')
+if not _cors_origin_regexes and not DEBUG:
+    _cors_origin_regexes = [r'^https://[\w.-]+\.vercel\.app$']
+if _cors_origin_regexes:
+    CORS_ALLOWED_ORIGIN_REGEXES = _cors_origin_regexes
+
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
+elif _cors_origins:
+    CSRF_TRUSTED_ORIGINS = sorted(_cors_origins)
 
 # ---------- DRF ----------
 REST_FRAMEWORK = {
