@@ -1,11 +1,2 @@
-# Railway production startup: migrate → loaddata → gunicorn (see scripts/railway_start.sh)
-[build]
-builder = "nixpacks"
-
 [start]
-cmd = "sh scripts/railway_start.sh"
-
-[deploy]
-startCommand = "sh scripts/railway_start.sh"
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10
+cmd = "python manage.py migrate --noinput && python -m gunicorn core.wsgi:application --bind 0.0.0.0:$PORT"

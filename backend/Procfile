@@ -1,2 +1,1 @@
-# Heroku/Railway fallback — must match scripts/railway_start.sh (migrate → loaddata → gunicorn).
-web: sh scripts/railway_start.sh
+web: python manage.py migrate --noinput && python -m gunicorn core.wsgi:application --bind 0.0.0.0:$PORT

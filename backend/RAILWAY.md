@@ -1,60 +1,40 @@
 # Railway backend deployment
 
-## Start command (required)
+## Pre-deploy command
 
-Use **only** (matches `railway.toml` and `Procfile`):
+Leave **Pre-deploy Command** **empty** in the Railway dashboard (Settings → Deploy).
+
+Any command there (e.g. `loaddata`, `migrate`, custom scripts) can fail the deploy before the container starts.
+
+## Start command
+
+`backend/railway.toml` defines the start command:
 
 ```bash
-sh scripts/railway_start.sh
+python manage.py migrate --noinput && python -m gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
 ```
 
-Or paste the same in the Railway dashboard **Custom Start Command**.
+In the Railway dashboard **Custom Start Command**, leave empty so Railway uses `railway.toml`, or paste the same line above.
 
-The script runs in this order:
-
-1. `python manage.py migrate --noinput`
-2. `loaddata data.json` **only if the database is empty** (no `auth.User` rows), or if you set `RUN_LOADDATA=1` on a **fresh** Postgres (never on a DB that already has data — causes `UniqueViolation`)
-3. `gunicorn`
-
-**Do not** override with `loaddata` before `migrate` — that causes `relation "django_session" does not exist`.
-
-**Do not** run `loaddata` on every deploy — partial imports then retries cause duplicate key errors.
+No `loaddata`, `data.json`, or `scripts/railway_start.sh`.
 
 ## PostgreSQL (required)
 
-The backend **must** receive Postgres credentials from Railway.
+1. Add a **PostgreSQL** service in the same Railway project.
+2. On the **backend** service → **Variables** → **Add Reference** → Postgres → **`DATABASE_URL`**.
+3. Redeploy.
 
-1. Create a **PostgreSQL** service in the same project.
-2. Open the **backend** service (not Postgres) → **Variables**.
-3. Click **+ New Variable** → **Add Reference** → choose the Postgres service.
-4. Select **`DATABASE_URL`** (or `DATABASE_PRIVATE_URL` for internal networking).
-5. Save and **Redeploy** the backend.
-
-After deploy, logs must show:
-
-```text
-DATABASE_ENGINE = django.db.backends.postgresql
-DATABASE_HOST = ...
-```
-
-If you see `RuntimeError: Railway: no PostgreSQL URL found`, the reference was not added to the **backend** service.
-
-Alternative: copy the full URL from Postgres → **Connect** → paste as raw variable `DATABASE_URL` on the backend service.
+Logs should show `DATABASE_ENGINE = django.db.backends.postgresql`.
 
 ## CORS
 
 Set `FRONTEND_ORIGIN` to your exact Vercel URL (no trailing slash).
 
-## Regenerate `data.json` (local, UTF-8, no sessions)
-
-From `backend/` with venv active and DB migrated:
+## Optional local fixture (never in deploy)
 
 ```bash
-python -X utf8 manage.py dumpdata --exclude auth.permission --exclude contenttypes --exclude sessions > data.json
+python manage.py migrate
+python manage.py loaddata data.json
 ```
 
-Or strip sessions from an existing fixture:
-
-```bash
-python scripts/strip_fixture_sessions.py data.json
-```
+Run only manually on an empty database, never in Pre-deploy or Start commands.
