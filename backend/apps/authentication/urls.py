@@ -19,6 +19,7 @@ from .views import (
 
 urlpatterns = [
     path('login', LoginView.as_view(), name='auth-login'),
+    path('login/', LoginView.as_view(), name='auth-login-slash'),
     path('logout', LogoutView.as_view(), name='auth-logout'),
     path('logout-all', LogoutAllView.as_view(), name='auth-logout-all'),
     path('me', MeView.as_view(), name='auth-me'),

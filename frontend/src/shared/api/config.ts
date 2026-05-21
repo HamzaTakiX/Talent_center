@@ -1,5 +1,5 @@
-/** Django auth login — mounted at `api/auth/login` (trailing slash for APPEND_SLASH). */
-export const AUTH_LOGIN_PATH = '/auth/login/';
+/** Django auth login — must match `path('login', ...)` in apps.authentication.urls (no trailing slash). */
+export const AUTH_LOGIN_PATH = '/auth/login';
 
 const DEV_API_BASE = 'http://localhost:8000/api';
 
@@ -29,7 +29,7 @@ export function getApiBaseUrl(): string {
   );
 }
 
-/** `${VITE_API_URL}/auth/login/` */
+/** `${VITE_API_URL}/auth/login` → e.g. https://talentcenter-production.up.railway.app/api/auth/login */
 export function getAuthLoginUrl(): string {
   return `${getApiBaseUrl()}${AUTH_LOGIN_PATH}`;
 }

@@ -5,7 +5,7 @@ import {
   refreshAccessToken,
 } from '../../features/auth/utils/authTokenRefresh';
 import { writeCachedAuthUser } from '../../features/auth/utils/authSessionCache';
-import { AUTH_LOGIN_PATH, getApiBaseUrl } from './config';
+import { getApiBaseUrl } from './config';
 
 const apiClient = axios.create({
   baseURL: getApiBaseUrl(),
@@ -47,7 +47,10 @@ apiClient.interceptors.response.use(
     }
 
     const url = original.url ?? '';
-    if (url.includes('/auth/refresh') || url.includes(AUTH_LOGIN_PATH) || url.includes('/auth/login')) {
+    if (
+      url.includes('/auth/refresh')
+      || url.includes('/auth/login')
+    ) {
       return Promise.reject(error);
     }
 
