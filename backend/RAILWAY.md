@@ -16,13 +16,26 @@ sh scripts/railway_start.sh
 
 **Do not** use `loaddata`, `data.json`, or `|| true` in the start command.
 
-## PostgreSQL
+## PostgreSQL (required)
 
-1. Create a Postgres plugin on Railway.
-2. On the **backend** service → **Variables** → reference `DATABASE_URL` from Postgres.
-3. Redeploy. Logs must show:
-   - `DATABASE_ENGINE = django.db.backends.postgresql`
-   - not `sqlite3`
+The backend **must** receive Postgres credentials from Railway.
+
+1. Create a **PostgreSQL** service in the same project.
+2. Open the **backend** service (not Postgres) → **Variables**.
+3. Click **+ New Variable** → **Add Reference** → choose the Postgres service.
+4. Select **`DATABASE_URL`** (or `DATABASE_PRIVATE_URL` for internal networking).
+5. Save and **Redeploy** the backend.
+
+After deploy, logs must show:
+
+```text
+DATABASE_ENGINE = django.db.backends.postgresql
+DATABASE_HOST = ...
+```
+
+If you see `RuntimeError: Railway: no PostgreSQL URL found`, the reference was not added to the **backend** service.
+
+Alternative: copy the full URL from Postgres → **Connect** → paste as raw variable `DATABASE_URL` on the backend service.
 
 ## CORS
 

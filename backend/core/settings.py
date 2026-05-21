@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import quote_plus
 
 import dj_database_url
 from dotenv import load_dotenv
@@ -121,17 +122,44 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # ---------- Database ----------
-# Railway: link Postgres → DATABASE_URL on the backend service (never SQLite).
+def _resolve_database_url() -> str:
+    """Railway Postgres: DATABASE_URL, DATABASE_PRIVATE_URL, or PG* variables."""
+    for key in (
+        'DATABASE_URL',
+        'DATABASE_PRIVATE_URL',
+        'DATABASE_PUBLIC_URL',
+        'POSTGRES_URL',
+        'POSTGRES_PRIVATE_URL',
+    ):
+        value = os.getenv(key, '').strip()
+        if value:
+            return value
+
+    host = (
+        os.getenv('PGHOST', '').strip()
+        or os.getenv('POSTGRES_HOST', '').strip()
+    )
+    if not host:
+        return ''
+
+    user = os.getenv('PGUSER') or os.getenv('POSTGRES_USER') or 'postgres'
+    password = os.getenv('PGPASSWORD') or os.getenv('POSTGRES_PASSWORD') or ''
+    name = os.getenv('PGDATABASE') or os.getenv('POSTGRES_DB') or 'railway'
+    port = os.getenv('PGPORT') or os.getenv('POSTGRES_PORT') or '5432'
+    credentials = (
+        f'{quote_plus(user)}:{quote_plus(password)}@'
+        if password
+        else f'{quote_plus(user)}@'
+    )
+    return f'postgresql://{credentials}{host}:{port}/{quote_plus(name)}'
+
+
 _ON_RAILWAY = bool(
     os.getenv('RAILWAY_ENVIRONMENT')
     or os.getenv('RAILWAY_SERVICE_ID')
     or os.getenv('RAILWAY_PROJECT_ID')
 )
-_database_url = (
-    os.getenv('DATABASE_URL')
-    or os.getenv('POSTGRES_URL')
-    or os.getenv('POSTGRES_PRIVATE_URL')
-)
+_database_url = _resolve_database_url()
 
 if _database_url:
     DATABASES = {
@@ -143,8 +171,9 @@ if _database_url:
     }
 elif _ON_RAILWAY:
     raise RuntimeError(
-        'Railway: DATABASE_URL is missing. Open the Postgres service → Connect → '
-        'add DATABASE_URL to the backend service variables, then redeploy.'
+        'Railway: no PostgreSQL URL found. On the backend service → Variables → '
+        'New Variable → Reference → select Postgres → DATABASE_URL (or '
+        'DATABASE_PRIVATE_URL). Then redeploy.'
     )
 elif DEBUG:
     DATABASES = {
