@@ -22,6 +22,7 @@ def migrate_legacy_report_data(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         ('admin_management', '0008_encadrant_supervised_internship_types'),

@@ -4,7 +4,16 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def _seed_esca_academic(apps, schema_editor):
+    __import__(
+        'apps.admin_management.services.esca_academic_seed',
+        fromlist=['seed_esca_academic'],
+    ).seed_esca_academic()
+
+
 class Migration(migrations.Migration):
+    # PostgreSQL: avoid "pending trigger events" when seeding before deferred indexes.
+    atomic = False
 
     dependencies = [
         ('admin_management', '0002_adminprofile_scope_fields'),
@@ -183,11 +192,5 @@ class Migration(migrations.Migration):
             model_name='academiclevel',
             constraint=models.UniqueConstraint(fields=('filiere', 'code'), name='uniq_academic_level_per_filiere'),
         ),
-        migrations.RunPython(
-            lambda apps, schema_editor: __import__(
-                'apps.admin_management.services.esca_academic_seed',
-                fromlist=['seed_esca_academic'],
-            ).seed_esca_academic(),
-            migrations.RunPython.noop,
-        ),
+        migrations.RunPython(_seed_esca_academic, migrations.RunPython.noop),
     ]
