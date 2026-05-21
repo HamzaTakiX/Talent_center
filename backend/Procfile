@@ -1,2 +1,2 @@
-# Heroku/Railway fallback — must match scripts/railway_start.sh (no loaddata).
+# Heroku/Railway fallback — must match scripts/railway_start.sh (migrate → loaddata → gunicorn).
 web: sh scripts/railway_start.sh

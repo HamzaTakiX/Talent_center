@@ -1,5 +1,4 @@
-# Railway production startup — migrate + gunicorn ONLY.
-# Do NOT add loaddata here or in the Railway dashboard Start Command.
+# Railway production startup: migrate → loaddata → gunicorn (see scripts/railway_start.sh)
 [build]
 builder = "nixpacks"
 

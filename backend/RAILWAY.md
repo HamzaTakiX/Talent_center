@@ -2,19 +2,21 @@
 
 ## Start command (required)
 
-Use **only**:
+Use **only** (matches `railway.toml` and `Procfile`):
 
 ```bash
 sh scripts/railway_start.sh
 ```
 
-Or in the Railway dashboard **Custom Start Command**, paste exactly:
+Or paste the same in the Railway dashboard **Custom Start Command**.
 
-```bash
-sh scripts/railway_start.sh
-```
+The script runs in this order:
 
-**Do not** use `loaddata`, `data.json`, or `|| true` in the start command.
+1. `python manage.py migrate --noinput`
+2. `python manage.py loaddata data.json` (if `data.json` exists; fixture has **no** `sessions` rows)
+3. `gunicorn`
+
+**Do not** override with `loaddata` before `migrate` — that causes `relation "django_session" does not exist`.
 
 ## PostgreSQL (required)
 
@@ -41,13 +43,16 @@ Alternative: copy the full URL from Postgres → **Connect** → paste as raw va
 
 Set `FRONTEND_ORIGIN` to your exact Vercel URL (no trailing slash).
 
-## Manual data import (optional, one-off)
+## Regenerate `data.json` (local, UTF-8, no sessions)
 
-After a successful deploy with migrations:
+From `backend/` with venv active and DB migrated:
 
 ```bash
-python manage.py migrate
-python manage.py loaddata data.json
+python -X utf8 manage.py dumpdata --exclude auth.permission --exclude contenttypes --exclude sessions > data.json
 ```
 
-Never run `loaddata` in the container start command.
+Or strip sessions from an existing fixture:
+
+```bash
+python scripts/strip_fixture_sessions.py data.json
+```
