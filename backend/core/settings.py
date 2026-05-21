@@ -121,7 +121,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # ---------- Database ----------
-# Railway / local: set DATABASE_URL in backend/.env (see .env.example).
+# Railway: link Postgres → DATABASE_URL on the backend service (never SQLite).
+_ON_RAILWAY = bool(
+    os.getenv('RAILWAY_ENVIRONMENT')
+    or os.getenv('RAILWAY_SERVICE_ID')
+    or os.getenv('RAILWAY_PROJECT_ID')
+)
 _database_url = (
     os.getenv('DATABASE_URL')
     or os.getenv('POSTGRES_URL')
@@ -136,6 +141,11 @@ if _database_url:
             conn_health_checks=True,
         )
     }
+elif _ON_RAILWAY:
+    raise RuntimeError(
+        'Railway: DATABASE_URL is missing. Open the Postgres service → Connect → '
+        'add DATABASE_URL to the backend service variables, then redeploy.'
+    )
 elif DEBUG:
     DATABASES = {
         'default': {
@@ -147,6 +157,9 @@ else:
     raise RuntimeError(
         'Production requires DATABASE_URL (PostgreSQL connection string).'
     )
+
+print('DATABASE_ENGINE =', DATABASES['default'].get('ENGINE'))
+print('DATABASE_HOST =', DATABASES['default'].get('HOST'))
 
 # ---------- Auth / User ----------
 AUTH_USER_MODEL = 'accounts_et_roles.User'

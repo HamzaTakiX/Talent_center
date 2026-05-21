@@ -4,9 +4,9 @@
 builder = "nixpacks"
 
 [start]
-cmd = "python manage.py migrate --noinput && python -m gunicorn core.wsgi:application --bind 0.0.0.0:$PORT"
+cmd = "sh scripts/railway_start.sh"
 
 [deploy]
-startCommand = "python manage.py migrate --noinput && python -m gunicorn core.wsgi:application --bind 0.0.0.0:$PORT"
+startCommand = "sh scripts/railway_start.sh"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
