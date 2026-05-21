@@ -31,8 +31,8 @@ from .services.sessions import revoke_session
 from .utils import envelope
 
 
-def _user_payload(user) -> dict:
-    return MeSerializer(user).data
+def _user_payload(user, request=None) -> dict:
+    return MeSerializer(user, context={'request': request}).data
 
 
 def _session_payload(session) -> dict:
@@ -63,7 +63,7 @@ class LoginView(APIView):
             envelope(True, 'Login successful', data={
                 'access': tokens.access,
                 'refresh': tokens.refresh,
-                'user': _user_payload(user),
+                'user': _user_payload(user, request=request),
                 'session': _session_payload(session),
             }),
             status=status.HTTP_200_OK,
@@ -99,7 +99,7 @@ class MeView(APIView):
 
     def get(self, request):
         return Response(
-            envelope(True, 'OK', data=_user_payload(request.user)),
+            envelope(True, 'OK', data=_user_payload(request.user, request=request)),
             status=status.HTTP_200_OK,
         )
 
@@ -108,7 +108,7 @@ class MeView(APIView):
         serializer.is_valid(raise_exception=True)
         user = update_account_profile(request.user, serializer.validated_data)
         return Response(
-            envelope(True, 'Profile updated', data=_user_payload(user)),
+            envelope(True, 'Profile updated', data=_user_payload(user, request=request)),
             status=status.HTTP_200_OK,
         )
 
@@ -127,7 +127,7 @@ class RefreshView(APIView):
             envelope(True, 'Token refreshed', data={
                 'access': tokens.access,
                 'refresh': tokens.refresh,
-                'user': _user_payload(user),
+                'user': _user_payload(user, request=request),
                 'session': _session_payload(session),
             }),
             status=status.HTTP_200_OK,
@@ -288,7 +288,7 @@ class ProviderCallbackView(APIView):
             envelope(True, 'Login successful', data={
                 'access': tokens.access,
                 'refresh': tokens.refresh,
-                'user': _user_payload(user),
+                'user': _user_payload(user, request=request),
                 'session': _session_payload(session),
             }),
             status=status.HTTP_200_OK,
@@ -317,7 +317,7 @@ class Auth0ExchangeView(APIView):
             envelope(True, 'Login successful', data={
                 'access': tokens.access,
                 'refresh': tokens.refresh,
-                'user': _user_payload(user),
+                'user': _user_payload(user, request=request),
                 'session': _session_payload(session),
             }),
             status=status.HTTP_200_OK,

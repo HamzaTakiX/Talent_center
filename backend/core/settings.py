@@ -208,6 +208,8 @@ STATIC_URL = 'static/'
 # Media (user-uploaded files: CV templates, avatars, attachments, ...)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+# Absolute origin for avatar/media URLs in API JSON (Vercel frontend + Railway backend).
+PUBLIC_BACKEND_URL = os.getenv('PUBLIC_BACKEND_URL', '').strip().rstrip('/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

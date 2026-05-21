@@ -1,4 +1,5 @@
 import type { User } from '../../../auth/types';
+import { resolveMediaUrl } from '../../../../shared/api/mediaUrl';
 
 /** Libellé affiché dans l’interface admin (navbar, sidebar). */
 export const getAdminRoleLabel = (role?: string | null): string => {
@@ -60,14 +61,8 @@ export const getAdminUserInitials = (displayName?: string | null, email?: string
   return trimmed.slice(0, 2).toUpperCase() || 'AD';
 };
 
-export const resolveAvatarUrl = (avatar?: string | null): string | null => {
-  if (!avatar) return null;
-  if (avatar.startsWith('http') || avatar.startsWith('data:') || avatar.startsWith('blob:')) {
-    return avatar;
-  }
-  if (avatar.startsWith('/')) return avatar;
-  return `/media/${avatar.replace(/^\/+/, '')}`;
-};
+/** Absolute Railway (or local) URL for profile.avatar from API or storage path. */
+export const resolveAvatarUrl = (avatar?: string | null): string | null => resolveMediaUrl(avatar);
 
 export const splitFullName = (fullName: string): { first_name: string; last_name: string } => {
   const trimmed = fullName.trim();

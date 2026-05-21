@@ -1,9 +1,14 @@
 from rest_framework import serializers
+
+from core.media_urls import build_absolute_media_url
+
 from .models import User, UserProfile, StudentProfile, StaffProfile, SupervisorProfile
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Common profile fields for ALL users."""
+
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
@@ -13,6 +18,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+    def get_avatar(self, obj: UserProfile) -> str | None:
+        if not obj.avatar:
+            return None
+        try:
+            relative_url = obj.avatar.url
+        except (ValueError, AttributeError):
+            return None
+        return build_absolute_media_url(relative_url, self.context.get('request'))
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
