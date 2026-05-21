@@ -1,14 +1,14 @@
 # Railway backend deployment
 
-## Pre-deploy command
+## Pre-deploy command (critical)
 
 Leave **Pre-deploy Command** **empty** in the Railway dashboard (Settings → Deploy).
 
-Any command there (e.g. `loaddata`, `migrate`, custom scripts) can fail the deploy before the container starts.
+If you see `CommandError: No fixture named 'data' found`, Railway is still running `loaddata data.json` from the dashboard — **clear Pre-deploy AND Custom Start Command**, then redeploy. `backend/railway.toml` / `railway.json` override the dashboard when the service **Root Directory** is `backend` (or the folder that contains these files).
 
 ## Start command
 
-`backend/railway.toml` defines the start command:
+`backend/railway.toml` and `backend/railway.json` define the start command (`[deploy] startCommand`):
 
 ```bash
 python manage.py migrate --noinput && python -m gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
