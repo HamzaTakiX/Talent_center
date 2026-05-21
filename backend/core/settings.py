@@ -1,8 +1,8 @@
 import os
 from datetime import timedelta
 from pathlib import Path
-from urllib.parse import unquote, urlparse
 
+import dj_database_url
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,21 +40,6 @@ def env_required(key: str) -> str:
     if not value:
         raise RuntimeError(f'Missing required environment variable: {key}')
     return value
-
-
-def _parse_database_url(url: str) -> dict:
-    parsed = urlparse(url)
-    engine = 'django.db.backends.postgresql'
-    if parsed.scheme.startswith('mysql'):
-        engine = 'django.db.backends.mysql'
-    return {
-        'ENGINE': engine,
-        'NAME': unquote(parsed.path.lstrip('/')),
-        'USER': unquote(parsed.username or ''),
-        'PASSWORD': unquote(parsed.password or ''),
-        'HOST': parsed.hostname or '',
-        'PORT': str(parsed.port or (3306 if 'mysql' in parsed.scheme else 5432)),
-    }
 
 
 # ---------- Security ----------
@@ -136,76 +121,32 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # ---------- Database ----------
-# Hosting (Render/Railway) often provides DATABASE_URL — takes precedence.
+# Railway / local: set DATABASE_URL in backend/.env (see .env.example).
 _database_url = (
-    os.environ.get('DATABASE_URL', '').strip()
-    or os.environ.get('POSTGRES_URL', '').strip()
-    or os.environ.get('POSTGRES_PRIVATE_URL', '').strip()
+    os.getenv('DATABASE_URL')
+    or os.getenv('POSTGRES_URL')
+    or os.getenv('POSTGRES_PRIVATE_URL')
 )
 
-_db_engine = env('DB_ENGINE', 'sqlite').lower()
 if _database_url:
-    DATABASES = {'default': _parse_database_url(_database_url)}
-elif _db_engine in ('postgresql', 'postgres'):
-    if DEBUG:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': env('DB_NAME', 'talent_center'),
-                'USER': env('DB_USER', 'postgres'),
-                'PASSWORD': env('DB_PASSWORD', ''),
-                'HOST': env('DB_HOST', 'localhost'),
-                'PORT': env('DB_PORT', '5432'),
-            }
-        }
-    else:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': env_required('DB_NAME'),
-                'USER': env_required('DB_USER'),
-                'PASSWORD': env_required('DB_PASSWORD'),
-                'HOST': env_required('DB_HOST'),
-                'PORT': env('DB_PORT', '5432'),
-            }
-        }
-elif _db_engine == 'mysql':
-    if DEBUG:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.mysql',
-                'NAME': env('DB_NAME', 'talent_center'),
-                'USER': env('DB_USER', 'root'),
-                'PASSWORD': env('DB_PASSWORD', ''),
-                'HOST': env('DB_HOST', '127.0.0.1'),
-                'PORT': env('DB_PORT', '3306'),
-                'OPTIONS': {'charset': 'utf8mb4'},
-            }
-        }
-    else:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.mysql',
-                'NAME': env_required('DB_NAME'),
-                'USER': env_required('DB_USER'),
-                'PASSWORD': env_required('DB_PASSWORD'),
-                'HOST': env_required('DB_HOST'),
-                'PORT': env('DB_PORT', '3306'),
-                'OPTIONS': {'charset': 'utf8mb4'},
-            }
-        }
-else:
-    if not DEBUG:
-        raise RuntimeError(
-            'Production requires DB_ENGINE=postgresql (or DATABASE_URL). '
-            'SQLite is not allowed when DEBUG=False.'
+    DATABASES = {
+        'default': dj_database_url.parse(
+            _database_url,
+            conn_max_age=600,
+            conn_health_checks=True,
         )
+    }
+elif DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+else:
+    raise RuntimeError(
+        'Production requires DATABASE_URL (PostgreSQL connection string).'
+    )
 
 # ---------- Auth / User ----------
 AUTH_USER_MODEL = 'accounts_et_roles.User'
