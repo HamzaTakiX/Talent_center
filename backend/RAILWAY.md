@@ -13,10 +13,12 @@ Or paste the same in the Railway dashboard **Custom Start Command**.
 The script runs in this order:
 
 1. `python manage.py migrate --noinput`
-2. `python manage.py loaddata data.json` (if `data.json` exists; fixture has **no** `sessions` rows)
+2. `loaddata data.json` **only if the database is empty** (no `auth.User` rows), or if you set `RUN_LOADDATA=1` on a **fresh** Postgres (never on a DB that already has data — causes `UniqueViolation`)
 3. `gunicorn`
 
 **Do not** override with `loaddata` before `migrate` — that causes `relation "django_session" does not exist`.
+
+**Do not** run `loaddata` on every deploy — partial imports then retries cause duplicate key errors.
 
 ## PostgreSQL (required)
 
