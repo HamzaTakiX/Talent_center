@@ -1,3 +1,4 @@
-# Config-as-code overrides Railway dashboard (start + no pre-deploy loaddata).
+# Use when Railway Root Directory = backend
 [deploy]
+preDeployCommand = []
 startCommand = "python manage.py migrate --noinput && python -m gunicorn core.wsgi:application --bind 0.0.0.0:$PORT"

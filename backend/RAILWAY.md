@@ -4,7 +4,18 @@
 
 Leave **Pre-deploy Command** **empty** in the Railway dashboard (Settings → Deploy).
 
-If you see `CommandError: No fixture named 'data' found`, Railway is still running `loaddata data.json` from the dashboard — **clear Pre-deploy AND Custom Start Command**, then redeploy. `backend/railway.toml` / `railway.json` override the dashboard when the service **Root Directory** is `backend` (or the folder that contains these files).
+If you see `CommandError: No fixture named 'data' found`, Railway is still running `loaddata data.json` from the dashboard.
+
+**Fix:** Settings → Deploy → clear **Pre-deploy Command** and **Custom Start Command** → Redeploy.
+
+Config-as-code lives in two places (use the one that matches your **Root Directory**):
+
+| Root Directory | Config file used |
+|----------------|------------------|
+| *(empty / repo root)* | `pfe-talent-center/railway.toml` (`cd backend && …`) |
+| `backend` | `backend/railway.toml` (no `cd`) |
+
+Both set `preDeployCommand: []` in `railway.json` to disable dashboard pre-deploy `loaddata`.
 
 ## Start command
 
