@@ -122,26 +122,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # ---------- Database ----------
-def _resolve_database_url() -> str:
-    """Railway Postgres: DATABASE_URL, DATABASE_PRIVATE_URL, or PG* variables."""
-    for key in (
-        'DATABASE_URL',
-        'DATABASE_PRIVATE_URL',
-        'DATABASE_PUBLIC_URL',
-        'POSTGRES_URL',
-        'POSTGRES_PRIVATE_URL',
-    ):
-        value = os.getenv(key, '').strip()
-        if value:
-            return value
-
+def _database_url_from_pg_env() -> str:
+    """Fallback when Railway sets PGHOST/PGUSER/... without a single DATABASE_URL."""
     host = (
         os.getenv('PGHOST', '').strip()
         or os.getenv('POSTGRES_HOST', '').strip()
     )
     if not host:
         return ''
-
     user = os.getenv('PGUSER') or os.getenv('POSTGRES_USER') or 'postgres'
     password = os.getenv('PGPASSWORD') or os.getenv('POSTGRES_PASSWORD') or ''
     name = os.getenv('PGDATABASE') or os.getenv('POSTGRES_DB') or 'railway'
@@ -159,7 +147,15 @@ _ON_RAILWAY = bool(
     or os.getenv('RAILWAY_SERVICE_ID')
     or os.getenv('RAILWAY_PROJECT_ID')
 )
-_database_url = _resolve_database_url()
+
+# Local + production must target the same Postgres: set DATABASE_URL in backend/.env
+# (Railway public Connect URL) and reference the same URL on the Railway backend service.
+_database_url = (
+    os.getenv('DATABASE_URL', '').strip()
+    or os.getenv('DATABASE_PRIVATE_URL', '').strip()
+    or os.getenv('DATABASE_PUBLIC_URL', '').strip()
+    or _database_url_from_pg_env()
+)
 
 if _database_url:
     DATABASES = {
@@ -171,9 +167,8 @@ if _database_url:
     }
 elif _ON_RAILWAY:
     raise RuntimeError(
-        'Railway: no PostgreSQL URL found. On the backend service → Variables → '
-        'New Variable → Reference → select Postgres → DATABASE_URL (or '
-        'DATABASE_PRIVATE_URL). Then redeploy.'
+        'Railway: set DATABASE_URL on the backend service (Reference → Postgres → '
+        'DATABASE_URL), then redeploy.'
     )
 elif DEBUG:
     DATABASES = {
@@ -184,11 +179,13 @@ elif DEBUG:
     }
 else:
     raise RuntimeError(
-        'Production requires DATABASE_URL (PostgreSQL connection string).'
+        'Set DATABASE_URL in backend/.env to your Railway PostgreSQL Connect URL.'
     )
 
 print('DATABASE_ENGINE =', DATABASES['default'].get('ENGINE'))
+print('DATABASE_NAME =', DATABASES['default'].get('NAME'))
 print('DATABASE_HOST =', DATABASES['default'].get('HOST'))
+print('DATABASE_PORT =', DATABASES['default'].get('PORT'))
 
 # ---------- Auth / User ----------
 AUTH_USER_MODEL = 'accounts_et_roles.User'
