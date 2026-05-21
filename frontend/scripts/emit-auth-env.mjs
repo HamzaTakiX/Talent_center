@@ -24,11 +24,19 @@ for (const key of Object.keys(process.env)) {
   }
 }
 
+function sanitizeApiUrl(raw) {
+  if (!raw) return '';
+  let value = String(raw).trim();
+  const embedded = value.match(/VITE_API_URL=(.+)/i);
+  if (embedded) value = embedded[1].trim();
+  return value.replace(/\/+$/, '');
+}
+
 const payload = {
   VITE_AUTH0_DOMAIN: env.VITE_AUTH0_DOMAIN ?? '',
   VITE_AUTH0_CLIENT_ID: env.VITE_AUTH0_CLIENT_ID ?? '',
   VITE_AUTH0_AUDIENCE: env.VITE_AUTH0_AUDIENCE ?? '',
-  VITE_API_URL: env.VITE_API_URL ?? '',
+  VITE_API_URL: sanitizeApiUrl(env.VITE_API_URL),
 };
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });

@@ -1,4 +1,5 @@
 import apiClient from '../../../shared/api/client';
+import { getAuthLoginUrl, logAuthLoginUrlInProduction } from '../../../shared/api/config';
 import { AuthResponse, LoginSession, User } from '../types';
 
 // Backend API response envelope
@@ -11,12 +12,14 @@ interface ApiResponse<T> {
 export const authApi = {
   // Real backend authentication
   login: async (email: string, password: string): Promise<AuthResponse> => {
+    const loginUrl = getAuthLoginUrl();
+    logAuthLoginUrlInProduction();
     const response = await apiClient.post<ApiResponse<{
       access: string;
       refresh: string;
       user: User;
       session: { id: number; expires_at: string };
-    }>>('/auth/login', { email, password });
+    }>>(loginUrl, { email, password });
     
     return {
       access: response.data.data.access,

@@ -1,7 +1,6 @@
 import axios from 'axios';
+import { buildApiUrl } from '../../../shared/api/config';
 import type { User } from '../types';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 interface RefreshPayload {
   access: string;
@@ -21,7 +20,7 @@ export async function refreshAccessToken(): Promise<RefreshPayload | null> {
 
   try {
     const response = await axios.post<ApiEnvelope<RefreshPayload>>(
-      `${API_BASE}/auth/refresh`,
+      buildApiUrl('/auth/refresh'),
       { refresh },
       { headers: { 'Content-Type': 'application/json' } },
     );

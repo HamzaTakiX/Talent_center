@@ -5,9 +5,10 @@ import {
   refreshAccessToken,
 } from '../../features/auth/utils/authTokenRefresh';
 import { writeCachedAuthUser } from '../../features/auth/utils/authSessionCache';
+import { AUTH_LOGIN_PATH, getApiBaseUrl } from './config';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -45,7 +46,8 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (original.url?.includes('/auth/refresh') || original.url?.includes('/auth/login')) {
+    const url = original.url ?? '';
+    if (url.includes('/auth/refresh') || url.includes(AUTH_LOGIN_PATH) || url.includes('/auth/login')) {
       return Promise.reject(error);
     }
 
