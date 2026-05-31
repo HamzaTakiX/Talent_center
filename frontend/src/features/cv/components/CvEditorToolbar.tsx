@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Download, Loader2, Save, Sparkles, ZoomIn } from 'lucide-react';
 import {
@@ -89,9 +89,18 @@ const CvEditorToolbar: FunctionComponent = () => {
   };
 
   const showContinue = saveSucceeded && onboardingCv;
+  const showPortalLink = !onboardingCv;
 
   return (
     <div className="quickcv-toolbar-admin flex shrink-0 flex-wrap items-center gap-3 border-b border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-4 py-2.5 sm:px-6">
+      {showPortalLink && (
+        <Link
+          to={STUDENT_DASHBOARD_PATH}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-3 py-2 text-xs font-semibold ${STUDENT_TEXT_SECONDARY} transition-colors hover:border-[var(--admin-brand)] hover:bg-[var(--admin-brand-muted)] hover:text-[var(--admin-brand)]`}
+        >
+          {t('cv.editor.back')}
+        </Link>
+      )}
       <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-inset)] px-3 py-1.5">
         <ZoomIn className="h-4 w-4 shrink-0 text-[var(--admin-text-secondary)]" aria-hidden />
         <input

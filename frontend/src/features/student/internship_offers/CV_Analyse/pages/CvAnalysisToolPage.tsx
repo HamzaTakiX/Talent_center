@@ -11,10 +11,7 @@ const CvAnalysisToolPage: FunctionComponent = () => {
   const [view, setView] = useState<CvAnalysisView>('selection');
 
   return (
-    <StudentLayout
-      headerTitle="CV Analysis Tool"
-      headerSubtitle="Digital Talent Center"
-    >
+    <StudentLayout>
       <div
         id="student-cv-analysis-tool-root"
         className={view === 'assistant' ? CV_ASSISTANT_VIEWPORT_SHELL : CV_ANALYSIS_TOOL_PAGE_ROOT}

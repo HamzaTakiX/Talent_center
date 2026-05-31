@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { ArrowLeft, Loader2, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Moon, Sun } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import escaLogoLight from '../../auth/assets/images/common/Logo_ESCA.png';
@@ -14,18 +14,21 @@ import {
 
 interface CvEditorHeaderProps {
   saving?: boolean;
-  backTo?: string;
+  /** Required when the back control is shown (provided by CvEditorShell). */
+  backTo: string;
   hideBack?: boolean;
 }
 
 const CvEditorHeader: FunctionComponent<CvEditorHeaderProps> = ({
   saving = false,
-  backTo = '/cv',
+  backTo,
   hideBack = false,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { theme, toggleTheme } = useAdminTheme();
   const logoImage = theme === 'dark' ? escaLogoDark : escaLogoLight;
+  const isRtl = i18n.dir() === 'rtl';
+  const BackIcon = isRtl ? ArrowRight : ArrowLeft;
 
   return (
     <header className="cv-editor-header admin-glass relative z-10 flex shrink-0 items-center justify-between border-b border-[var(--admin-border)] px-4 py-3 sm:px-6 sm:py-4">
@@ -36,7 +39,7 @@ const CvEditorHeader: FunctionComponent<CvEditorHeaderProps> = ({
             className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--admin-text-secondary)] transition-colors hover:bg-[var(--admin-brand-muted)] hover:text-[var(--admin-brand)]"
             aria-label={t('cv.editor.back')}
           >
-            <ArrowLeft className="h-[18px] w-[18px]" />
+            <BackIcon className="h-[18px] w-[18px]" />
           </Link>
         )}
         <img

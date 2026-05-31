@@ -1,1 +1,1 @@
-﻿/** Hooks — Encadrant Agenda (placeholder). */
+export { useAgendaPlatform } from './useAgendaPlatform';

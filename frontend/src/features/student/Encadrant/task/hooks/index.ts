@@ -1,1 +1,1 @@
-﻿/** Hooks — Encadrant Task (placeholder). */
+export { useTaskPlatform } from './useTaskPlatform';

@@ -18,11 +18,11 @@ const activityIconMap: Record<StudentActivityIconKey, LucideIcon> = {
 };
 
 const ActivityRow: FunctionComponent<{
+  id: string;
   iconKey: StudentActivityIconKey;
-  action: string;
-  time: string;
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
-}> = ({ iconKey, action, time, onClick }) => {
+}> = ({ id, iconKey, onClick }) => {
+  const { t } = useTranslation();
   const Icon = activityIconMap[iconKey];
 
   return (
@@ -31,8 +31,12 @@ const ActivityRow: FunctionComponent<{
         <Icon className="h-4 w-4" strokeWidth={1.75} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
-        <span className="text-[13px] font-medium text-[var(--admin-text)]">{action}</span>
-        <span className="text-[12px] text-[var(--admin-text-muted)]">{time}</span>
+        <span className="text-[13px] font-medium text-[var(--admin-text)]">
+          {t(`student.dashboard.mocks.activity.${id}.action`)}
+        </span>
+        <span className="text-[12px] text-[var(--admin-text-muted)]">
+          {t(`student.dashboard.mocks.activity.${id}.time`)}
+        </span>
       </span>
     </button>
   );
@@ -62,9 +66,8 @@ const StudentRecentActivityCard: FunctionComponent = () => {
             {studentRecentActivity.map((row) => (
               <li key={row.id}>
                 <ActivityRow
+                  id={row.id}
                   iconKey={row.iconKey}
-                  action={row.action}
-                  time={row.time}
                   onClick={() => {
                     console.log('activity', row.id);
                   }}

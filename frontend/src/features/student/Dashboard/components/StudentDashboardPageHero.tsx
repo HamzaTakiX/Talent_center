@@ -7,6 +7,7 @@ import { easePremium } from '../../../admin/dashboard/ui/animations';
 import StudentHeroAnalyticsWidgets from './hero/StudentHeroAnalyticsWidgets';
 import { STUDENT_INTERNSHIP_OFFERS_PATH } from '../../internship_offers/constants/routes';
 import { STUDENT_ANNOUNCEMENTS_PATH } from '../../Annoucements/constants/routes';
+import { STUDENT_DASHBOARD_PATH } from '../../config/studentNavConfig';
 
 const localeMap: Record<string, string> = {
   fr: 'fr-FR',
@@ -78,7 +79,9 @@ const StudentDashboardPageHero: FunctionComponent = () => {
             <button
               type="button"
               className="admin-btn admin-btn-secondary admin-btn--sm"
-              onClick={() => navigate('/cv-editor')}
+              onClick={() =>
+                navigate('/cv-editor', { state: { returnTo: STUDENT_DASHBOARD_PATH } })
+              }
             >
               <FileText className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
               {t('student.dashboard.hero.quickActions.improveCv')}

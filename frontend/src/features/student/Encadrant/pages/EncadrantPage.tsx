@@ -10,7 +10,7 @@ import EncadrantTasksSection from '../components/EncadrantTasksSection';
 import { ENCADRANT_PAGE_ROOT, ENCADRANT_TWO_COL_GRID } from '../constants/encadrantLayout';
 
 const EncadrantPage: FunctionComponent = () => (
-  <StudentLayout headerTitle="Encadrant" headerSubtitle="Digital Talent Center">
+  <StudentLayout>
     <div id="student-encadrant-root" className={ENCADRANT_PAGE_ROOT}>
       <EncadrantSupervisorCard />
       <EncadrantStatsGrid />

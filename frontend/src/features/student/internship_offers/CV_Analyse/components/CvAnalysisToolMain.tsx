@@ -1,4 +1,5 @@
 import { FunctionComponent, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import YourCvCard from './YourCvCard';
 import AnalysisContextCard from './AnalysisContextCard';
@@ -16,6 +17,8 @@ interface CvAnalysisToolMainProps {
 }
 
 const CvAnalysisToolMain: FunctionComponent<CvAnalysisToolMainProps> = ({ onAnalyze }) => {
+  const { t } = useTranslation();
+
   const handleAnalyze = useCallback(() => {
     onAnalyze?.();
   }, [onAnalyze]);
@@ -43,7 +46,7 @@ const CvAnalysisToolMain: FunctionComponent<CvAnalysisToolMainProps> = ({ onAnal
         <div className={CV_ANALYSIS_TOOL_ANALYZE_WRAPPER}>
           <button type="button" className={CV_TOOL_PRIMARY_BUTTON} onClick={handleAnalyze}>
             <Sparkles className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
-            Analyze CV
+            {t('student.internshipOffers.cvTool.analyze')}
           </button>
         </div>
       </div>

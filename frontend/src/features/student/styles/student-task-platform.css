@@ -1,0 +1,328 @@
+/* Student Tasks — premium project management */
+@layer components {
+  .student-portal .student-task-platform {
+    --task-glass: color-mix(in srgb, var(--admin-bg-elevated) 88%, transparent);
+  }
+
+  .student-portal .student-task-glass {
+    background: var(--task-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.04);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .student-portal .student-task-glass:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 18%, var(--admin-border));
+  }
+
+  .student-portal .student-task-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--admin-radius-xl, 1rem);
+    border: 1px solid var(--admin-border);
+    background: var(--task-glass);
+    backdrop-filter: blur(14px);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .student-portal .student-task-hero__glow {
+    pointer-events: none;
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(48px);
+    opacity: 0.5;
+  }
+
+  .student-portal .student-task-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 1rem 1.125rem;
+    min-height: 7.25rem;
+  }
+
+  .student-portal .student-task-kpi__spark {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 1.75rem;
+    margin-top: auto;
+  }
+
+  .student-portal .student-task-kpi__bar {
+    flex: 1;
+    min-width: 4px;
+    border-radius: 2px 2px 0 0;
+    background: color-mix(in srgb, var(--admin-brand) 55%, transparent);
+    transition: height 0.3s ease;
+  }
+
+  .student-portal .student-task-progress-ring {
+    --ring-p: 0;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 9999px;
+    background: conic-gradient(
+      var(--admin-brand) calc(var(--ring-p) * 1%),
+      var(--admin-surface-inset) 0
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .student-portal .student-task-progress-ring__inner {
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 9999px;
+    background: var(--admin-bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--admin-brand);
+  }
+
+  .student-portal .student-task-alert {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--admin-border);
+  }
+
+  .student-portal .student-task-alert--danger {
+    background: color-mix(in srgb, #ef4444 12%, var(--admin-surface-muted));
+    border-color: color-mix(in srgb, #ef4444 35%, var(--admin-border));
+  }
+
+  .student-portal .student-task-alert--warning {
+    background: color-mix(in srgb, #eab308 12%, var(--admin-surface-muted));
+    border-color: color-mix(in srgb, #eab308 35%, var(--admin-border));
+  }
+
+  .student-portal .student-task-alert--success {
+    background: color-mix(in srgb, #22c55e 12%, var(--admin-surface-muted));
+    border-color: color-mix(in srgb, #22c55e 35%, var(--admin-border));
+  }
+
+  .student-portal .student-task-alert--info {
+    background: color-mix(in srgb, var(--admin-brand) 12%, var(--admin-surface-muted));
+    border-color: color-mix(in srgb, var(--admin-brand) 28%, var(--admin-border));
+  }
+
+  .student-portal .student-task-view-tabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border-radius: 0.625rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-surface-muted);
+  }
+
+  .student-portal .student-task-view-tab {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: transparent;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--admin-text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .student-portal .student-task-view-tab.is-active {
+    background: var(--admin-bg-elevated);
+    color: var(--admin-brand);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+  }
+
+  .student-portal .student-task-kanban {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(220px, 1fr));
+    gap: 0.75rem;
+    padding: 1rem 1.25rem 1.25rem;
+    overflow-x: auto;
+  }
+
+  @media (max-width: 1100px) {
+    .student-portal .student-task-kanban {
+      grid-template-columns: repeat(4, minmax(260px, 1fr));
+    }
+  }
+
+  .student-portal .student-task-kanban-col {
+    display: flex;
+    flex-direction: column;
+    min-height: 14rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--admin-border);
+    background: color-mix(in srgb, var(--admin-surface-muted) 70%, transparent);
+  }
+
+  .student-portal .student-task-kanban-col.is-over {
+    border-color: var(--admin-brand);
+    background: color-mix(in srgb, var(--admin-brand) 8%, var(--admin-surface-muted));
+  }
+
+  .student-portal .student-task-kanban-col__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--admin-border);
+  }
+
+  .student-portal .student-task-kanban-col__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    flex: 1;
+    min-height: 6rem;
+  }
+
+  .student-portal .student-task-card {
+    padding: 0.875rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-bg-elevated);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+
+  .student-portal .student-task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 24, 40, 0.08);
+    border-color: color-mix(in srgb, var(--admin-brand) 25%, var(--admin-border));
+  }
+
+  .student-portal .student-task-card.is-dragging {
+    opacity: 0.55;
+    box-shadow: 0 12px 28px rgba(16, 24, 40, 0.12);
+  }
+
+  .student-portal .student-task-cat--internship { color: #2b7fff; }
+  .student-portal .student-task-cat--reports { color: #a855f7; }
+  .student-portal .student-task-cat--meetings { color: #22c55e; }
+  .student-portal .student-task-cat--documents { color: #06b6d4; }
+  .student-portal .student-task-cat--admin { color: #f97316; }
+  .student-portal .student-task-cat--srf { color: #eab308; }
+  .student-portal .student-task-cat--personal { color: #ec4899; }
+
+  .student-portal .student-task-priority--low {
+    background: color-mix(in srgb, #64748b 22%, transparent);
+    color: #94a3b8;
+    border: 1px solid color-mix(in srgb, #64748b 32%, transparent);
+  }
+
+  .student-portal .student-task-priority--medium {
+    background: color-mix(in srgb, #eab308 22%, transparent);
+    color: #facc15;
+    border: 1px solid color-mix(in srgb, #eab308 32%, transparent);
+  }
+
+  .student-portal .student-task-priority--high {
+    background: color-mix(in srgb, #f97316 22%, transparent);
+    color: #fdba74;
+    border: 1px solid color-mix(in srgb, #f97316 32%, transparent);
+  }
+
+  .student-portal .student-task-priority--critical {
+    background: color-mix(in srgb, #ef4444 22%, transparent);
+    color: #f87171;
+    border: 1px solid color-mix(in srgb, #ef4444 32%, transparent);
+  }
+
+  .student-portal .student-task-status--todo { background: color-mix(in srgb, #64748b 16%, transparent); color: #94a3b8; }
+  .student-portal .student-task-status--in_progress { background: color-mix(in srgb, #2b7fff 16%, transparent); color: #93c5fd; }
+  .student-portal .student-task-status--in_review { background: color-mix(in srgb, #a855f7 16%, transparent); color: #d8b4fe; }
+  .student-portal .student-task-status--done { background: color-mix(in srgb, #22c55e 16%, transparent); color: #86efac; }
+  .student-portal .student-task-status--blocked { background: color-mix(in srgb, #ef4444 16%, transparent); color: #fca5a5; }
+
+  .student-portal .student-task-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  .student-portal .student-task-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 101;
+    width: min(100%, 28rem);
+    height: 100%;
+    overflow-y: auto;
+    border-left: 1px solid var(--admin-border);
+    background: var(--admin-bg-elevated);
+    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+  }
+
+  [dir='rtl'] .student-portal .student-task-drawer {
+    right: auto;
+    left: 0;
+    border-left: none;
+    border-right: 1px solid var(--admin-border);
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .student-portal .student-task-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--admin-border);
+  }
+
+  .student-portal .student-task-two-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    .student-portal .student-task-two-col {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .student-portal .student-task-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0 1.25rem 1rem;
+  }
+
+  .student-portal .student-task-skeleton {
+    animation: student-task-pulse 1.4s ease-in-out infinite;
+    background: linear-gradient(
+      90deg,
+      var(--admin-surface-muted) 25%,
+      var(--admin-bg-elevated) 50%,
+      var(--admin-surface-muted) 75%
+    );
+    background-size: 200% 100%;
+    border-radius: 0.5rem;
+  }
+
+  @keyframes student-task-pulse {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  .student-portal .student-task-risk--critical { color: #f87171; }
+  .student-portal .student-task-risk--high { color: #fdba74; }
+  .student-portal .student-task-risk--medium { color: #facc15; }
+  .student-portal .student-task-risk--low { color: #86efac; }
+}

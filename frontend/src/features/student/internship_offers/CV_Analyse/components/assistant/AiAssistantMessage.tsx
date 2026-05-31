@@ -17,22 +17,22 @@ const AiAssistantMessage: FunctionComponent<AiAssistantMessageProps> = ({ messag
   return (
     <div className="flex min-w-0 items-start gap-3 sm:gap-4">
       <span className={CV_ASSISTANT_AVATAR_ICON} aria-hidden>
-        <Sparkles className="h-4 w-4 text-white sm:h-5 sm:w-5" strokeWidth={1.75} />
+        <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.75} />
       </span>
       <article className={CV_ASSISTANT_MESSAGE_BUBBLE}>
-        <p className="m-0 text-sm leading-6 text-[#475569] sm:text-[15px] sm:leading-7">
+        <p className="m-0 text-sm leading-6 sm:text-[15px] sm:leading-7">
           {message.intro}{' '}
           <span className={CV_ASSISTANT_SCORE_BADGE}>{message.scorePercent}%</span>
         </p>
 
-        <p className="m-0 mt-5 text-sm font-semibold leading-5 text-[#0f172a]">
+        <p className="m-0 mt-5 text-sm font-semibold leading-5 text-[var(--admin-text)]">
           {message.strengthsTitle}
         </p>
         <ul className="m-0 mt-2.5 flex list-none flex-col gap-2 p-0">
           {message.strengths.map((item) => (
             <li key={item} className={CV_ASSISTANT_LIST_ITEM_STRENGTH}>
               <Check
-                className="mt-0.5 h-4 w-4 shrink-0 text-[#16a34a]"
+                className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500"
                 strokeWidth={2.5}
                 aria-hidden
               />
@@ -41,14 +41,14 @@ const AiAssistantMessage: FunctionComponent<AiAssistantMessageProps> = ({ messag
           ))}
         </ul>
 
-        <p className="m-0 mt-5 text-sm font-semibold leading-5 text-[#0f172a]">
+        <p className="m-0 mt-5 text-sm font-semibold leading-5 text-[var(--admin-text)]">
           {message.improvementsTitle}
         </p>
         <ul className="m-0 mt-2.5 flex list-none flex-col gap-2 p-0">
           {message.improvements.map((item) => (
             <li key={item} className={CV_ASSISTANT_LIST_ITEM_IMPROVE}>
               <span
-                className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gradient-to-br from-[#fbbf24] to-[#f59e0b]"
+                className="mt-2 h-2 w-2 shrink-0 rounded-full bg-amber-500"
                 aria-hidden
               />
               <span>{item}</span>
@@ -56,7 +56,7 @@ const AiAssistantMessage: FunctionComponent<AiAssistantMessageProps> = ({ messag
           ))}
         </ul>
 
-        <p className="m-0 mt-5 text-sm leading-6 text-[#475569] sm:text-[15px]">{message.closing}</p>
+        <p className="m-0 mt-5 text-sm leading-6 sm:text-[15px]">{message.closing}</p>
       </article>
     </div>
   );

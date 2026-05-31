@@ -56,8 +56,14 @@ const StudentSmartAlertsCard: FunctionComponent = () => {
                   <span className="student-smart-alert__icon" aria-hidden>
                     <RowIcon className="h-[18px] w-[18px]" strokeWidth={1.75} />
                   </span>
-                  <span className="student-smart-alert__message">{alert.message}</span>
-                  <span className="student-smart-alert__cta">{alert.ctaLabel}</span>
+                  <span className="student-smart-alert__body">
+                    <span className="student-smart-alert__message">
+                      {t(`student.dashboard.mocks.alerts.${alert.id}.message`)}
+                    </span>
+                    <span className="student-smart-alert__cta">
+                      {t(`student.dashboard.mocks.alerts.${alert.id}.cta`)}
+                    </span>
+                  </span>
                 </button>
               </li>
             );

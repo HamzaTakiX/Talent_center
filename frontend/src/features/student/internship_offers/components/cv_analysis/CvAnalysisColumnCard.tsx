@@ -11,37 +11,27 @@ interface CvAnalysisColumnCardProps {
   data: CvAnalysisColumnData;
 }
 
-const themeStyles: Record<
-  CvAnalysisTheme,
-  { border: string; title: string; subsection: string; bullet: ReactNode }
-> = {
-  strengths: {
-    border: 'border-[#bbf7d0] bg-[var(--admin-bg-elevated)]',
-    title: 'text-[#166534]',
-    subsection: 'text-[#15803d]',
-    bullet: <CheckCircle2 className="h-4 w-4 text-[#22c55e]" strokeWidth={2} aria-hidden />,
-  },
-  weaknesses: {
-    border: 'border-[#fecaca] bg-[var(--admin-bg-elevated)]',
-    title: 'text-[#991b1b]',
-    subsection: 'text-[#b91c1c]',
-    bullet: <XCircle className="h-4 w-4 text-[#ef4444]" strokeWidth={2} aria-hidden />,
-  },
-  improvements: {
-    border: 'border-[#bfdbfe] bg-[var(--admin-bg-elevated)]',
-    title: 'text-[#1e40af]',
-    subsection: 'text-[#1d4ed8]',
-    bullet: <Sparkles className="h-4 w-4 text-[#155dfc]" strokeWidth={2} aria-hidden />,
-  },
+const themePanelClass: Record<CvAnalysisTheme, string> = {
+  strengths:
+    'admin-module-panel border border-solid border-[color-mix(in_srgb,#22c55e_22%,var(--admin-border))]',
+  weaknesses:
+    'admin-module-panel border border-solid border-[color-mix(in_srgb,#ef4444_22%,var(--admin-border))]',
+  improvements:
+    'admin-module-panel border border-solid border-[color-mix(in_srgb,var(--admin-brand)_22%,var(--admin-border))]',
+};
+
+const themeBullet: Record<CvAnalysisTheme, ReactNode> = {
+  strengths: <CheckCircle2 className="h-4 w-4 text-emerald-500" strokeWidth={2} aria-hidden />,
+  weaknesses: <XCircle className="h-4 w-4 text-red-500" strokeWidth={2} aria-hidden />,
+  improvements: <Sparkles className="h-4 w-4 text-[var(--admin-brand)]" strokeWidth={2} aria-hidden />,
 };
 
 const CvAnalysisSubsectionBlock: FunctionComponent<{
   subsection: CvAnalysisSubsection;
-  subsectionTitleClass: string;
   bullet: ReactNode;
-}> = ({ subsection, subsectionTitleClass, bullet }) => (
+}> = ({ subsection, bullet }) => (
   <div className="mb-4 last:mb-0">
-    <p className={`m-0 mb-2 text-xs font-semibold uppercase tracking-wide ${subsectionTitleClass}`}>
+    <p className="m-0 mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--admin-text-muted)]">
       {subsection.title}
     </p>
     <ul className="m-0 flex list-none flex-col gap-2 p-0">
@@ -66,7 +56,6 @@ const CvAnalysisColumnCard: FunctionComponent<CvAnalysisColumnCardProps> = ({
   icon,
   data,
 }) => {
-  const styles = themeStyles[theme];
   const subsections = [
     data.matchingSkills,
     data.relevantExperience,
@@ -78,9 +67,9 @@ const CvAnalysisColumnCard: FunctionComponent<CvAnalysisColumnCardProps> = ({
 
   return (
     <article
-      className={`box-border flex h-full w-full min-w-0 max-w-full flex-col rounded-[12px] border border-solid px-4 py-5 sm:px-5 sm:py-6 ${styles.border}`}
+      className={`box-border flex h-full w-full min-w-0 max-w-full flex-col rounded-[12px] px-4 py-5 sm:px-5 sm:py-6 ${themePanelClass[theme]}`}
     >
-      <div className={`mb-4 flex min-w-0 items-center gap-2 ${styles.title}`}>
+      <div className="mb-4 flex min-w-0 items-center gap-2 text-[var(--admin-text)]">
         {icon}
         <h2 className="m-0 text-base font-semibold leading-6">{title}</h2>
       </div>
@@ -89,8 +78,7 @@ const CvAnalysisColumnCard: FunctionComponent<CvAnalysisColumnCardProps> = ({
         <CvAnalysisSubsectionBlock
           key={subsection.title}
           subsection={subsection}
-          subsectionTitleClass={styles.subsection}
-          bullet={styles.bullet}
+          bullet={themeBullet[theme]}
         />
       ))}
     </article>

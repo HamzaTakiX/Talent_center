@@ -1,4 +1,5 @@
 import { FunctionComponent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Send } from 'lucide-react';
 import {
   CV_ASSISTANT_INPUT_WRAP,
@@ -8,6 +9,7 @@ import {
 import { CV_AI_ASSISTANT_INPUT_PLACEHOLDER } from '../../data/cvAiAssistantMock';
 
 const AiAssistantComposer: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState('');
 
   return (
@@ -20,11 +22,15 @@ const AiAssistantComposer: FunctionComponent = () => {
         placeholder={CV_AI_ASSISTANT_INPUT_PLACEHOLDER}
         rows={2}
         className={CV_ASSISTANT_TEXTAREA}
-        aria-label="Message to AI CV Assistant"
+        aria-label={t('student.internshipOffers.cvTool.messageAria')}
       />
-      <button type="button" className={CV_ASSISTANT_SEND_BUTTON} aria-label="Send message">
+      <button
+        type="button"
+        className={CV_ASSISTANT_SEND_BUTTON}
+        aria-label={t('student.internshipOffers.cvTool.sendAria')}
+      >
         <Send className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
-        <span>Send</span>
+        <span>{t('student.internshipOffers.cvTool.send')}</span>
       </button>
     </div>
   );

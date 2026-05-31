@@ -71,7 +71,7 @@
   }
 
   /* Inputs legacy hors admin-form-input */
-  .student-portal input:not(.admin-search-field):not(.admin-form-input):not([type='checkbox']):not([type='radio']),
+  .student-portal input:not(.admin-search-field):not(.admin-form-input):not(.sr-hub-table__search-input):not([type='checkbox']):not([type='radio']),
   .student-portal select:not(.admin-form-input),
   .student-portal textarea:not(.admin-form-input) {
     background-color: var(--admin-input-bg, var(--admin-bg-elevated));

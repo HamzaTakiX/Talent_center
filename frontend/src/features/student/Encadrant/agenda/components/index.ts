@@ -1,3 +1,11 @@
-﻿export { default as AgendaCalendarCard } from './AgendaCalendarCard';
-export { default as AgendaEventCard } from './AgendaEventCard';
-export { default as AgendaEventsSection } from './AgendaEventsSection';
+export { default as AgendaPageHeader } from './AgendaPageHeader';
+export { default as AgendaStatsGrid } from './AgendaStatsGrid';
+export { default as AgendaCalendarModule } from './AgendaCalendarModule';
+export { default as AgendaUpcomingPanel } from './AgendaUpcomingPanel';
+export { default as AgendaInternshipTimeline } from './AgendaInternshipTimeline';
+export { default as AgendaTasksKanban } from './AgendaTasksKanban';
+export { default as AgendaDeadlinesSection } from './AgendaDeadlinesSection';
+export { default as AgendaSupervisorMeetingsTable } from './AgendaSupervisorMeetingsTable';
+export { default as AgendaProgressSection } from './AgendaProgressSection';
+export { default as AgendaNotificationsPanel } from './AgendaNotificationsPanel';
+export { default as AgendaEventDetailModal } from './AgendaEventDetailModal';

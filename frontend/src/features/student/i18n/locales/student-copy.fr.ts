@@ -36,6 +36,16 @@ export const studentCopyFr = {
       chat: 'Chat',
       apply: 'Candidater à l\'offre',
       offerDetails: 'Détail de l\'offre',
+      cvEditor: 'Éditeur CV',
+      agenda: 'Agenda',
+      task: 'Tâches',
+      workspace: 'Espace de travail',
+      whiteboard: 'Tableau blanc',
+      report: 'Rapports',
+      srfChat: 'SRF Chat',
+    },
+    subtitles: {
+      srfChat: 'Discutez avec le Service des Ressources Financières',
     },
   },
   dashboard: {
@@ -127,5 +137,9 @@ export const studentCopyFr = {
     loading: 'Chargement…',
     search: 'Rechercher…',
     noResults: 'Aucun résultat',
+    searchEmpty: {
+      title: 'Aucun résultat',
+      description: 'Modifiez votre recherche ou vos filtres pour afficher d\'autres éléments.',
+    },
   },
 };

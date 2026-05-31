@@ -37,6 +37,7 @@ export interface EncadrantQuickAction {
   subtitle: string;
   icon: LucideIcon;
   iconClassName: string;
+  path: string;
 }
 
 export interface EncadrantSupervisor {

@@ -1,15 +1,10 @@
-import { FunctionComponent } from 'react';
-import { AlertCircle, Filter, Search } from 'lucide-react';
-import AnnouncementsFilterDropdown from './AnnouncementsFilterDropdown';
+import { FunctionComponent, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { AdminListToolbar, AdminListToolbarSection } from '../../../admin/ui';
 import {
-  ANNOUNCEMENT_PRIORITY_FILTER_OPTIONS,
-  ANNOUNCEMENT_TYPE_FILTER_OPTIONS,
+  ANNOUNCEMENT_PRIORITY_FILTER_VALUES,
+  ANNOUNCEMENT_TYPE_FILTER_VALUES,
 } from '../data/allAnnouncementsMock';
-import {
-  ALL_ANNOUNCEMENTS_FILTER_ACTIONS,
-  ALL_ANNOUNCEMENTS_FILTER_BAR,
-  ALL_ANNOUNCEMENTS_SEARCH_INPUT,
-} from '../constants/allAnnouncementsStyles';
 
 interface AnnouncementsFilterBarProps {
   search: string;
@@ -28,43 +23,56 @@ const AnnouncementsFilterBar: FunctionComponent<AnnouncementsFilterBarProps> = (
   priorityFilter,
   onPriorityFilterChange,
 }) => {
-  return (
-    <div className={ALL_ANNOUNCEMENTS_FILTER_BAR} role="search">
-      <div className="relative w-full min-w-0 sm:min-w-[200px] sm:flex-1">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--admin-text-muted)] max-[429px]:left-2.5 max-[429px]:size-3.5"
-          strokeWidth={1.75}
-          aria-hidden
-        />
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search announcements..."
-          className={ALL_ANNOUNCEMENTS_SEARCH_INPUT}
-          aria-label="Search announcements"
-        />
-      </div>
+  const { t, i18n } = useTranslation();
 
-      <div className={ALL_ANNOUNCEMENTS_FILTER_ACTIONS}>
-        <AnnouncementsFilterDropdown
-          label="Type"
-          icon={Filter}
-          value={typeFilter}
-          options={ANNOUNCEMENT_TYPE_FILTER_OPTIONS}
-          onChange={onTypeFilterChange}
-          ariaLabel="Filter by announcement type"
-        />
-        <AnnouncementsFilterDropdown
-          label="Priority"
-          icon={AlertCircle}
-          value={priorityFilter}
-          options={ANNOUNCEMENT_PRIORITY_FILTER_OPTIONS}
-          onChange={onPriorityFilterChange}
-          ariaLabel="Filter by priority"
-        />
-      </div>
-    </div>
+  const typeOptions = useMemo(
+    () =>
+      ANNOUNCEMENT_TYPE_FILTER_VALUES.map((value) => ({
+        value,
+        label:
+          value === 'all'
+            ? t('student.announcements.mocks.filters.allTypes')
+            : t(`student.announcements.mocks.tags.${value}`),
+      })),
+    [t, i18n.language],
+  );
+
+  const priorityOptions = useMemo(
+    () =>
+      ANNOUNCEMENT_PRIORITY_FILTER_VALUES.map((value) => ({
+        value,
+        label:
+          value === 'all'
+            ? t('student.announcements.mocks.filters.allPriorities')
+            : t(
+                `student.announcements.priority.${value === 'Urgent' ? 'urgent' : value === 'Important' ? 'important' : 'normal'}`,
+              ),
+      })),
+    [t, i18n.language],
+  );
+
+  return (
+    <AdminListToolbarSection>
+      <AdminListToolbar
+        searchValue={search}
+        onSearchChange={onSearchChange}
+        searchPlaceholder={t('student.announcements.searchPlaceholder')}
+        searchAriaLabel={t('student.announcements.searchAria')}
+        toolbarAriaLabel={t('student.announcements.filterToolbarAria')}
+        filter1={{
+          value: typeFilter,
+          onChange: onTypeFilterChange,
+          options: typeOptions,
+          ariaLabel: t('student.announcements.filterTypeAria'),
+        }}
+        filter2={{
+          value: priorityFilter,
+          onChange: onPriorityFilterChange,
+          options: priorityOptions,
+          ariaLabel: t('student.announcements.filterPriorityAria'),
+        }}
+      />
+    </AdminListToolbarSection>
   );
 };
 

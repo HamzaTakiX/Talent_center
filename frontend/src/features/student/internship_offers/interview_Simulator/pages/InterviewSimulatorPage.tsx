@@ -8,11 +8,7 @@ import {
 
 const InterviewSimulatorPage: FunctionComponent = () => {
   return (
-    <StudentLayout
-      contentFlush
-      headerTitle="Interview Simulator"
-      headerSubtitle="Digital Talent Center"
-    >
+    <StudentLayout contentFlush>
       <div
         id="student-interview-simulator-root"
         className={`${INTERVIEW_SIMULATOR_VIEWPORT_SHELL} ${INTERVIEW_SIMULATOR_PAGE_ROOT}`}

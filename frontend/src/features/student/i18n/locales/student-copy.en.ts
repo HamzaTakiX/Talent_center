@@ -36,6 +36,16 @@ export const studentCopyEn = {
       chat: 'Chat',
       apply: 'Apply to offer',
       offerDetails: 'Offer details',
+      cvEditor: 'CV Editor',
+      agenda: 'Agenda',
+      task: 'Tasks',
+      workspace: 'Workspace',
+      whiteboard: 'Whiteboard',
+      report: 'Reports',
+      srfChat: 'SRF Chat',
+    },
+    subtitles: {
+      srfChat: 'Chat with the Financial Resources Service',
     },
   },
   dashboard: {
@@ -127,5 +137,9 @@ export const studentCopyEn = {
     loading: 'Loading…',
     search: 'Search…',
     noResults: 'No results found',
+    searchEmpty: {
+      title: 'No results found',
+      description: 'Try adjusting your search or filters to see more items.',
+    },
   },
 };

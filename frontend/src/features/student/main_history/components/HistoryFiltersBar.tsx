@@ -1,8 +1,11 @@
 import { FunctionComponent } from 'react';
 import { ChevronDown, Funnel, Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
-  STUDENT_HISTORY_MODULE_FILTER_OPTIONS,
-  STUDENT_HISTORY_STATUS_FILTER_OPTIONS,
+  STUDENT_HISTORY_MODULE_FILTER_ALL,
+  STUDENT_HISTORY_MODULE_FILTER_KEYS,
+  STUDENT_HISTORY_STATUS_FILTER_ALL,
+  STUDENT_HISTORY_STATUS_FILTER_KEYS,
 } from '../constants/historyConstants';
 
 interface HistoryFiltersBarProps {
@@ -25,12 +28,16 @@ const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
   onModuleChange,
   onStatusChange,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col gap-4 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 lg:flex-row lg:items-start lg:justify-between lg:gap-5">
       <div className="flex min-w-0 w-full flex-col items-start lg:w-[279.1px] lg:shrink-0">
-        <h2 className="text-base font-medium leading-5 text-[var(--admin-text)]">My Activity Timeline</h2>
+        <h2 className="text-base font-medium leading-5 text-[var(--admin-text)]">
+          {t('student.header.titles.history')}
+        </h2>
         <p className="mt-1 text-base leading-6 text-[var(--admin-text-muted)]">
-          Track and manage your applications, documents, and career activities
+          {t('student.header.defaultSubtitle')}
         </p>
       </div>
 
@@ -40,11 +47,13 @@ const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
             className={selectClassName}
             value={moduleFilter}
             onChange={(e) => onModuleChange(e.target.value)}
-            aria-label="Filter by area"
+            aria-label={t('student.mainHistory.filters.moduleAria')}
           >
-            {STUDENT_HISTORY_MODULE_FILTER_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {STUDENT_HISTORY_MODULE_FILTER_KEYS.map((key) => (
+              <option key={key} value={key}>
+                {key === STUDENT_HISTORY_MODULE_FILTER_ALL
+                  ? t('student.mainHistory.filters.allAreas')
+                  : t(`student.mainHistory.modules.${key}`)}
               </option>
             ))}
           </select>
@@ -56,11 +65,13 @@ const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
             className={selectClassName}
             value={statusFilter}
             onChange={(e) => onStatusChange(e.target.value)}
-            aria-label="Filter by status"
+            aria-label={t('student.mainHistory.filters.statusAria')}
           >
-            {STUDENT_HISTORY_STATUS_FILTER_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {STUDENT_HISTORY_STATUS_FILTER_KEYS.map((key) => (
+              <option key={key} value={key}>
+                {key === STUDENT_HISTORY_STATUS_FILTER_ALL
+                  ? t('student.mainHistory.filters.allStatuses')
+                  : t(`student.mainHistory.statuses.${key}`)}
               </option>
             ))}
           </select>
@@ -74,15 +85,15 @@ const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
               type="search"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search your activities..."
+              placeholder={t('student.common.search')}
               className="h-9 w-full min-w-0 rounded-lg bg-[var(--admin-bg-elevated)]smoke py-1 pl-9 pr-3 text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-text-muted)] lg:w-64"
             />
           </div>
           <button
             type="button"
             onClick={() => console.log('Open advanced filters')}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] text-[#4b5563]"
-            aria-label="Open advanced filters"
+            className="admin-icon-btn admin-icon-btn--md shrink-0"
+            aria-label={t('student.common.search')}
           >
             <Funnel className="h-4 w-4" />
           </button>

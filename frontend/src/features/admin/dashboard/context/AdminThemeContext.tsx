@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 
-type AdminTheme = 'light' | 'dark';
+export type AdminTheme = 'light' | 'dark';
 
 interface AdminThemeContextValue {
   theme: AdminTheme;

@@ -1,14 +1,9 @@
-﻿import { FunctionComponent } from 'react';
-import StudentLayout from '../../../components/StudentLayout';
-import { REPORT_PAGE_ROOT } from '../constants/reportLayout';
-import ReportWorkspace from '../components/ReportWorkspace';
-
-const ReportPage: FunctionComponent = () => (
-  <StudentLayout headerTitle="Encadrant" headerSubtitle="Digital Talent Center">
-    <div className={REPORT_PAGE_ROOT}>
-      <ReportWorkspace />
-    </div>
-  </StudentLayout>
-);
-
-export default ReportPage;
+﻿import { FunctionComponent } from 'react';
+import { Navigate } from 'react-router-dom';
+
+import { STUDENT_REPORTS_PATH } from '../../../reports/constants/routes';
+
+/** Legacy route — redirects to the Reports Hub. */
+const ReportPage: FunctionComponent = () => <Navigate to={STUDENT_REPORTS_PATH} replace />;
+
+export default ReportPage;

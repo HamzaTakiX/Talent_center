@@ -24,7 +24,7 @@
     aria-label="Recruiter note"
     dir={insight.message.match(/[\u0600-\u06FF]/) ? 'rtl' : 'ltr'}
   >
-    <span class="cv-preview-annotation__marker" aria-hidden></span>
+    <span class="cv-preview-annotation__marker" aria-hidden="true"></span>
     <p class="cv-preview-annotation__text">{insight.message}</p>
   </aside>
 {/if}

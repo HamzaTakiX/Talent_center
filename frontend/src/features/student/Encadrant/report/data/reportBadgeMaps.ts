@@ -1,4 +1,10 @@
 import type { ReportSectionStatus } from '../types';
+import {
+  STUDENT_BADGE_NEUTRAL,
+  STUDENT_BADGE_SUCCESS,
+  STUDENT_BADGE_WARNING,
+  STUDENT_INLINE_BADGE,
+} from '../../../design-system/studentSemanticStyles';
 
 export const reportSectionStatusLabels: Record<ReportSectionStatus, string> = {
   complete: 'Complet',
@@ -7,9 +13,9 @@ export const reportSectionStatusLabels: Record<ReportSectionStatus, string> = {
 };
 
 export const reportSectionStatusBadgeClass: Record<ReportSectionStatus, string> = {
-  complete: 'bg-emerald-50 text-emerald-700',
-  draft: 'bg-[#fef9c2] text-[#854d0e]',
-  empty: 'bg-[var(--admin-surface-inset)] text-[#6b7280]',
+  complete: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_SUCCESS}`,
+  draft: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_WARNING}`,
+  empty: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_NEUTRAL}`,
 };
 
 export const reportSectionStatusSubtitle: Record<ReportSectionStatus, string> = {

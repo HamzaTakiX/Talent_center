@@ -5,6 +5,11 @@
 @import './features/admin/ui/styles/admin-section-states.css';
 @import './features/student/Dashboard/styles/student-dashboard.css';
 @import './features/student/styles/student-platform.css';
+@import './features/student/styles/student-agenda-platform.css';
+@import './features/student/styles/student-task-platform.css';
+@import './features/student/styles/student-workspace-platform.css';
+@import './features/student/styles/student-whiteboard-platform.css';
+@import './features/student/reports/styles/student-report-platform.css';
 @import './design-system/platformThemeBridge.css';
 
 @tailwind base;

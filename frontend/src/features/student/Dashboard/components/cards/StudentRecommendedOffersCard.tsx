@@ -12,26 +12,27 @@ import { STUDENT_PRIMARY_BUTTON } from '../../constants/studentDashboardStyles';
 
 const OfferCard: FunctionComponent<{ offer: StudentRecommendedOffer }> = ({ offer }) => {
   const { t } = useTranslation();
+  const base = `student.dashboard.mocks.offers.${offer.id}`;
 
   return (
     <article className="student-offer-card">
       <div className="flex w-full min-w-0 items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <h3 className="text-base font-semibold tracking-tight text-[var(--admin-text)] sm:text-[17px]">
-            {offer.title}
+            {t(`${base}.title`)}
           </h3>
 
           <div className="flex min-w-0 flex-wrap items-center gap-2 text-[13px] text-[var(--admin-text-secondary)]">
             <Building2 className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-            <span>{offer.company}</span>
+            <span>{t(`${base}.company`)}</span>
             <span className="text-[var(--admin-text-muted)]">•</span>
-            <span>{offer.location}</span>
+            <span>{t(`${base}.location`)}</span>
           </div>
 
           <div className="flex flex-wrap gap-1.5">
-            {offer.tags.map((tag) => (
-              <span key={tag} className="student-tag">
-                {tag}
+            {offer.tagKeys.map((tagKey) => (
+              <span key={tagKey} className="student-tag">
+                {t(`${base}.tags.${tagKey}`)}
               </span>
             ))}
           </div>
@@ -71,7 +72,7 @@ const StudentRecommendedOffersCard: FunctionComponent = () => {
         icon={<Target strokeWidth={1.75} aria-hidden />}
         title={t('student.dashboard.sections.recommendedOffers')}
         subtitle={t('student.dashboard.sections.recommendedOffersSubtitle')}
-        action={{ label: t('common.viewAll'), onClick: () => navigate(STUDENT_INTERNSHIP_OFFERS_PATH) }}
+        action={{ label: t('student.common.viewAll'), onClick: () => navigate(STUDENT_INTERNSHIP_OFFERS_PATH) }}
       />
 
       {studentRecommendedOffers.length === 0 ? (

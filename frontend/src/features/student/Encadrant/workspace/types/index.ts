@@ -1,47 +1,124 @@
-﻿export type WorkspaceTabId = 'whiteboard' | 'documents' | 'notes' | 'discussion';
+export type WorkspaceTabId =
+  | 'documents'
+  | 'notes'
+  | 'discussions'
+  | 'tasks'
+  | 'activity';
 
-export interface WorkspaceTabItem {
-  id: WorkspaceTabId;
-  label: string;
+export type CollaboratorStatus = 'online' | 'offline' | 'in_meeting' | 'reviewing';
+
+export type DocumentCategory = 'report' | 'research' | 'internship' | 'meeting' | 'shared';
+
+export type FeedbackStatus = 'pending' | 'resolved' | 'in_review';
+
+export type ActivityType =
+  | 'upload'
+  | 'comment'
+  | 'feedback'
+  | 'meeting'
+  | 'task'
+  | 'report';
+
+export interface WorkspaceKpi {
+  id: string;
+  value: string;
+  trend: number;
+}
+
+export interface WorkspaceCollaborator {
+  id: string;
+  nameKey: string;
+  roleKey: string;
+  initials: string;
+  status: CollaboratorStatus;
+  isActive: boolean;
 }
 
 export interface WorkspaceStickyNote {
   id: string;
-  text: string;
-  color: 'yellow' | 'blue' | 'green';
+  textKey: string;
+  color: 'yellow' | 'blue' | 'green' | 'purple';
   positionClass: string;
+  editedByKey: string;
 }
 
-export interface WorkspaceDocumentItem {
+export interface WorkspaceDocument {
   id: string;
-  name: string;
-  author: string;
+  nameKey: string;
+  category: DocumentCategory;
+  authorKey: string;
   date: string;
   size: string;
+  version: string;
 }
 
-export interface WorkspaceDiscussionMessage {
+export interface WorkspaceNote {
   id: string;
-  authorInitials: string;
-  authorName: string;
-  text: string;
-  timeLabel: string;
-  isOutgoing: boolean;
-  avatarClass: string;
+  titleKey: string;
+  excerptKey: string;
+  tags: string[];
+  pinned: boolean;
+  updatedAt: string;
 }
 
-export interface WorkspaceMeetingParticipant {
+export interface WorkspaceDiscussionThread {
   id: string;
-  initials: string;
-  label: string;
-  gradientClass: string;
+  titleKey: string;
+  type: 'supervisor' | 'project' | 'feedback' | 'review';
+  lastMessageKey: string;
+  replies: number;
+  timeKey: string;
 }
 
-export interface WorkspaceMeetingData {
-  title: string;
-  subtitle: string;
-  liveLabel: string;
-  participantCountLabel: string;
-  durationLabel: string;
-  participants: WorkspaceMeetingParticipant[];
+export interface WorkspaceActivityItem {
+  id: string;
+  type: ActivityType;
+  messageKey: string;
+  timeKey: string;
+  actorKey: string;
+}
+
+export interface WorkspaceFeedbackItem {
+  id: string;
+  commentKey: string;
+  date: string;
+  status: FeedbackStatus;
+  documentKey: string;
+}
+
+export interface WorkspaceKnowledgeItem {
+  id: string;
+  titleKey: string;
+  type: 'link' | 'reference' | 'methodology' | 'document';
+  url?: string;
+}
+
+export interface WorkspaceMeetingItem {
+  id: string;
+  titleKey: string;
+  date: string;
+  time: string;
+  status: 'upcoming' | 'past';
+  hasNotes: boolean;
+  hasRecording: boolean;
+}
+
+export interface WorkspaceProgressMetric {
+  id: string;
+  labelKey: string;
+  progress: number;
+}
+
+export interface WorkspaceNotification {
+  id: string;
+  messageKey: string;
+  timeKey: string;
+}
+
+export interface WorkspacePlatformTask {
+  id: string;
+  titleKey: string;
+  status: 'todo' | 'in_progress' | 'done';
+  dueAt: string;
+  fromSupervisor: boolean;
 }

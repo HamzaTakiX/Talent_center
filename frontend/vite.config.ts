@@ -25,6 +25,9 @@ export default defineConfig(({ mode }) => {
   return {
   envDir: rootDir,
   envPrefix: 'VITE_',
+  optimizeDeps: {
+    include: ['@excalidraw/excalidraw'],
+  },
   plugins: [
     UnoCSS(unoConfig),
     svelte({
@@ -47,6 +50,7 @@ export default defineConfig(({ mode }) => {
     },
   },
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(rootDir, 'src'),
       $lib: cvLib,

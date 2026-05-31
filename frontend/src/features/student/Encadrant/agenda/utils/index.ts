@@ -1,1 +1,1 @@
-﻿export { buildCalendarGrid, CALENDAR_WEEKDAYS } from './buildCalendarGrid';
+export { getAgendaLocale } from './calendarLocale';

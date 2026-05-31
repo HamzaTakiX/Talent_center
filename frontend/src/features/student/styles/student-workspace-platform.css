@@ -1,0 +1,1041 @@
+@layer components {
+  .student-portal .student-workspace-platform {
+    --ws-glass: color-mix(in srgb, var(--admin-bg-elevated) 88%, transparent);
+  }
+
+  .student-portal .student-workspace-glass {
+    background: var(--ws-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.04);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .student-portal .student-workspace-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--admin-radius-xl, 1rem);
+    border: 1px solid var(--admin-border);
+    background: var(--ws-glass);
+    backdrop-filter: blur(14px);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .student-portal .student-workspace-hero__glow {
+    pointer-events: none;
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(48px);
+    opacity: 0.5;
+  }
+
+  .student-portal .student-workspace-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1.125rem;
+    min-height: 6.5rem;
+  }
+
+  .student-portal .student-workspace-collab-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-surface-muted);
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .student-portal .student-workspace-collab-card:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 28%, var(--admin-border));
+    transform: translateY(-1px);
+  }
+
+  .student-portal .student-workspace-avatar {
+    display: flex;
+    height: 2.5rem;
+    width: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, var(--admin-brand), #6366f1);
+    position: relative;
+  }
+
+  .student-portal .student-workspace-presence {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: 0.625rem;
+    width: 0.625rem;
+    border-radius: 9999px;
+    border: 2px solid var(--admin-bg-elevated);
+  }
+
+  .student-portal .student-workspace-presence--online { background: #22c55e; }
+  .student-portal .student-workspace-presence--offline { background: #64748b; }
+  .student-portal .student-workspace-presence--in_meeting { background: #a855f7; }
+  .student-portal .student-workspace-presence--reviewing { background: #eab308; }
+
+  .student-portal .student-workspace-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.35rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-surface-muted);
+  }
+
+  .student-portal .student-workspace-tab {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: transparent;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--admin-text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .student-portal .student-workspace-tab.is-active {
+    background: var(--admin-bg-elevated);
+    color: var(--admin-brand);
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
+  }
+
+  .student-portal .student-workspace-wb-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--admin-border);
+    background: color-mix(in srgb, var(--admin-surface-muted) 50%, transparent);
+  }
+
+  .student-portal .student-workspace-wb-tool-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.125rem;
+    padding: 0.2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-bg-elevated);
+  }
+
+  .student-portal .student-workspace-wb-tool {
+    display: inline-flex;
+    height: 2rem;
+    width: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    border: none;
+    background: transparent;
+    color: var(--admin-text-muted);
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+
+  .student-portal .student-workspace-wb-tool.is-active,
+  .student-portal .student-workspace-wb-tool:hover {
+    background: var(--admin-brand-muted);
+    color: var(--admin-brand);
+  }
+
+  .student-portal .student-workspace-sticky {
+    position: absolute;
+    max-width: 11rem;
+    padding: 0.75rem 1.75rem 0.75rem 0.75rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 14px rgba(16, 24, 40, 0.1);
+    font-size: 0.8125rem;
+    line-height: 1.35;
+  }
+
+  .student-portal .student-workspace-sticky--yellow {
+    background: color-mix(in srgb, #fef9c3 90%, var(--admin-bg-elevated));
+    border: 1px solid #fde68a;
+  }
+
+  .student-portal .student-workspace-sticky--blue {
+    background: color-mix(in srgb, #dbeafe 85%, var(--admin-bg-elevated));
+    border: 1px solid #93c5fd;
+  }
+
+  .student-portal .student-workspace-sticky--green {
+    background: color-mix(in srgb, #dcfce7 85%, var(--admin-bg-elevated));
+    border: 1px solid #86efac;
+  }
+
+  .student-portal .student-workspace-sticky--purple {
+    background: color-mix(in srgb, #ede9fe 85%, var(--admin-bg-elevated));
+    border: 1px solid #c4b5fd;
+  }
+
+  .student-portal .student-workspace-sticky__meta {
+    margin-top: 0.375rem;
+    font-size: 0.625rem;
+    opacity: 0.75;
+  }
+
+  .student-portal .student-workspace-documents {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .student-portal .student-workspace-documents {
+      padding: 1rem 1.5rem 1.5rem;
+    }
+  }
+
+  .student-portal .student-workspace-documents__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--admin-border) 55%, transparent);
+  }
+
+  .student-portal .student-workspace-documents__title-wrap {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .student-portal .student-workspace-documents__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--admin-text);
+  }
+
+  .student-portal .student-workspace-documents__subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--admin-text-secondary);
+    max-width: 36rem;
+  }
+
+  .student-portal .student-workspace-documents__controls {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .student-portal .student-workspace-documents__btn-import {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    height: 2.25rem;
+    padding: 0 0.875rem;
+    border-radius: 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 50%, transparent);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--admin-brand) 88%, #1d4ed8),
+      color-mix(in srgb, var(--admin-brand) 65%, #2563eb)
+    );
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 4px 12px color-mix(in srgb, var(--admin-brand) 25%, transparent);
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.15s ease,
+      filter 0.15s ease;
+  }
+
+  .student-portal .student-workspace-documents__btn-import:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14), 0 6px 16px color-mix(in srgb, var(--admin-brand) 32%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .student-portal .student-workspace-documents__btn-import:has(:focus-visible) {
+    outline: 2px solid var(--admin-brand);
+    outline-offset: 2px;
+  }
+
+  .student-portal .student-workspace-documents__view-toggle {
+    display: inline-flex;
+    gap: 0.125rem;
+    padding: 0.2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-surface-muted);
+  }
+
+  .student-portal .student-workspace-documents__view-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.5rem;
+    border: 0;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--admin-text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .student-portal .student-workspace-documents__view-btn.is-active {
+    background: var(--admin-brand-muted);
+    color: var(--admin-brand);
+  }
+
+  .student-portal .student-workspace-documents__view-btn:hover:not(.is-active) {
+    color: var(--admin-text);
+    background: var(--admin-bg-elevated);
+  }
+
+  .student-portal .student-workspace-documents__grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  }
+
+  .student-portal .student-workspace-documents__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .student-portal .student-workspace-doc-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 9.5rem;
+    border-radius: 0.625rem;
+    border: 1px solid var(--admin-border);
+    background: color-mix(in srgb, var(--admin-surface-muted) 90%, var(--admin-bg-elevated));
+    overflow: hidden;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      transform 0.12s ease;
+  }
+
+  .student-portal .student-workspace-doc-card:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 32%, var(--admin-border));
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .student-portal .student-workspace-doc-card--list {
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 0;
+  }
+
+  @media (max-width: 639px) {
+    .student-portal .student-workspace-doc-card--list {
+      flex-direction: column;
+    }
+  }
+
+  .student-portal .student-workspace-doc-card__main {
+    flex: 1;
+    padding: 0.75rem 0.875rem 0.5rem;
+    min-width: 0;
+  }
+
+  .student-portal .student-workspace-doc-card--list .student-workspace-doc-card__main {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .student-portal .student-workspace-doc-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .student-portal .student-workspace-doc-card__icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 25%, var(--admin-border));
+    background: var(--admin-brand-muted);
+    color: var(--admin-brand);
+  }
+
+  .student-portal .student-workspace-doc-card__category {
+    padding: 0.12rem 0.4rem;
+    border-radius: 9999px;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  .student-portal .student-workspace-doc-card__category--report {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.12);
+    border: 1px solid rgba(96, 165, 250, 0.28);
+  }
+
+  .student-portal .student-workspace-doc-card__category--research {
+    color: #a78bfa;
+    background: rgba(167, 139, 250, 0.12);
+    border: 1px solid rgba(167, 139, 250, 0.28);
+  }
+
+  .student-portal .student-workspace-doc-card__category--internship {
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.28);
+  }
+
+  .student-portal .student-workspace-doc-card__category--meeting {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid rgba(251, 191, 36, 0.28);
+  }
+
+  .student-portal .student-workspace-doc-card__category--shared {
+    color: var(--admin-brand);
+    background: var(--admin-brand-muted);
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 35%, transparent);
+  }
+
+  .student-portal .student-workspace-doc-card__title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--admin-text);
+    word-break: break-word;
+  }
+
+  .student-portal .student-workspace-doc-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.15rem 0.25rem;
+    margin: 0.35rem 0 0;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--admin-text-secondary);
+  }
+
+  .student-portal .student-workspace-doc-card__dot {
+    color: var(--admin-text-muted);
+  }
+
+  .student-portal .student-workspace-doc-card__version {
+    color: var(--admin-brand);
+    font-weight: 600;
+  }
+
+  .student-portal .student-workspace-doc-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: auto;
+    padding: 0.625rem 0.75rem;
+    border-top: 1px solid color-mix(in srgb, var(--admin-border) 60%, transparent);
+    background: color-mix(in srgb, var(--admin-bg-elevated) 35%, transparent);
+  }
+
+  .student-portal .student-workspace-doc-card--list .student-workspace-doc-card__actions {
+    margin-top: 0;
+    border-top: 0;
+    border-left: 1px solid color-mix(in srgb, var(--admin-border) 60%, transparent);
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.5rem 0.625rem;
+    min-width: 5.5rem;
+  }
+
+  @media (max-width: 639px) {
+    .student-portal .student-workspace-doc-card--list .student-workspace-doc-card__actions {
+      border-left: 0;
+      border-top: 1px solid color-mix(in srgb, var(--admin-border) 60%, transparent);
+      flex-direction: row;
+      min-width: 0;
+    }
+  }
+
+  .student-portal .student-workspace-doc-card__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 0.4375rem;
+    background: var(--admin-surface-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--admin-text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .student-portal .student-workspace-doc-card__btn:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 35%, var(--admin-border));
+    color: var(--admin-brand);
+    background: var(--admin-bg-elevated);
+  }
+
+  .student-portal .student-workspace-doc-card--list .student-workspace-doc-card__btn {
+    width: 100%;
+  }
+
+  .student-portal .student-workspace-thread {
+    padding: 1rem;
+    border-radius: 0.875rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-surface-muted);
+    text-align: start;
+    cursor: pointer;
+    width: 100%;
+    transition: border-color 0.15s ease;
+  }
+
+  .student-portal .student-workspace-thread:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 30%, var(--admin-border));
+  }
+
+  .student-portal .student-workspace-activity-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--admin-border) 50%, transparent);
+  }
+
+  .student-portal .student-workspace-two-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    .student-portal .student-workspace-two-col {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .student-portal .student-workspace-section-head {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--admin-border);
+  }
+
+  .student-portal .student-workspace-meetings__grid {
+    display: grid;
+    gap: 0.875rem;
+    padding: 1rem 1.25rem 1.25rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .student-portal .student-workspace-meetings__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding: 1rem 1.5rem 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .student-portal .student-workspace-meetings__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .student-portal .student-workspace-meeting-card {
+    display: flex;
+    min-height: 10.5rem;
+    flex-direction: column;
+    border-radius: 0.75rem;
+    border: 1px solid var(--admin-border);
+    background: color-mix(in srgb, var(--admin-surface-muted) 88%, var(--admin-bg-elevated));
+    overflow: hidden;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.15s ease;
+  }
+
+  .student-portal .student-workspace-meeting-card:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 35%, var(--admin-border));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .student-portal .student-workspace-meeting-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1rem 0.75rem;
+    min-width: 0;
+  }
+
+  .student-portal .student-workspace-meeting-card__badge {
+    align-self: flex-start;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  .student-portal .student-workspace-meeting-card--upcoming .student-workspace-meeting-card__badge {
+    background: color-mix(in srgb, var(--admin-brand) 18%, transparent);
+    color: var(--admin-brand);
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 35%, transparent);
+  }
+
+  .student-portal .student-workspace-meeting-card--past .student-workspace-meeting-card__badge {
+    background: color-mix(in srgb, var(--admin-text-muted) 12%, transparent);
+    color: var(--admin-text-secondary);
+    border: 1px solid var(--admin-border);
+  }
+
+  .student-portal .student-workspace-meeting-card__title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--admin-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .student-portal .student-workspace-meeting-card__datetime {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    margin-top: auto;
+    padding-top: 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--admin-text-secondary);
+  }
+
+  .student-portal .student-workspace-meeting-card__sep {
+    margin: 0 0.2rem;
+    color: var(--admin-text-muted);
+  }
+
+  .student-portal .student-workspace-meeting-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--admin-border) 65%, transparent);
+    background: color-mix(in srgb, var(--admin-bg-elevated) 40%, transparent);
+    min-height: 3.25rem;
+  }
+
+  .student-portal .student-workspace-meeting-card__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      transform 0.12s ease;
+  }
+
+  .student-portal .student-workspace-meeting-card__btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .student-portal .student-workspace-meeting-card__btn--primary {
+    border-color: color-mix(in srgb, var(--admin-brand) 45%, transparent);
+    background: var(--admin-brand-muted);
+    color: var(--admin-brand);
+  }
+
+  .student-portal .student-workspace-meeting-card__btn--primary:hover {
+    background: color-mix(in srgb, var(--admin-brand) 22%, var(--admin-brand-muted));
+  }
+
+  .student-portal .student-workspace-meeting-card__btn--ghost {
+    border-color: var(--admin-border);
+    background: var(--admin-surface-muted);
+    color: var(--admin-text-secondary);
+  }
+
+  .student-portal .student-workspace-meeting-card__btn--ghost:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 30%, var(--admin-border));
+    color: var(--admin-text);
+    background: var(--admin-bg-elevated);
+  }
+
+  .student-portal .student-workspace-knowledge__list {
+    margin: 0;
+    padding: 0.75rem 1rem 1rem;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .student-portal .student-workspace-knowledge__list {
+      padding: 0.75rem 1.25rem 1.125rem;
+    }
+  }
+
+  .student-portal .student-workspace-knowledge__item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.625rem;
+    border: 1px solid var(--admin-border);
+    background: color-mix(in srgb, var(--admin-surface-muted) 90%, var(--admin-bg-elevated));
+    text-decoration: none;
+    color: inherit;
+    transition:
+      border-color 0.15s ease,
+      background 0.15s ease,
+      box-shadow 0.15s ease,
+      transform 0.12s ease;
+  }
+
+  .student-portal .student-workspace-knowledge__item:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 40%, var(--admin-border));
+    background: color-mix(in srgb, var(--admin-brand-muted) 35%, var(--admin-surface-muted));
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .student-portal .student-workspace-knowledge__item:hover .student-workspace-knowledge__title {
+    color: var(--admin-brand);
+  }
+
+  .student-portal .student-workspace-knowledge__item:hover .student-workspace-knowledge__external {
+    color: var(--admin-brand);
+  }
+
+  .student-portal .student-workspace-knowledge__icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 25%, var(--admin-border));
+    background: var(--admin-brand-muted);
+    color: var(--admin-brand);
+  }
+
+  .student-portal .student-workspace-knowledge__content {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .student-portal .student-workspace-knowledge__title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--admin-text);
+    text-decoration: none;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.15s ease;
+  }
+
+  .student-portal .student-workspace-knowledge__type {
+    align-self: flex-start;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.25rem;
+  }
+
+  .student-portal .student-workspace-knowledge__type--reference {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.12);
+  }
+
+  .student-portal .student-workspace-knowledge__type--methodology {
+    color: #a78bfa;
+    background: rgba(167, 139, 250, 0.12);
+  }
+
+  .student-portal .student-workspace-knowledge__type--link {
+    color: var(--admin-brand);
+    background: var(--admin-brand-muted);
+  }
+
+  .student-portal .student-workspace-knowledge__type--document {
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.12);
+  }
+
+  .student-portal .student-workspace-knowledge__external {
+    color: var(--admin-text-muted);
+    transition: color 0.15s ease;
+  }
+
+  .student-portal .student-workspace-search {
+    padding: 0;
+  }
+
+  .student-portal .student-workspace-search__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .student-portal .student-workspace-search__inner {
+      padding: 1.125rem 1.5rem;
+    }
+  }
+
+  .student-portal .student-workspace-search .admin-search-wrap {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .student-portal .student-workspace-search .admin-search-field {
+    box-sizing: border-box;
+    height: 2.75rem;
+    min-height: 2.75rem;
+    width: 100%;
+    border-radius: 0.625rem;
+    padding: 0.5rem 0.875rem 0.5rem 2.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    background: color-mix(in srgb, var(--admin-input-bg) 92%, var(--admin-bg-elevated));
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .student-portal .student-workspace-search .admin-search-field::placeholder {
+    color: var(--admin-text-muted);
+    opacity: 1;
+  }
+
+  .student-portal .student-workspace-search .admin-search-field:focus {
+    outline: none;
+    border-color: var(--admin-brand);
+    background: var(--admin-input-bg);
+    box-shadow: 0 0 0 3px var(--admin-brand-muted);
+  }
+
+  .student-portal .student-workspace-search .admin-search-icon {
+    left: 0.875rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--admin-text-muted);
+  }
+
+  .student-portal .student-workspace-search .admin-search-wrap:focus-within .admin-search-icon {
+    color: var(--admin-brand);
+  }
+
+  .student-portal .student-workspace-search-results {
+    padding: 0.75rem 1rem;
+    border-radius: 0.625rem;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-surface-muted);
+  }
+
+  .student-portal .student-workspace-feedback__list {
+    margin: 0;
+    padding: 0.75rem 1rem 1rem;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .student-portal .student-workspace-feedback__list {
+      padding: 0.75rem 1.25rem 1.125rem;
+    }
+  }
+
+  .student-portal .student-workspace-feedback__card {
+    position: relative;
+    padding: 0.75rem 0.875rem 0.75rem 0.9375rem;
+    border-radius: 0.625rem;
+    border: 1px solid var(--admin-border);
+    background: color-mix(in srgb, var(--admin-surface-muted) 90%, var(--admin-bg-elevated));
+    overflow: hidden;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .student-portal .student-workspace-feedback__card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+
+  .student-portal .student-workspace-feedback__card--pending::before {
+    background: #eab308;
+  }
+
+  .student-portal .student-workspace-feedback__card--in_review::before {
+    background: #a855f7;
+  }
+
+  .student-portal .student-workspace-feedback__card--resolved::before {
+    background: #22c55e;
+  }
+
+  .student-portal .student-workspace-feedback__card:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 28%, var(--admin-border));
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  .student-portal .student-workspace-feedback__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .student-portal .student-workspace-feedback__badge {
+    padding: 0.15rem 0.45rem;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    text-transform: capitalize;
+  }
+
+  .student-portal .student-workspace-feedback__card--pending .student-workspace-feedback__badge {
+    color: #facc15;
+    background: rgba(234, 179, 8, 0.15);
+    border: 1px solid rgba(234, 179, 8, 0.35);
+  }
+
+  .student-portal .student-workspace-feedback__card--in_review .student-workspace-feedback__badge {
+    color: #c4b5fd;
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+  }
+
+  .student-portal .student-workspace-feedback__card--resolved .student-workspace-feedback__badge {
+    color: #4ade80;
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.35);
+  }
+
+  .student-portal .student-workspace-feedback__date {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--admin-text-muted);
+    white-space: nowrap;
+  }
+
+  .student-portal .student-workspace-feedback__comment {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--admin-text);
+  }
+
+  .student-portal .student-workspace-feedback__doc {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--admin-brand);
+    text-decoration: none;
+    transition: color 0.15s ease, opacity 0.15s ease;
+  }
+
+  .student-portal .student-workspace-feedback__doc:hover {
+    color: color-mix(in srgb, var(--admin-brand) 85%, white);
+    text-decoration: underline;
+  }
+
+  .student-portal .student-workspace-skeleton {
+    animation: student-ws-pulse 1.4s ease-in-out infinite;
+    background: linear-gradient(
+      90deg,
+      var(--admin-surface-muted) 25%,
+      var(--admin-bg-elevated) 50%,
+      var(--admin-surface-muted) 75%
+    );
+    background-size: 200% 100%;
+    border-radius: 0.5rem;
+  }
+
+  @keyframes student-ws-pulse {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+}

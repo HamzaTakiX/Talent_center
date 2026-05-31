@@ -1,2 +1,21 @@
-/** Types — Student SRF chat (re-export from internship offers chat). */
-export type { ChatMessage, ChatParticipant } from '../../../internship_offers/chat/types';
+export interface SrfChatMessage {
+  id: string;
+  direction: 'in' | 'out';
+  text: string;
+  time: string;
+  topicTag?: string;
+  separatorBefore?: string;
+}
+
+export interface SrfFinancialObligation {
+  id: string;
+  title: string;
+  status: 'paid' | 'unpaid';
+  detail: string;
+}
+
+export interface SrfFinancialSummary {
+  totalDue: number;
+  totalPaid: number;
+  totalRemaining: number;
+}

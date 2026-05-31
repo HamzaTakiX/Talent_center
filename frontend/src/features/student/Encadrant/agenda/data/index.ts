@@ -1,6 +1,1 @@
-﻿export {
-  agendaCalendarConfig,
-  agendaEventsCountLabel,
-  agendaLegendItems,
-  agendaUpcomingEvents,
-} from './agendaMock';
+export * from './agendaPlatformMock';

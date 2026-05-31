@@ -1,5 +1,9 @@
-﻿export { default as TaskProgressCard } from './TaskProgressCard';
-export { default as TaskUrgentAlert } from './TaskUrgentAlert';
-export { default as TaskFilterTabs } from './TaskFilterTabs';
-export { default as TaskItemCard } from './TaskItemCard';
-export { default as TaskListSection } from './TaskListSection';
+export { default as TaskPageHeader } from './TaskPageHeader';
+export { default as TaskStatsGrid } from './TaskStatsGrid';
+export { default as TaskProgressSection } from './TaskProgressSection';
+export { default as TaskPriorityAlerts } from './TaskPriorityAlerts';
+export { default as TaskControlBar } from './TaskControlBar';
+export { default as TaskFiltersPanel } from './TaskFiltersPanel';
+export { default as TaskWorkspace } from './TaskWorkspace';
+export { default as TaskKanbanBoard } from './TaskKanbanBoard';
+export { default as TaskDetailDrawer } from './TaskDetailDrawer';

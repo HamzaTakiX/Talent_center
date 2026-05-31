@@ -1,10 +1,13 @@
+import type { TFunction } from 'i18next';
 import type { FullAnnouncementItem } from '../types';
+import { announcementSearchHaystack } from './resolveAnnouncementItem';
 
 export function filterAnnouncements(
   items: FullAnnouncementItem[],
   search: string,
   typeFilter: string,
-  priorityFilter: string
+  priorityFilter: string,
+  t: TFunction,
 ): FullAnnouncementItem[] {
   const q = search.trim().toLowerCase();
 
@@ -12,11 +15,6 @@ export function filterAnnouncements(
     if (typeFilter !== 'all' && item.tag !== typeFilter) return false;
     if (priorityFilter !== 'all' && item.priority !== priorityFilter) return false;
     if (!q) return true;
-
-    const haystack = [item.title, item.company, item.description, item.tag, item.priority]
-      .join(' ')
-      .toLowerCase();
-
-    return haystack.includes(q);
+    return announcementSearchHaystack(item, t).includes(q);
   });
 }

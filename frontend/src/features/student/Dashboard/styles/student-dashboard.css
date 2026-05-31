@@ -516,10 +516,10 @@
     display: flex;
     width: 100%;
     align-items: center;
-    justify-content: space-between;
     gap: 0.75rem;
-    padding: 0.75rem 0.875rem 0.75rem 1rem;
-    text-align: left;
+    padding-block: 0.75rem;
+    padding-inline: 1rem 0.875rem;
+    text-align: start;
     border-radius: var(--admin-radius-md);
     border: 1px solid var(--admin-border);
     background: var(--admin-bg-elevated);
@@ -533,12 +533,16 @@
   .student-smart-alert::before {
     content: '';
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 0.5rem;
     bottom: 0.5rem;
     width: 3px;
     border-radius: 0 4px 4px 0;
     background: var(--student-alert-accent, var(--admin-brand));
+  }
+
+  [dir='rtl'] .student-smart-alert::before {
+    border-radius: 4px 0 0 4px;
   }
 
   .student-smart-alert:hover {
@@ -583,9 +587,19 @@
     color: var(--student-alert-accent, var(--admin-brand));
   }
 
-  .student-smart-alert__message {
-    flex: 1;
+  .student-smart-alert__body {
+    display: flex;
     min-width: 0;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.625rem;
+    row-gap: 0.25rem;
+  }
+
+  .student-smart-alert__message {
+    min-width: 0;
+    flex: 1 1 12rem;
     font-size: 0.8125rem;
     font-weight: 500;
     line-height: 1.35;

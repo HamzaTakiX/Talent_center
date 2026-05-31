@@ -19,6 +19,8 @@ export interface AdminModuleHistoryProps {
   emptyMessage?: string;
   /** Shell layout (default: AdminLayout). Student portal passes StudentLayout. */
   Layout?: ComponentType<AdminModuleHistoryLayoutProps>;
+  /** Contenu imbriqué dans un panneau parent (évite double fond/bordure). */
+  embeddedInPanel?: boolean;
 }
 
 const AdminModuleHistory: FunctionComponent<AdminModuleHistoryProps> = ({
@@ -28,6 +30,7 @@ const AdminModuleHistory: FunctionComponent<AdminModuleHistoryProps> = ({
   rows,
   emptyMessage,
   Layout = AdminLayout,
+  embeddedInPanel = false,
 }) => {
   const { t } = useTranslation();
   const { emptyState } = useAdminCopy();
@@ -35,7 +38,11 @@ const AdminModuleHistory: FunctionComponent<AdminModuleHistoryProps> = ({
 
   return (
     <Layout mainFillHeight contentFlush>
-      <div className="admin-history-page font-inter flex h-0 min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden bg-[var(--admin-bg-elevated)] text-start">
+      <div
+        className={`admin-history-page font-inter flex h-0 min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden text-start ${
+          embeddedInPanel ? '' : 'bg-[var(--admin-bg-elevated)]'
+        }`}
+      >
         <header className="admin-history-page__header shrink-0 border-b border-[var(--admin-border)] px-4 pb-5 pt-3 sm:px-5 md:px-6 md:pb-6 md:pt-4">
           <AdminListToolbar
             searchValue={searchValue}

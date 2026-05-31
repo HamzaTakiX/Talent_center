@@ -1,4 +1,5 @@
 import { FunctionComponent } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { AnnouncementPriority } from '../types';
 import {
   PRIORITY_BADGE_IMPORTANT,
@@ -21,8 +22,25 @@ function priorityClass(priority: AnnouncementPriority): string {
   }
 }
 
-const PriorityBadge: FunctionComponent<PriorityBadgeProps> = ({ priority }) => (
-  <span className={priorityClass(priority)}>{priority}</span>
-);
+function priorityKey(priority: AnnouncementPriority): 'urgent' | 'important' | 'normal' {
+  switch (priority) {
+    case 'Urgent':
+      return 'urgent';
+    case 'Important':
+      return 'important';
+    default:
+      return 'normal';
+  }
+}
+
+const PriorityBadge: FunctionComponent<PriorityBadgeProps> = ({ priority }) => {
+  const { t } = useTranslation();
+
+  return (
+    <span className={priorityClass(priority)}>
+      {t(`student.announcements.priority.${priorityKey(priority)}`)}
+    </span>
+  );
+};
 
 export default PriorityBadge;

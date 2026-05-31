@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle2, FileText } from 'lucide-react';
 import { getInternshipOfferCvAnalysisPath } from '../../constants/routes';
 import type { StudentCvFileMock } from '../../data/internshipApplyMock';
@@ -17,6 +18,7 @@ interface UseExistingCvCardProps {
 
 const UseExistingCvCard: FunctionComponent<UseExistingCvCardProps> = ({ offerId, cvFile }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <article
@@ -27,9 +29,11 @@ const UseExistingCvCard: FunctionComponent<UseExistingCvCardProps> = ({ offerId,
           <FileText className="h-5 w-5" strokeWidth={1.75} aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="m-0 text-base font-semibold leading-6 text-[var(--admin-text)]">Use Existing CV</h2>
+          <h2 className="m-0 text-base font-semibold leading-6 text-[var(--admin-text)]">
+            {t('student.internshipOffers.apply.useExistingCv')}
+          </h2>
           <p className="m-0 mt-1 text-sm leading-5 text-[#6a7282]">
-            Your most recent CV is ready to use
+            {t('student.internshipOffers.apply.useExistingDesc')}
           </p>
         </div>
       </div>
@@ -39,7 +43,7 @@ const UseExistingCvCard: FunctionComponent<UseExistingCvCardProps> = ({ offerId,
         <div className="min-w-0 flex-1">
           <p className="m-0 truncate text-sm font-semibold leading-5 text-[var(--admin-text)]">{cvFile.fileName}</p>
           <p className="m-0 mt-0.5 text-xs leading-4 text-[#6a7282]">
-            Last updated: {cvFile.lastUpdated}
+            {t('student.internshipOffers.apply.lastUpdated')}: {cvFile.lastUpdated}
           </p>
         </div>
         <CheckCircle2 className="h-5 w-5 shrink-0 text-[#22c55e]" strokeWidth={2} aria-hidden />
@@ -50,7 +54,7 @@ const UseExistingCvCard: FunctionComponent<UseExistingCvCardProps> = ({ offerId,
         className={`${APPLY_BLUE_BUTTON} mt-auto`}
         onClick={() => navigate(getInternshipOfferCvAnalysisPath(offerId))}
       >
-        Analyze My CV
+        {t('student.internshipOffers.apply.analyzeCv')}
       </button>
     </article>
   );

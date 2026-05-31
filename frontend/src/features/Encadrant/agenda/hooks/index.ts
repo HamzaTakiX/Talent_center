@@ -1,0 +1,1 @@
+/** Hooks — Agenda Encadrant (placeholder). */

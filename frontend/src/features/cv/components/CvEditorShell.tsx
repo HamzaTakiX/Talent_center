@@ -1,6 +1,9 @@
-import { FunctionComponent, ReactNode } from 'react';
+import { FunctionComponent, ReactNode, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../../auth/hooks/useAuth';
 import CvEditorHeader from './CvEditorHeader';
+import { getCvBackTarget, type CvReturnState } from '../utils/cvNavigation';
 import CvEditorToolbar from './CvEditorToolbar';
 import CvAiConfigBanner from './ai/CvAiConfigBanner';
 import CvAiOverviewPanel from './ai/CvAiOverviewPanel';
@@ -25,8 +28,14 @@ export const CvEditorShell: FunctionComponent<CvEditorShellProps> = ({
   footer,
 }) => {
   const { t } = useTranslation();
+  const { pathname, state } = useLocation();
+  const { user } = useAuth();
   const { theme } = useAdminTheme();
   const onboardingCv = isOnboardingCvPending();
+  const backTo = useMemo(
+    () => getCvBackTarget(pathname, user?.role, (state as CvReturnState | null)?.returnTo),
+    [pathname, user?.role, state],
+  );
 
   return (
     <div
@@ -42,7 +51,7 @@ export const CvEditorShell: FunctionComponent<CvEditorShellProps> = ({
           {t('cv.onboarding.banner')}
         </div>
       )}
-      <CvEditorHeader hideBack={hideBack ?? onboardingCv} />
+      <CvEditorHeader hideBack={hideBack ?? onboardingCv} backTo={backTo} />
       <CvAiConfigBanner />
       <CvEditorToolbar />
       <div className="cv-editor-main relative min-h-0 flex-1 flex flex-col overflow-hidden">

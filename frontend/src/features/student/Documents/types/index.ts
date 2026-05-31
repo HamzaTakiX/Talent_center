@@ -4,6 +4,8 @@ export type DocumentsStatIconKey = 'total' | 'pending' | 'validated' | 'reserved
 
 export type DocumentCatalogBadgeType = 'auto' | 'reservation';
 
+export type DocumentCategoryKey = 'administrative' | 'internship' | 'academic' | 'financial';
+
 export interface DocumentsStatItem {
   label: string;
   value: string;
@@ -14,8 +16,10 @@ export interface DocumentsStatItem {
 export interface DocumentCatalogItem {
   id: string;
   title: string;
-  category: string;
+  categoryKey: DocumentCategoryKey;
   delayLabel: string;
   requirement: string;
   badgeType: DocumentCatalogBadgeType;
 }
+
+export type ResolvedDocumentCatalogItem = DocumentCatalogItem & { category: string };

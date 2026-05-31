@@ -230,7 +230,9 @@
       .admin-section-tab
     ):not(.admin-section-tab--active):not(.admin-toggle):not(.admin-btn-primary):not(
       .admin-btn-secondary
-    ):not(.admin-btn-reset):not(.admin-btn-outline):not(.admin-btn-ghost):not(.admin-btn-surface):not(.admin-table-btn):not(.admin-icon-btn):not(.admin-modal-close):not(.admin-kpi-cell):not(.admin-toast-close):not(.admin-dashboard-order-btn):not(.admin-theme-card):not(.admin-language-card):not(.admin-avatar-upload-btn):not(.admin-avatar-upload-link):not(.cv-ai-cockpit-pill):not(.cv-ai-cockpit__close):not(.cv-ai-analyze-btn) {
+    ):not(.admin-btn-reset):not(.admin-btn-outline):not(.admin-btn-ghost):not(.admin-btn-surface):not(.admin-table-btn):not(.admin-icon-btn):not(.admin-modal-close):not(.admin-kpi-cell):not(.admin-toast-close):not(.admin-dashboard-order-btn):not(.admin-theme-card):not(.admin-language-card):not(.admin-avatar-upload-btn):not(.admin-avatar-upload-link):not(.cv-ai-cockpit-pill):not(.cv-ai-cockpit__close):not(.cv-ai-analyze-btn):not(
+      .admin-custom-select__trigger
+    ):not(.admin-custom-select__option):not(.admin-module-toolbar__btn):not(.admin-ann-filters__toggle) {
     background-color: transparent;
   }
 

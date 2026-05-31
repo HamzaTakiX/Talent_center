@@ -1,4 +1,4 @@
-import { FunctionComponent, useMemo, useState } from 'react';
+import { FunctionComponent, useCallback, useMemo, useState } from 'react';
 import {
   Bookmark,
   CalendarClock,
@@ -11,6 +11,7 @@ import {
   User,
   Users,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   ADMIN_HISTORY_ICON_PROPS,
   type AdminHistoryCircleVariant,
@@ -23,32 +24,18 @@ import {
   StudentInternshipHistoryStatus,
 } from '../data/studentInternshipHistoryMock';
 
-function statusLabel(status: StudentInternshipHistoryStatus): string {
-  switch (status) {
-    case 'viewed_offer':
-      return 'Viewed offer';
-    case 'saved_offer':
-      return 'Saved offer';
-    case 'applied':
-      return 'Applied';
-    case 'cv_uploaded':
-      return 'CV uploaded';
-    case 'cv_analysis_used':
-      return 'CV Analysis';
-    case 'interview_simulator_used':
-      return 'Interview Simulator';
-    case 'chat_question':
-      return 'Chat question';
-    case 'external_link_confirmed':
-      return 'External link';
-    case 'application_status_changed':
-      return 'Status updated';
-    case 'deadline_reminder':
-      return 'Deadline reminder';
-    default:
-      return status;
-  }
-}
+const STATUS_I18N_KEY: Record<StudentInternshipHistoryStatus, string> = {
+  viewed_offer: 'student.internshipOffers.history.statuses.viewed',
+  saved_offer: 'student.internshipOffers.history.statuses.saved',
+  applied: 'student.internshipOffers.history.statuses.applied',
+  cv_uploaded: 'student.internshipOffers.history.statuses.cvUploaded',
+  cv_analysis_used: 'student.internshipOffers.history.statuses.cvAnalysis',
+  interview_simulator_used: 'student.internshipOffers.history.statuses.interviewSimulator',
+  chat_question: 'student.internshipOffers.history.statuses.chatQuestion',
+  external_link_confirmed: 'student.internshipOffers.history.statuses.externalLink',
+  application_status_changed: 'student.internshipOffers.history.statuses.statusUpdated',
+  deadline_reminder: 'student.internshipOffers.history.statuses.deadlineReminder',
+};
 
 function statusCircleVariant(status: StudentInternshipHistoryStatus): AdminHistoryCircleVariant {
   switch (status) {
@@ -98,43 +85,52 @@ function glyphFor(status: StudentInternshipHistoryStatus) {
   }
 }
 
-function rowToDisplay(row: StudentInternshipHistoryRow): HistoryRowDisplay {
-  return {
-    id: row.id,
-    glyph: glyphFor(row.status),
-    badgeLabel: statusLabel(row.status),
-    circleVariant: statusCircleVariant(row.status),
-    actorName: row.actorName,
-    headline: row.headline,
-    metaLine: row.company,
-    date: row.date,
-    time: row.time,
-  };
-}
-
 const HistoryPage: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [activityType, setActivityType] = useState('all');
   const [expireOffer, setExpireOffer] = useState('all');
 
+  const statusLabel = useCallback(
+    (status: StudentInternshipHistoryStatus) => t(STATUS_I18N_KEY[status] ?? status),
+    [t],
+  );
+
+  const rowToDisplay = useCallback(
+    (row: StudentInternshipHistoryRow): HistoryRowDisplay => ({
+      id: row.id,
+      glyph: glyphFor(row.status),
+      badgeLabel: statusLabel(row.status),
+      circleVariant: statusCircleVariant(row.status),
+      actorName: row.actorName,
+      headline: row.headline,
+      metaLine: row.company,
+      date: row.date,
+      time: row.time,
+    }),
+    [statusLabel],
+  );
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return studentInternshipHistoryTimelineSeed.filter((row) => {
-      if (activityType !== 'all' && row.activityCategory !== activityType) return false;
-      if (expireOffer !== 'all' && row.offerExpiry !== expireOffer) return false;
-      if (!q) return true;
-      const hay = [
-        row.actorName,
-        row.headline,
-        row.company,
-        statusLabel(row.status),
-        row.activityCategory,
-      ]
-        .join(' ')
-        .toLowerCase();
-      return hay.includes(q);
-    });
-  }, [search, activityType, expireOffer]);
+    return studentInternshipHistoryTimelineSeed
+      .filter((row) => {
+        if (activityType !== 'all' && row.activityCategory !== activityType) return false;
+        if (expireOffer !== 'all' && row.offerExpiry !== expireOffer) return false;
+        if (!q) return true;
+        const hay = [
+          row.actorName,
+          row.headline,
+          row.company,
+          statusLabel(row.status),
+          row.activityCategory,
+        ]
+          .join(' ')
+          .toLowerCase();
+        return hay.includes(q);
+      })
+      .map(rowToDisplay);
+  }, [search, activityType, expireOffer, statusLabel, rowToDisplay]);
 
   return (
     <StudentModuleHistory
@@ -142,32 +138,32 @@ const HistoryPage: FunctionComponent = () => {
       onSearchChange={setSearch}
       filters={[
         {
-          ariaLabel: 'Activity type',
-          placeholderOptionLabel: 'Activity type',
+          ariaLabel: t('student.internshipOffers.history.activityType'),
+          placeholderOptionLabel: t('student.internshipOffers.history.activityType'),
           value: activityType,
           onChange: setActivityType,
           options: [
-            { value: 'applications', label: 'Applications' },
-            { value: 'saved', label: 'Saved offers' },
-            { value: 'tools', label: 'Tools' },
-            { value: 'chat', label: 'Chat' },
-            { value: 'offers', label: 'Offers' },
+            { value: 'applications', label: t('student.internshipOffers.history.filters.applications') },
+            { value: 'saved', label: t('student.internshipOffers.history.filters.saved') },
+            { value: 'tools', label: t('student.internshipOffers.history.filters.tools') },
+            { value: 'chat', label: t('student.internshipOffers.history.filters.chat') },
+            { value: 'offers', label: t('student.internshipOffers.history.filters.offers') },
           ],
         },
         {
-          ariaLabel: 'Offer expiry',
-          placeholderOptionLabel: 'Expire offer',
+          ariaLabel: t('student.internshipOffers.history.offerExpiry'),
+          placeholderOptionLabel: t('student.internshipOffers.history.offerExpiry'),
           value: expireOffer,
           onChange: setExpireOffer,
           options: [
-            { value: 'active', label: 'Active' },
-            { value: 'expiring_soon', label: 'Expiring soon' },
-            { value: 'expired', label: 'Expired' },
+            { value: 'active', label: t('student.internshipOffers.history.filters.active') },
+            { value: 'expiring_soon', label: t('student.internshipOffers.history.filters.expiringSoon') },
+            { value: 'expired', label: t('student.internshipOffers.history.filters.expired') },
           ],
         },
       ]}
-      rows={rows.map(rowToDisplay)}
-      emptyMessage="No internship offer activity matches your filters."
+      rows={rows}
+      emptyMessage={t('student.internshipOffers.history.empty')}
     />
   );
 };

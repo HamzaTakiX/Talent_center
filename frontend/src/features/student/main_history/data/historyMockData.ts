@@ -35,7 +35,7 @@ export const studentHistoryStatsMock: StudentHistoryStatItem[] = [
 export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   {
     id: 'stu-hist-1',
-    module: 'My Applications',
+    module: 'myApplications',
     eventType: 'application',
     managementStatus: 'submitted',
     priority: 'high',
@@ -45,7 +45,7 @@ export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   },
   {
     id: 'stu-hist-2',
-    module: 'My Applications',
+    module: 'myApplications',
     eventType: 'application',
     managementStatus: 'in_review',
     priority: 'high',
@@ -55,7 +55,7 @@ export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   },
   {
     id: 'stu-hist-3',
-    module: 'My Applications',
+    module: 'myApplications',
     eventType: 'application',
     managementStatus: 'submitted',
     priority: 'medium',
@@ -65,7 +65,7 @@ export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   },
   {
     id: 'stu-hist-4',
-    module: 'My Applications',
+    module: 'myApplications',
     eventType: 'application',
     managementStatus: 'accepted',
     priority: 'high',
@@ -75,7 +75,7 @@ export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   },
   {
     id: 'stu-hist-5',
-    module: 'My Applications',
+    module: 'myApplications',
     eventType: 'application',
     managementStatus: 'accepted',
     priority: 'high',
@@ -85,7 +85,7 @@ export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   },
   {
     id: 'stu-hist-6',
-    module: 'My Applications',
+    module: 'myApplications',
     eventType: 'application',
     managementStatus: 'declined',
     priority: 'medium',
@@ -95,7 +95,7 @@ export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   },
   {
     id: 'stu-hist-7',
-    module: 'Internship Offers',
+    module: 'internshipOffers',
     eventType: 'offer',
     managementStatus: 'completed',
     priority: 'low',
@@ -105,7 +105,7 @@ export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   },
   {
     id: 'stu-hist-8',
-    module: 'Documents',
+    module: 'documents',
     eventType: 'document',
     managementStatus: 'completed',
     priority: 'medium',
@@ -115,7 +115,7 @@ export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   },
   {
     id: 'stu-hist-9',
-    module: 'Career Tools',
+    module: 'careerTools',
     eventType: 'tool',
     managementStatus: 'completed',
     priority: 'low',
@@ -125,7 +125,7 @@ export const studentHistoryActionsMock: StudentHistoryActionRow[] = [
   },
   {
     id: 'stu-hist-10',
-    module: 'SRF (Finance)',
+    module: 'srf',
     eventType: 'payment',
     managementStatus: 'in_review',
     priority: 'high',

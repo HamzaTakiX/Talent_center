@@ -1,1 +1,1 @@
-﻿/** Hooks — Encadrant Workspace (placeholder). */
+export { useWorkspacePlatform } from './useWorkspacePlatform';

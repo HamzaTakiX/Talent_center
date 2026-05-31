@@ -12,7 +12,7 @@ import {
   AdminHeaderSearchMobile,
   AdminHeaderSearchProvider,
 } from '../../admin/search/components/AdminHeaderSearch';
-import { getStudentHeaderTitleKey } from '../utils/studentPageTitle';
+import { getStudentHeaderSubtitleKey, getStudentHeaderTitleKey } from '../utils/studentPageTitle';
 
 interface StudentHeaderProps {
   onMenuClick?: () => void;
@@ -23,7 +23,8 @@ const StudentHeader: FunctionComponent<StudentHeaderProps> = ({ onMenuClick }) =
   const { theme, toggleTheme } = useAdminTheme();
   const { t } = useTranslation();
   const pageTitle = t(getStudentHeaderTitleKey(pathname));
-  const subtitle = t('student.header.defaultSubtitle');
+  const subtitleKey = getStudentHeaderSubtitleKey(pathname);
+  const subtitle = subtitleKey ? t(subtitleKey) : t('student.header.defaultSubtitle');
 
   return (
     <AdminHeaderSearchProvider>

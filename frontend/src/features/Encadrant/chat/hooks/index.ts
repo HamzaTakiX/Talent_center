@@ -1,0 +1,1 @@
+/** Hooks — Chat Encadrant (placeholder). */

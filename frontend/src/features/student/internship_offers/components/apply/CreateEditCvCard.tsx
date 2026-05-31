@@ -1,6 +1,8 @@
 import { FunctionComponent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle2, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { STUDENT_INTERNSHIP_OFFERS_PATH } from '../../constants/routes';
 import {
   APPLY_ICON_BOX_PURPLE,
   APPLY_PURPLE_BUTTON,
@@ -14,6 +16,7 @@ interface CreateEditCvCardProps {
 
 const CreateEditCvCard: FunctionComponent<CreateEditCvCardProps> = ({ offerTitle, features }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <article
@@ -24,9 +27,11 @@ const CreateEditCvCard: FunctionComponent<CreateEditCvCardProps> = ({ offerTitle
           <FileText className="h-5 w-5" strokeWidth={1.75} aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="m-0 text-base font-semibold leading-6 text-[var(--admin-text)]">Create / Edit CV</h2>
+          <h2 className="m-0 text-base font-semibold leading-6 text-[var(--admin-text)]">
+            {t('student.internshipOffers.apply.createEditCv')}
+          </h2>
           <p className="m-0 mt-1 text-sm leading-5 text-[#6a7282]">
-            Create a new CV or improve your current one with our AI-powered editor
+            {t('student.internshipOffers.apply.createEditDesc')}
           </p>
         </div>
       </div>
@@ -43,10 +48,14 @@ const CreateEditCvCard: FunctionComponent<CreateEditCvCardProps> = ({ offerTitle
       <button
         type="button"
         className={`${APPLY_PURPLE_BUTTON} mt-auto`}
-        onClick={() => navigate('/cv-editor')}
-        aria-label={`Open CV editor for ${offerTitle}`}
+        onClick={() =>
+          navigate('/cv-editor', {
+            state: { returnTo: STUDENT_INTERNSHIP_OFFERS_PATH },
+          })
+        }
+        aria-label={`${t('student.internshipOffers.apply.openCvEditor')} — ${offerTitle}`}
       >
-        Open CV Editor
+        {t('student.internshipOffers.apply.openCvEditor')}
       </button>
     </article>
   );

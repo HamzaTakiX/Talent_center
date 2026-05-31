@@ -1,4 +1,5 @@
 import { FunctionComponent } from 'react';
+import { useTranslation } from 'react-i18next';
 import AiAssistantHeader from './AiAssistantHeader';
 import AiAssistantMessage from './AiAssistantMessage';
 import SuggestedQuestions from './SuggestedQuestions';
@@ -15,15 +16,17 @@ import {
 } from '../../constants/cvAiAssistantLayout';
 
 const AiAssistantPanel: FunctionComponent = () => {
+  const { t } = useTranslation();
+
   return (
-    <section className={CV_ASSISTANT_MAIN_PANEL} aria-label="AI CV Assistant chat">
+    <section className={CV_ASSISTANT_MAIN_PANEL} aria-label={t('student.internshipOffers.cvTool.chatAria')}>
       <AiAssistantHeader />
 
       <div
         className={CV_ASSISTANT_PANEL_SCROLL}
         role="log"
         aria-live="polite"
-        aria-label="Conversation with AI CV Assistant"
+        aria-label={t('student.internshipOffers.cvTool.conversationAria')}
       >
         <AiAssistantMessage message={CV_AI_ASSISTANT_MESSAGE} />
       </div>

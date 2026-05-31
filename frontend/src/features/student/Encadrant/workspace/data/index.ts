@@ -1,1 +1,1 @@
-﻿export * from './workspaceMock';
+export * from './workspacePlatformMock';

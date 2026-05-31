@@ -1,4 +1,5 @@
 import { FunctionComponent } from 'react';
+import { useTranslation } from 'react-i18next';
 import AdminModuleChat from '../../../../admin/shared/admin-module-chat/AdminModuleChat';
 import type { AdminChatMessage, AdminChatParticipant } from '../../../../admin/shared/admin-module-chat/adminChatTypes';
 import StudentLayout from '../../../components/StudentLayout';
@@ -22,8 +23,11 @@ const StudentModuleChat: FunctionComponent<StudentModuleChatProps> = ({
   avatarClassByParticipantId,
   searchPlaceholder,
   composerPlaceholder,
-  emptyConversationLabel = 'Sélectionnez une conversation',
-}) => (
+  emptyConversationLabel,
+}) => {
+  const { t } = useTranslation();
+  const emptyLabel = emptyConversationLabel ?? t('student.moduleChat.defaultEmpty');
+  return (
   <AdminModuleChat
     Layout={StudentLayout}
     participantsSeed={participantsSeed as AdminChatParticipant[]}
@@ -32,8 +36,9 @@ const StudentModuleChat: FunctionComponent<StudentModuleChatProps> = ({
     avatarClassByParticipantId={avatarClassByParticipantId}
     searchPlaceholder={searchPlaceholder}
     composerPlaceholder={composerPlaceholder}
-    emptyConversationLabel={emptyConversationLabel}
+    emptyConversationLabel={emptyLabel}
   />
-);
+  );
+};
 
 export default StudentModuleChat;

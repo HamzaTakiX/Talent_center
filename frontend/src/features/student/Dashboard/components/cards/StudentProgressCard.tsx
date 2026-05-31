@@ -8,8 +8,8 @@ import { STUDENT_SECONDARY_BUTTON } from '../../constants/studentDashboardStyles
 
 const barToneClass = (key: string): string => {
   if (key === 'profile') return 'bg-[var(--admin-brand)]';
-  if (key === 'cv') return 'bg-[#059669]';
-  return 'bg-[#7c3aed]';
+  if (key === 'cv') return 'bg-emerald-500';
+  return 'bg-[color-mix(in_srgb,var(--admin-brand)_55%,#8b5cf6)]';
 };
 
 const StudentProgressCard: FunctionComponent = () => {
@@ -28,15 +28,15 @@ const StudentProgressCard: FunctionComponent = () => {
           <div key={m.key} className="flex flex-col gap-2">
             <div className="flex items-center justify-between gap-3">
               <span className="truncate text-[13px] font-medium text-[var(--admin-text-secondary)]">
-                {m.label}
+                {t(`student.dashboard.mocks.progress.${m.key}`)}
               </span>
               <span className="shrink-0 rounded-md bg-[var(--admin-surface-inset)] px-1.5 py-0.5 text-[13px] font-bold tabular-nums text-[var(--admin-text)]">
                 {m.percent}%
               </span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--admin-surface-inset)]">
+            <div className="student-progress-track h-2">
               <div
-                className={`h-2 rounded-full transition-[width] duration-500 ease-out ${barToneClass(m.key)}`}
+                className={`student-progress-fill h-2 transition-[width] duration-500 ease-out ${barToneClass(m.key)}`}
                 style={{ width: `${m.percent}%` }}
               />
             </div>

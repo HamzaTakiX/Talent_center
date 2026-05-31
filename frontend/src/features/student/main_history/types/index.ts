@@ -1,11 +1,11 @@
-export type StudentHistoryModule =
-  | 'Internship Offers'
-  | 'My Applications'
-  | 'Announcements'
-  | 'Documents'
-  | 'SRF (Finance)'
-  | 'Career Tools'
-  | 'Chat';
+export type StudentHistoryModuleKey =
+  | 'internshipOffers'
+  | 'myApplications'
+  | 'announcements'
+  | 'documents'
+  | 'srf'
+  | 'careerTools'
+  | 'chat';
 
 export type StudentHistoryEventType =
   | 'application'
@@ -35,7 +35,7 @@ export interface StudentHistoryStatItem {
 
 export interface StudentHistoryActionRow {
   id: string;
-  module: StudentHistoryModule;
+  module: StudentHistoryModuleKey;
   eventType: StudentHistoryEventType;
   managementStatus: StudentHistoryManagementStatus;
   priority: StudentHistoryPriority;
@@ -43,3 +43,6 @@ export interface StudentHistoryActionRow {
   detail: string;
   timestamp: string;
 }
+
+/** @deprecated Use StudentHistoryModuleKey */
+export type StudentHistoryModule = StudentHistoryModuleKey;

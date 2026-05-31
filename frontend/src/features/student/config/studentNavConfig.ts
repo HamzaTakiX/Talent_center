@@ -25,10 +25,10 @@ import {
   STUDENT_ENCADRANT_AGENDA_PATH,
   STUDENT_ENCADRANT_CHAT_PATH,
   STUDENT_ENCADRANT_PATH,
-  STUDENT_ENCADRANT_REPORT_PATH,
   STUDENT_ENCADRANT_TASK_PATH,
   STUDENT_ENCADRANT_WORKSPACE_PATH,
 } from '../Encadrant/constants/routes';
+import { STUDENT_REPORTS_PATH } from '../reports/constants/routes';
 import { STUDENT_SRF_CHAT_PATH, STUDENT_SRF_PATH } from '../SRF/constants/routes';
 
 export const STUDENT_DASHBOARD_PATH = '/student-dashboard';
@@ -98,6 +98,9 @@ export const getActiveSectionFromPath = (pathname: string): StudentNavSectionId 
   if (pathname === STUDENT_SRF_PATH || pathname.startsWith(`${STUDENT_SRF_PATH}/`)) {
     return 'srf';
   }
+  if (pathname === STUDENT_REPORTS_PATH || pathname.startsWith(`${STUDENT_REPORTS_PATH}/`)) {
+    return 'encadrant';
+  }
   if (pathname === STUDENT_ENCADRANT_PATH || pathname.startsWith(`${STUDENT_ENCADRANT_PATH}/`)) {
     return 'encadrant';
   }
@@ -118,6 +121,9 @@ export const sectionToExpandForPath = (pathname: string): StudentNavSectionId | 
     return 'srf';
   }
   if (pathname === STUDENT_ENCADRANT_PATH || pathname.startsWith(`${STUDENT_ENCADRANT_PATH}/`)) {
+    return 'encadrant';
+  }
+  if (pathname === STUDENT_REPORTS_PATH || pathname.startsWith(`${STUDENT_REPORTS_PATH}/`)) {
     return 'encadrant';
   }
   return null;
@@ -165,7 +171,7 @@ export const getChildPath = (
     if (child === 'agenda') return STUDENT_ENCADRANT_AGENDA_PATH;
     if (child === 'task') return STUDENT_ENCADRANT_TASK_PATH;
     if (child === 'workspace') return STUDENT_ENCADRANT_WORKSPACE_PATH;
-    if (child === 'report') return STUDENT_ENCADRANT_REPORT_PATH;
+    if (child === 'report') return STUDENT_REPORTS_PATH;
   }
   return undefined;
 };
@@ -177,6 +183,9 @@ export const isChildNavActive = (
 ): boolean => {
   const base = getChildPath(section, child);
   if (!base) return false;
+  if (section === 'encadrant' && child === 'report') {
+    return pathname === base || pathname.startsWith(`${base}/`);
+  }
   return pathname === base;
 };
 

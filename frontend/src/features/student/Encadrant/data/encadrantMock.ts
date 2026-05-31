@@ -6,6 +6,12 @@ import {
   MessageSquare,
   Users,
 } from 'lucide-react';
+import {
+  STUDENT_ENCADRANT_AGENDA_PATH,
+  STUDENT_ENCADRANT_CHAT_PATH,
+  STUDENT_ENCADRANT_WORKSPACE_PATH,
+} from '../constants/routes';
+import { STUDENT_REPORTS_PATH } from '../../reports/constants/routes';
 import type {
   EncadrantMeetingItem,
   EncadrantQuickAction,
@@ -107,6 +113,7 @@ export const encadrantQuickActions: EncadrantQuickAction[] = [
     subtitle: 'Discuter avec votre encadrant',
     icon: MessageSquare,
     iconClassName: 'text-[#2b7fff]',
+    path: STUDENT_ENCADRANT_CHAT_PATH,
   },
   {
     id: 'qa-workspace',
@@ -114,6 +121,7 @@ export const encadrantQuickActions: EncadrantQuickAction[] = [
     subtitle: 'Espace collaboratif',
     icon: Users,
     iconClassName: 'text-[#a855f7]',
+    path: STUDENT_ENCADRANT_WORKSPACE_PATH,
   },
   {
     id: 'qa-reports',
@@ -121,6 +129,7 @@ export const encadrantQuickActions: EncadrantQuickAction[] = [
     subtitle: 'Rédiger votre rapport',
     icon: FilePenLine,
     iconClassName: 'text-[#22c55e]',
+    path: STUDENT_REPORTS_PATH,
   },
   {
     id: 'qa-agenda',
@@ -128,6 +137,7 @@ export const encadrantQuickActions: EncadrantQuickAction[] = [
     subtitle: 'Gérer vos rendez-vous',
     icon: Calendar,
     iconClassName: 'text-[#f97316]',
+    path: STUDENT_ENCADRANT_AGENDA_PATH,
   },
 ];
 
@@ -137,8 +147,8 @@ export const encadrantTaskPriorityLabels: Record<EncadrantTaskItem['priority'], 
 };
 
 export const encadrantTaskPriorityClasses: Record<EncadrantTaskItem['priority'], string> = {
-  high: 'bg-red-50 text-red-700',
-  medium: 'bg-orange-50 text-orange-700',
+  high: 'admin-badge admin-badge--danger',
+  medium: 'admin-badge admin-badge--warning',
 };
 
 export const encadrantTaskStatusLabels: Record<EncadrantTaskItem['status'], string> = {
@@ -148,7 +158,7 @@ export const encadrantTaskStatusLabels: Record<EncadrantTaskItem['status'], stri
 };
 
 export const encadrantTaskStatusClasses: Record<EncadrantTaskItem['status'], string> = {
-  in_progress: 'bg-[#fef9c2] text-[#854d0e]',
-  todo: 'bg-[var(--admin-surface-inset)] text-[#4b5563]',
-  in_review: 'bg-[#eff6ff] text-[#1d4ed8]',
+  in_progress: 'admin-badge admin-badge--warning',
+  todo: 'admin-badge admin-badge--neutral',
+  in_review: 'admin-badge admin-badge--info',
 };

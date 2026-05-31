@@ -6,7 +6,7 @@ import SrfUpcomingDeadlinesSection from '../components/SrfUpcomingDeadlinesSecti
 import { SRF_PAGE_ROOT } from '../constants/srfLayout';
 
 const SrfPage: FunctionComponent = () => (
-  <StudentLayout headerTitle="SRF" headerSubtitle="Digital Talent Center">
+  <StudentLayout>
     <div id="student-srf-root" className={SRF_PAGE_ROOT}>
       <SrfFeesSection />
       <SrfPaymentHistorySection />

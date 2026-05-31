@@ -164,7 +164,12 @@ import {
   EncadrantReportPage as StudentEncadrantReportPage,
   EncadrantTaskPage as StudentEncadrantTaskPage,
   EncadrantWorkspacePage as StudentEncadrantWorkspacePage,
+  EncadrantWhiteboardPage as StudentEncadrantWhiteboardPage,
 } from '../../features/student/Encadrant';
+import {
+  ReportEditorPage as StudentReportEditorPage,
+  ReportsHubPage as StudentReportsHubPage,
+} from '../../features/student/reports';
 import { SrfChatPage as StudentSrfChatPage, SrfPage as StudentSrfPage } from '../../features/student/SRF';
 
 // CV Pages
@@ -306,8 +311,28 @@ export const router = createBrowserRouter([
         element: <StudentEncadrantWorkspacePage />
       },
       {
+        path: '/student/workspace/whiteboard',
+        element: <StudentEncadrantWhiteboardPage />
+      },
+      {
+        path: '/student/encadrant/workspace/whiteboard',
+        element: <StudentEncadrantWhiteboardPage />
+      },
+      {
         path: '/student/encadrant/report',
         element: <StudentEncadrantReportPage />
+      },
+      {
+        path: '/student/reports',
+        element: <StudentReportsHubPage />
+      },
+      {
+        path: '/student/reports/editor',
+        element: <Navigate to="/student/reports/editor/rpt-main-2026" replace />
+      },
+      {
+        path: '/student/reports/editor/:reportId',
+        element: <StudentReportEditorPage />
       },
       {
         path: '/student/internship-offers',
@@ -884,6 +909,10 @@ export const router = createBrowserRouter([
       {
         path: '/cv-editor',
         element: <CVEditorPage />
+      },
+      {
+        path: '*',
+        element: <Navigate to="/student-dashboard" replace />
       }
         ]
       }

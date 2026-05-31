@@ -36,6 +36,16 @@ export const studentCopyAr = {
       chat: 'المحادثة',
       apply: 'التقديم على العرض',
       offerDetails: 'تفاصيل العرض',
+      cvEditor: 'محرر السيرة',
+      agenda: 'الأجندة',
+      task: 'المهام',
+      workspace: 'مساحة العمل',
+      whiteboard: 'السبورة',
+      report: 'التقارير',
+      srfChat: 'دردشة SRF',
+    },
+    subtitles: {
+      srfChat: 'تحدث مع خدمة الموارد المالية',
     },
   },
   dashboard: {
@@ -127,5 +137,9 @@ export const studentCopyAr = {
     loading: 'جاري التحميل…',
     search: 'بحث…',
     noResults: 'لا توجد نتائج',
+    searchEmpty: {
+      title: 'لا توجد نتائج',
+      description: 'جرّب تعديل البحث أو عوامل التصفية لعرض المزيد.',
+    },
   },
 };

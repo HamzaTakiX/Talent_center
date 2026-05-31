@@ -1,4 +1,4 @@
-import { FunctionComponent, useMemo, useState } from 'react';
+import { FunctionComponent, useCallback, useMemo, useState } from 'react';
 import {
   Bell,
   Bookmark,
@@ -8,6 +8,7 @@ import {
   UserCheck,
   X,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   ADMIN_HISTORY_ICON_PROPS,
   type AdminHistoryCircleVariant,
@@ -20,26 +21,15 @@ import {
   StudentAnnouncementsHistoryStatus,
 } from '../data/studentAnnouncementsHistoryMock';
 
-function statusLabel(status: StudentAnnouncementsHistoryStatus): string {
-  switch (status) {
-    case 'viewed_announcement':
-      return 'Viewed';
-    case 'read_announcement':
-      return 'Read';
-    case 'saved_announcement':
-      return 'Saved';
-    case 'dismissed_announcement':
-      return 'Dismissed';
-    case 'replied_in_chat':
-      return 'Chat reply';
-    case 'event_registered':
-      return 'Registered';
-    case 'deadline_reminder':
-      return 'Deadline';
-    default:
-      return status;
-  }
-}
+const STATUS_I18N_KEY: Record<StudentAnnouncementsHistoryStatus, string> = {
+  viewed_announcement: 'student.announcements.history.statuses.viewed',
+  read_announcement: 'student.announcements.history.statuses.read',
+  saved_announcement: 'student.announcements.history.statuses.saved',
+  dismissed_announcement: 'student.announcements.history.statuses.dismissed',
+  replied_in_chat: 'student.announcements.history.statuses.chatReply',
+  event_registered: 'student.announcements.history.statuses.registered',
+  deadline_reminder: 'student.announcements.history.statuses.deadline',
+};
 
 function statusCircleVariant(status: StudentAnnouncementsHistoryStatus): AdminHistoryCircleVariant {
   switch (status) {
@@ -80,43 +70,52 @@ function glyphFor(status: StudentAnnouncementsHistoryStatus) {
   }
 }
 
-function rowToDisplay(row: StudentAnnouncementsHistoryRow): HistoryRowDisplay {
-  return {
-    id: row.id,
-    glyph: glyphFor(row.status),
-    badgeLabel: statusLabel(row.status),
-    circleVariant: statusCircleVariant(row.status),
-    actorName: row.actorName,
-    headline: row.headline,
-    metaLine: row.channel,
-    date: row.date,
-    time: row.time,
-  };
-}
-
 const HistoryPage: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [activityType, setActivityType] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
 
+  const statusLabel = useCallback(
+    (status: StudentAnnouncementsHistoryStatus) => t(STATUS_I18N_KEY[status] ?? status),
+    [t],
+  );
+
+  const rowToDisplay = useCallback(
+    (row: StudentAnnouncementsHistoryRow): HistoryRowDisplay => ({
+      id: row.id,
+      glyph: glyphFor(row.status),
+      badgeLabel: statusLabel(row.status),
+      circleVariant: statusCircleVariant(row.status),
+      actorName: row.actorName,
+      headline: row.headline,
+      metaLine: row.channel,
+      date: row.date,
+      time: row.time,
+    }),
+    [statusLabel],
+  );
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return studentAnnouncementsHistoryTimelineSeed.filter((row) => {
-      if (activityType !== 'all' && row.activityCategory !== activityType) return false;
-      if (priorityFilter !== 'all' && row.priority !== priorityFilter) return false;
-      if (!q) return true;
-      const hay = [
-        row.actorName,
-        row.headline,
-        row.channel,
-        statusLabel(row.status),
-        row.activityCategory,
-      ]
-        .join(' ')
-        .toLowerCase();
-      return hay.includes(q);
-    });
-  }, [search, activityType, priorityFilter]);
+    return studentAnnouncementsHistoryTimelineSeed
+      .filter((row) => {
+        if (activityType !== 'all' && row.activityCategory !== activityType) return false;
+        if (priorityFilter !== 'all' && row.priority !== priorityFilter) return false;
+        if (!q) return true;
+        const hay = [
+          row.actorName,
+          row.headline,
+          row.channel,
+          statusLabel(row.status),
+          row.activityCategory,
+        ]
+          .join(' ')
+          .toLowerCase();
+        return hay.includes(q);
+      })
+      .map(rowToDisplay);
+  }, [search, activityType, priorityFilter, statusLabel, rowToDisplay]);
 
   return (
     <StudentModuleHistory
@@ -124,32 +123,32 @@ const HistoryPage: FunctionComponent = () => {
       onSearchChange={setSearch}
       filters={[
         {
-          ariaLabel: 'Activity type',
-          placeholderOptionLabel: 'Activity type',
+          ariaLabel: t('student.announcements.history.activityType'),
+          placeholderOptionLabel: t('student.announcements.history.activityType'),
           value: activityType,
           onChange: setActivityType,
           options: [
-            { value: 'events', label: 'Events' },
-            { value: 'deadlines', label: 'Deadlines' },
-            { value: 'competitions', label: 'Competitions' },
-            { value: 'general', label: 'General' },
-            { value: 'chat', label: 'Chat' },
+            { value: 'events', label: t('student.announcements.history.filters.events') },
+            { value: 'deadlines', label: t('student.announcements.history.filters.deadlines') },
+            { value: 'competitions', label: t('student.announcements.history.filters.competitions') },
+            { value: 'general', label: t('student.announcements.history.filters.general') },
+            { value: 'chat', label: t('student.announcements.history.filters.chat') },
           ],
         },
         {
-          ariaLabel: 'Priority',
-          placeholderOptionLabel: 'Priority',
+          ariaLabel: t('student.announcements.history.priority'),
+          placeholderOptionLabel: t('student.announcements.history.priority'),
           value: priorityFilter,
           onChange: setPriorityFilter,
           options: [
-            { value: 'high', label: 'High' },
-            { value: 'medium', label: 'Medium' },
-            { value: 'low', label: 'Low' },
+            { value: 'high', label: t('student.announcements.history.filters.high') },
+            { value: 'medium', label: t('student.announcements.history.filters.medium') },
+            { value: 'low', label: t('student.announcements.history.filters.low') },
           ],
         },
       ]}
-      rows={rows.map(rowToDisplay)}
-      emptyMessage="No announcement activity matches your filters."
+      rows={rows}
+      emptyMessage={t('student.announcements.history.empty')}
     />
   );
 };

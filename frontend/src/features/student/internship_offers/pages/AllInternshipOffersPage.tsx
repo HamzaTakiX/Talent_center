@@ -1,4 +1,5 @@
 import { FunctionComponent, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import StudentLayout from '../../components/StudentLayout';
 import BackToDashboardLink from '../components/BackToDashboardLink';
 import InternshipOffersGrid from '../components/InternshipOffersGrid';
@@ -13,6 +14,7 @@ import {
 } from '../constants/internshipOffersLayout';
 
 const AllInternshipOffersPage: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<InternshipOfferCategoryFilter>(INTERNSHIP_OFFER_CATEGORY_ALL);
 
@@ -30,7 +32,7 @@ const AllInternshipOffersPage: FunctionComponent = () => {
         <header className={INTERNSHIP_OFFERS_PAGE_HEADER}>
           <BackToDashboardLink />
           <h1 className="m-0 min-w-0 max-w-full break-words text-2xl font-semibold leading-8 tracking-tight text-[var(--admin-text)] sm:text-[28px] sm:leading-9">
-            All Internship Offers
+            {t('student.internshipOffers.allTitle')}
           </h1>
         </header>
 

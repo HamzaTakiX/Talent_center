@@ -1,83 +1,71 @@
-import type {
-  StudentHistoryEventType,
-  StudentHistoryManagementStatus,
-  StudentHistoryPriority,
-} from '../types';
+import type { StudentHistoryManagementStatus, StudentHistoryModuleKey } from '../types';
+import {
+  STUDENT_BADGE_DANGER,
+  STUDENT_BADGE_EVENT,
+  STUDENT_BADGE_INFO,
+  STUDENT_BADGE_INTERVIEW,
+  STUDENT_BADGE_SUCCESS,
+  STUDENT_BADGE_WARNING,
+  STUDENT_INLINE_BADGE,
+} from '../../design-system/studentSemanticStyles';
 
-export const STUDENT_HISTORY_MODULE_FILTER_OPTIONS = [
-  'All Areas',
-  'Internship Offers',
-  'My Applications',
-  'Announcements',
-  'Documents',
-  'SRF (Finance)',
-  'Career Tools',
-  'Chat',
-] as const;
+export const STUDENT_HISTORY_MODULE_FILTER_ALL = 'all' as const;
 
-export const STUDENT_HISTORY_STATUS_FILTER_OPTIONS = [
-  'All Statuses',
-  'Submitted',
-  'In review',
-  'Accepted',
-  'Declined',
-  'Completed',
-] as const;
+export const STUDENT_HISTORY_MODULE_FILTER_KEYS = [
+  STUDENT_HISTORY_MODULE_FILTER_ALL,
+  'internshipOffers',
+  'myApplications',
+  'announcements',
+  'documents',
+  'srf',
+  'careerTools',
+  'chat',
+] as const satisfies readonly (typeof STUDENT_HISTORY_MODULE_FILTER_ALL | StudentHistoryModuleKey)[];
 
-/** Maps filter label → row.managementStatus */
+export const STUDENT_HISTORY_STATUS_FILTER_ALL = 'all' as const;
+
+export const STUDENT_HISTORY_STATUS_FILTER_KEYS = [
+  STUDENT_HISTORY_STATUS_FILTER_ALL,
+  'submitted',
+  'in_review',
+  'accepted',
+  'declined',
+  'completed',
+] as const satisfies readonly (typeof STUDENT_HISTORY_STATUS_FILTER_ALL | StudentHistoryManagementStatus)[];
+
+/** Maps filter key → row.managementStatus */
 export const STUDENT_HISTORY_STATUS_FILTER_MAP: Record<
-  (typeof STUDENT_HISTORY_STATUS_FILTER_OPTIONS)[number],
+  (typeof STUDENT_HISTORY_STATUS_FILTER_KEYS)[number],
   StudentHistoryManagementStatus | null
 > = {
-  'All Statuses': null,
-  Submitted: 'submitted',
-  'In review': 'in_review',
-  Accepted: 'accepted',
-  Declined: 'declined',
-  Completed: 'completed',
+  all: null,
+  submitted: 'submitted',
+  in_review: 'in_review',
+  accepted: 'accepted',
+  declined: 'declined',
+  completed: 'completed',
 };
 
-export const STUDENT_HISTORY_PRIORITY_BADGE_CLASS: Record<StudentHistoryPriority, string> = {
-  high: 'bg-[#fee9eb] text-[#b4232d]',
-  medium: 'bg-[#f2ecff] text-[#6a32c9]',
-  low: 'bg-[#eaf1ff] text-[#2458d3]',
-};
+export const STUDENT_HISTORY_PRIORITY_BADGE_CLASS = {
+  high: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_DANGER}`,
+  medium: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_INTERVIEW}`,
+  low: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_INFO}`,
+} as const;
 
-export const STUDENT_HISTORY_EVENT_TYPE_LABEL: Record<StudentHistoryEventType, string> = {
-  application: 'Application',
-  offer: 'Offer',
-  announcement: 'Announcement',
-  document: 'Document',
-  payment: 'Payment',
-  tool: 'Career tool',
-  message: 'Message',
-};
+export const STUDENT_HISTORY_EVENT_TYPE_BADGE_CLASS = {
+  application: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_SUCCESS}`,
+  offer: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_INFO}`,
+  announcement: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_DANGER}`,
+  document: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_WARNING}`,
+  payment: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_WARNING}`,
+  tool: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_INTERVIEW}`,
+  message: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_SUCCESS}`,
+} as const;
 
-export const STUDENT_HISTORY_EVENT_TYPE_BADGE_CLASS: Record<StudentHistoryEventType, string> = {
-  application: 'bg-[#dcfce7] text-[#016630]',
-  offer: 'bg-[#dbeafe] text-[#193cb8]',
-  announcement: 'bg-[#fce7f3] text-[#9d174d]',
-  document: 'bg-[#fef3c7] text-[#ca8a04]',
-  payment: 'bg-[#ffedd4] text-[#9f2d00]',
-  tool: 'bg-[#f3e8ff] text-[#6e11b0]',
-  message: 'bg-[#dcfdf3] text-[#0f9f86]',
-};
-
-export const STUDENT_HISTORY_MANAGEMENT_STATUS_LABEL: Record<StudentHistoryManagementStatus, string> = {
-  submitted: 'Submitted',
-  in_review: 'In review',
-  accepted: 'Accepted',
-  declined: 'Declined',
-  completed: 'Completed',
-};
-
-export const STUDENT_HISTORY_MANAGEMENT_STATUS_BADGE_CLASS: Record<
-  StudentHistoryManagementStatus,
-  string
-> = {
-  submitted: 'bg-[#dbeafe] text-[#193cb8]',
-  in_review: 'bg-[#fff4db] text-[#9a5c00]',
-  accepted: 'bg-[#e7f6ec] text-[#0f7b3a]',
-  declined: 'bg-[#fee9eb] text-[#b4232d]',
-  completed: 'bg-[#f3e8ff] text-[#6e11b0]',
-};
+export const STUDENT_HISTORY_MANAGEMENT_STATUS_BADGE_CLASS = {
+  submitted: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_INFO}`,
+  in_review: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_WARNING}`,
+  accepted: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_SUCCESS}`,
+  declined: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_DANGER}`,
+  completed: `${STUDENT_INLINE_BADGE} ${STUDENT_BADGE_EVENT}`,
+} as const;
