@@ -258,44 +258,48 @@ const AcademicStructurePage: FunctionComponent = () => {
         ? 'admin.empty.tryAdjusting'
         : undefined;
 
-  const currentFilteredRows = useMemo(() => {
+  const tracksPagination = useAdminPagination(filteredTracks, TABLE_PAGE_SIZE);
+  const levelsPagination = useAdminPagination(filteredLevels, TABLE_PAGE_SIZE);
+  const classesPagination = useAdminPagination(filteredClasses, TABLE_PAGE_SIZE);
+  const internshipPagination = useAdminPagination(filteredInternshipTypes, TABLE_PAGE_SIZE);
+  const workModesPagination = useAdminPagination(filteredWorkModes, TABLE_PAGE_SIZE);
+  const archivedPagination = useAdminPagination(filteredArchivedRows, TABLE_PAGE_SIZE);
+
+  const activePagination = useMemo(() => {
     switch (activeTab) {
       case 'tracks':
-        return filteredTracks;
+        return tracksPagination;
       case 'levels':
-        return filteredLevels;
+        return levelsPagination;
       case 'classes':
-        return filteredClasses;
+        return classesPagination;
       case 'internship-framework':
-        return filteredInternshipTypes;
+        return internshipPagination;
       case 'work-modes':
-        return filteredWorkModes;
+        return workModesPagination;
       case 'archived':
-        return filteredArchivedRows;
+        return archivedPagination;
       default:
-        return [];
+        return tracksPagination;
     }
   }, [
     activeTab,
-    filteredTracks,
-    filteredLevels,
-    filteredClasses,
-    filteredInternshipTypes,
-    filteredWorkModes,
-    filteredArchivedRows,
+    tracksPagination,
+    levelsPagination,
+    classesPagination,
+    internshipPagination,
+    workModesPagination,
+    archivedPagination,
   ]);
 
-  const {
-    page: tablePage,
-    setPage: setTablePage,
-    paginatedItems: paginatedRows,
-    totalItems: tableTotalItems,
-    totalPages: tableTotalPages,
-  } = useAdminPagination(currentFilteredRows, TABLE_PAGE_SIZE);
-
   useEffect(() => {
-    setTablePage(1);
-  }, [activeTab, search, trackFilter, archivedKindFilter, setTablePage]);
+    tracksPagination.resetPage();
+    levelsPagination.resetPage();
+    classesPagination.resetPage();
+    internshipPagination.resetPage();
+    workModesPagination.resetPage();
+    archivedPagination.resetPage();
+  }, [activeTab, search, trackFilter, archivedKindFilter]);
 
   const openCreate = () => {
     setEditRow(null);
@@ -568,14 +572,14 @@ const AcademicStructurePage: FunctionComponent = () => {
             </thead>
             <tbody className="divide-y divide-[var(--admin-border)]">
               {activeTab === 'tracks' &&
-                (currentFilteredRows.length === 0 ? (
+                (filteredTracks.length === 0 ? (
                   <AdminTableEmptyState
                     colSpan={COL_SPAN.tracks}
                     titleKey={emptyTitleKey}
                     descriptionKey={emptyDescriptionKey}
                   />
                 ) : (
-                  (paginatedRows as typeof filteredTracks).map((row) => (
+                  tracksPagination.paginatedItems.map((row) => (
                   <tr key={row.id} className="hover:bg-[var(--admin-surface-muted)]/50">
                     <td className={`${TD_CELL} font-medium`}>{humanizeAcademicLabel(row.name)}</td>
                     <td className={`${TD_CELL} font-mono text-xs`}>{formatAcademicCode(row.code)}</td>
@@ -593,14 +597,14 @@ const AcademicStructurePage: FunctionComponent = () => {
                   ))
                 ))}
               {activeTab === 'levels' &&
-                (currentFilteredRows.length === 0 ? (
+                (filteredLevels.length === 0 ? (
                   <AdminTableEmptyState
                     colSpan={COL_SPAN.levels}
                     titleKey={emptyTitleKey}
                     descriptionKey={emptyDescriptionKey}
                   />
                 ) : (
-                  (paginatedRows as typeof filteredLevels).map((row) => (
+                  levelsPagination.paginatedItems.map((row) => (
                   <tr key={row.id} className="hover:bg-[var(--admin-surface-muted)]/50">
                     <td className={`${TD_CELL} font-medium`}>{humanizeAcademicLabel(row.name)}</td>
                     <td className={`${TD_CELL} font-mono text-xs`}>{formatAcademicCode(row.code)}</td>
@@ -620,14 +624,14 @@ const AcademicStructurePage: FunctionComponent = () => {
                   ))
                 ))}
               {activeTab === 'classes' &&
-                (currentFilteredRows.length === 0 ? (
+                (filteredClasses.length === 0 ? (
                   <AdminTableEmptyState
                     colSpan={COL_SPAN.classes}
                     titleKey={emptyTitleKey}
                     descriptionKey={emptyDescriptionKey}
                   />
                 ) : (
-                  (paginatedRows as typeof filteredClasses).map((row) => (
+                  classesPagination.paginatedItems.map((row) => (
                     <tr key={row.id} className="hover:bg-[var(--admin-surface-muted)]/50">
                       <td className={`${TD_CELL} font-medium`}>{humanizeAcademicLabel(row.name)}</td>
                       <td className={TD_CELL}>{displayCellValue(row.filiere_name)}</td>
@@ -645,14 +649,14 @@ const AcademicStructurePage: FunctionComponent = () => {
                   ))
                 ))}
               {activeTab === 'internship-framework' &&
-                (currentFilteredRows.length === 0 ? (
+                (filteredInternshipTypes.length === 0 ? (
                   <AdminTableEmptyState
                     colSpan={COL_SPAN['internship-framework']}
                     titleKey={emptyTitleKey}
                     descriptionKey={emptyDescriptionKey}
                   />
                 ) : (
-                  (paginatedRows as typeof filteredInternshipTypes).map((row) => (
+                  internshipPagination.paginatedItems.map((row) => (
                     <tr key={row.id} className="hover:bg-[var(--admin-surface-muted)]/50">
                       <td className={`${TD_CELL} font-medium`}>{humanizeAcademicLabel(row.name)}</td>
                       <td className={TD_CELL}>{displayCellValue(row.filiere_name)}</td>
@@ -670,14 +674,14 @@ const AcademicStructurePage: FunctionComponent = () => {
                   ))
                 ))}
               {activeTab === 'work-modes' &&
-                (currentFilteredRows.length === 0 ? (
+                (filteredWorkModes.length === 0 ? (
                   <AdminTableEmptyState
                     colSpan={COL_SPAN['work-modes']}
                     titleKey={emptyTitleKey}
                     descriptionKey={emptyDescriptionKey}
                   />
                 ) : (
-                  (paginatedRows as typeof filteredWorkModes).map((row) => (
+                  workModesPagination.paginatedItems.map((row) => (
                     <tr key={row.id} className="hover:bg-[var(--admin-surface-muted)]/50">
                       <td className={`${TD_CELL} font-medium`}>{humanizeAcademicLabel(row.name)}</td>
                       <td className={`${TD_CELL} font-mono text-xs`}>{formatAcademicCode(row.code)}</td>
@@ -694,14 +698,14 @@ const AcademicStructurePage: FunctionComponent = () => {
                   ))
                 ))}
               {activeTab === 'archived' &&
-                (currentFilteredRows.length === 0 ? (
+                (filteredArchivedRows.length === 0 ? (
                   <AdminTableEmptyState
                     colSpan={COL_SPAN.archived}
                     titleKey={emptyTitleKey}
                     descriptionKey={emptyDescriptionKey}
                   />
                 ) : (
-                  (paginatedRows as typeof filteredArchivedRows).map((row) => (
+                  archivedPagination.paginatedItems.map((row) => (
                     <tr key={`${row.kind}-${row.id}`} className="hover:bg-[var(--admin-surface-muted)]/50">
                       <td className={TD_CELL}>
                         <span className="academic-archived-type-badge">
@@ -730,13 +734,13 @@ const AcademicStructurePage: FunctionComponent = () => {
                 ))}
             </tbody>
           </AdminTableScroll>
-          {currentFilteredRows.length > 0 ? (
+          {activePagination.totalItems > 0 ? (
             <AdminPagination
-              page={tablePage}
-              totalPages={tableTotalPages}
-              totalItems={tableTotalItems}
+              page={activePagination.page}
+              totalPages={activePagination.totalPages}
+              totalItems={activePagination.totalItems}
               pageSize={TABLE_PAGE_SIZE}
-              onPageChange={setTablePage}
+              onPageChange={activePagination.setPage}
               itemLabel={t(`${PREFIX}.tablePaginationLabel`)}
             />
           ) : null}
