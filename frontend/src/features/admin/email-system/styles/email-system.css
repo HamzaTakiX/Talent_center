@@ -1,0 +1,20 @@
+.email-system-tabs .admin-section-tab {
+  white-space: nowrap;
+}
+
+.email-system-tab-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.email-system-preview {
+  border-radius: 0.75rem;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  padding: 1rem;
+}
+
+.email-system-preview :is(h1, h2, h3, p, a) {
+  color: var(--admin-text);
+}

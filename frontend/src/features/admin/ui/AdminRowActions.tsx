@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { CheckCircle, Download, Eye, Pencil, Trash2, UserPlus, X } from 'lucide-react';
+import { CheckCircle, Download, Eye, Pencil, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   adminTableBtn,
@@ -17,24 +17,20 @@ interface AdminRowActionsProps {
   onView?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
-  onAssign?: () => void;
   onDownload?: () => void;
   onApprove?: () => void;
   onReject?: () => void;
   variant?: 'mobile' | 'desktop';
-  showAssign?: boolean;
 }
 
 const AdminRowActions: FunctionComponent<AdminRowActionsProps> = ({
   onView,
   onEdit,
   onDelete,
-  onAssign,
   onDownload,
   onApprove,
   onReject,
   variant = 'desktop',
-  showAssign = false,
 }) => {
   const { t } = useTranslation();
   const btnClass = variant === 'mobile' ? adminTableBtnMobile : adminTableBtn;
@@ -88,12 +84,6 @@ const AdminRowActions: FunctionComponent<AdminRowActionsProps> = ({
         <button type="button" className={adminTableBtnDelete} onClick={onDelete}>
           <Trash2 className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
           <span>{t('admin.common.actions.delete')}</span>
-        </button>
-      )}
-      {showAssign && onAssign != null && (
-        <button type="button" className={btnPrimary} onClick={onAssign}>
-          <UserPlus className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-          <span>{t('admin.common.actions.assign')}</span>
         </button>
       )}
     </div>

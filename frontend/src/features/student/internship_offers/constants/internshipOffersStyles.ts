@@ -10,3 +10,5 @@ export {
   STUDENT_TEXT_SECONDARY,
   STUDENT_TEXT_MUTED,
 } from '../../design-system/studentTokens';
+
+export { STUDENT_BACK_NAV_BUTTON } from './internshipOffersLayout';

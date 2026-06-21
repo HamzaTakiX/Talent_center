@@ -8,6 +8,7 @@ import type {
   FiliereOption,
   InternshipTypeOption,
   SpecializationDomainOption,
+  WorkModeOption,
 } from './types';
 
 const filiereIdsParam = (ids?: number[]) =>
@@ -126,6 +127,13 @@ export const academicReferenceApi = {
     });
     const response = await apiClient.get<ApiEnvelope<ClassGroupOption[]>>('/admin/class-groups', {
       params: query,
+    });
+    return response.data.data;
+  },
+
+  listWorkModes: async (params?: { lang?: string }): Promise<WorkModeOption[]> => {
+    const response = await apiClient.get<ApiEnvelope<WorkModeOption[]>>('/admin/work-modes', {
+      params: withLang(params?.lang),
     });
     return response.data.data;
   },

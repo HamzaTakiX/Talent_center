@@ -9,6 +9,7 @@ export const studentCopyEn = {
     encadrant: 'Supervisor',
     resources: 'Resources',
     cvAnalysis: 'CV Analysis',
+    aiCareerCoach: 'AI Career Coach',
     interviewSimulator: 'Interview Simulator',
     chat: 'Chat',
     agenda: 'Agenda',
@@ -25,6 +26,7 @@ export const studentCopyEn = {
     defaultSubtitle: 'Student portal',
     titles: {
       dashboard: 'Dashboard',
+      profile: 'My account',
       internshipOffers: 'Internship Offers',
       announcements: 'Announcements',
       history: 'History',
@@ -32,6 +34,7 @@ export const studentCopyEn = {
       srf: 'SRF (Finance)',
       encadrant: 'Supervisor',
       cvAnalysis: 'CV Analysis',
+      aiCareerCoach: 'AI Career Coach',
       interviewSimulator: 'Interview Simulator',
       chat: 'Chat',
       apply: 'Apply to offer',

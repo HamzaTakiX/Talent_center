@@ -44,15 +44,31 @@ export interface FiliereOption {
   id: number;
   code: string;
   name: string;
+  name_fr?: string;
+  name_en?: string;
   program_family?: string;
   department: string;
   is_active: boolean;
+}
+
+export interface WorkModeOption {
+  id: number;
+  code: string;
+  name: string;
+  name_fr?: string;
+  name_en?: string;
+  description?: string;
+  sort_order: number;
+  is_active: boolean;
+  is_archived?: boolean;
 }
 
 export interface SpecializationDomainOption {
   id: number;
   code: string;
   name: string;
+  name_fr?: string;
+  name_en?: string;
   category: 'BUSINESS' | 'TECH';
   program_families?: string[];
   master_tracks?: string[];
@@ -75,6 +91,8 @@ export interface AcademicLevelOption {
   id: number;
   code: string;
   name: string;
+  name_fr?: string;
+  name_en?: string;
   filiere_id: number;
   filiere_code: string;
   year_number: number;
@@ -87,6 +105,8 @@ export interface AcademicSectorOption {
   id: number;
   code: string;
   name: string;
+  name_fr?: string;
+  name_en?: string;
   academic_level_id: number;
   level_code: string;
   is_active: boolean;
@@ -96,6 +116,8 @@ export interface InternshipTypeOption {
   id: number;
   code: string;
   name: string;
+  name_fr?: string;
+  name_en?: string;
   academic_level_id: number;
   academic_sector_id: number | null;
   duration_hint: string;
@@ -106,6 +128,8 @@ export interface ClassGroupOption {
   id: number;
   code: string;
   name: string;
+  name_fr?: string;
+  name_en?: string;
   filiere: number;
   filiere_code: string;
   filiere_name: string;

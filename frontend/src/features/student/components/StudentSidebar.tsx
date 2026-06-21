@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronDown,
+  Compass,
   MessageSquare,
   Clock,
   FileText,
@@ -32,6 +33,7 @@ import {
 
 const subIconMap: Record<StudentNavChildId, LucideIcon> = {
   cvAnalysis: FileText,
+  aiCareerCoach: Compass,
   interviewSimulator: Users,
   chat: MessageSquare,
   history: Clock,

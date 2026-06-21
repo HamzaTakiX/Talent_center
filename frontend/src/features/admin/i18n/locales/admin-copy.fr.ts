@@ -1,11 +1,10 @@
-/** Auto-generated admin copy — fr */
+/** Admin copy — fr */
 export const adminCopyFr = {
   "contextualChat": {
-    "loading": "Synchronisation des fils contextuels…",
-    "demoMode": "Connexion API impossible — affichage des données de démonstration. Vérifiez que le backend tourne et que vous êtes connecté.",
-    "emptyLive": "API connectée — aucun fil « {{module}} » pour votre compte. Exécutez : python manage.py seed_contextual_chat_demo",
-    "liveConnected": "Données live · API connectée",
-    "noThreadsYet": "Aucun fil contextuel — créez une conversation ou lancez le seed backend.",
+    "loading": "Synchronisation des conversations…",
+    "emptyLive": "Aucune conversation de stage pour le moment. Les échanges apparaîtront lorsque des étudiants ou des administrateurs communiqueront au sujet des offres de stage.",
+    "noThreadsYet": "Aucune conversation de stage",
+    "emptyLiveDescription": "Les conversations apparaîtront lorsque des étudiants ou des administrateurs échangeront des messages concernant les offres de stage.",
     "messageSent": "Message enregistré dans le fil workflow",
     "actionApplied": "Action « {{action}} » appliquée",
     "linkedEntity": "{{type}} · {{id}}",
@@ -52,6 +51,19 @@ export const adminCopyFr = {
     "history": "Retour à l'historique",
     "administrators": "Retour aux administrateurs"
   },
+  "pagination": {
+    "ariaLabel": "Pagination",
+    "empty": "Aucun {{itemLabel}}",
+    "range": "Affichage de {{start}} à {{end}} sur {{total}} {{itemLabel}}",
+    "previous": "Page précédente",
+    "next": "Page suivante",
+    "items": "éléments",
+    "students": "étudiants",
+    "encadrants": "encadrants",
+    "administrators": "administrateurs",
+    "srfAccounts": "comptes",
+    "srfProofs": "justificatifs"
+  },
   "search": {
     "admins": "Rechercher des admins...",
     "students": "Rechercher des étudiants...",
@@ -88,28 +100,28 @@ export const adminCopyFr = {
     },
     "offers": {
       "all": {
-        "title": "All Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "Toutes les offres ({{count}})",
+        "subtitle": "Liste filtrée des offres de stage"
       },
       "active": {
-        "title": "Active Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "Offres actives ({{count}})",
+        "subtitle": "Liste filtrée des offres de stage"
       },
       "closed": {
-        "title": "Closed Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "Offres fermées ({{count}})",
+        "subtitle": "Liste filtrée des offres de stage"
       },
       "draft": {
-        "title": "Draft Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "Brouillons ({{count}})",
+        "subtitle": "Liste filtrée des offres de stage"
       },
       "expired": {
-        "title": "Expired Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "Offres expirées ({{count}})",
+        "subtitle": "Liste filtrée des offres de stage"
       },
       "withApplications": {
-        "title": "Offers with Applications ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "Offres avec candidatures ({{count}})",
+        "subtitle": "Liste filtrée des offres de stage"
       }
     },
     "encadrants": {
@@ -355,15 +367,15 @@ export const adminCopyFr = {
       "internshipType": "Type de stage",
       "academicYear": "Année académique",
       "classGroup": "Classe / groupe",
-      "selectProgram": "— Sélectionner un programme —",
-      "selectLevel": "— Sélectionner un niveau —",
-      "levelNeedsProgram": "— Choisir un programme d'abord —",
-      "selectSector": "— Sélectionner une spécialisation —",
-      "selectInternship": "— Sélectionner un type de stage —",
-      "internshipNeedsLevel": "— Choisir un niveau d'abord —",
-      "selectYear": "— Sélectionner l'année académique —",
-      "selectClass": "— Sélectionner une classe —",
-      "classNeedsProgram": "— Choisir un programme d'abord —",
+      "selectProgram": "Sélectionner un programme",
+      "selectLevel": "Sélectionner un niveau",
+      "levelNeedsProgram": "Choisir un programme d'abord",
+      "selectSector": "Sélectionner une spécialisation",
+      "selectInternship": "Sélectionner un type de stage",
+      "internshipNeedsLevel": "Choisir un niveau d'abord",
+      "selectYear": "Sélectionner l'année académique",
+      "selectClass": "Sélectionner une classe",
+      "classNeedsProgram": "Choisir un programme d'abord",
       "internshipAutoHint": "Déterminé automatiquement selon la filière et le niveau ESCA.",
       "internshipResolving": "Calcul du type de stage…",
       "internshipPending": "Complétez le niveau académique",
@@ -457,7 +469,7 @@ export const adminCopyFr = {
       },
       "supervisedInternships": {
         "label": "Types de stage supervisés",
-        "hint": "L'affectation intelligente n'assignera que des étudiants dont le type de stage correspond.",
+        "hint": "L'affectation n'assignera que des étudiants dont le type de stage correspond.",
         "placeholder": "Choisir les types de stage…"
       },
       "detail": {
@@ -524,6 +536,7 @@ export const adminCopyFr = {
         "internal": "Admins internes"
       },
       "actions": {
+        "create": "Créer",
         "draft": "Enregistrer comme brouillon",
         "publish": "Publier maintenant",
         "cancel": "Annuler",
@@ -585,6 +598,438 @@ export const adminCopyFr = {
         "contentHint": "Présentation de l'offre et compétences recherchées."
       }
     },
+    "createOfferStudio": {
+      "title": "Créer une offre de stage",
+      "subtitle": "Publiez et ciblez des opportunités de stage pour les bons étudiants.",
+      "editTitle": "Modifier l'offre de stage",
+      "editSubtitle": "Continuez le parcours guidé pour compléter et republier cette offre.",
+      "loading": {
+        "title": "Chargement de l'offre",
+        "retrieving": "Récupération des informations de l'offre…",
+        "preparing": "Préparation de l'espace d'édition…",
+        "subtitle": "Veuillez patienter pendant la préparation de l'espace de travail."
+      },
+      "saveStatus": {
+        "idle": "Toutes les modifications sont synchronisées",
+        "unsaved": "Modifications non enregistrées",
+        "saving": "Enregistrement…",
+        "saved": "Enregistré",
+        "error": "Erreur lors de l'enregistrement",
+        "lastSaved": "Dernière sauvegarde : {{time}}"
+      },
+      "actions": {
+        "saveDraft": "Enregistrer le brouillon",
+        "saveChanges": "Enregistrer les modifications",
+        "savingDraft": "Enregistrement du brouillon…",
+        "publishing": "Publication en cours…",
+        "preview": "Aperçu",
+        "publish": "Publier",
+        "republish": "Republier",
+        "next": "Étape suivante",
+        "previous": "Étape précédente",
+        "changeMethod": "Changer de méthode",
+        "backToEdit": "Retour à l'édition"
+      },
+      "messages": {
+        "publishSuccess": "Offre publiée avec succès",
+        "draftSaved": "Brouillon enregistré",
+        "changesSaved": "Modifications enregistrées",
+        "missingTitle": "Ajoutez un titre avant de publier",
+        "incompleteOffer": "Complétez les sections manquantes avant de publier",
+        "completeOfferUsePublish": "Tous les champs requis sont remplis — utilisez Publier plutôt qu'enregistrer un brouillon",
+        "duplicateBlocked": "Doublon détecté. Consultez l'offre existante ou continuez quand même."
+      },
+      "method": {
+        "eyebrow": "Studio offre de stage",
+        "stepTitle": "Comment souhaitez-vous créer cette offre ?",
+        "stepDesc": "Choisissez le parcours adapté à votre workflow. Les deux options incluent l'aperçu en direct, le ciblage étudiant et la publication en un clic.",
+        "hint": "Sélectionnez une méthode pour commencer.",
+        "compareNote": "Vous pourrez enregistrer en brouillon ou publier à tout moment après avoir choisi une méthode.",
+        "manual": {
+          "title": "Créer manuellement",
+          "badge": "Contrôle total",
+          "description": "Assistant guidé étape par étape pour des offres sur mesure.",
+          "longDesc": "Construisez chaque champ depuis zéro avec un parcours structuré en 6 étapes — idéal pour un ciblage précis, des descriptions personnalisées et un contrôle éditorial complet.",
+          "benefits": [
+            "Assistant en 6 étapes (infos de base → relecture)",
+            "Ciblage étudiant avec estimation d'audience",
+            "Aperçu en direct pendant la saisie",
+            "Compétences, recrutement et points de validation"
+          ],
+          "bestFor": "Idéal pour offres sur mesure et nouveaux partenariats",
+          "cta": "Ouvrir l'assistant"
+        },
+        "import": {
+          "title": "Importer depuis une URL",
+          "badge": "Le plus rapide",
+          "description": "Collez un lien job board ou page carrière — nous extrayons le brouillon.",
+          "longDesc": "Compatible LinkedIn, Indeed, ReKrute, Emploi.ma, Novojob et pages carrière entreprise. Relisez le brouillon extrait, ajustez les champs, puis publiez en quelques minutes.",
+          "benefits": [
+            "Extraction automatique du titre, entreprise et description",
+            "Brouillon modifiable avant publication",
+            "Métadonnées source et parser conservés",
+            "Job boards majeurs et sites carrière supportés"
+          ],
+          "bestFor": "Idéal pour annonces existantes et délais courts",
+          "cta": "Importer depuis un lien"
+        }
+      },
+      "steps": {
+        "navigation": "Progression de création",
+        "basic": "Informations de base",
+        "description": "Description",
+        "skills": "Compétences",
+        "targeting": "Ciblage",
+        "recruitment": "Configuration",
+        "review": "Révision & publication"
+      },
+      "stepDesc": {
+        "basic": "Titre, entreprise, lieu et type de stage.",
+        "description": "Construisez une description structurée et engageante.",
+        "skills": "Compétences techniques, langues et certifications.",
+        "targeting": "Définissez les règles de ciblage et l'audience estimée.",
+        "recruitment": "Dates, visibilité et mode de candidature.",
+        "review": "Validez chaque détail et publiez en toute confiance."
+      },
+      "fields": {
+        "title": "Titre de l'offre",
+        "company": "Entreprise",
+        "internshipType": "Type de stage",
+        "location": "Lieu",
+        "workMode": "Mode de travail",
+        "department": "Département",
+        "positions": "Nombre de postes"
+      },
+      "placeholders": {
+        "title": "ex. Développeur Full Stack — Stage",
+        "company": "ex. TechCorp Maroc",
+        "location": "ex. Casablanca, Maroc",
+        "department": "ex. Développement produit"
+      },
+      "types": {
+        "select": "Choisir le type",
+        "internship": "Stage",
+        "pfe": "PFE",
+        "pfa": "PFA",
+        "alternance": "Alternance",
+        "summer": "Stage d'été",
+        "observation": "Stage d'observation"
+      },
+      "workModes": {
+        "remote": "Télétravail",
+        "hybrid": "Hybride",
+        "onsite": "Sur site"
+      },
+      "description": {
+        "overview": "Vue d'ensemble",
+        "responsibilities": "Responsabilités",
+        "requirements": "Exigences",
+        "benefits": "Avantages",
+        "learning": "Opportunités d'apprentissage",
+        "placeholders": {
+          "overview": "Présentez l'offre et le contexte…",
+          "responsibilities": "Listez les missions principales…",
+          "requirements": "Profil recherché et prérequis…",
+          "benefits": "Avantages offerts aux stagiaires…",
+          "learning": "Ce que l'étudiant va apprendre et acquérir…"
+        }
+      },
+      "skills": {
+        "required": "Compétences requises",
+        "preferred": "Compétences souhaitées",
+        "languages": "Langues",
+        "softSkills": "Soft skills",
+        "experience": "Années d'expérience",
+        "certifications": "Certifications (optionnel)",
+        "placeholder": "Ajouter une compétence et appuyer sur Entrée",
+        "languagesPlaceholder": "ex. Français, Anglais",
+        "softPlaceholder": "ex. Communication, Travail d'équipe",
+        "experiencePlaceholder": "ex. 0–1 an",
+        "certPlaceholder": "ex. AWS Cloud Practitioner"
+      },
+      "targeting": {
+        "program": "Filière / Programme",
+        "class": "Classe",
+        "level": "Niveau",
+        "department": "Département",
+        "category": "Catégorie de stage",
+        "audience": "{{count}} étudiants correspondent à ce ciblage",
+        "audienceEmpty": "Sélectionnez au moins un critère de ciblage",
+        "audiencePending": "Enregistrez le brouillon pour estimer l'audience",
+        "audienceSummary": {
+          "title": "Audience cible",
+          "eligible": "{{count}} étudiants éligibles",
+          "loading": "Calcul de l'audience…",
+          "autoRefresh": "La visibilité et le matching se mettent à jour automatiquement à l'enregistrement."
+        },
+        "noAcademicData": "Aucun programme académique n'est configuré. Ajoutez-les d'abord dans Structure académique.",
+        "loadError": "Impossible de charger les données académiques. Actualisez la page.",
+        "sectionEmpty": "Aucune option configurée pour le moment."
+      },
+      "recruitment": {
+        "deadline": "Date limite de candidature",
+        "startDate": "Date de début du stage",
+        "endDate": "Date de fin du stage",
+        "profilesNeeded": "Nombre de profils recherchés",
+        "visibility": "Visibilité",
+        "visibilityOptions": {
+          "public": "Publique",
+          "targeted": "Ciblée",
+          "private": "Privée"
+        },
+        "autoExpiration": "Expiration automatique à la date limite",
+        "applicationMethod": "Mode de candidature",
+        "methodOptions": {
+          "internal": "Candidature interne",
+          "external": "Lien externe",
+          "email": "Par email"
+        },
+        "externalUrl": "URL de candidature externe",
+        "submissionEmail": "Email de soumission"
+      },
+      "review": {
+        "ready": "Votre offre est prête à être publiée",
+        "notSet": "Non renseigné",
+        "emptyState": {
+          "notConfigured": "Non configuré",
+          "missingInformation": "Information manquante",
+          "needsConfiguration": "Configuration requise"
+        },
+        "banner": {
+          "readyTitle": "Prêt à publier",
+          "readyDesc": "Cette offre de stage remplit tous les critères requis et peut être publiée immédiatement.",
+          "attentionTitle": "Attention requise",
+          "attentionDesc": "Certaines informations sont incomplètes avant publication.",
+          "readinessScore": "Score de préparation"
+        },
+        "offerPreview": {
+          "title": "Aperçu de l'offre",
+          "readyBadge": "Prêt",
+          "draftBadge": "Brouillon",
+          "duration": "Durée",
+          "requiredSkills": "Compétences requises"
+        },
+        "completion": {
+          "title": "État de complétion",
+          "completed": "Complété",
+          "incomplete": "Incomplet",
+          "sections": {
+            "basic": "Informations de base",
+            "description": "Description",
+            "skills": "Compétences",
+            "targeting": "Ciblage",
+            "recruitment": "Configuration",
+            "publication": "Paramètres de publication"
+          },
+          "missing": {
+            "missingBasic": "Informations de base incomplètes",
+            "missingOverview": "Vue d'ensemble manquante",
+            "missingSkills": "Compétences manquantes",
+            "missingTargeting": "Ciblage manquant",
+            "missingDeadline": "Date limite manquante"
+          }
+        },
+        "validationCenter": {
+          "title": "Complétion de l'offre",
+          "sectionsCompleted": "{{completed}} sur {{total}} sections complétées",
+          "percentComplete": "{{percent}} % complété",
+          "completedSections": "Sections complétées",
+          "missingSections": "Sections manquantes",
+          "statusCompleted": "Complété",
+          "statusMissing": "Données manquantes",
+          "statusReview": "À revoir"
+        },
+        "validation": {
+          "allComplete": "Tous les champs requis sont complétés",
+          "missingTitle": "Informations requises manquantes",
+          "fields": {
+            "title": "Titre",
+            "description": "Description",
+            "company": "Entreprise",
+            "location": "Lieu",
+            "skills": "Compétences",
+            "targeting": "Ciblage",
+            "recruitment": "Configuration",
+            "deadline": "Date limite"
+          }
+        },
+        "audience": {
+          "title": "Audience cible",
+          "targeted": "Offre ciblée",
+          "expectedReach": "Portée attendue"
+        },
+        "skillsSection": {
+          "title": "Compétences",
+          "additional": "Langues & soft skills",
+          "empty": "Ajoutez des compétences requises pour améliorer le matching."
+        },
+        "recruitment": {
+          "title": "Résumé de la configuration",
+          "positions": "Postes disponibles"
+        },
+        "publication": {
+          "title": "Paramètres de publication",
+          "status": "Statut",
+          "draft": "Brouillon",
+          "publishMode": "Mode de publication",
+          "immediate": "Immédiate",
+          "createdBy": "Créé par",
+          "publishedBy": "Publié par",
+          "lastUpdated": "Dernière mise à jour",
+          "notYetSaved": "Pas encore enregistré",
+          "defaultAuthor": "Administrateur"
+        },
+        "studentPreview": {
+          "title": "Aperçu étudiant",
+          "subtitle": "Comment les étudiants verront cette offre",
+          "hint": "Aperçu uniquement — le score de correspondance est calculé après publication."
+        },
+        "duration": {
+          "weeks": "{{count}} semaine(s)",
+          "months": "{{count}} mois"
+        },
+        "sections": {
+          "overview": "Aperçu de l'offre",
+          "audience": "Audience cible",
+          "skills": "Compétences",
+          "timeline": "Calendrier",
+          "publication": "Paramètres de publication"
+        },
+        "fields": {
+          "title": "Titre",
+          "company": "Entreprise",
+          "location": "Lieu",
+          "type": "Type",
+          "positions": "Postes",
+          "programs": "Programmes",
+          "categories": "Catégories",
+          "reach": "Portée estimée",
+          "required": "Requises",
+          "preferred": "Souhaitées",
+          "deadline": "Date limite",
+          "start": "Début",
+          "end": "Fin",
+          "visibility": "Visibilité",
+          "method": "Candidature",
+          "completeness": "Complétude",
+          "expectedReach": "Portée attendue"
+        }
+      },
+      "preview": {
+        "title": "Aperçu en direct",
+        "subtitle": "Comment les étudiants verront cette offre",
+        "modalTitle": "Aperçu de l'offre",
+        "placeholderTitle": "Titre de l'offre",
+        "placeholderCompany": "Nom de l'entreprise",
+        "placeholderLocation": "Lieu",
+        "placeholderDesc": "La description apparaîtra ici au fur et à mesure de la saisie…",
+        "matchLabel": "Score de correspondance",
+        "matchPending": "Calculé après publication",
+        "notAvailable": "Non disponible",
+        "applyButton": "Postuler",
+        "audience": "{{count}} étudiants ciblés",
+        "audienceEmpty": "Sélectionnez un ciblage pour estimer l'audience",
+        "audiencePending": "Estimation disponible après publication",
+        "moreBadges": "+{{count}}",
+        "workModes": {
+          "remote": "Télétravail",
+          "hybrid": "Hybride",
+          "onsite": "Sur site"
+        },
+        "analytics": {
+          "reach": "Portée",
+          "completeness": "Complétude",
+          "applications": "Candidatures estimées",
+          "visibility": "Visibilité"
+        }
+      },
+      "insights": {
+        "title": "Observations clés",
+        "targetingRestrictive": "Le ciblage semble trop restrictif.",
+        "lowReach": "La portée estimée est faible.",
+        "addReact": "Envisagez d'ajouter la compétence React.",
+        "deadlineClose": "La date limite de candidature est très proche.",
+        "incompleteForm": "Complétez les champs essentiels avant de publier.",
+        "audienceAfterPublish": "La portée et le matching se mettent à jour automatiquement à l'enregistrement."
+      },
+      "suggestedStudents": {
+        "title": "Étudiants les mieux adaptés",
+        "desc": "Basé sur le ciblage et les compétences sélectionnées",
+        "notify": "Notifier",
+        "viewProfile": "Voir le profil",
+        "addToCollection": "Ajouter à une collection"
+      },
+      "duplicate": {
+        "detected": "Doublon potentiel détecté",
+        "similarity": "{{percent}} % de similarité",
+        "publishedAgo": "Publiée il y a {{days}} jours",
+        "viewExisting": "Voir l'offre existante",
+        "continueAnyway": "Continuer quand même"
+      },
+      "import": {
+        "title": "Importer depuis une URL",
+        "desc": "Collez le lien d'une offre externe pour extraire automatiquement les informations.",
+        "urlLabel": "URL de l'offre de stage",
+        "urlPlaceholder": "https://www.rekrute.com/…",
+        "analyze": "Extraire depuis l'URL",
+        "reAnalyze": "Ré-extraire",
+        "tryAnotherUrl": "Autre URL",
+        "tryAnotherHint": "Modifiez l'URL et cliquez sur Ré-extraire, ou utilisez Autre URL pour repartir sur une nouvelle offre.",
+        "hint": "Compatible avec ReKrute, Emploi.ma, Novojob, pages carrière et autres sites (LinkedIn/Indeed en mode limité).",
+        "extracted": "Relisez ce brouillon avant publication.",
+        "parser": "Parser : {{name}}",
+        "skillsPlaceholder": "Ajouter une compétence",
+        "languagesPlaceholder": "ex. Français, Anglais",
+        "sections": {
+          "basic": "Informations de base",
+          "description": "Description",
+          "skills": "Compétences",
+          "targeting": "Ciblage",
+          "recruitment": "Configuration",
+          "metadata": "Métadonnées d'import"
+        },
+        "requiredHint": "Les champs marqués * sont obligatoires avant publication.",
+        "validation": {
+          "required": "Ce champ est obligatoire",
+          "incompleteTitle": "Complétez les sections suivantes avant de publier"
+        },
+        "metadata": {
+          "source": "Site source",
+          "parser": "Parser utilisé",
+          "importDate": "Date d'import",
+          "sourceUrl": "URL source",
+          "openLink": "Ouvrir le lien",
+          "copyLink": "Copier le lien",
+          "linkCopied": "Lien copié",
+          "copyFailed": "Impossible de copier le lien"
+        },
+        "fields": {
+          "company": "Entreprise",
+          "title": "Titre",
+          "location": "Lieu",
+          "internshipType": "Type de stage",
+          "skills": "Compétences requises",
+          "preferredSkills": "Compétences souhaitées",
+          "languages": "Langues",
+          "description": "Description",
+          "requirements": "Exigences",
+          "benefits": "Avantages"
+        },
+        "errors": {
+          "title": "Impossible d'analyser cette URL",
+          "retry": "Réessayer"
+        },
+        "loading": {
+          "analyzingPage": "Analyse de la page…",
+          "detectingCompany": "Détection de l'entreprise…",
+          "extractingTitle": "Extraction du titre du stage…",
+          "extractingRequirements": "Extraction des exigences…",
+          "buildingDraft": "Construction du brouillon…",
+          "normalizingContent": "Normalisation du contenu…",
+          "generatingPreview": "Génération de l'aperçu…"
+        }
+      }
+    },
     "createStudent": {
       "title": "Ajouter un étudiant",
       "subtitle": "Créez un compte et assignez filière, classe et accès plateforme.",
@@ -621,9 +1066,9 @@ export const adminCopyFr = {
         "credentialsHint": "Suivi de connexion et gestion des identifiants."
       },
       "select": {
-        "filiere": "— Sélectionner une filière —",
-        "class": "— Sélectionner une classe —",
-        "classNeedsFiliere": "— Choisir une filière d'abord —"
+        "filiere": "Sélectionner une filière",
+        "class": "Sélectionner une classe",
+        "classNeedsFiliere": "Choisir une filière d'abord"
       },
       "accountStatus": {
         "PENDING": "En attente",
@@ -719,6 +1164,215 @@ export const adminCopyFr = {
         }
       }
     },
+    "academicStructure": {
+      "eyebrow": "Configuration plateforme",
+      "title": "Structure académique",
+      "subtitle": "Source unique de vérité pour les filières, niveaux, classes, types de stage et modes de travail ESCA.",
+      "backToSettings": "Retour aux paramètres",
+      "superAdminOnly": "Super Admin uniquement",
+      "searchPlaceholder": "Rechercher…",
+      "allTracks": "Toutes les filières",
+      "toolbarAriaLabel": "Recherche et filtres de la structure académique",
+      "includeArchived": "Inclure les archives",
+      "noSearchResults": "Aucun résultat pour cette recherche",
+      "emptyTab": "Aucune entrée dans cette section",
+      "create": "Créer",
+      "edit": "Modifier",
+      "duplicate": "Dupliquer",
+      "save": "Enregistrer",
+      "tablePaginationLabel": "entrées",
+      "tabs": {
+        "tracks": "Filières",
+        "levels": "Niveaux",
+        "classes": "Classes",
+        "internshipFramework": "Cadre de stage",
+        "workModes": "Modes de travail",
+        "archived": "Archives"
+      },
+      "archived": {
+        "allTypes": "Tous les types",
+        "filterType": "Filtrer par type",
+        "emptyTitle": "Aucune entité archivée",
+        "emptyDescription": "Les filières, niveaux, classes et autres éléments archivés apparaîtront ici.",
+        "columns": {
+          "type": "Type",
+          "context": "Contexte"
+        },
+        "types": {
+          "FILIERE": "Filière",
+          "ACADEMIC_LEVEL": "Niveau",
+          "CLASS_GROUP": "Classe",
+          "INTERNSHIP_TYPE": "Cadre de stage",
+          "WORK_MODE": "Mode de travail"
+        }
+      },
+      "columns": {
+        "name": "Nom",
+        "code": "Code",
+        "family": "Famille",
+        "track": "Filière",
+        "level": "Niveau",
+        "year": "Année académique",
+        "duration": "Durée",
+        "order": "Ordre",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "fields": {
+        "name": "Nom",
+        "nameFr": "Nom (français)",
+        "nameEn": "Nom (anglais)",
+        "code": "Code",
+        "family": "Famille de programme",
+        "description": "Description",
+        "track": "Filière",
+        "level": "Niveau académique",
+        "year": "Année académique",
+        "duration": "Durée indicative",
+        "order": "Ordre d'affichage"
+      },
+      "status": {
+        "active": "Actif",
+        "inactive": "Inactif",
+        "archived": "Archivé"
+      },
+      "auditTitle": "Historique des modifications",
+      "auditEmpty": "Aucune modification enregistrée.",
+      "audit": {
+        "title": "Historique des modifications",
+        "subtitle": "Chronologie des créations, mises à jour et archivages effectués par les super administrateurs.",
+        "emptyTitle": "Aucune modification enregistrée",
+        "emptyDescription": "Les actions réalisées sur la structure académique apparaîtront ici.",
+        "noFilterResults": "Aucune modification pour la période sélectionnée",
+        "noFilterResultsDescription": "Élargissez la plage de dates ou réinitialisez les filtres.",
+        "paginationLabel": "modifications",
+        "filters": {
+          "ariaLabel": "Filtrer l'historique par période",
+          "periodLabel": "Période",
+          "periodAll": "Toute la période",
+          "period7d": "7 derniers jours",
+          "period30d": "30 derniers jours",
+          "period90d": "90 derniers jours",
+          "periodCustom": "Plage personnalisée",
+          "dateFrom": "Du",
+          "dateTo": "Au",
+          "clear": "Réinitialiser les filtres"
+        }
+      },
+      "errors": {
+        "loadFailed": "Impossible de charger la structure académique."
+      },
+      "archive": {
+        "title": "Archiver cette entité",
+        "subtitle": "Cette action désactive l'entité sans supprimer les données existantes.",
+        "confirm": "Confirmer l'archivage de « {{name}} ». Les références existantes seront conservées.",
+        "notice": "L'entité n'apparaîtra plus dans les listes actives ni dans les sélecteurs de création, mais restera visible dans l'onglet Archives.",
+        "usedBy": "Références actives",
+        "totalReferences": "{{count}} au total",
+        "noReferences": "Aucune référence active détectée pour cette entité.",
+        "students": "{{count}} étudiant(s)",
+        "offers": "{{count}} offre(s)",
+        "applications": "{{count}} candidature(s)",
+        "announcements": "{{count}} annonce(s)",
+        "meetings": "{{count}} réunion(s)",
+        "action": "Archiver",
+        "cancel": "Annuler",
+        "confirmAction": "Confirmer l'archivage",
+        "confirming": "Archivage…"
+      },
+      "delete": {
+        "title": "Supprimer définitivement",
+        "subtitle": "Cette action supprime définitivement l'entité de la base de données. Elle est irréversible.",
+        "confirm": "Confirmer la suppression définitive de « {{name}} ».",
+        "notice": "Seules les entités sans références actives peuvent être supprimées. Envisagez l'archivage si des données y sont encore liées.",
+        "blockedBy": "Références bloquantes",
+        "totalReferences": "{{count}} au total",
+        "noReferences": "Aucune référence active détectée. Cette entité peut être supprimée définitivement.",
+        "blockedHint": "Supprimez ou réaffectez ces références avant la suppression, ou archivez l'entité.",
+        "action": "Supprimer",
+        "cancel": "Annuler",
+        "confirmAction": "Supprimer définitivement",
+        "confirming": "Suppression…"
+      },
+      "form": {
+        "titles": {
+          "create": {
+            "tracks": "Créer une filière académique",
+            "levels": "Créer un niveau académique",
+            "classes": "Créer une classe",
+            "internshipFramework": "Créer un cadre de stage",
+            "workModes": "Créer un mode de travail"
+          },
+          "edit": {
+            "tracks": "Modifier la filière",
+            "levels": "Modifier le niveau",
+            "classes": "Modifier la classe",
+            "internshipFramework": "Modifier le cadre de stage",
+            "workModes": "Modifier le mode de travail"
+          },
+          "duplicate": {
+            "tracks": "Dupliquer la filière",
+            "levels": "Dupliquer le niveau",
+            "classes": "Dupliquer la classe",
+            "internshipFramework": "Dupliquer le cadre de stage",
+            "workModes": "Dupliquer le mode de travail"
+          }
+        },
+        "descriptions": {
+          "tracks": "Définissez une filière académique disponible sur toute la plateforme.",
+          "levels": "Configurez un niveau rattaché à une filière pour le ciblage et les parcours.",
+          "classes": "Organisez une classe pour une filière, un niveau et une année académique.",
+          "internshipFramework": "Définissez un cadre de stage lié à une filière et un niveau.",
+          "workModes": "Configurez un mode de travail proposé dans les offres et annonces."
+        },
+        "sections": {
+          "details": "Détails",
+          "detailsHint": "Informations principales visibles dans toute la plateforme.",
+          "assignment": "Rattachement académique",
+          "assignmentHint": "Associez cette entrée à une filière et, si besoin, à un niveau.",
+          "display": "Affichage",
+          "displayHint": "Ordre de présentation et statut actif."
+        },
+        "fields": {
+          "orderHint": "Contrôle l'ordre d'affichage dans les listes et sélecteurs.",
+          "active": "Actif sur la plateforme",
+          "codeOptional": "Optionnel — généré automatiquement si vide."
+        },
+        "duration": {
+          "value": "Durée",
+          "unit": "Unité",
+          "months": "Mois",
+          "weeks": "Semaines"
+        },
+        "stepper": {
+          "decrease": "Diminuer l'ordre",
+          "increase": "Augmenter l'ordre"
+        },
+        "select": {
+          "placeholder": "Sélectionner…",
+          "search": "Rechercher…",
+          "empty": "Aucune option",
+          "selectTrackFirst": "Sélectionnez d'abord une filière."
+        },
+        "preview": {
+          "title": "Aperçu",
+          "placeholderName": "Nom de l'entrée",
+          "duration": "Durée",
+          "year": "Année"
+        },
+        "actions": {
+          "saveAndCreate": "Enregistrer et créer un autre"
+        },
+        "validation": {
+          "required": "Ce champ est obligatoire.",
+          "duplicateName": "Ce nom existe déjà.",
+          "duplicateCode": "Ce code existe déjà.",
+          "duplicateFramework": "Un cadre identique existe déjà pour cette filière et ce niveau.",
+          "invalidDuration": "La durée doit être supérieure à zéro.",
+          "invalidOrder": "L'ordre doit être positif ou nul."
+        }
+      }
+    },
     "encadrants": {
       "title": "Encadrants",
       "subtitle": "Gérer les encadrants et leurs étudiants assignés",
@@ -750,7 +1404,235 @@ export const adminCopyFr = {
     },
     "offers": {
       "title": "Offres de stage",
-      "subtitle": "Gérer toutes les opportunités de stage"
+      "subtitle": "Gérer toutes les opportunités de stage",
+      "draftsPage": {
+        "title": "Brouillons",
+        "subtitle": "Consulter et publier les offres non publiées",
+        "readiness": {
+          "column": "Complétion",
+          "ready": "Prête à publier",
+          "score": "{{score}} % complété"
+        },
+        "publish": {
+          "action": "Publier",
+          "title": "Publier l'offre",
+          "subtitle": "Vérification avant publication de « {{title}} ».",
+          "checking": "Vérification des informations requises…",
+          "allComplete": "Toutes les sections requises sont complètes.",
+          "confirm": "Publier l'offre",
+          "completeOffer": "Compléter l'offre",
+          "blockedHint": "Complétez les sections manquantes avant de publier, ou ouvrez l'éditeur pour les renseigner.",
+          "success": "Offre publiée avec succès.",
+          "errors": {
+            "loadFailed": "Impossible de charger les détails de l'offre.",
+            "failed": "Impossible de publier cette offre. Vérifiez que toutes les informations requises sont complètes."
+          }
+        }
+      },
+      "actions": {
+        "delete": {
+          "title": "Supprimer l'offre de stage",
+          "description": "Êtes-vous sûr de vouloir supprimer cette offre ? Cette action peut affecter les candidatures, les résultats de matching et les analyses.",
+          "confirm": "Supprimer l'offre",
+          "success": "Offre supprimée avec succès.",
+          "errors": {
+            "failed": "Impossible de supprimer cette offre."
+          }
+        },
+        "errors": {
+          "forbidden": "Vous n'avez pas la permission d'effectuer cette action.",
+          "notFound": "Offre introuvable.",
+          "conflict": "Cette action ne peut pas être effectuée dans l'état actuel de l'offre.",
+          "server": "Erreur serveur. Veuillez réessayer."
+        }
+      },
+      "viewDetail": {
+        "loading": "Chargement des détails de l'offre…",
+        "navigation": "Sections de l'offre",
+        "nav": {
+          "overview": "Aperçu",
+          "description": "Description",
+          "skills": "Compétences",
+          "targeting": "Ciblage",
+          "recruitment": "Configuration",
+          "publication": "Publication",
+          "applications": "Candidatures",
+          "import": "Import",
+          "audit": "Audit"
+        },
+        "sections": {
+          "overview": "En-tête et informations de base",
+          "description": "Description",
+          "skills": "Compétences",
+          "targeting": "Ciblage",
+          "recruitment": "Configuration",
+          "publication": "Paramètres de publication",
+          "applications": "Aperçu des candidatures",
+          "import": "Informations d'import",
+          "audit": "Historique"
+        },
+        "header": {
+          "offerId": "ID de l'offre",
+          "source": "Source",
+          "created": "Créée le"
+        },
+        "status": {
+          "published": "Publiée",
+          "draft": "Brouillon",
+          "expired": "Expirée",
+          "closed": "Fermée",
+          "archived": "Archivée"
+        },
+        "source": {
+          "manual": "Création manuelle",
+          "import": "Import URL"
+        },
+        "fields": {
+          "positionsAvailable": "Postes disponibles",
+          "duration": "Durée",
+          "referenceCode": "Code de référence",
+          "language": "Langue",
+          "createdBy": "Créée par",
+          "lastUpdated": "Dernière mise à jour",
+          "additionalNotes": "Notes complémentaires",
+          "targetRules": "Règles de ciblage",
+          "expectedReach": "Portée estimée (vues)",
+          "recruitmentProcess": "Mode de candidature",
+          "compensation": "Rémunération",
+          "minEducation": "Niveau d'études minimum",
+          "publicationType": "Type de publication",
+          "publishedDate": "Date de publication",
+          "expirationDate": "Date d'expiration",
+          "currentStatus": "Statut actuel",
+          "targetAudience": "Public cible",
+          "autoExpiration": "Expiration automatique",
+          "sourcePlatform": "Plateforme source",
+          "sourceUrl": "URL source",
+          "importedBy": "Importée par",
+          "importDate": "Date d'import",
+          "parserUsed": "Parser utilisé"
+        },
+        "insights": {
+          "total": "Total candidatures",
+          "accepted": "Acceptées",
+          "rejected": "Refusées",
+          "pending": "En attente",
+          "interviewing": "En entretien",
+          "conversion": "Taux de conversion"
+        },
+        "audit": {
+          "created": "Créée",
+          "updated": "Dernière mise à jour",
+          "published": "Publiée",
+          "archived": "Archivée",
+          "lastActivity": "Dernière activité"
+        },
+        "values": {
+          "yes": "Oui",
+          "no": "Non"
+        },
+        "empty": {
+          "notConfigured": "Non configuré",
+          "notSpecified": "Non renseigné",
+          "noTargeting": "Aucune règle de ciblage définie",
+          "noRequiredSkills": "Aucune compétence requise configurée",
+          "noPreferredSkills": "Aucune compétence souhaitée configurée"
+        }
+      },
+      "listPages": {
+        "studentsCount": "{{count}} étudiants"
+      },
+      "legacyView": {
+        "postedOn": "Publiée le",
+        "applicationDeadline": "Date limite de candidature",
+        "totalApplicants": "Total candidatures",
+        "description": "Description",
+        "requiredSkills": "Compétences requises",
+        "applicantsTitle": "Candidats ({{count}})",
+        "applicantsSubtitle": "Étudiants ayant postulé à ce poste avec scores de matching",
+        "message": "Message",
+        "accept": "Accepter",
+        "reject": "Refuser"
+      },
+      "inbox": {
+        "sidebarTitle": "Centre de recrutement",
+        "filters": "Filtres",
+        "searchPlaceholder": "Étudiant, offre, entreprise…",
+        "searchAria": "Rechercher une conversation",
+        "clearSearch": "Effacer",
+        "conversationListAria": "Liste des conversations",
+        "filterChipsAria": "Filtres de conversation",
+        "noSearchResults": "Aucun résultat",
+        "noSearchResultsFor": "Aucune conversation pour « {{query}} »",
+        "clearSearchAction": "Effacer la recherche",
+        "noConversations": "Aucune conversation",
+        "noConversationsDesc": "Les conversations liées aux candidatures apparaîtront ici.",
+        "noConversationsFilterHint": "Ajustez vos filtres ou votre recherche",
+        "noMessages": "Aucun message pour le moment. Démarrez la conversation avec l'étudiant.",
+        "composerPlaceholder": "Rédiger un message…",
+        "attachFile": "Joindre un fichier",
+        "sendMessage": "Envoyer",
+        "loadError": "Erreur de chargement",
+        "back": "Retour",
+        "moreActions": "Plus d'actions",
+        "resolve": "Résoudre",
+        "archive": "Archiver",
+        "viewStudent": "Voir l'étudiant",
+        "viewApplication": "Voir la candidature",
+        "viewOffer": "Voir l'offre",
+        "openInModule": "Ouvrir dans le module",
+        "contextTitle": "Contexte stage",
+        "sections": {
+          "student": "Étudiant",
+          "currentOffer": "Offre actuelle",
+          "application": "Candidature",
+          "quickActions": "Actions rapides"
+        },
+        "fields": {
+          "name": "Nom",
+          "program": "Programme",
+          "class": "Classe",
+          "email": "E-mail",
+          "phone": "Téléphone",
+          "title": "Titre",
+          "company": "Entreprise",
+          "internshipType": "Type de stage",
+          "deadline": "Date limite",
+          "status": "Statut",
+          "appliedDate": "Date de candidature",
+          "interview": "Entretien",
+          "lastChange": "Dernier changement"
+        },
+        "quickActions": {
+          "sendReminder": "Envoyer un rappel",
+          "requestDocuments": "Demander des documents",
+          "scheduleInterview": "Planifier un entretien",
+          "updateApplication": "Mise à jour candidature",
+          "assignAdmin": "Assigner à un admin stage"
+        },
+        "filterSections": {
+          "program": "Programme",
+          "academicLevel": "Niveau académique",
+          "class": "Classe",
+          "internshipType": "Type de stage",
+          "applicationStatus": "Statut candidature",
+          "priority": "Priorité",
+          "tags": "Tags",
+          "clear": "Effacer les filtres"
+        },
+        "primaryChips": {
+          "all": "Toutes",
+          "unread": "Non lus",
+          "waiting_admin": "Attente admin",
+          "waiting_student": "Attente étudiant",
+          "urgent": "Urgent",
+          "resolved": "Résolues",
+          "archived": "Archivées"
+        },
+        "stats": {
+          "waitingAdmin": "En attente admin"
+        }
+      }
     },
     "announcements": {
       "title": "Annonces",
@@ -926,15 +1808,15 @@ export const adminCopyFr = {
         "heroRemaining": "Reste à payer",
         "heroRiskScore": "Score de risque",
         "heroProgram": "Programme",
-        "financialIntelligence": "Intelligence financière",
+        "financialIntelligence": "Aperçu financier",
         "eligibilityScore": "Score d'éligibilité",
         "eligibilityLabel": "Éligibilité académique",
         "eligibilityClear": "Situation régularisée",
         "eligibilityPending": "En cours de régularisation",
         "chartPaid": "Payé",
         "chartRemaining": "Restant",
-        "riskIntelligence": "Intelligence des risques",
-        "smartInsights": "Analyses intelligentes",
+        "riskIntelligence": "Aperçu des risques",
+        "smartInsights": "Observations clés",
         "riskLow": "Faible",
         "riskHigh": "Élevé",
         "installmentVisual": "Progression des tranches",
@@ -951,9 +1833,9 @@ export const adminCopyFr = {
           "high": "Risque élevé"
         },
         "riskInsight": {
-          "low": "Profil financier stable — surveillance standard.",
-          "medium": "Signaux de tension détectés — suivi renforcé recommandé.",
-          "high": "Risque financier élevé — action administrative prioritaire."
+          "low": "Profil financier stable. Surveillance standard.",
+          "medium": "Retards de paiement détectés. Un suivi renforcé est recommandé.",
+          "high": "Risque financier élevé. Action administrative prioritaire."
         },
         "access": {
           "examsTitle": "Accès aux examens",
@@ -972,7 +1854,7 @@ export const adminCopyFr = {
           "internshipBlocked": "Éligibilité au stage non confirmée financièrement.",
           "overdue": "{{count}} tranche(s) en retard — risque de blocage.",
           "pendingProof": "{{count}} preuve(s) en attente de validation.",
-          "clear": "Situation financière régularisée — accès académiques ouverts."
+          "clear": "Situation financière régularisée. Accès académiques ouverts."
         }
       },
       "validation": {
@@ -1006,7 +1888,7 @@ export const adminCopyFr = {
       },
       "configCenter": {
         "title": "Notifications & configuration examens",
-        "subtitle": "Centre de pilotage financier et académique — périodes d'examens, alertes automatisées et restrictions.",
+        "subtitle": "Opérations financières et académiques. Configurez les périodes d'examens, alertes automatisées et restrictions.",
         "heroEyebrow": "Centre d'opérations SRF",
         "backToSrf": "Retour au SRF",
         "secureBadge": "Espace de configuration sécurisé",
@@ -1063,7 +1945,7 @@ export const adminCopyFr = {
           "blockConvention": "Bloquer convention",
           "blockExams": "Bloquer examens",
           "escalation": "escalade",
-          "empty": "Aucun palier configuré — des valeurs par défaut seront proposées.",
+          "empty": "Aucun palier configuré. Des valeurs par défaut seront proposées.",
           "emptyTitle": "Aucune règle de rappel",
           "emptyDesc": "Définissez des paliers d'escalade pour automatiser les relances avant les examens.",
           "addTierHint": "Créez un palier avec seuil, fréquence et actions de restriction.",
@@ -1123,7 +2005,7 @@ export const adminCopyFr = {
     },
     "history": {
       "title": "Historique & Audit",
-      "subtitle": "Centre d'intelligence opérationnelle — activité transversale, investigations et traçabilité conformité"
+      "subtitle": "Journal d'audit et d'activité. Chronologie opérationnelle, traçabilité et responsabilité"
     },
     "administrators": {
       "title": "Administrateurs",
@@ -1159,7 +2041,7 @@ export const adminCopyFr = {
     },
     "reports": {
       "title": "Rapports encadrants",
-      "subtitle": "Rapports soumis par les encadrants pour leurs étudiants — réception et validation admin",
+      "subtitle": "Rapports soumis par les encadrants pour leurs étudiants. Réception et validation admin.",
       "source": {
         "loading": "Chargement des rapports soumis par les encadrants…",
         "received": "{{count}} rapport(s) reçu(s) des encadrants. Consultez, filtrez et validez les soumissions.",
@@ -1173,12 +2055,12 @@ export const adminCopyFr = {
     },
     "meetings": {
       "title": "Réunions de supervision",
-      "subtitle": "Agenda académique — suivi des rencontres encadrant / étudiant",
+      "subtitle": "Agenda académique. Suivi des rencontres encadrant et étudiant.",
       "back": "Retour aux réunions",
       "overview": {
         "title": "Vue d'ensemble des réunions",
         "badge": "Opérations de supervision",
-        "activePipeline": "Pipeline actif",
+        "activePipeline": "En cours",
         "activityRate": "Taux d'activité de supervision",
         "encadrantLoad": "Charge de supervision par encadrant",
         "empty": "Aucune activité de supervision",
@@ -1208,8 +2090,8 @@ export const adminCopyFr = {
         "totalCaption": "total"
       },
       "insights": {
-        "title": "Insights intelligents",
-        "empty": "Les indicateurs de supervision sont sains — aucune alerte.",
+        "title": "Observations clés",
+        "empty": "Les indicateurs de supervision sont dans les normes. Aucune alerte.",
         "needsFollowup": "{{count}} réunions nécessitent un suivi",
         "overdue": "{{count}} réunions sont en retard",
         "overloadedEncadrants": "{{count}} encadrants ont une charge élevée cette période",
@@ -1461,6 +2343,12 @@ export const adminCopyFr = {
         "searchPlaceholder": "Rechercher des fils ops",
         "composerPlaceholder": "Publier une note de gouvernance...",
         "emptyConversation": "Sélectionnez une conversation"
+      },
+      "meetings": {
+        "participantSubtitle": "agenda de supervision",
+        "searchPlaceholder": "Rechercher des réunions ou participants",
+        "composerPlaceholder": "Répondre dans le fil de réunion...",
+        "emptyConversation": "Sélectionnez une conversation"
       }
     },
     "create": {
@@ -1475,12 +2363,21 @@ export const adminCopyFr = {
       "filterAnnouncements": "Filtrer les annonces",
       "filterAnnouncementType": "Filtrer par type d'annonce",
       "searchDocuments": "Rechercher des documents",
-      "filterDocumentRequests": "Filtrer les demandes de documents"
+      "filterDocumentRequests": "Filtrer les demandes de documents",
+      "filterAllOffers": "Filtrer toutes les offres",
+      "filterActiveOffers": "Filtrer les offres actives",
+      "filterClosedOffers": "Filtrer les offres fermées",
+      "filterDraftOffers": "Filtrer les brouillons",
+      "filterExpiredOffers": "Filtrer les offres expirées",
+      "filterOffersWithApplications": "Filtrer les offres avec candidatures",
+      "filterOffersByStatus": "Filtrer par statut",
+      "filterOffersByCompany": "Filtrer par entreprise"
     }
   },
   "tables": {
     "columns": {
       "title": "Titre",
+      "image": "Image",
       "type": "Type",
       "targetAudience": "Public cible",
       "audience": "Public",
@@ -1515,6 +2412,7 @@ export const adminCopyFr = {
       "lastLogin": "Dernière connexion",
       "onboarding": "Onboarding",
       "actions": "Actions",
+      "matchScore": "Score de matching",
       "allClasses": "Toutes les classes",
       "filterByClass": "Filtrer par classe",
       "noStudentsMatch": "Aucun étudiant ne correspond à votre recherche.",
@@ -1624,7 +2522,10 @@ export const adminCopyFr = {
       "active": "Active",
       "draft": "Brouillon",
       "expired": "Expirée",
-      "closed": "Fermée"
+      "closed": "Fermée",
+      "pending": "En attente",
+      "accepted": "Acceptée",
+      "rejected": "Refusée"
     },
     "documentStatus": {
       "validated": "Validé",
@@ -1657,9 +2558,9 @@ export const adminCopyFr = {
     "loadError": "Impossible de charger l'historique. Vérifiez que l'API tourne et que vous êtes connecté.",
     "moduleEmpty": "Aucune activité enregistrée pour {{module}}.",
     "openEntity": "Ouvrir la fiche",
-    "analyticsTitle": "Intelligence opérationnelle",
+    "analyticsTitle": "Aperçu opérationnel",
     "analyticsSubtitle": "Activité plateforme, signaux critiques et automatisation",
-    "insightsTitle": "Insights intelligents",
+    "insightsTitle": "Observations clés",
     "exportCsv": "Exporter CSV",
     "exporting": "Export…",
     "entityTimelineTitle": "Historique d'activité",
@@ -1679,6 +2580,31 @@ export const adminCopyFr = {
       "automated7d": "Automatisés (7d)",
       "activeActors": "Acteurs actifs (7d)"
     },
+    "cards": {
+      "stripAria": "Indicateurs d'audit",
+      "events_today": "Événements aujourd'hui",
+      "critical_events": "Événements critiques",
+      "automated_events": "Événements automatisés",
+      "active_users_today": "Utilisateurs actifs",
+      "most_active_module": "Module le plus actif",
+      "events_last_24h": "Événements (24h)"
+    },
+    "moduleCards": {
+      "gridAria": "Indicateurs d'audit — {{module}}"
+    },
+    "roles": {
+      "ADMIN": "Admin",
+      "STUDENT": "Étudiant",
+      "SUPERVISOR": "Encadrant",
+      "SYSTEM": "Système"
+    },
+    "relative": {
+      "justNow": "à l'instant",
+      "secondsAgo": "il y a {{count}} s",
+      "minutesAgo": "il y a {{count}} min",
+      "hoursAgo": "il y a {{count}} h",
+      "daysAgo": "il y a {{count}} j"
+    },
     "charts": {
       "activityTrend": "Tendance d'activité",
       "moduleDistribution": "Répartition par module",
@@ -1697,7 +2623,7 @@ export const adminCopyFr = {
       "tasks": "Tâches",
       "auth": "Authentification",
       "students": "Étudiants",
-      "smart_assignment": "Affectation intelligente",
+      "smart_assignment": "Affectation des encadrants",
       "notifications": "Notifications",
       "history": "Historique"
     },
@@ -1720,10 +2646,24 @@ export const adminCopyFr = {
     }
   },
   "localHistory": {
-    "analyticsTitle": "Intelligence module",
+    "analyticsTitle": "Aperçu du module",
     "analyticsSubtitle": "Activité, signaux critiques et automatisation — périmètre module uniquement",
-    "empty": "Aucune activité enregistrée pour ce module. Les actions apparaîtront au fil des workflows.",
+    "empty": "Rien à afficher pour l'instant. Dès qu'une action sera enregistrée, elle apparaîtra ici.",
+    "loadingTimeline": "Nous chargeons l'historique…",
+    "refreshingResults": "Mise à jour des résultats…",
     "eventsLabel": "événements",
+    "activitySummary": {
+      "loading": "Chargement du résumé…",
+      "showing": "Affichage de {{count}} activités",
+      "lastActivity": "Dernière activité : {{time}}",
+      "actionsToday": "{{count}} actions aujourd'hui",
+      "stats": {
+        "activities": "Activités",
+        "lastActivity": "Dernière activité",
+        "today": "Actions aujourd'hui",
+        "none": "Aucune activité"
+      }
+    },
     "charts": {
       "actionDistribution": "Répartition des actions (7j)"
     },
@@ -1740,11 +2680,11 @@ export const adminCopyFr = {
       "subtitle": "Publications, planification, ciblage, recommandations et engagement"
     },
     "internshipOffers": {
-      "title": "Historique Offres de stage",
-      "subtitle": "Cycle de vie des offres, candidatures et affectations"
+      "title": "Historique des offres",
+      "subtitle": "Retrouvez en un coup d'œil qui a modifié, importé ou publié une offre."
     },
     "smartAssignment": {
-      "title": "Historique Smart Assignment",
+      "title": "Historique des affectations",
       "subtitle": "Exécutions d'affectation, équilibrage, conflits et réaffectations manuelles"
     },
     "encadrants": {
@@ -1973,13 +2913,19 @@ export const adminCopyFr = {
       "actions": {
         "all": "Tous les types",
         "create": "Création",
+        "import": "Import",
         "update": "Mise à jour",
+        "delete": "Suppression",
         "validate": "Validation",
-        "archive": "Archivage",
-        "review": "Revue",
+        "reject": "Rejet",
         "assign": "Assignation",
+        "publish": "Publication",
+        "archive": "Archivage",
+        "login": "Connexion",
+        "logout": "Déconnexion",
+        "review": "Revue",
         "submit": "Soumission",
-        "delete": "Suppression"
+        "system_action": "Action système"
       },
       "rows": {
         "hist-1": {
@@ -2667,7 +3613,14 @@ export const adminCopyFr = {
       "closedOffers": "Offres fermées",
       "totalApplications": "Total candidatures",
       "acceptanceRate": "Taux d'acceptation",
-      "mostPopular": "Plus populaire"
+      "mostPopular": "Plus populaire",
+      "notDetectedYet": "Non détecté pour le moment",
+      "draftsPage": {
+        "totalDrafts": "Total brouillons",
+        "pendingReview": "En attente de validation",
+        "companies": "Entreprises",
+        "withoutDeadline": "Sans date limite"
+      }
     },
     "history": {
       "total_actions": "Total actions",
@@ -2760,7 +3713,7 @@ export const adminCopyFr = {
     }
   },
   "smartAssignment": {
-    "title": "Affectation intelligente",
+    "title": "Affectation des encadrants",
     "open": "Ouvrir",
     "subtitle": "Analyse ESCA et distribution automatique des étudiants vers les encadrants",
     "academicYear": "Année académique",
@@ -2768,7 +3721,7 @@ export const adminCopyFr = {
     "respectLocks": "Respecter les affectations verrouillées",
     "refresh": "Actualiser",
     "preview": "Aperçu",
-    "runEngine": "Lancer le moteur",
+    "runEngine": "Lancer l'affectation",
     "engineHint": "Priorité : type de stage, filière, niveau, secteur, domaines, charge",
     "exclude": "Exclure",
     "lock": "Verrouiller",
@@ -2833,7 +3786,7 @@ export const adminCopyFr = {
       "expandDetails": "Afficher les enregistrements",
       "collapseDetails": "Masquer les enregistrements",
       "noIssues": "Aucun problème à afficher.",
-      "blockedToast": "Affectation bloquée — corrigez les problèmes critiques avant de lancer.",
+      "blockedToast": "Affectation bloquée. Corrigez les problèmes critiques avant de lancer.",
       "confirmTitle": "Continuer malgré les avertissements ?",
       "confirmDescription": "Des problèmes ont été détectés. Vous pouvez continuer ou ajuster les paramètres.",
       "confirmWarningsIntro": "Des avertissements ont été détectés. Vérifiez la liste ci-dessous avant de continuer.",
@@ -2870,7 +3823,7 @@ export const adminCopyFr = {
           "description": "Conserver les affectations actuelles et ne traiter que les non affectés."
         },
         "unassignedOnly": {
-          "title": "Réexécution intelligente (non affectés uniquement)",
+          "title": "Réexécution pour les non affectés uniquement",
           "description": "Affecter uniquement les étudiants sans encadrant."
         }
       },
@@ -2979,7 +3932,7 @@ export const adminCopyFr = {
       "statusOverCapacity": "À risque",
       "statusSurplus": "Surplus",
       "statusNoSupervisor": "Sans encadrant",
-      "insightsTitle": "Insights intelligents",
+      "insightsTitle": "Observations clés",
       "insightLowCoverage": "{{type}} : couverture encadrant insuffisante",
       "insightBalanced": "{{type}} : répartition équilibrée",
       "insightLimitedSupervisors": "{{type}} : encadrants limités",
@@ -2998,6 +3951,8 @@ export const adminCopyFr = {
     "studentsFilters": "Aucun étudiant ne correspond à vos filtres.",
     "studentsSearch": "Aucun étudiant ne correspond à votre recherche.",
     "offersFilters": "Aucune offre ne correspond à vos filtres.",
+    "noApplications": "Aucune candidature pour le moment.",
+    "noApplicationsDesc": "Les candidatures des étudiants apparaîtront ici dès qu'elles seront soumises.",
     "encadrantsFilters": "Aucun encadrant ne correspond à vos filtres.",
     "encadrantsSearch": "Aucun encadrant trouvé.",
     "encadrantsNoReports": "Aucun rapport en cours",

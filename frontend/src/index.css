@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700&display=swap');
 @import './features/admin/dashboard/styles/admin-dashboard.css';
+@import './features/admin/offres-stage/chat/styles/internship-support-inbox.css';
+@import './features/admin/shared/admin-module-chat/styles/chat-empty-state.css';
 @import './features/admin/dashboard/styles/admin-alerts-analytics.css';
 @import './features/admin/encadrant/smart-assignment/styles/admin-smart-assignment-analytics.css';
 @import './features/admin/ui/styles/admin-section-states.css';
@@ -10,7 +12,12 @@
 @import './features/student/styles/student-workspace-platform.css';
 @import './features/student/styles/student-whiteboard-platform.css';
 @import './features/student/reports/styles/student-report-platform.css';
+@import './features/student/styles/student-cv-analysis-platform.css';
+@import './features/student/styles/student-ai-career-coach.css';
+@import './features/student/styles/student-interview-platform.css';
 @import './design-system/platformThemeBridge.css';
+@import './design-system/safeContent/safeContent.css';
+@import './shared/navigation/back-navigation.css';
 
 @tailwind base;
 @tailwind components;

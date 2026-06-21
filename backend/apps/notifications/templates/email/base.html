@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="{{ language|default:'en' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title|default:platform_name }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 24px; color: #1a1a1a; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { background: #1e3a5f; color: #fff; padding: 24px; }
+    .content { padding: 24px; line-height: 1.6; }
+    .btn { display: inline-block; background: #2563eb; color: #fff !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin-top: 16px; }
+    .footer { padding: 16px 24px; font-size: 12px; color: #6b7280; background: #f9fafb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin:0;font-size:20px;">{{ platform_name|default:"Digital Talent Center" }}</h1>
+    </div>
+    <div class="content">
+      {% block content %}{{ body }}{% endblock %}
+      {% if action_url %}
+      <p><a class="btn" href="{{ action_url }}">{{ cta_label|default:"View details" }}</a></p>
+      {% endif %}
+    </div>
+    <div class="footer">
+      &copy; {{ platform_name|default:"Digital Talent Center" }}. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

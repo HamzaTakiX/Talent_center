@@ -62,4 +62,6 @@ SMART_ACTION_CODES = frozenset({
     'escalate',
     'notify_admin',
     'mark_urgent',
+    'mark_resolved',
+    'archive_conversation',
 })

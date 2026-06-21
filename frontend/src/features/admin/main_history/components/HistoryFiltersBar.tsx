@@ -1,7 +1,8 @@
 import { FunctionComponent, useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
-import { AdminListToolbar, AdminModuleHeader } from '../../ui';
+import { AdminListToolbar, AdminModuleHeader, AdminSelectField } from '../../ui';
+import HistoryFilterRefreshBar from './HistoryFilterRefreshBar';
 import {
   HISTORY_ACTION_FILTER_ALL,
   HISTORY_ACTION_FILTERS,
@@ -27,6 +28,8 @@ interface HistoryFiltersBarProps {
   showModuleFilter?: boolean;
   title?: string;
   subtitle?: string;
+  isRefreshing?: boolean;
+  searchLoading?: boolean;
 }
 
 const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
@@ -44,9 +47,12 @@ const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
   showModuleFilter = true,
   title,
   subtitle,
+  isRefreshing = false,
+  searchLoading = false,
 }) => {
   const { t } = useTranslation();
   const searchPh = useAdminSearchPlaceholder('activity');
+  const refreshLabel = t('admin.localHistory.refreshingResults');
 
   const moduleOptions = useMemo(
     () =>
@@ -85,19 +91,21 @@ const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
   );
 
   return (
-    <AdminModuleHeader
-      className="admin-history-page__header border-b-0"
-      layout="toolbar"
-      title={title ?? t('admin.modules.history.title')}
-      subtitle={subtitle ?? t('admin.modules.history.subtitle')}
-      actions={
-        <div className="flex w-full flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <AdminListToolbar
-            controlsLayout="grouped"
-            searchValue={search}
-            onSearchChange={onSearchChange}
-            searchPlaceholder={searchPh}
-            toolbarAriaLabel={t(`${MAIN_PREFIX}.toolbarAria`)}
+    <div className="admin-history-filters">
+      <AdminModuleHeader
+        className="admin-history-page__header border-b-0"
+        layout="toolbar"
+        title={title ?? t('admin.modules.history.title')}
+        subtitle={subtitle ?? t('admin.modules.history.subtitle')}
+        actions={
+          <div className="flex w-full flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <AdminListToolbar
+              controlsLayout="grouped"
+              searchValue={search}
+              onSearchChange={onSearchChange}
+              searchPlaceholder={searchPh}
+              searchLoading={searchLoading || isRefreshing}
+              toolbarAriaLabel={t(`${MAIN_PREFIX}.toolbarAria`)}
             filter1={
               showModuleFilter
                 ? {
@@ -115,44 +123,32 @@ const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
               ariaLabel: t(`${MAIN_PREFIX}.actionFilterAria`),
             }}
           />
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="admin-history-filters__extra flex flex-wrap items-center gap-2">
             {onCriticalityChange ? (
-              <label className="flex flex-col gap-1 text-xs text-[var(--admin-text-secondary)]">
-                {t(`${AUDIT_PREFIX}.filters.criticality`)}
-                <select
-                  className="admin-native-select-fallback rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg)] px-2 py-1.5 text-sm text-[var(--admin-text)]"
-                  value={criticalityFilter}
-                  onChange={(e) => onCriticalityChange(e.target.value)}
-                >
-                  {criticalityOptions.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <AdminSelectField
+                value={criticalityFilter}
+                onChange={onCriticalityChange}
+                options={criticalityOptions}
+                aria-label={t(`${AUDIT_PREFIX}.filters.criticality`)}
+                wrapperClassName="admin-history-filters__select"
+              />
             ) : null}
             {onAutomatedChange ? (
-              <label className="flex flex-col gap-1 text-xs text-[var(--admin-text-secondary)]">
-                {t(`${AUDIT_PREFIX}.filters.automated`)}
-                <select
-                  className="admin-native-select-fallback rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg)] px-2 py-1.5 text-sm text-[var(--admin-text)]"
-                  value={automatedFilter}
-                  onChange={(e) => onAutomatedChange(e.target.value)}
-                >
-                  {automatedOptions.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <AdminSelectField
+                value={automatedFilter}
+                onChange={onAutomatedChange}
+                options={automatedOptions}
+                aria-label={t(`${AUDIT_PREFIX}.filters.automated`)}
+                wrapperClassName="admin-history-filters__select"
+              />
             ) : null}
             {trailingActions}
           </div>
-        </div>
-      }
-    />
+          </div>
+        }
+      />
+      <HistoryFilterRefreshBar active={isRefreshing} label={refreshLabel} />
+    </div>
   );
 };
 

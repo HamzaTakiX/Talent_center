@@ -2,6 +2,7 @@ import { FormEvent, FunctionComponent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, FileText } from 'lucide-react';
 import AdminSelect from '../../account/components/AdminSelect';
+import { useOfferBasicInfoOptions } from '../../shared/hooks/useAcademicReferenceOptions';
 import {
   AdminFormDateInput,
   AdminFormField,
@@ -41,6 +42,8 @@ interface CreateInternshipOfferFormProps {
   hidePanelHeader?: boolean;
   onCancel: () => void;
   onPublish: () => void;
+  onSubmit?: (values: InternshipOfferFormValues) => void;
+  submitDisabled?: boolean;
 }
 
 const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProps> = ({
@@ -49,8 +52,11 @@ const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProp
   hidePanelHeader = false,
   onCancel,
   onPublish,
+  onSubmit,
+  submitDisabled = false,
 }) => {
   const { t } = useTranslation();
+  const { internshipTypeOptions } = useOfferBasicInfoOptions();
   const [offerTitle, setOfferTitle] = useState(initialValues?.offerTitle ?? '');
   const [company, setCompany] = useState(initialValues?.company ?? '');
   const [location, setLocation] = useState(initialValues?.location ?? '');
@@ -61,17 +67,36 @@ const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProp
   const [skills, setSkills] = useState(initialValues?.skills ?? '');
   const [tags, setTags] = useState(initialValues?.tags ?? '');
 
-  const typeOptions = useMemo(
-    () =>
-      OFFER_TYPE_OPTIONS.map((opt) => ({
-        value: opt.value,
-        label: t(`${FORM_PREFIX}.types.${opt.labelKey}`),
-      })),
-    [t]
-  );
+  const typeOptions = useMemo(() => {
+    if (internshipTypeOptions.length > 0) {
+      return [
+        { value: '', label: t(`${FORM_PREFIX}.types.select`) },
+        ...internshipTypeOptions,
+      ];
+    }
+    return OFFER_TYPE_OPTIONS.map((opt) => ({
+      value: opt.value,
+      label: t(`${FORM_PREFIX}.types.${opt.labelKey}`),
+    }));
+  }, [internshipTypeOptions, t]);
 
   const handlePublish = (e: FormEvent) => {
     e.preventDefault();
+    const values: InternshipOfferFormValues = {
+      offerTitle,
+      company,
+      location,
+      offerType,
+      deadline,
+      duration,
+      description,
+      skills,
+      tags,
+    };
+    if (onSubmit) {
+      onSubmit(values);
+      return;
+    }
     onPublish();
   };
 
@@ -221,7 +246,7 @@ const CreateInternshipOfferForm: FunctionComponent<CreateInternshipOfferFormProp
             ? t(`${FORM_PREFIX}.actions.cancel`)
             : t(`${FORM_PREFIX}.actions.draft`)}
         </button>
-        <button type="submit" className={adminFormBtnPrimaryClass}>
+        <button type="submit" className={adminFormBtnPrimaryClass} disabled={submitDisabled}>
           <CheckCircle className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
           {variant === 'edit' ? t(`${FORM_PREFIX}.actions.save`) : t(`${FORM_PREFIX}.actions.publish`)}
         </button>

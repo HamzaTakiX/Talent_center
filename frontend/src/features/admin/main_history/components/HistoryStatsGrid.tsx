@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { HistoryStatItem } from '../types';
 import HistoryStatCard from './HistoryStatCard';
 import AdminKpiGrid from '../../ui/AdminKpiGrid';
+import { AdminKpiStripSkeleton } from '../../ui/AdminSectionSkeleton';
 
 const routeByKey: Record<string, string> = {
   total_actions: '/admin/history/total-actions',
@@ -33,6 +34,14 @@ const HistoryStatsGrid: FunctionComponent<HistoryStatsGridProps> = ({
 
   if (!loading && stats.length === 0) {
     return null;
+  }
+
+  if (loading && stats.length === 0) {
+    return (
+      <div className="flex w-full min-w-0 flex-col gap-5 md:gap-7" aria-busy>
+        <AdminKpiStripSkeleton count={4} />
+      </div>
+    );
   }
 
   const primaryStats = stats.slice(0, 7);

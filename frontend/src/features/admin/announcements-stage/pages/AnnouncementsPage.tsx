@@ -48,7 +48,6 @@ const AnnouncementsPage: FunctionComponent = () => {
         return;
       }
       if (key === 'drafts') setFilters((f) => ({ ...f, status: 'DRAFT' }));
-      else if (key === 'scheduled') setFilters((f) => ({ ...f, status: 'SCHEDULED' }));
       else if (key === 'urgent') setFilters((f) => ({ ...f, priority: 'URGENT' }));
       else if (key === 'active') setFilters((f) => ({ ...f, status: 'PUBLISHED' }));
       else navigate('/admin/announcements/all');
@@ -91,6 +90,15 @@ const AnnouncementsPage: FunctionComponent = () => {
 
         <AnnouncementsNavStrip />
 
+        <AnnouncementsFiltersBar filters={filters} onChange={setFilters} />
+
+        <AnnouncementsFeedSection
+          items={items}
+          loading={listLoading}
+          total={total}
+          hasSearch={hasSearch}
+        />
+
         <section className="admin-ann-ops-section" aria-label="Analytics overview">
         <div className="admin-ann-ops-grid">
           {dashboard ? (
@@ -107,15 +115,6 @@ const AnnouncementsPage: FunctionComponent = () => {
           </div>
         </div>
         </section>
-
-        <AnnouncementsFiltersBar filters={filters} onChange={setFilters} />
-
-        <AnnouncementsFeedSection
-          items={items}
-          loading={listLoading}
-          total={total}
-          hasSearch={hasSearch}
-        />
       </div>
     </AdminModulePageShell>
   );

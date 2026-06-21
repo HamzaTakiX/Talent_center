@@ -48,13 +48,24 @@ export interface PaginatedHistoryEvents {
   total_pages: number;
 }
 
+export interface HistoryAuditStatsPayload {
+  audit_stats: { key: string; value: number; meta?: Record<string, unknown> }[];
+}
+
 export interface HistoryDashboardData {
   summary: {
     total_events: number;
     critical_last_24h: number;
     automated_last_7d: number;
     active_actors_7d: number;
+    events_today?: number;
+    critical_events?: number;
+    automated_events?: number;
+    active_users_today?: number;
+    events_last_24h?: number;
+    most_active_module?: { source_app: string; label: string; count: number } | null;
   };
+  audit_stats?: { key: string; value: number; meta?: Record<string, unknown> }[];
   by_module: { source_app: string; count: number }[];
   by_severity: { severity: string; count: number }[];
   by_action: { action_code: string; count: number }[];
@@ -92,6 +103,11 @@ export interface HistoryListParams {
   automated?: 'true' | 'false';
   date_from?: string;
   date_to?: string;
+}
+
+export interface HistoryDashboardParams {
+  kpi?: string;
+  lite?: boolean;
 }
 
 function buildParams(params?: HistoryListParams): Record<string, string | number> {
@@ -140,9 +156,14 @@ export const adminHistoryApi = {
     return res.data.data ?? { items: [], page: 1, page_size: 25, total: 0, total_pages: 0 };
   },
 
-  dashboard: async (): Promise<HistoryDashboardData> => {
-    const res = await apiClient.get<ApiEnvelope<HistoryDashboardData>>(`${BASE}/dashboard`);
-    return res.data.data!;
+  dashboard: async (params?: HistoryDashboardParams): Promise<HistoryAuditStatsPayload> => {
+    const query: Record<string, string> = {};
+    if (params?.kpi) query.kpi = params.kpi;
+    query.lite = params?.lite === false ? '0' : '1';
+    const res = await apiClient.get<ApiEnvelope<HistoryAuditStatsPayload>>(`${BASE}/dashboard`, {
+      params: query,
+    });
+    return res.data.data ?? { audit_stats: [] };
   },
 
   insights: async (): Promise<HistoryInsight[]> => {

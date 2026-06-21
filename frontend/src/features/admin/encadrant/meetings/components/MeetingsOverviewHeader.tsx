@@ -40,7 +40,7 @@ const MeetingsOverviewHeader: FunctionComponent<MeetingsOverviewHeaderProps> = (
         </h1>
         <p className="admin-meetings-hero__subtitle">
           {t('admin.modules.meetings.subtitle', {
-            defaultValue: 'Academic agenda — monitor supervisor / student meetings',
+            defaultValue: 'Academic agenda. Monitor supervisor and student meetings.',
           })}
         </p>
         <div className="admin-meetings-hero__metrics">
@@ -48,7 +48,7 @@ const MeetingsOverviewHeader: FunctionComponent<MeetingsOverviewHeaderProps> = (
             <CalendarDays className="h-4 w-4 shrink-0 text-[var(--admin-brand)]" aria-hidden />
             <span className="admin-meetings-hero__metric-label">
               {t('admin.modules.meetings.overview.activePipeline', {
-                defaultValue: 'Active pipeline',
+                defaultValue: 'In progress',
               })}
             </span>
             <span className="admin-meetings-hero__metric-value">

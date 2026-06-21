@@ -2,9 +2,12 @@ export interface InternshipOffer {
   id: string;
   title: string;
   company: string;
+  companyLogoUrl?: string | null;
   status: 'Active' | 'Draft' | 'Expired' | 'Closed';
   applicants: number;
   deadline: string;
+  publishReadinessScore?: number | null;
+  publishReady?: boolean | null;
 }
 
 export type OfferApplicationStatus = 'Pending' | 'Accepted';
@@ -29,6 +32,7 @@ export interface InternshipOfferDetail extends InternshipOffer {
 export interface InternshipOfferStat {
   label: string;
   labelKey?: string;
+  valueKey?: string;
   statKey?: string;
   value: string;
   icon: string;

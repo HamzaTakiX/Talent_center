@@ -1,11 +1,12 @@
 import { FunctionComponent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { CheckCircle } from 'lucide-react';
 import { useAdminBackLabel } from '../../i18n/useAdminCopy';
 import { useAdminToast } from '../../dashboard/context/AdminToastContext';
 import { adminAnnouncementsApi } from '../../api/announcements';
 import AdminFormPageShell from '../../ui/AdminFormPageShell';
-import CreateAnnouncementForm from '../components/CreateAnnouncementForm';
+import CreateAnnouncementForm, { CREATE_FORM_ID } from '../components/CreateAnnouncementForm';
 import '../styles/admin-announcements.css';
 
 const FORM_PREFIX = 'admin.forms.createAnnouncement';
@@ -59,6 +60,16 @@ const CreateAnnouncementPage: FunctionComponent = () => {
       onBack={() => navigate('/admin/announcements')}
       heroTitle={t(`${FORM_PREFIX}.title`)}
       heroSubtitle={t(`${FORM_PREFIX}.subtitle`)}
+      heroAction={
+        <button
+          type="submit"
+          form={CREATE_FORM_ID}
+          className="admin-btn-primary inline-flex h-10 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold text-white"
+        >
+          <CheckCircle className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+          {t(`${FORM_PREFIX}.actions.create`)}
+        </button>
+      }
     >
       <div className="admin-ann-form-shell">
       <CreateAnnouncementForm

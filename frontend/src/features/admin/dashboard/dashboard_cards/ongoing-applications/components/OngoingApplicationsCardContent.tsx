@@ -2,6 +2,7 @@ import { FunctionComponent } from 'react';
 import type { ApplicationStatus, OngoingApplicationRow } from '../data/ongoingApplicationsMockData';
 import AdminMobileRowCard from '../../../../shared/AdminMobileRowCard';
 import { AdminEmptyState, AdminTableScroll } from '../../../../ui';
+import { ADMIN_TABLE_COL, SafeText, SafeTitleCell } from '../../../../../../design-system/safeContent';
 import { ADMIN_TABLE_BADGE, adminBadgeClass } from '../../../../ui/adminStatusBadges';
 
 interface OngoingApplicationsCardContentProps {
@@ -25,14 +26,14 @@ const OngoingApplicationsCardContent: FunctionComponent<OngoingApplicationsCardC
         {rows.map((row, index) => (
           <AdminMobileRowCard
             key={`${row.student}-${row.offer}-${index}`}
-            title={row.student}
+            title={<SafeText as="span">{row.student}</SafeText>}
             badges={
               <span className={`${adminBadgeClass(statusVariant(row.status), ADMIN_TABLE_BADGE)} capitalize`}>
                 {row.status}
               </span>
             }
             fields={[
-              { label: 'Offer', value: row.offer },
+              { label: 'Offer', value: <SafeTitleCell>{row.offer}</SafeTitleCell> },
               { label: 'Score', value: <span className="tabular-nums">{row.score}</span> },
             ]}
           />
@@ -43,17 +44,17 @@ const OngoingApplicationsCardContent: FunctionComponent<OngoingApplicationsCardC
         <AdminTableScroll minWidth="640px" className="admin-table-scroll--panel">
           <thead>
             <tr>
-              <th>Student</th>
-              <th>Offer</th>
-              <th>Score</th>
-              <th>Status</th>
+              <th className={ADMIN_TABLE_COL.name}>Student</th>
+              <th className={ADMIN_TABLE_COL.title}>Offer</th>
+              <th className={ADMIN_TABLE_COL.text}>Score</th>
+              <th className={ADMIN_TABLE_COL.status}>Status</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row, index) => (
               <tr key={`${row.student}-${row.offer}-${index}`}>
-                <td className="font-medium">{row.student}</td>
-                <td>{row.offer}</td>
+                <td className="font-medium"><SafeText>{row.student}</SafeText></td>
+                <td><SafeTitleCell>{row.offer}</SafeTitleCell></td>
                 <td className="tabular-nums">{row.score}</td>
                 <td>
                   <span className={`${adminBadgeClass(statusVariant(row.status), ADMIN_TABLE_BADGE)} capitalize`}>

@@ -1,11 +1,10 @@
-/** Auto-generated admin copy — en */
+/** Admin copy — en */
 export const adminCopyEn = {
   "contextualChat": {
-    "loading": "Syncing contextual threads…",
-    "demoMode": "Cannot reach the API — showing demo data. Check that the backend is running and you are logged in.",
-    "emptyLive": "API connected — no threads for module « {{module }} ». Run: python manage.py seed_contextual_chat_demo",
-    "liveConnected": "Live data · API connected",
-    "noThreadsYet": "No contextual threads yet — create one or run the backend seed command.",
+    "loading": "Syncing conversations…",
+    "emptyLive": "No internship conversations yet. Conversations will appear when students or administrators exchange messages regarding internship offers.",
+    "noThreadsYet": "No internship conversations yet",
+    "emptyLiveDescription": "Conversations will appear when students or administrators exchange messages regarding internship offers.",
     "messageSent": "Message saved to workflow thread",
     "actionApplied": "Action “{{action}}” applied",
     "linkedEntity": "{{type}} · {{id}}",
@@ -51,6 +50,19 @@ export const adminCopyEn = {
     "srf": "Back to SRF",
     "history": "Back to History",
     "administrators": "Back to Administrators"
+  },
+  "pagination": {
+    "ariaLabel": "Pagination",
+    "empty": "No {{itemLabel}}",
+    "range": "Showing {{start}}–{{end}} of {{total}} {{itemLabel}}",
+    "previous": "Previous page",
+    "next": "Next page",
+    "items": "items",
+    "students": "students",
+    "encadrants": "supervisors",
+    "administrators": "administrators",
+    "srfAccounts": "accounts",
+    "srfProofs": "proofs"
   },
   "search": {
     "admins": "Search admins...",
@@ -318,7 +330,7 @@ export const adminCopyEn = {
         "roles": "Roles & permissions",
         "rolesHint": "Administrator types and granular permissions.",
         "academicScope": "Academic scope",
-        "academicScopeHint": "Programs, classes, levels and years — linked dynamically based on your selections.",
+        "academicScopeHint": "Programs, classes, levels, and years are linked based on your selections.",
         "accessControl": "Access control",
         "accessControlHint": "SSO, platform authorization and account status.",
         "permissionsHint": "Enable modules this administrator can access.",
@@ -355,20 +367,20 @@ export const adminCopyEn = {
       "internshipType": "Internship type",
       "academicYear": "Academic year",
       "classGroup": "Class / group",
-      "selectProgram": "— Select a program —",
-      "selectLevel": "— Select a level —",
-      "levelNeedsProgram": "— Select a program first —",
-      "selectSector": "— Select a specialization —",
-      "selectInternship": "— Select an internship type —",
-      "internshipNeedsLevel": "— Select a level first —",
-      "selectYear": "— Select academic year —",
-      "selectClass": "— Select a class —",
-      "classNeedsProgram": "— Select a program first —",
+      "selectProgram": "Select a program",
+      "selectLevel": "Select a level",
+      "levelNeedsProgram": "Select a program first",
+      "selectSector": "Select a specialization",
+      "selectInternship": "Select an internship type",
+      "internshipNeedsLevel": "Select a level first",
+      "selectYear": "Select academic year",
+      "selectClass": "Select a class",
+      "classNeedsProgram": "Select a program first",
       "internshipAutoHint": "Automatically determined from ESCA program and level.",
       "internshipResolving": "Resolving internship type…",
       "internshipPending": "Complete academic level",
       "internshipNeedsSector": "Select a specialization to determine the internship",
-      "internshipAmbiguous": "Multiple types possible — specify specialization"
+      "internshipAmbiguous": "Multiple types possible. Specify the specialization."
     },
     "createEncadrant": {
       "title": "Add New Supervisor",
@@ -395,7 +407,7 @@ export const adminCopyEn = {
         "identity": "Basic information",
         "identityHint": "Legal name and official ESCA SSO email. No password is required.",
         "academicScope": "Academic scope",
-        "academicScopeHint": "Program, levels, academic years, expertise domains, and ESCA sectors — each step unlocks the next.",
+        "academicScopeHint": "Program, levels, academic years, expertise domains, and ESCA sectors. Each step unlocks the next.",
         "supervision": "Supervision capacity",
         "supervisionHint": "Maximum number of students this supervisor can handle.",
         "access": "Access control",
@@ -457,7 +469,7 @@ export const adminCopyEn = {
       },
       "supervisedInternships": {
         "label": "Supervised internship types",
-        "hint": "Smart assignment only matches students whose internship type is selected here.",
+        "hint": "Assignment only matches students whose internship type is selected here.",
         "placeholder": "Choose internship types…"
       },
       "detail": {
@@ -524,6 +536,7 @@ export const adminCopyEn = {
         "internal": "Internal admins"
       },
       "actions": {
+        "create": "Create",
         "draft": "Save as Draft",
         "publish": "Publish Now",
         "cancel": "Cancel",
@@ -585,6 +598,438 @@ export const adminCopyEn = {
         "contentHint": "Role overview and required skills."
       }
     },
+    "createOfferStudio": {
+      "title": "Create Internship Offer",
+      "subtitle": "Publish and target internship opportunities for the right students.",
+      "editTitle": "Edit Internship Offer",
+      "editSubtitle": "Continue the guided workflow to complete and republish this offer.",
+      "loading": {
+        "title": "Loading Offer",
+        "retrieving": "Retrieving offer information…",
+        "preparing": "Preparing editing workspace…",
+        "subtitle": "Please wait while we prepare your editing workspace."
+      },
+      "saveStatus": {
+        "idle": "All changes are synced",
+        "unsaved": "Unsaved changes",
+        "saving": "Saving…",
+        "saved": "Saved",
+        "error": "Error saving",
+        "lastSaved": "Last saved: {{time}}"
+      },
+      "actions": {
+        "saveDraft": "Save Draft",
+        "saveChanges": "Save Changes",
+        "savingDraft": "Saving draft…",
+        "publishing": "Publishing…",
+        "preview": "Preview",
+        "publish": "Publish",
+        "republish": "Republish",
+        "next": "Next Step",
+        "previous": "Previous Step",
+        "changeMethod": "Change Method",
+        "backToEdit": "Back to Edit"
+      },
+      "messages": {
+        "publishSuccess": "Offer published successfully",
+        "draftSaved": "Draft saved",
+        "changesSaved": "Changes saved",
+        "missingTitle": "Add a title before publishing",
+        "incompleteOffer": "Complete missing sections before publishing",
+        "completeOfferUsePublish": "All required fields are complete — use Publish instead of saving a draft",
+        "duplicateBlocked": "Duplicate detected. View the existing offer or continue anyway."
+      },
+      "method": {
+        "eyebrow": "Internship Offer Studio",
+        "stepTitle": "How would you like to create this offer?",
+        "stepDesc": "Choose the path that fits your workflow. Both options support live preview, student targeting, and one-click publish.",
+        "hint": "Select a method to get started.",
+        "compareNote": "You can save as draft or publish at any time after choosing a method.",
+        "manual": {
+          "title": "Create Manually",
+          "badge": "Full control",
+          "description": "Step-by-step guided wizard for custom offers.",
+          "longDesc": "Build every field from scratch with a structured 6-step flow — ideal when you need precise targeting, tailored descriptions, and full editorial control.",
+          "benefits": [
+            "6-step guided wizard (basic info → review)",
+            "Student targeting with audience estimate",
+            "Live preview while you edit",
+            "Skills, recruitment settings & validation checkpoints"
+          ],
+          "bestFor": "Best for custom offers & new partnerships",
+          "cta": "Open creation wizard"
+        },
+        "import": {
+          "title": "Import From URL",
+          "badge": "Fastest",
+          "description": "Paste a job board or career page link — we extract the draft.",
+          "longDesc": "Supports LinkedIn, Indeed, ReKrute, Emploi.ma, Novojob, and company career pages. Review the extracted draft, adjust fields, then publish in minutes.",
+          "benefits": [
+            "Automatic extraction of title, company & description",
+            "Editable draft before publish",
+            "Source metadata & parser info preserved",
+            "Works with major job boards & career sites"
+          ],
+          "bestFor": "Best for existing listings & quick turnaround",
+          "cta": "Import from link"
+        }
+      },
+      "steps": {
+        "navigation": "Creation progress",
+        "basic": "Basic Information",
+        "description": "Description",
+        "skills": "Skills",
+        "targeting": "Targeting",
+        "recruitment": "Config",
+        "review": "Review & Publish"
+      },
+      "stepDesc": {
+        "basic": "Title, company, location, and internship type.",
+        "description": "Build a structured, engaging description.",
+        "skills": "Technical skills, languages, and certifications.",
+        "targeting": "Define targeting rules and estimated audience.",
+        "recruitment": "Dates, visibility, and application method.",
+        "review": "Validate every detail and publish with confidence."
+      },
+      "fields": {
+        "title": "Offer Title",
+        "company": "Company",
+        "internshipType": "Internship Type",
+        "location": "Location",
+        "workMode": "Work Mode",
+        "department": "Department",
+        "positions": "Number of Positions"
+      },
+      "placeholders": {
+        "title": "e.g. Full Stack Developer Internship",
+        "company": "e.g. TechCorp Morocco",
+        "location": "e.g. Casablanca, Morocco",
+        "department": "e.g. Product Engineering"
+      },
+      "types": {
+        "select": "Select type",
+        "internship": "Internship",
+        "pfe": "PFE",
+        "pfa": "PFA",
+        "alternance": "Work-study",
+        "summer": "Summer Internship",
+        "observation": "Observation Internship"
+      },
+      "workModes": {
+        "remote": "Remote",
+        "hybrid": "Hybrid",
+        "onsite": "On Site"
+      },
+      "description": {
+        "overview": "Overview",
+        "responsibilities": "Responsibilities",
+        "requirements": "Requirements",
+        "benefits": "Benefits",
+        "learning": "Learning Opportunities",
+        "placeholders": {
+          "overview": "Introduce the role and context…",
+          "responsibilities": "List key responsibilities…",
+          "requirements": "Required profile and prerequisites…",
+          "benefits": "Benefits offered to interns…",
+          "learning": "What the student will gain…"
+        }
+      },
+      "skills": {
+        "required": "Required Skills",
+        "preferred": "Preferred Skills",
+        "languages": "Languages",
+        "softSkills": "Soft Skills",
+        "experience": "Years of Experience",
+        "certifications": "Certifications (optional)",
+        "placeholder": "Add a skill and press Enter",
+        "languagesPlaceholder": "e.g. French, English",
+        "softPlaceholder": "e.g. Communication, Teamwork",
+        "experiencePlaceholder": "e.g. 0–1 year",
+        "certPlaceholder": "e.g. AWS Cloud Practitioner"
+      },
+      "targeting": {
+        "program": "Program",
+        "class": "Class",
+        "level": "Level",
+        "department": "Department",
+        "category": "Internship Category",
+        "audience": "{{count}} students match this targeting",
+        "audienceEmpty": "Select at least one targeting criterion",
+        "audiencePending": "Save the draft to estimate audience reach",
+        "audienceSummary": {
+          "title": "Target audience",
+          "eligible": "{{count}} eligible students",
+          "loading": "Calculating audience…",
+          "autoRefresh": "Visibility and matching refresh automatically when you save."
+        },
+        "noAcademicData": "No academic programs are configured yet. Add them in Academic Structure first.",
+        "loadError": "Unable to load academic data. Please refresh the page.",
+        "sectionEmpty": "No options configured yet."
+      },
+      "recruitment": {
+        "deadline": "Application Deadline",
+        "startDate": "Internship Start Date",
+        "endDate": "Internship End Date",
+        "profilesNeeded": "Profiles Needed",
+        "visibility": "Visibility",
+        "visibilityOptions": {
+          "public": "Public",
+          "targeted": "Targeted",
+          "private": "Private"
+        },
+        "autoExpiration": "Auto-expire on deadline",
+        "applicationMethod": "Application Method",
+        "methodOptions": {
+          "internal": "Internal Application",
+          "external": "External Link",
+          "email": "Email Submission"
+        },
+        "externalUrl": "External application URL",
+        "submissionEmail": "Submission email"
+      },
+      "review": {
+        "ready": "Your offer is ready to publish",
+        "notSet": "Not set",
+        "emptyState": {
+          "notConfigured": "Not configured",
+          "missingInformation": "Missing information",
+          "needsConfiguration": "Needs configuration"
+        },
+        "banner": {
+          "readyTitle": "Ready to Publish",
+          "readyDesc": "This internship offer meets all required criteria and can be published immediately.",
+          "attentionTitle": "Needs Attention",
+          "attentionDesc": "Some information is incomplete before publication.",
+          "readinessScore": "Readiness Score"
+        },
+        "offerPreview": {
+          "title": "Offer Preview",
+          "readyBadge": "Ready",
+          "draftBadge": "Draft",
+          "duration": "Duration",
+          "requiredSkills": "Required Skills"
+        },
+        "completion": {
+          "title": "Completion Overview",
+          "completed": "Completed",
+          "incomplete": "Incomplete",
+          "sections": {
+            "basic": "Basic Information",
+            "description": "Description",
+            "skills": "Skills",
+            "targeting": "Targeting",
+            "recruitment": "Config",
+            "publication": "Publication Settings"
+          },
+          "missing": {
+            "missingBasic": "Missing basic information",
+            "missingOverview": "Missing overview",
+            "missingSkills": "Missing skills",
+            "missingTargeting": "Missing targeting",
+            "missingDeadline": "Missing deadline"
+          }
+        },
+        "validationCenter": {
+          "title": "Offer Completion",
+          "sectionsCompleted": "{{completed}} of {{total}} sections completed",
+          "percentComplete": "{{percent}}% Complete",
+          "completedSections": "Completed Sections",
+          "missingSections": "Missing Sections",
+          "statusCompleted": "Completed",
+          "statusMissing": "Missing Data",
+          "statusReview": "Needs Review"
+        },
+        "validation": {
+          "allComplete": "All required fields are complete",
+          "missingTitle": "Missing Required Information",
+          "fields": {
+            "title": "Title",
+            "description": "Description",
+            "company": "Company",
+            "location": "Location",
+            "skills": "Skills",
+            "targeting": "Targeting",
+            "recruitment": "Config",
+            "deadline": "Deadline"
+          }
+        },
+        "audience": {
+          "title": "Target Audience",
+          "targeted": "Targeted offer",
+          "expectedReach": "Expected reach"
+        },
+        "skillsSection": {
+          "title": "Skills",
+          "additional": "Languages & soft skills",
+          "empty": "Add required skills to improve matching."
+        },
+        "recruitment": {
+          "title": "Config Summary",
+          "positions": "Positions available"
+        },
+        "publication": {
+          "title": "Publication Settings",
+          "status": "Status",
+          "draft": "Draft",
+          "publishMode": "Publish mode",
+          "immediate": "Immediate",
+          "createdBy": "Created by",
+          "publishedBy": "Published by",
+          "lastUpdated": "Last updated",
+          "notYetSaved": "Not yet saved",
+          "defaultAuthor": "Administrator"
+        },
+        "studentPreview": {
+          "title": "Student Preview",
+          "subtitle": "How students will see this offer",
+          "hint": "Preview only — match score is calculated after publication."
+        },
+        "duration": {
+          "weeks": "{{count}} week(s)",
+          "months": "{{count}} month(s)"
+        },
+        "sections": {
+          "overview": "Offer Overview",
+          "audience": "Target Audience",
+          "skills": "Skills",
+          "timeline": "Timeline",
+          "publication": "Publication Settings"
+        },
+        "fields": {
+          "title": "Title",
+          "company": "Company",
+          "location": "Location",
+          "type": "Type",
+          "positions": "Positions",
+          "programs": "Programs",
+          "categories": "Categories",
+          "reach": "Estimated reach",
+          "required": "Required",
+          "preferred": "Preferred",
+          "deadline": "Deadline",
+          "start": "Start",
+          "end": "End",
+          "visibility": "Visibility",
+          "method": "Application",
+          "completeness": "Completeness",
+          "expectedReach": "Expected reach"
+        }
+      },
+      "preview": {
+        "title": "Live Preview",
+        "subtitle": "How students will see this offer",
+        "modalTitle": "Offer Preview",
+        "placeholderTitle": "Offer title",
+        "placeholderCompany": "Company name",
+        "placeholderLocation": "Location",
+        "placeholderDesc": "Description will appear here as you type…",
+        "matchLabel": "Match score",
+        "matchPending": "Calculated after publish",
+        "notAvailable": "Not available",
+        "applyButton": "Apply",
+        "audience": "{{count}} targeted students",
+        "audienceEmpty": "Select targeting to estimate audience",
+        "audiencePending": "Estimate available after publish",
+        "moreBadges": "+{{count}}",
+        "workModes": {
+          "remote": "Remote",
+          "hybrid": "Hybrid",
+          "onsite": "On Site"
+        },
+        "analytics": {
+          "reach": "Reach",
+          "completeness": "Completeness",
+          "applications": "Estimated applications",
+          "visibility": "Visibility"
+        }
+      },
+      "insights": {
+        "title": "Key observations",
+        "targetingRestrictive": "Targeting may be too restrictive.",
+        "lowReach": "Estimated reach is low.",
+        "addReact": "Consider adding React skill.",
+        "deadlineClose": "Application deadline is very close.",
+        "incompleteForm": "Complete essential fields before publishing.",
+        "audienceAfterPublish": "Reach and matching refresh automatically when you save."
+      },
+      "suggestedStudents": {
+        "title": "Top Matching Students",
+        "desc": "Based on targeting and selected skills",
+        "notify": "Notify",
+        "viewProfile": "View Profile",
+        "addToCollection": "Add to Collection"
+      },
+      "duplicate": {
+        "detected": "Potential duplicate detected",
+        "similarity": "{{percent}}% Similar",
+        "publishedAgo": "Published {{days}} days ago",
+        "viewExisting": "View Existing Offer",
+        "continueAnyway": "Continue Anyway"
+      },
+      "import": {
+        "title": "Import From URL",
+        "desc": "Paste an external offer link to extract offer details.",
+        "urlLabel": "Internship Offer URL",
+        "urlPlaceholder": "https://www.rekrute.com/…",
+        "analyze": "Extract from URL",
+        "reAnalyze": "Re-extract",
+        "tryAnotherUrl": "Other URL",
+        "tryAnotherHint": "Change the URL and click Re-extract, or use Other URL to start fresh with a new offer.",
+        "hint": "Supports ReKrute, Emploi.ma, Novojob, career pages, and other sites (LinkedIn/Indeed limited).",
+        "extracted": "Review this draft before publishing.",
+        "parser": "Parser: {{name}}",
+        "skillsPlaceholder": "Add a skill",
+        "languagesPlaceholder": "e.g. French, English",
+        "sections": {
+          "basic": "Basic information",
+          "description": "Description",
+          "skills": "Skills",
+          "targeting": "Targeting",
+          "recruitment": "Configuration",
+          "metadata": "Import metadata"
+        },
+        "requiredHint": "Fields marked * are required before publishing.",
+        "validation": {
+          "required": "This field is required",
+          "incompleteTitle": "Complete the following sections before publishing"
+        },
+        "metadata": {
+          "source": "Source website",
+          "parser": "Parser used",
+          "importDate": "Import date",
+          "sourceUrl": "Source URL",
+          "openLink": "Open link",
+          "copyLink": "Copy link",
+          "linkCopied": "Link copied",
+          "copyFailed": "Could not copy link"
+        },
+        "fields": {
+          "company": "Company",
+          "title": "Title",
+          "location": "Location",
+          "internshipType": "Internship type",
+          "skills": "Required skills",
+          "preferredSkills": "Preferred skills",
+          "languages": "Languages",
+          "description": "Description",
+          "requirements": "Requirements",
+          "benefits": "Benefits"
+        },
+        "errors": {
+          "title": "Could not extract data from this URL",
+          "retry": "Try again"
+        },
+        "loading": {
+          "analyzingPage": "Reading page…",
+          "detectingCompany": "Detecting company…",
+          "extractingTitle": "Extracting internship title…",
+          "extractingRequirements": "Extracting requirements…",
+          "buildingDraft": "Building offer draft…",
+          "normalizingContent": "Normalizing content…",
+          "generatingPreview": "Preparing preview…"
+        }
+      }
+    },
     "createStudent": {
       "title": "Add student",
       "subtitle": "Create an account and assign field, class, and platform access.",
@@ -614,16 +1059,16 @@ export const adminCopyEn = {
         "personal": "Personal information",
         "personalHint": "Contact details and student identifier.",
         "academic": "Academic assignment",
-        "academicHint": "Program, level, specialization, internship type, year and class — loaded from ESCA reference data.",
+        "academicHint": "Program, level, specialization, internship type, year, and class are loaded from ESCA reference data.",
         "access": "Access & status",
         "accessHint": "SSO, platform access, and account status.",
         "credentials": "Credentials & onboarding",
         "credentialsHint": "Login tracking and credential management."
       },
       "select": {
-        "filiere": "— Select a field —",
-        "class": "— Select a class —",
-        "classNeedsFiliere": "— Select a field first —"
+        "filiere": "Select a field",
+        "class": "Select a class",
+        "classNeedsFiliere": "Select a field first"
       },
       "accountStatus": {
         "PENDING": "Pending",
@@ -680,7 +1125,7 @@ export const adminCopyEn = {
       "placeholders": {
         "note": "Optional comment for the student…"
       },
-      "previewPlaceholder": "Document preview — connect the API to show the actual file.",
+      "previewPlaceholder": "Document preview. Connect the API to show the actual file.",
       "actions": {
         "reject": "Reject",
         "approve": "Approve",
@@ -719,6 +1164,215 @@ export const adminCopyEn = {
         }
       }
     },
+    "academicStructure": {
+      "eyebrow": "Platform configuration",
+      "title": "Academic Structure",
+      "subtitle": "Single source of truth for ESCA tracks, levels, classes, internship framework, and work modes.",
+      "backToSettings": "Back to settings",
+      "superAdminOnly": "Super Admin only",
+      "searchPlaceholder": "Search…",
+      "allTracks": "All tracks",
+      "toolbarAriaLabel": "Academic structure search and filters",
+      "includeArchived": "Include archived",
+      "noSearchResults": "No results match your search",
+      "emptyTab": "No entries in this section yet",
+      "create": "Create",
+      "edit": "Edit",
+      "duplicate": "Duplicate",
+      "save": "Save",
+      "tablePaginationLabel": "entries",
+      "tabs": {
+        "tracks": "Academic Tracks",
+        "levels": "Academic Levels",
+        "classes": "Classes",
+        "internshipFramework": "Internship Framework",
+        "workModes": "Work Modes",
+        "archived": "Archived"
+      },
+      "archived": {
+        "allTypes": "All types",
+        "filterType": "Filter by type",
+        "emptyTitle": "No archived entities",
+        "emptyDescription": "Archived tracks, levels, classes, and other items will appear here.",
+        "columns": {
+          "type": "Type",
+          "context": "Context"
+        },
+        "types": {
+          "FILIERE": "Track",
+          "ACADEMIC_LEVEL": "Level",
+          "CLASS_GROUP": "Class",
+          "INTERNSHIP_TYPE": "Internship framework",
+          "WORK_MODE": "Work mode"
+        }
+      },
+      "columns": {
+        "name": "Name",
+        "code": "Code",
+        "family": "Family",
+        "track": "Track",
+        "level": "Level",
+        "year": "Academic year",
+        "duration": "Duration",
+        "order": "Order",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "fields": {
+        "name": "Name",
+        "nameFr": "French name",
+        "nameEn": "English name",
+        "code": "Code",
+        "family": "Program family",
+        "description": "Description",
+        "track": "Academic track",
+        "level": "Academic level",
+        "year": "Academic year",
+        "duration": "Duration hint",
+        "order": "Display order"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "archived": "Archived"
+      },
+      "auditTitle": "Change history",
+      "auditEmpty": "No changes recorded yet.",
+      "audit": {
+        "title": "Change history",
+        "subtitle": "Timeline of creates, updates, and archives performed by super administrators.",
+        "emptyTitle": "No changes recorded yet",
+        "emptyDescription": "Actions on the academic structure will appear here.",
+        "noFilterResults": "No changes match the selected period",
+        "noFilterResultsDescription": "Try widening the date range or clearing the filters.",
+        "paginationLabel": "changes",
+        "filters": {
+          "ariaLabel": "Filter change history by period",
+          "periodLabel": "Period",
+          "periodAll": "All time",
+          "period7d": "Last 7 days",
+          "period30d": "Last 30 days",
+          "period90d": "Last 90 days",
+          "periodCustom": "Custom range",
+          "dateFrom": "From",
+          "dateTo": "To",
+          "clear": "Clear filters"
+        }
+      },
+      "errors": {
+        "loadFailed": "Unable to load academic structure."
+      },
+      "archive": {
+        "title": "Archive this entity",
+        "subtitle": "This action deactivates the entity without deleting existing data.",
+        "confirm": "Confirm archiving \"{{name}}\". Existing references will be preserved.",
+        "notice": "The entity will no longer appear in active lists or creation selectors, but will remain visible in the Archived tab.",
+        "usedBy": "Active references",
+        "totalReferences": "{{count}} total",
+        "noReferences": "No active references detected for this entity.",
+        "students": "{{count}} student(s)",
+        "offers": "{{count}} offer(s)",
+        "applications": "{{count}} application(s)",
+        "announcements": "{{count}} announcement(s)",
+        "meetings": "{{count}} meeting(s)",
+        "action": "Archive",
+        "cancel": "Cancel",
+        "confirmAction": "Confirm archive",
+        "confirming": "Archiving…"
+      },
+      "delete": {
+        "title": "Delete permanently",
+        "subtitle": "This action permanently removes the entity from the database. It cannot be undone.",
+        "confirm": "Confirm permanent deletion of \"{{name}}\".",
+        "notice": "Only entities without active references can be deleted. Consider archiving instead if data is still linked.",
+        "blockedBy": "Blocking references",
+        "totalReferences": "{{count}} total",
+        "noReferences": "No active references detected. This entity can be permanently deleted.",
+        "blockedHint": "Remove or reassign these references before deleting, or archive the entity instead.",
+        "action": "Delete",
+        "cancel": "Cancel",
+        "confirmAction": "Delete permanently",
+        "confirming": "Deleting…"
+      },
+      "form": {
+        "titles": {
+          "create": {
+            "tracks": "Create Academic Track",
+            "levels": "Create Academic Level",
+            "classes": "Create Class",
+            "internshipFramework": "Create Internship Framework",
+            "workModes": "Create Work Mode"
+          },
+          "edit": {
+            "tracks": "Edit Academic Track",
+            "levels": "Edit Academic Level",
+            "classes": "Edit Class",
+            "internshipFramework": "Edit Internship Framework",
+            "workModes": "Edit Work Mode"
+          },
+          "duplicate": {
+            "tracks": "Duplicate Academic Track",
+            "levels": "Duplicate Academic Level",
+            "classes": "Duplicate Class",
+            "internshipFramework": "Duplicate Internship Framework",
+            "workModes": "Duplicate Work Mode"
+          }
+        },
+        "descriptions": {
+          "tracks": "Define a new academic track available across the platform.",
+          "levels": "Configure a level linked to a track for targeting and student paths.",
+          "classes": "Organize a class for a track, level, and academic year.",
+          "internshipFramework": "Define an internship framework linked to a track and level.",
+          "workModes": "Configure a work mode offered in listings and announcements."
+        },
+        "sections": {
+          "details": "Details",
+          "detailsHint": "Core information visible across the platform.",
+          "assignment": "Academic assignment",
+          "assignmentHint": "Link this entry to a track and, when needed, a level.",
+          "display": "Display",
+          "displayHint": "Sort order and active status."
+        },
+        "fields": {
+          "orderHint": "Controls display order in lists and selectors.",
+          "active": "Active on platform",
+          "codeOptional": "Optional — auto-generated if empty."
+        },
+        "duration": {
+          "value": "Duration",
+          "unit": "Unit",
+          "months": "Months",
+          "weeks": "Weeks"
+        },
+        "stepper": {
+          "decrease": "Decrease order",
+          "increase": "Increase order"
+        },
+        "select": {
+          "placeholder": "Select…",
+          "search": "Search…",
+          "empty": "No options",
+          "selectTrackFirst": "Select a track first."
+        },
+        "preview": {
+          "title": "Preview",
+          "placeholderName": "Entry name",
+          "duration": "Duration",
+          "year": "Year"
+        },
+        "actions": {
+          "saveAndCreate": "Save & create another"
+        },
+        "validation": {
+          "required": "This field is required.",
+          "duplicateName": "This name already exists.",
+          "duplicateCode": "This code already exists.",
+          "duplicateFramework": "An identical framework already exists for this track and level.",
+          "invalidDuration": "Duration must be greater than zero.",
+          "invalidOrder": "Order must be zero or positive."
+        }
+      }
+    },
     "encadrants": {
       "title": "Supervisors",
       "subtitle": "Manage supervisors and their assigned students",
@@ -750,7 +1404,235 @@ export const adminCopyEn = {
     },
     "offers": {
       "title": "Internship offers",
-      "subtitle": "Manage all internship opportunities"
+      "subtitle": "Manage all internship opportunities",
+      "draftsPage": {
+        "title": "Draft offers",
+        "subtitle": "Review and publish unpublished internship offers",
+        "readiness": {
+          "column": "Completion",
+          "ready": "Ready to publish",
+          "score": "{{score}}% complete"
+        },
+        "publish": {
+          "action": "Publish",
+          "title": "Publish offer",
+          "subtitle": "Pre-publish check for \"{{title}}\".",
+          "checking": "Checking required information…",
+          "allComplete": "All required sections are complete.",
+          "confirm": "Publish offer",
+          "completeOffer": "Complete offer",
+          "blockedHint": "Complete the missing sections before publishing, or open the editor to fill them in.",
+          "success": "Offer published successfully.",
+          "errors": {
+            "loadFailed": "Unable to load offer details.",
+            "failed": "Unable to publish this offer. Make sure all required information is complete."
+          }
+        }
+      },
+      "actions": {
+        "delete": {
+          "title": "Delete Internship Offer",
+          "description": "Are you sure you want to delete this offer? This action may affect applications, matching results and analytics.",
+          "confirm": "Delete Offer",
+          "success": "Offer deleted successfully.",
+          "errors": {
+            "failed": "Unable to delete this offer."
+          }
+        },
+        "errors": {
+          "forbidden": "You do not have permission to perform this action.",
+          "notFound": "Offer not found.",
+          "conflict": "This action cannot be completed in the current offer state.",
+          "server": "Server error. Please try again."
+        }
+      },
+      "viewDetail": {
+        "loading": "Loading offer details…",
+        "navigation": "Offer sections",
+        "nav": {
+          "overview": "Overview",
+          "description": "Description",
+          "skills": "Skills",
+          "targeting": "Targeting",
+          "recruitment": "Config",
+          "publication": "Publication",
+          "applications": "Applications",
+          "import": "Import",
+          "audit": "Audit"
+        },
+        "sections": {
+          "overview": "Offer Header & Basic Information",
+          "description": "Description",
+          "skills": "Skills",
+          "targeting": "Targeting",
+          "recruitment": "Config",
+          "publication": "Publication Settings",
+          "applications": "Application Insights",
+          "import": "Import Information",
+          "audit": "Audit Summary"
+        },
+        "header": {
+          "offerId": "Offer ID",
+          "source": "Source",
+          "created": "Created"
+        },
+        "status": {
+          "published": "Published",
+          "draft": "Draft",
+          "expired": "Expired",
+          "closed": "Closed",
+          "archived": "Archived"
+        },
+        "source": {
+          "manual": "Manual creation",
+          "import": "URL import"
+        },
+        "fields": {
+          "positionsAvailable": "Positions Available",
+          "duration": "Duration",
+          "referenceCode": "Reference Code",
+          "language": "Language",
+          "createdBy": "Created By",
+          "lastUpdated": "Last Updated",
+          "additionalNotes": "Additional Notes",
+          "targetRules": "Target Rules",
+          "expectedReach": "Expected Reach (views)",
+          "recruitmentProcess": "Application Method",
+          "compensation": "Compensation",
+          "minEducation": "Minimum Education Level",
+          "publicationType": "Publication Type",
+          "publishedDate": "Published Date",
+          "expirationDate": "Expiration Date",
+          "currentStatus": "Current Status",
+          "targetAudience": "Target Audience",
+          "autoExpiration": "Auto-expiration",
+          "sourcePlatform": "Source Platform",
+          "sourceUrl": "Source URL",
+          "importedBy": "Imported By",
+          "importDate": "Import Date",
+          "parserUsed": "Parser Used"
+        },
+        "insights": {
+          "total": "Total Applications",
+          "accepted": "Accepted",
+          "rejected": "Rejected",
+          "pending": "Pending",
+          "interviewing": "Interviewing",
+          "conversion": "Conversion Rate"
+        },
+        "audit": {
+          "created": "Created",
+          "updated": "Last Updated",
+          "published": "Published",
+          "archived": "Archived",
+          "lastActivity": "Last Activity"
+        },
+        "values": {
+          "yes": "Yes",
+          "no": "No"
+        },
+        "empty": {
+          "notConfigured": "Not configured",
+          "notSpecified": "Not specified",
+          "noTargeting": "No targeting rules defined",
+          "noRequiredSkills": "No required skills configured",
+          "noPreferredSkills": "No preferred skills configured"
+        }
+      },
+      "listPages": {
+        "studentsCount": "{{count}} students"
+      },
+      "legacyView": {
+        "postedOn": "Posted on",
+        "applicationDeadline": "Application deadline",
+        "totalApplicants": "Total applicants",
+        "description": "Description",
+        "requiredSkills": "Required skills",
+        "applicantsTitle": "Applicants ({{count}})",
+        "applicantsSubtitle": "Students who applied for this position with matching scores",
+        "message": "Message",
+        "accept": "Accept",
+        "reject": "Reject"
+      },
+      "inbox": {
+        "sidebarTitle": "Recruitment center",
+        "filters": "Filters",
+        "searchPlaceholder": "Student, offer, company…",
+        "searchAria": "Search conversations",
+        "clearSearch": "Clear",
+        "conversationListAria": "Conversation list",
+        "filterChipsAria": "Conversation filters",
+        "noSearchResults": "No results",
+        "noSearchResultsFor": "No conversations for \"{{query}}\"",
+        "clearSearchAction": "Clear search",
+        "noConversations": "No conversations",
+        "noConversationsDesc": "Application-related conversations will appear here.",
+        "noConversationsFilterHint": "Try adjusting your filters or search",
+        "noMessages": "No messages yet. Start the conversation with the student.",
+        "composerPlaceholder": "Write a message…",
+        "attachFile": "Attach file",
+        "sendMessage": "Send",
+        "loadError": "Loading error",
+        "back": "Back",
+        "moreActions": "More actions",
+        "resolve": "Resolve",
+        "archive": "Archive",
+        "viewStudent": "View student",
+        "viewApplication": "View application",
+        "viewOffer": "View offer",
+        "openInModule": "Open in module",
+        "contextTitle": "Internship context",
+        "sections": {
+          "student": "Student",
+          "currentOffer": "Current offer",
+          "application": "Application",
+          "quickActions": "Quick actions"
+        },
+        "fields": {
+          "name": "Name",
+          "program": "Program",
+          "class": "Class",
+          "email": "Email",
+          "phone": "Phone",
+          "title": "Title",
+          "company": "Company",
+          "internshipType": "Internship type",
+          "deadline": "Deadline",
+          "status": "Status",
+          "appliedDate": "Application date",
+          "interview": "Interview",
+          "lastChange": "Last status change"
+        },
+        "quickActions": {
+          "sendReminder": "Send reminder",
+          "requestDocuments": "Request documents",
+          "scheduleInterview": "Schedule interview",
+          "updateApplication": "Update application",
+          "assignAdmin": "Assign to internship admin"
+        },
+        "filterSections": {
+          "program": "Program",
+          "academicLevel": "Academic level",
+          "class": "Class",
+          "internshipType": "Internship type",
+          "applicationStatus": "Application status",
+          "priority": "Priority",
+          "tags": "Tags",
+          "clear": "Clear filters"
+        },
+        "primaryChips": {
+          "all": "All",
+          "unread": "Unread",
+          "waiting_admin": "Waiting admin",
+          "waiting_student": "Waiting student",
+          "urgent": "Urgent",
+          "resolved": "Resolved",
+          "archived": "Archived"
+        },
+        "stats": {
+          "waitingAdmin": "Waiting admin"
+        }
+      }
     },
     "announcements": {
       "title": "Announcements",
@@ -764,12 +1646,12 @@ export const adminCopyEn = {
         "subtitle": "Sync ERP, accounting, or Excel exports with validation, preview, and rollback.",
         "backToSrf": "Back to SRF",
         "secureBadge": "Secure workspace",
-        "noPayments": "No online payments — institutional data only",
+        "noPayments": "No online payments. Institutional data only.",
         "academicYear": "Academic year",
         "academicYearPlaceholder": "2025-2026",
         "importMode": "Import mode",
         "dropzone": "Drag and drop a CSV, XLSX, or JSON file",
-        "fileFormatsHint": "CSV · XLSX · JSON — max 25 MB",
+        "fileFormatsHint": "CSV, XLSX, or JSON. Max 25 MB.",
         "browse": "Browse files",
         "mappingTitle": "Column mapping",
         "mappingHint": "Map each imported column to an SRF financial field.",
@@ -792,7 +1674,7 @@ export const adminCopyEn = {
         "retryRollback": "Retry rollback",
         "rollbackSuccess": "{{count}} account(s) restored. Open or refresh the SRF page (F5) to see updated amounts.",
         "history": "Import history",
-        "historySubtitle": "Previous imports on the platform — rollback when available",
+        "historySubtitle": "Previous imports on the platform. Rollback when available.",
         "clearHistory": "Clear history",
         "removeFromHistory": "Remove from history",
         "clearHistoryAllTitle": "Clear entire history?",
@@ -814,7 +1696,7 @@ export const adminCopyEn = {
         "wipeSrfSuccess": "{{count}} account(s) removed. Refresh the SRF page (F5) if data still appears.",
         "confirmClear": "Confirm deletion",
         "cancel": "Cancel",
-        "cannotDeleteActive": "Import in progress — cannot delete",
+        "cannotDeleteActive": "Import in progress. Cannot delete.",
         "noHistoryTitle": "No imports yet",
         "noHistoryDescription": "Imported files will appear here with status, progress, and rollback actions.",
         "loadingWorkspace": "Loading import workspace…",
@@ -871,25 +1753,25 @@ export const adminCopyEn = {
           "remaining_amount": "Remaining amount",
           "financial_status": "Financial status",
           "currency": "Currency",
-          "installment_1_amount": "Installment 1 — amount",
-          "installment_1_status": "Installment 1 — status",
-          "installment_1_due_date": "Installment 1 — due date",
-          "installment_2_amount": "Installment 2 — amount",
-          "installment_2_status": "Installment 2 — status",
-          "installment_2_due_date": "Installment 2 — due date",
-          "installment_3_amount": "Installment 3 — amount",
-          "installment_3_status": "Installment 3 — status",
-          "installment_3_due_date": "Installment 3 — due date",
-          "installment_4_amount": "Installment 4 — amount",
-          "installment_4_status": "Installment 4 — status",
-          "installment_4_due_date": "Installment 4 — due date"
+          "installment_1_amount": "Installment 1: amount",
+          "installment_1_status": "Installment 1: status",
+          "installment_1_due_date": "Installment 1: due date",
+          "installment_2_amount": "Installment 2: amount",
+          "installment_2_status": "Installment 2: status",
+          "installment_2_due_date": "Installment 2: due date",
+          "installment_3_amount": "Installment 3: amount",
+          "installment_3_status": "Installment 3: status",
+          "installment_3_due_date": "Installment 3: due date",
+          "installment_4_amount": "Installment 4: amount",
+          "installment_4_status": "Installment 4: status",
+          "installment_4_due_date": "Installment 4: due date"
         },
         "messages": {
           "uploadFailed": "Upload failed",
           "previewFailed": "Validation failed",
           "executeFailed": "Could not start import",
           "rollbackFailed": "Rollback failed",
-          "rollbackNoSnapshots": "No accounts restored — no backup snapshot for this batch. Fix data manually in SRF.",
+          "rollbackNoSnapshots": "No accounts restored. No backup snapshot for this batch. Fix data manually in SRF.",
           "deleteHistoryFailed": "Could not remove this import from history",
           "clearHistoryFailed": "Could not clear import history",
           "wipeSrfFailed": "Could not reset the SRF module"
@@ -926,15 +1808,15 @@ export const adminCopyEn = {
         "heroRemaining": "Remaining balance",
         "heroRiskScore": "Risk score",
         "heroProgram": "Program",
-        "financialIntelligence": "Financial intelligence",
+        "financialIntelligence": "Financial overview",
         "eligibilityScore": "Eligibility score",
         "eligibilityLabel": "Academic eligibility",
         "eligibilityClear": "Financial clearance granted",
         "eligibilityPending": "Clearance in progress",
         "chartPaid": "Paid",
         "chartRemaining": "Remaining",
-        "riskIntelligence": "Risk intelligence",
-        "smartInsights": "Smart insights",
+        "riskIntelligence": "Risk overview",
+        "smartInsights": "Key observations",
         "riskLow": "Low",
         "riskHigh": "High",
         "installmentVisual": "Installment progression",
@@ -951,9 +1833,9 @@ export const adminCopyEn = {
           "high": "High risk"
         },
         "riskInsight": {
-          "low": "Stable financial profile — standard monitoring.",
-          "medium": "Tension signals detected — enhanced follow-up recommended.",
-          "high": "Elevated financial risk — prioritize administrative action."
+          "low": "Stable financial profile. Standard monitoring applies.",
+          "medium": "Payment delays detected. Enhanced follow-up is recommended.",
+          "high": "Elevated financial risk. Prioritize administrative action."
         },
         "access": {
           "examsTitle": "Exam access",
@@ -970,9 +1852,9 @@ export const adminCopyEn = {
           "examsRisk": "Student is approaching exam restriction.",
           "conventionBlocked": "Agreement download disabled.",
           "internshipBlocked": "Internship eligibility not financially confirmed.",
-          "overdue": "{{count}} overdue installment(s) — blocking risk.",
+          "overdue": "{{count}} overdue installment(s). Blocking risk applies.",
           "pendingProof": "{{count}} proof(s) pending validation.",
-          "clear": "Financial situation cleared — academic access open."
+          "clear": "Financial situation cleared. Academic access is open."
         }
       },
       "validation": {
@@ -991,7 +1873,7 @@ export const adminCopyEn = {
         "download": "Download file",
         "reference": "Reference",
         "submittedAt": "Submitted at",
-        "installment": "Installment {{n}} — {{status}}",
+        "installment": "Installment {{n}}: {{status}}",
         "internalNote": "Internal note",
         "rejectionReason": "Rejection reason",
         "markUnderReview": "Under review",
@@ -1006,7 +1888,7 @@ export const adminCopyEn = {
       },
       "configCenter": {
         "title": "Notifications & exam configuration",
-        "subtitle": "Financial and academic operations control center — exam periods, automated warnings, and restrictions.",
+        "subtitle": "Financial and academic operations. Configure exam periods, reminders, and restrictions.",
         "heroEyebrow": "SRF operations center",
         "backToSrf": "Back to SRF",
         "secureBadge": "Secure configuration workspace",
@@ -1063,7 +1945,7 @@ export const adminCopyEn = {
           "blockConvention": "Block convention",
           "blockExams": "Block exams",
           "escalation": "escalation",
-          "empty": "No tiers configured — defaults will be seeded.",
+          "empty": "No tiers configured. Default values will be applied.",
           "emptyTitle": "No reminder rules",
           "emptyDesc": "Define escalation tiers to automate reminders before exams.",
           "addTierHint": "Create a tier with threshold, frequency, and restriction actions.",
@@ -1123,7 +2005,7 @@ export const adminCopyEn = {
     },
     "history": {
       "title": "History & Audit",
-      "subtitle": "Operational intelligence center — cross-module activity, investigations and compliance traceability"
+      "subtitle": "Audit and activity log. Operational timeline, traceability, and accountability."
     },
     "administrators": {
       "title": "Administrators",
@@ -1159,7 +2041,7 @@ export const adminCopyEn = {
     },
     "reports": {
       "title": "Encadrant Reports",
-      "subtitle": "Reports submitted by supervisors for their students — admin intake and validation",
+      "subtitle": "Reports submitted by supervisors for their students. Admin intake and validation.",
       "source": {
         "loading": "Loading reports submitted by supervisors…",
         "received": "{{count}} report(s) received from supervisors. Review, filter, and validate submissions.",
@@ -1173,12 +2055,12 @@ export const adminCopyEn = {
     },
     "meetings": {
       "title": "Supervision meetings",
-      "subtitle": "Academic agenda — monitor supervisor / student meetings",
+      "subtitle": "Academic agenda. Monitor supervisor and student meetings.",
       "back": "Back to meetings",
       "overview": {
         "title": "Meetings overview",
         "badge": "Supervision operations",
-        "activePipeline": "Active pipeline",
+        "activePipeline": "In progress",
         "activityRate": "Supervision activity rate",
         "encadrantLoad": "Supervision load by supervisor",
         "empty": "No supervision activity",
@@ -1208,14 +2090,14 @@ export const adminCopyEn = {
         "totalCaption": "total"
       },
       "insights": {
-        "title": "Smart insights",
-        "empty": "Supervision metrics look healthy — no alerts right now.",
+        "title": "Key observations",
+        "empty": "Supervision metrics are within normal range. No alerts at this time.",
         "needsFollowup": "{{count}} meetings require follow-up action",
         "overdue": "{{count}} meetings are overdue",
         "overloadedEncadrants": "{{count}} supervisors have a heavy meeting load this period",
         "cancellationHigh": "Meeting cancellation rate is elevated ({{count}}%)",
         "coverageBalanced": "Supervision follow-up coverage is balanced",
-        "noUpcoming": "No upcoming meetings scheduled — review the agenda",
+        "noUpcoming": "No upcoming meetings scheduled. Review the agenda.",
         "alert": "{{message}}"
       },
       "empty": {
@@ -1461,6 +2343,12 @@ export const adminCopyEn = {
         "searchPlaceholder": "Search ops threads",
         "composerPlaceholder": "Post governance note...",
         "emptyConversation": "Select a conversation"
+      },
+      "meetings": {
+        "participantSubtitle": "supervision agenda",
+        "searchPlaceholder": "Search meetings or participants",
+        "composerPlaceholder": "Reply in the meeting thread...",
+        "emptyConversation": "Select a conversation"
       }
     },
     "create": {
@@ -1475,12 +2363,21 @@ export const adminCopyEn = {
       "filterAnnouncements": "Filter announcements",
       "filterAnnouncementType": "Filter by announcement type",
       "searchDocuments": "Search documents",
-      "filterDocumentRequests": "Filter document requests"
+      "filterDocumentRequests": "Filter document requests",
+      "filterAllOffers": "Filter all offers",
+      "filterActiveOffers": "Filter active offers",
+      "filterClosedOffers": "Filter closed offers",
+      "filterDraftOffers": "Filter draft offers",
+      "filterExpiredOffers": "Filter expired offers",
+      "filterOffersWithApplications": "Filter offers with applications",
+      "filterOffersByStatus": "Filter by status",
+      "filterOffersByCompany": "Filter by company"
     }
   },
   "tables": {
     "columns": {
       "title": "Title",
+      "image": "Image",
       "type": "Type",
       "targetAudience": "Target Audience",
       "audience": "Audience",
@@ -1515,6 +2412,7 @@ export const adminCopyEn = {
       "lastLogin": "Last login",
       "onboarding": "Onboarding",
       "actions": "Actions",
+      "matchScore": "Match score",
       "allClasses": "All classes",
       "filterByClass": "Filter by class",
       "noStudentsMatch": "No students match your search.",
@@ -1624,7 +2522,10 @@ export const adminCopyEn = {
       "active": "Active",
       "draft": "Draft",
       "expired": "Expired",
-      "closed": "Closed"
+      "closed": "Closed",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
     },
     "documentStatus": {
       "validated": "Validated",
@@ -1657,9 +2558,9 @@ export const adminCopyEn = {
     "loadError": "Could not load activity history. Check that the API is running and you are signed in.",
     "moduleEmpty": "No activity recorded for {{module}}.",
     "openEntity": "Open record",
-    "analyticsTitle": "Operational intelligence",
-    "analyticsSubtitle": "Platform activity, critical signals and automation footprint",
-    "insightsTitle": "Smart insights",
+    "analyticsTitle": "Operational overview",
+    "analyticsSubtitle": "Platform activity, critical events, and automated actions",
+    "insightsTitle": "Key observations",
     "exportCsv": "Export CSV",
     "exporting": "Exporting…",
     "entityTimelineTitle": "Activity history",
@@ -1686,6 +2587,31 @@ export const adminCopyEn = {
       "automated7d": "Automated (7d)",
       "activeActors": "Active actors (7d)"
     },
+    "cards": {
+      "stripAria": "Audit indicators",
+      "events_today": "Events today",
+      "critical_events": "Critical events",
+      "automated_events": "Automated events",
+      "active_users_today": "Active users",
+      "most_active_module": "Most active module",
+      "events_last_24h": "Events (24h)"
+    },
+    "moduleCards": {
+      "gridAria": "Audit indicators for {{module}}"
+    },
+    "roles": {
+      "ADMIN": "Admin",
+      "STUDENT": "Student",
+      "SUPERVISOR": "Supervisor",
+      "SYSTEM": "System"
+    },
+    "relative": {
+      "justNow": "just now",
+      "secondsAgo": "{{count}}s ago",
+      "minutesAgo": "{{count}} min ago",
+      "hoursAgo": "{{count}}h ago",
+      "daysAgo": "{{count}}d ago"
+    },
     "charts": {
       "activityTrend": "Activity trend",
       "moduleDistribution": "Module distribution",
@@ -1704,7 +2630,7 @@ export const adminCopyEn = {
       "tasks": "Tasks",
       "auth": "Authentication",
       "students": "Students",
-      "smart_assignment": "Smart assignment",
+      "smart_assignment": "Supervisor assignment",
       "notifications": "Notifications",
       "history": "History"
     },
@@ -1717,20 +2643,34 @@ export const adminCopyEn = {
     },
     "insights": {
       "activitySpike": "Unusual activity spike",
-      "activitySpikeDetail": "{{recent}} events in 24h vs {{previous}} previously — review workload.",
+      "activitySpikeDetail": "{{recent}} events in 24h vs {{previous}} previously. Review workload.",
       "criticalCluster": "Critical incident cluster",
       "criticalClusterDetail": "{{count}} critical/error events in the last 24 hours.",
       "moduleHotspot": "Module hotspot",
-      "moduleHotspotDetail": "{{module}} generated {{count}} events today.",
+      "moduleHotspotDetail": "{{module}} recorded {{count}} events today.",
       "stalledWorkflows": "Stalled workflows",
       "stalledWorkflowsDetail": "{{count}} pending actions older than 7 days."
     }
   },
   "localHistory": {
-    "analyticsTitle": "Module intelligence",
-    "analyticsSubtitle": "Activity, critical signals and automation for this module only",
-    "empty": "No activity recorded for this module yet. Actions will appear here as workflows run.",
+    "analyticsTitle": "Module overview",
+    "analyticsSubtitle": "Activity, critical events, and automated actions for this module only",
+    "empty": "Nothing to show yet. As soon as something happens, it will show up here.",
+    "loadingTimeline": "Loading activity history…",
+    "refreshingResults": "Updating results…",
     "eventsLabel": "events",
+    "activitySummary": {
+      "loading": "Loading activity summary…",
+      "showing": "Showing {{count}} activities",
+      "lastActivity": "Last activity: {{time}}",
+      "actionsToday": "{{count}} actions today",
+      "stats": {
+        "activities": "Activities",
+        "lastActivity": "Last activity",
+        "today": "Actions today",
+        "none": "No activity yet"
+      }
+    },
     "charts": {
       "actionDistribution": "Action distribution (7d)"
     },
@@ -1747,11 +2687,11 @@ export const adminCopyEn = {
       "subtitle": "Publications, scheduling, targeting, recommendations and engagement"
     },
     "internshipOffers": {
-      "title": "Internship offers audit trail",
-      "subtitle": "Offer lifecycle, applications and assignment workflow events"
+      "title": "Offer history",
+      "subtitle": "See at a glance who changed, imported, or published an offer."
     },
     "smartAssignment": {
-      "title": "Smart assignment audit trail",
+      "title": "Supervisor assignment audit trail",
       "subtitle": "Assignment runs, balancing, conflicts and manual reassignments"
     },
     "encadrants": {
@@ -1980,13 +2920,19 @@ export const adminCopyEn = {
       "actions": {
         "all": "All types",
         "create": "Create",
+        "import": "Import",
         "update": "Update",
+        "delete": "Delete",
         "validate": "Validate",
-        "archive": "Archive",
-        "review": "Review",
+        "reject": "Reject",
         "assign": "Assign",
+        "publish": "Publish",
+        "archive": "Archive",
+        "login": "Login",
+        "logout": "Logout",
+        "review": "Review",
         "submit": "Submit",
-        "delete": "Delete"
+        "system_action": "System action"
       },
       "rows": {
         "hist-1": {
@@ -2697,7 +3643,14 @@ export const adminCopyEn = {
       "closedOffers": "Closed Offers",
       "totalApplications": "Total Applications",
       "acceptanceRate": "Acceptance Rate",
-      "mostPopular": "Most Popular"
+      "mostPopular": "Most Popular",
+      "notDetectedYet": "Not detected yet",
+      "draftsPage": {
+        "totalDrafts": "Total Drafts",
+        "pendingReview": "Pending Review",
+        "companies": "Companies",
+        "withoutDeadline": "Without Deadline"
+      }
     },
     "history": {
       "total_actions": "Total Actions",
@@ -2790,15 +3743,15 @@ export const adminCopyEn = {
     }
   },
   "smartAssignment": {
-    "title": "Smart Assignment",
+    "title": "Supervisor Assignment",
     "open": "Open",
-    "subtitle": "ESCA-aware analysis and intelligent student distribution across supervisors",
+    "subtitle": "Assign students to supervisors based on program, level, sector, and workload.",
     "academicYear": "Academic year",
     "currentYear": "current",
     "respectLocks": "Respect locked assignments",
     "refresh": "Refresh",
     "preview": "Preview",
-    "runEngine": "Run engine",
+    "runEngine": "Run assignment",
     "engineHint": "Priority: internship type, program, level, sector, domains, workload",
     "exclude": "Exclude",
     "lock": "Lock",
@@ -2827,7 +3780,7 @@ export const adminCopyEn = {
       "filterAll": "All",
       "filterAvailable": "Available",
       "filterOverloaded": "Overloaded",
-      "filterExcluded": "Excluded from engine",
+      "filterExcluded": "Excluded from assignment",
       "paginationLabel": "supervisors",
       "emptyFilters": "No supervisors match your criteria.",
       "studentsCount": "{{count}} student(s)",
@@ -2850,7 +3803,7 @@ export const adminCopyEn = {
     },
     "errors": {
       "loadFailed": "Could not load assignments.",
-      "engineFailed": "Assignment engine failed.",
+      "engineFailed": "Assignment run failed.",
       "precheckFailed": "Validation check failed.",
       "reassignFailed": "Reassignment failed.",
       "lockFailed": "Could not update lock."
@@ -2863,7 +3816,7 @@ export const adminCopyEn = {
       "expandDetails": "Show affected records",
       "collapseDetails": "Hide affected records",
       "noIssues": "No issues to display.",
-      "blockedToast": "Assignment blocked — fix critical issues before running.",
+      "blockedToast": "Assignment blocked. Fix critical issues before running.",
       "confirmTitle": "Continue with warnings?",
       "confirmDescription": "Some issues were detected. You may proceed or adjust settings first.",
       "confirmWarningsIntro": "Warnings were detected. Review the list below before continuing.",
@@ -2877,8 +3830,8 @@ export const adminCopyEn = {
       },
       "phase": {
         "validating": "Validating prerequisites…",
-        "running": "Running assignment engine…",
-        "previewing": "Generating preview…"
+        "running": "Running assignment…",
+        "previewing": "Preparing preview…"
       },
       "severity": {
         "critical": "Critical",
@@ -2893,14 +3846,14 @@ export const adminCopyEn = {
       "strategy": {
         "full": {
           "title": "Overwrite assignments",
-          "description": "Re-run the engine for all eligible students, including those already assigned."
+          "description": "Re-run assignment for all eligible students, including those already assigned."
         },
         "skipAssigned": {
           "title": "Skip existing assignments",
           "description": "Keep current supervisor assignments and only process unassigned students."
         },
         "unassignedOnly": {
-          "title": "Smart re-run (unassigned only)",
+          "title": "Re-run for unassigned students only",
           "description": "Assign only students without a supervisor; leave existing pairings unchanged."
         }
       },
@@ -2911,7 +3864,7 @@ export const adminCopyEn = {
         "COMPLETE_STUDENT_ACADEMIC_DATA": "Complete missing filière, level, year, or internship type on student profiles.",
         "CONFIGURE_SUPERVISED_INTERNSHIP_TYPES": "Configure supervised internship types on relevant supervisors.",
         "INCREASE_ENCADRANT_CAPACITY": "Increase max students or redistribute workload across supervisors.",
-        "REVIEW_ASSIGNMENT_STRATEGY": "Choose whether to overwrite, skip, or smart re-run existing assignments."
+        "REVIEW_ASSIGNMENT_STRATEGY": "Choose whether to overwrite, skip, or re-run for unassigned students only."
       },
       "issues": {
         "NO_ELIGIBLE_STUDENTS": {
@@ -3009,7 +3962,7 @@ export const adminCopyEn = {
       "statusOverCapacity": "At risk",
       "statusSurplus": "Surplus",
       "statusNoSupervisor": "No supervisor",
-      "insightsTitle": "Smart insights",
+      "insightsTitle": "Key observations",
       "insightLowCoverage": "{{type}} has low supervisor coverage",
       "insightBalanced": "{{type}} distribution is balanced",
       "insightLimitedSupervisors": "{{type}} supervisors are limited",
@@ -3019,7 +3972,7 @@ export const adminCopyEn = {
       "insightDominant": "{{type}} is the largest student cohort ({{count}}%)",
       "insightDiversified": "Internship types are evenly distributed across students",
       "uncoveredTitle": "Internship types with no available supervisor",
-      "uncoveredRow": "{{type}} — {{count}} student(s)"
+      "uncoveredRow": "{{type}}: {{count}} student(s)"
     }
   },
   "empty": {
@@ -3028,6 +3981,8 @@ export const adminCopyEn = {
     "studentsFilters": "No students match your filters.",
     "studentsSearch": "No students match your search.",
     "offersFilters": "No offers match your filters.",
+    "noApplications": "No applications yet.",
+    "noApplicationsDesc": "Student applications will appear here once submitted.",
     "encadrantsFilters": "No encadrants match your filters.",
     "encadrantsSearch": "No encadrants found.",
     "encadrantsNoReports": "No reports in progress",

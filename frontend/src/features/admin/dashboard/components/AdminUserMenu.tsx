@@ -7,7 +7,14 @@ import { useAuth } from '../../../auth/hooks/useAuth';
 import AdminUserAvatar from './AdminUserAvatar';
 import AdminUserIdentity from './AdminUserIdentity';
 
-const AdminUserMenu: FunctionComponent = () => {
+interface AdminUserMenuProps {
+  /** Base path for profile/settings (default: admin). */
+  profileBasePath?: string;
+}
+
+const AdminUserMenu: FunctionComponent<AdminUserMenuProps> = ({
+  profileBasePath = '/admin/profile',
+}) => {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -37,7 +44,7 @@ const AdminUserMenu: FunctionComponent = () => {
 
   const goToAccountSection = (section: 'profile' | 'settings') => {
     close();
-    navigate(`/admin/profile#${section}`);
+    navigate(`${profileBasePath}#${section}`);
   };
 
   const handleLogout = async () => {

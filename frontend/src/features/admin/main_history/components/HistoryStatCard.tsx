@@ -1,17 +1,21 @@
 import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Activity,
   Bell,
+  Bot,
   BriefcaseBusiness,
   CheckSquare,
   Clock3,
   DollarSign,
   FileText,
   GraduationCap,
+  Layers,
   MessageCircleMore,
   PenSquare,
   ReceiptText,
   Shield,
+  ShieldAlert,
   Users,
   Video,
   LucideIcon,
@@ -26,6 +30,12 @@ interface HistoryStatCardProps {
 }
 
 const iconByCardKey: Record<string, LucideIcon> = {
+  events_today: Activity,
+  critical_events: ShieldAlert,
+  automated_events: Bot,
+  active_users_today: Users,
+  most_active_module: Layers,
+  events_last_24h: Clock3,
   total_actions: Clock3,
   students: GraduationCap,
   admins: Users,
@@ -53,6 +63,12 @@ const iconByType: Record<string, LucideIcon> = {
 };
 
 const toneByCardKey: Record<string, { accent: string; bg: string }> = {
+  events_today: { accent: '#2563eb', bg: 'rgba(37, 99, 235, 0.1)' },
+  critical_events: { accent: '#dc2626', bg: 'rgba(220, 38, 38, 0.1)' },
+  automated_events: { accent: '#7c3aed', bg: 'rgba(124, 58, 237, 0.1)' },
+  active_users_today: { accent: '#059669', bg: 'rgba(5, 150, 105, 0.1)' },
+  most_active_module: { accent: '#0891b2', bg: 'rgba(8, 145, 178, 0.1)' },
+  events_last_24h: { accent: '#ea580c', bg: 'rgba(234, 88, 12, 0.1)' },
   total_actions: { accent: '#2563eb', bg: 'rgba(37, 99, 235, 0.1)' },
   students: { accent: '#7c3aed', bg: 'rgba(124, 58, 237, 0.1)' },
   admins: { accent: '#059669', bg: 'rgba(5, 150, 105, 0.1)' },
@@ -71,13 +87,20 @@ const toneByCardKey: Record<string, { accent: string; bg: string }> = {
 const HistoryStatCard: FunctionComponent<HistoryStatCardProps> = ({ item, onClick, index = 0 }) => {
   const { t } = useTranslation();
   const Icon = iconByCardKey[item.key] ?? iconByType[item.icon] ?? Clock3;
-  const { accent, bg } = toneByCardKey[item.key] ?? toneByCardKey.total_actions;
-  const label = t(`admin.kpi.history.${item.key}`, item.label);
+  const { accent, bg } = toneByCardKey[item.key] ?? toneByCardKey.events_today;
+  const label = item.label || t(`admin.auditCenter.cards.${item.key}`, item.label);
+
+  let displayValue = item.value;
+  if (item.key === 'most_active_module' && item.meta?.label) {
+    displayValue = `${item.value} · ${String(item.meta.label)}`;
+  } else if (item.key === 'most_active_actor' && item.meta?.actor_email) {
+    displayValue = `${item.value} · ${String(item.meta.actor_email)}`;
+  }
 
   return (
     <AdminKpiStatCard
       label={label}
-      value={item.value}
+      value={displayValue}
       icon={Icon}
       accent={accent}
       accentBg={bg}

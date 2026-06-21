@@ -26,11 +26,14 @@ export function useAdminDropdownPosition(
     const menuHeight = menuRef.current?.offsetHeight ?? DEFAULT_MAX;
     const spaceBelow = window.innerHeight - rect.bottom - MENU_GAP;
     const spaceAbove = rect.top - MENU_GAP;
-    const openBelow = spaceBelow >= 120 || spaceBelow >= spaceAbove;
+    const minOpen = 120;
+    const fitsBelow = spaceBelow >= minOpen;
+    // Prefer opening downward; flip above only when there is clearly more room on top.
+    const openBelow = fitsBelow || spaceBelow >= spaceAbove;
     const placement = openBelow ? 'bottom' : 'top';
     const maxHeight = Math.min(
       DEFAULT_MAX,
-      Math.max(120, openBelow ? spaceBelow - 4 : spaceAbove - 4)
+      Math.max(minOpen, openBelow ? spaceBelow - 4 : spaceAbove - 4),
     );
 
     const top = openBelow

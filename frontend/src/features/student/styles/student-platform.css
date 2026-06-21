@@ -315,6 +315,67 @@
     transform: translateX(-50%);
   }
 
+  /* Section offres recommandées — panneau unifié */
+  #student-internship-offers-root .student-recommended-section-panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  #student-internship-offers-root .student-recommended-section-body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border-top: 1px solid color-mix(in srgb, var(--admin-border) 85%, transparent);
+    padding-top: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    #student-internship-offers-root .student-recommended-section-body {
+      padding-top: 1.25rem;
+    }
+  }
+
+  #student-internship-offers-root .student-recommended-empty,
+  #student-internship-offers-root .student-recommended-empty .admin-search-empty-state {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  #student-internship-offers-root .student-recommended-empty .admin-search-empty-state--inline {
+    padding: 2rem 0.5rem 0.75rem;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #student-internship-offers-root .student-view-all-offers-header-cta {
+    border-color: color-mix(in srgb, var(--admin-brand) 42%, var(--admin-border));
+    color: var(--admin-brand);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--admin-brand) 18%, transparent);
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  #student-internship-offers-root .student-view-all-offers-header-cta:hover {
+    border-color: var(--admin-brand);
+    background: color-mix(in srgb, var(--admin-brand) 12%, transparent);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--admin-brand) 28%, transparent);
+    transform: translateY(-1px);
+  }
+
+  #student-internship-offers-root .student-view-all-offers-header-cta:active {
+    transform: translateY(0);
+  }
+
   /*
    * Toolbar annonces — tailles lisibles (la grille admin module est faite pour les en-têtes compacts).
    */
@@ -390,59 +451,43 @@
   }
 
   /*
-   * Historique module (annonces, offres, …) — toolbar grouped admin trop compacte en portail étudiant.
+   * Historique module — même grille toolbar que All Announcements.
    */
-  .student-portal .admin-history-page {
-    --admin-module-control-h: 2.5rem;
-    --admin-toolbar-search-min: 12rem;
-    --admin-toolbar-search-max: min(100%, 28rem);
-    --admin-toolbar-filter-w: 13.5rem;
-  }
-
   .student-portal .admin-history-page__header {
-    justify-content: stretch;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
-  .student-portal .admin-history-page__header .admin-module-toolbar--grouped {
+  .student-portal .admin-history-page__header .admin-list-toolbar-section {
+    display: block;
     width: 100%;
     max-width: 100%;
-    margin-inline: 0;
+    padding: 0;
+    border-bottom: none;
   }
 
-  .student-portal .admin-history-page__header .admin-module-toolbar--grouped .admin-list-toolbar__actions {
+  .student-portal .admin-history-page__header .admin-module-toolbar {
+    --admin-toolbar-gap: 0.75rem;
+    --admin-toolbar-search-min: 12rem;
+    --admin-toolbar-search-max: 1fr;
+    --admin-toolbar-filter-w: 11.5rem;
+    --admin-module-control-h: 2.5rem;
     width: 100%;
-    gap: 0.75rem;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
-  .student-portal
-    .admin-history-page__header
-    .admin-module-toolbar--grouped
-    .admin-list-toolbar__actions
-    .admin-search-wrap {
-    width: 100%;
-    min-width: 12rem;
-    max-width: min(100%, 28rem);
-    flex: 1 1 16rem;
-  }
-
-  .student-portal
-    .admin-history-page__header
-    .admin-module-toolbar--grouped
-    .admin-list-toolbar__actions
-    .admin-select-wrap {
-    width: min(100%, 13.5rem);
-    min-width: 11.5rem;
-    flex: 1 1 11.5rem;
-  }
-
-  .student-portal .admin-history-page__header .admin-search-field {
+  .student-portal .admin-history-page__header .admin-module-toolbar__cell .admin-search-field {
     height: 2.5rem;
     min-height: 2.5rem;
     font-size: 0.875rem;
     border-radius: var(--admin-radius-md);
   }
 
-  .student-portal .admin-history-page__header .admin-custom-select--compact .admin-custom-select__trigger {
+  .student-portal .admin-history-page__header .admin-module-toolbar__cell .admin-custom-select__trigger {
     height: 2.5rem;
     min-height: 2.5rem;
     font-size: 0.875rem;
@@ -452,20 +497,39 @@
     color: var(--admin-text);
   }
 
-  @media (max-width: 639px) {
-    .student-portal
-      .admin-history-page__header
-      .admin-module-toolbar--grouped
-      .admin-list-toolbar__actions
-      .admin-search-wrap,
-    .student-portal
-      .admin-history-page__header
-      .admin-module-toolbar--grouped
-      .admin-list-toolbar__actions
-      .admin-select-wrap {
+  .student-portal
+    .admin-history-page__header
+    .admin-module-toolbar__cell
+    .admin-custom-select__trigger:hover:not(:disabled) {
+    border-color: var(--admin-border-strong);
+    background-color: var(--admin-bg-elevated);
+  }
+
+  @media (min-width: 640px) {
+    .student-portal .admin-history-page__header .admin-module-toolbar:not(.admin-module-toolbar--grouped) {
+      grid-template-columns:
+        minmax(12rem, 1fr)
+        minmax(11.5rem, 13.5rem)
+        minmax(11.5rem, 13.5rem);
+    }
+  }
+
+  @media (max-width: 900px) and (min-width: 640px) {
+    .student-portal .admin-history-page__header .admin-module-toolbar:not(.admin-module-toolbar--grouped) {
       width: 100%;
       max-width: 100%;
-      flex: 1 1 100%;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .student-portal .admin-history-page__header .admin-module-toolbar:not(.admin-module-toolbar--grouped) {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .student-portal .admin-history-page__header .admin-module-toolbar__cell--filter-1,
+    .student-portal .admin-history-page__header .admin-module-toolbar__cell--filter-2 {
+      width: 100%;
     }
   }
 
@@ -531,7 +595,107 @@
 
   @media (min-width: 640px) {
     .student-module-hero {
-      gap: 1rem;
+      gap: 0.875rem;
+    }
+  }
+
+  /* Module sub-page hero card */
+  .student-module-page-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--admin-radius-xl);
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 22%, var(--admin-border));
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--admin-brand) 10%, var(--admin-bg-elevated)) 0%,
+      var(--admin-bg-elevated) 55%,
+      var(--admin-bg-elevated) 100%
+    );
+    padding: 1.125rem 1.25rem;
+    box-shadow: var(--admin-shadow-sm);
+  }
+
+  @media (min-width: 640px) {
+    .student-module-page-hero {
+      padding: 1.375rem 1.5rem;
+    }
+  }
+
+  .student-module-page-hero-mesh {
+    pointer-events: none;
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(48px);
+  }
+
+  .student-module-page-hero-mesh--primary {
+    right: -2rem;
+    top: -2rem;
+    height: 8rem;
+    width: 8rem;
+    background: color-mix(in srgb, var(--admin-brand) 18%, transparent);
+    opacity: 0.7;
+  }
+
+  .student-module-page-hero-mesh--secondary {
+    bottom: -1.5rem;
+    left: 30%;
+    height: 5rem;
+    width: 5rem;
+    background: var(--admin-mesh-2, var(--admin-brand-muted));
+    opacity: 0.35;
+  }
+
+  .student-module-page-hero-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    width: 2.75rem;
+    border-radius: 0.875rem;
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 28%, var(--admin-border));
+    box-shadow: var(--admin-shadow-sm);
+  }
+
+  @media (min-width: 640px) {
+    .student-module-page-hero-icon {
+      height: 3rem;
+      width: 3rem;
+      border-radius: 1rem;
+    }
+  }
+
+  /* Back navigation pill */
+  .student-back-nav {
+    text-decoration: none;
+    color: var(--admin-text-secondary);
+    border-color: var(--admin-border);
+    background: color-mix(in srgb, var(--admin-bg-elevated) 88%, transparent);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--admin-shadow-sm);
+  }
+
+  .student-back-nav-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    height: 1.625rem;
+    width: 1.625rem;
+    border-radius: 9999px;
+    background: var(--admin-brand-muted);
+    color: var(--admin-brand);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  @media (min-width: 640px) {
+    .student-back-nav-icon {
+      height: 1.75rem;
+      width: 1.75rem;
     }
   }
 
@@ -1137,6 +1301,111 @@
       width: 100%;
       border-right: 0;
       border-bottom: 1px solid var(--admin-border);
+    }
+  }
+
+  /* Internship offers — recommended section loading */
+  .student-internship-offer-skeleton {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .student-internship-offer-skeleton .admin-shimmer {
+    opacity: 0.9;
+  }
+
+  .student-internship-page-skeleton {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .student-internship-page-skeleton .admin-shimmer {
+    opacity: 0.9;
+  }
+
+  .student-internship-offer-card__footer {
+    margin-top: auto;
+    width: 100%;
+    padding-top: 1rem;
+    border-top: 1px solid var(--admin-border);
+  }
+
+  /*
+   * Toolbar offres de stage (liste complète) — aligné annonces / documents.
+   */
+  #student-all-internship-offers-root .student-all-offers-main-panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  #student-all-internship-offers-root .admin-list-toolbar-section {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  #student-all-internship-offers-root .admin-module-toolbar {
+    --admin-toolbar-gap: 0.75rem;
+    --admin-toolbar-search-min: 12rem;
+    --admin-toolbar-search-max: 1fr;
+    --admin-toolbar-filter-w: 11.5rem;
+    --admin-module-control-h: 2.5rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  #student-all-internship-offers-root .admin-module-toolbar__cell .admin-search-field {
+    height: 2.5rem;
+    min-height: 2.5rem;
+    font-size: 0.875rem;
+    border-radius: var(--admin-radius-md);
+  }
+
+  #student-all-internship-offers-root .admin-module-toolbar__cell .admin-custom-select__trigger {
+    height: 2.5rem;
+    min-height: 2.5rem;
+    font-size: 0.875rem;
+    border-radius: var(--admin-radius-md);
+    border: 1px solid var(--admin-border);
+    background-color: var(--admin-input-bg);
+    color: var(--admin-text);
+  }
+
+  #student-all-internship-offers-root
+    .admin-module-toolbar__cell
+    .admin-custom-select__trigger:hover:not(:disabled) {
+    border-color: var(--admin-border-strong);
+    background-color: var(--admin-bg-elevated);
+  }
+
+  @media (min-width: 640px) {
+    #student-all-internship-offers-root .admin-module-toolbar:not(.admin-module-toolbar--grouped) {
+      grid-template-columns:
+        minmax(12rem, 1fr)
+        minmax(11.5rem, 13.5rem);
+    }
+  }
+
+  @media (max-width: 900px) and (min-width: 640px) {
+    #student-all-internship-offers-root .admin-module-toolbar:not(.admin-module-toolbar--grouped) {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 639px) {
+    #student-all-internship-offers-root .admin-module-toolbar:not(.admin-module-toolbar--grouped) {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    #student-all-internship-offers-root .admin-module-toolbar__cell--filter-1 {
+      width: 100%;
     }
   }
 

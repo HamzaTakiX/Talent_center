@@ -163,7 +163,7 @@ export const auditCenterDemoTimeline: HistoryActionRow[] = [
     actionType: 'assign',
     status: 'success',
     priority: 'low',
-    title: 'Smart assignment batch executed (42 students)',
+    title: 'Supervisor assignment batch completed (42 students)',
     actor: 'System',
     timestamp: '2026-05-16 23:00:00',
     criticality: 'AUTOMATED',

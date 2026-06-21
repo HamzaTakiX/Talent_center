@@ -152,6 +152,24 @@ def create_student(
     except Exception:
         pass
 
+    try:
+        from apps.notifications.events.publisher import emit_event
+
+        emit_event(
+            event_code='student.created',
+            source_app='admin_management',
+            entity_type='user',
+            entity_id=user.pk,
+            payload={
+                'user_id': user.pk,
+                'title': 'Welcome to Digital Talent Center',
+                'body': 'Your student account has been created.',
+            },
+            actor=created_by,
+        )
+    except Exception:
+        pass
+
     return user
 
 

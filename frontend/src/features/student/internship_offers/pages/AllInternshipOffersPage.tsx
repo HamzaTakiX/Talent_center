@@ -1,54 +1,114 @@
-import { FunctionComponent, useMemo, useState } from 'react';
+import { FunctionComponent, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
+
+import { Briefcase } from 'lucide-react';
+
 import StudentLayout from '../../components/StudentLayout';
+
 import BackToDashboardLink from '../components/BackToDashboardLink';
+
+import InternshipOffersPageHeader from '../components/InternshipOffersPageHeader';
+
 import InternshipOffersGrid from '../components/InternshipOffersGrid';
+
+import InternshipOffersGridSkeleton from '../components/InternshipOffersGridSkeleton';
+
 import InternshipOffersSearchToolbar from '../filters/InternshipOffersSearchToolbar';
-import { allInternshipOffers } from '../data/internshipOffersMock';
-import { filterInternshipOffers } from '../helpers/filterInternshipOffers';
+
+import { useStudentAllOffers } from '../hooks/useStudentStageOffers';
+
 import type { InternshipOfferCategoryFilter } from '../constants/internshipOfferCategories';
+
 import { INTERNSHIP_OFFER_CATEGORY_ALL } from '../constants/internshipOfferCategories';
+
 import {
-  INTERNSHIP_OFFERS_PAGE_HEADER,
+
   INTERNSHIP_OFFERS_PAGE_ROOT,
+
+  INTERNSHIP_OFFERS_ALL_MAIN_SECTION,
+
 } from '../constants/internshipOffersLayout';
 
+import { STUDENT_ICON_CHIP_INFO } from '../../design-system/studentSemanticStyles';
+
+
+
 const AllInternshipOffersPage: FunctionComponent = () => {
+
   const { t } = useTranslation();
+
   const [query, setQuery] = useState('');
+
   const [category, setCategory] = useState<InternshipOfferCategoryFilter>(INTERNSHIP_OFFER_CATEGORY_ALL);
 
-  const filteredOffers = useMemo(
-    () => filterInternshipOffers(allInternshipOffers, query, category),
-    [query, category]
-  );
+  const { offers, loading, error } = useStudentAllOffers(query, category);
 
   return (
-    <StudentLayout>
-      <div
-        id="student-all-internship-offers-root"
-        className={INTERNSHIP_OFFERS_PAGE_ROOT}
-      >
-        <header className={INTERNSHIP_OFFERS_PAGE_HEADER}>
-          <BackToDashboardLink />
-          <h1 className="m-0 min-w-0 max-w-full break-words text-2xl font-semibold leading-8 tracking-tight text-[var(--admin-text)] sm:text-[28px] sm:leading-9">
-            {t('student.internshipOffers.allTitle')}
-          </h1>
-        </header>
 
-        <InternshipOffersSearchToolbar
-          query={query}
-          onQueryChange={setQuery}
-          category={category}
-          onCategoryChange={setCategory}
+    <StudentLayout>
+
+      <div
+
+        id="student-all-internship-offers-root"
+
+        className={INTERNSHIP_OFFERS_PAGE_ROOT}
+
+      >
+
+        <InternshipOffersPageHeader
+          backLink={<BackToDashboardLink />}
+          icon={Briefcase}
+          title={t('student.internshipOffers.allTitle')}
+          subtitle={t('student.internshipOffers.allSubtitle')}
+          iconChipClassName={STUDENT_ICON_CHIP_INFO}
         />
 
-        <section className="min-w-0 max-w-full overflow-x-clip">
-          <InternshipOffersGrid offers={filteredOffers} />
+
+
+        <section
+
+          aria-label={t('student.internshipOffers.allFeedAria')}
+
+          className={INTERNSHIP_OFFERS_ALL_MAIN_SECTION}
+
+        >
+
+          <InternshipOffersSearchToolbar
+
+            query={query}
+
+            onQueryChange={setQuery}
+
+            category={category}
+
+            onCategoryChange={setCategory}
+
+          />
+
+
+
+          {error && (
+            <p className="px-1 text-sm text-[var(--admin-danger)]">{error}</p>
+          )}
+
+          {loading ? (
+            <InternshipOffersGridSkeleton layout="all" loadingLabelKey="loadingAllOffers" />
+          ) : (
+            <InternshipOffersGrid offers={offers} layout="all" />
+          )}
+
         </section>
+
       </div>
+
     </StudentLayout>
+
   );
+
 };
 
+
+
 export default AllInternshipOffersPage;
+

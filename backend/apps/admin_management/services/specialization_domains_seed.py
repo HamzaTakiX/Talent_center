@@ -103,9 +103,12 @@ def seed_specialization_domains() -> dict[str, int]:
     updated = 0
     for idx, row in enumerate(_DOMAIN_ROWS):
         code, name, category, families, tracks, keywords = row
+        i18n = _NAME_I18N.get(code, {})
         defaults = {
             'name': name,
-            'name_i18n': _NAME_I18N.get(code, {}),
+            'name_fr': i18n.get('fr', ''),
+            'name_en': i18n.get('en', name),
+            'name_i18n': i18n,
             'category': category,
             'program_families': families,
             'master_tracks': tracks,

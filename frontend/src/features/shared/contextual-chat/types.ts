@@ -28,6 +28,7 @@ export interface ConversationDto {
   title: string;
   conversation_type: string;
   last_message_at: string | null;
+  is_archived?: boolean;
   context: ConversationContextDto | null;
   unread_count: number;
   last_preview: string;
@@ -68,4 +69,6 @@ export type SmartActionCode =
   | 'validate'
   | 'escalate'
   | 'notify_admin'
-  | 'mark_urgent';
+  | 'mark_urgent'
+  | 'mark_resolved'
+  | 'archive_conversation';

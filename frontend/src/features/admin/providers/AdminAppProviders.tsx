@@ -5,6 +5,7 @@ import { AdminThemeProvider } from '../dashboard/context/AdminThemeContext';
 import { AdminToastProvider } from '../dashboard/context/AdminToastContext';
 import AdminToastContainer from '../dashboard/components/AdminToastContainer';
 import { AdminGlobalSearchProvider } from '../search/context/AdminGlobalSearchContext';
+import { AcademicStructureCatalogProvider } from '../shared/academic-structure/context/AcademicStructureCatalogContext';
 
 /** Wraps all authenticated routes so admin hooks work on every page. */
 const AdminAppProviders: FunctionComponent = () => (
@@ -12,8 +13,10 @@ const AdminAppProviders: FunctionComponent = () => (
     <AdminPreferencesProvider>
       <AdminToastProvider>
         <AdminGlobalSearchProvider>
-          <Outlet />
-          <AdminToastContainer />
+          <AcademicStructureCatalogProvider>
+            <Outlet />
+            <AdminToastContainer />
+          </AcademicStructureCatalogProvider>
         </AdminGlobalSearchProvider>
       </AdminToastProvider>
     </AdminPreferencesProvider>

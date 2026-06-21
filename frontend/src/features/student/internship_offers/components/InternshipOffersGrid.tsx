@@ -4,12 +4,13 @@ import type { InternshipOffer } from '../types';
 import { STUDENT_EMPTY_STATE } from '../constants/internshipOffersStyles';
 import InternshipOfferCard from '../cards/InternshipOfferCard';
 import StudentSearchEmptyState from '../../ui/StudentSearchEmptyState';
+import RecommendedOffersEmptyState from './RecommendedOffersEmptyState';
 
 interface InternshipOffersGridProps {
   offers: InternshipOffer[];
   emptyMessage?: string;
-  /** État vide avec icône recherche bleue (pages filtrées) vs texte simple (recommandations). */
-  emptyVariant?: 'search' | 'text';
+  /** État vide : recherche (filtré), recommandations (icône + CTA), ou texte simple. */
+  emptyVariant?: 'search' | 'recommended' | 'text';
   /** Grille 2 colonnes max (page principale) vs 3 colonnes (liste complète). */
   layout?: 'recommended' | 'all';
 }
@@ -36,6 +37,10 @@ const InternshipOffersGrid: FunctionComponent<InternshipOffersGridProps> = ({
           className="max-w-full min-w-0"
         />
       );
+    }
+
+    if (emptyVariant === 'recommended') {
+      return <RecommendedOffersEmptyState />;
     }
 
     return (

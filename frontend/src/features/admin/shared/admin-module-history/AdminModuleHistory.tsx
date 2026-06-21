@@ -2,7 +2,7 @@ import { FunctionComponent, type ComponentType, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAdminCopy } from '../../i18n/useAdminCopy';
 import AdminLayout from '../../dashboard/components/AdminLayout';
-import { AdminEmptyState, AdminListToolbar } from '../../ui';
+import { AdminEmptyState, AdminListToolbar, AdminListToolbarSection } from '../../ui';
 import type { AdminHistoryRowDisplay, AdminHistoryFilterConfig } from './adminHistoryTypes';
 
 export type AdminModuleHistoryLayoutProps = {
@@ -44,31 +44,32 @@ const AdminModuleHistory: FunctionComponent<AdminModuleHistoryProps> = ({
         }`}
       >
         <header className="admin-history-page__header shrink-0 border-b border-[var(--admin-border)] px-4 pb-5 pt-3 sm:px-5 md:px-6 md:pb-6 md:pt-4">
-          <AdminListToolbar
-            searchValue={searchValue}
-            onSearchChange={onSearchChange}
-            searchPlaceholder={t('admin.historyUi.searchPlaceholder')}
-            toolbarAriaLabel={t('admin.historyUi.filterToolbar')}
-            controlsLayout="grouped"
-            filter1={{
-              value: filters[0].value,
-              onChange: filters[0].onChange,
-              options: [
-                { value: 'all', label: filters[0].placeholderOptionLabel },
-                ...filters[0].options,
-              ],
-              ariaLabel: filters[0].ariaLabel,
-            }}
-            filter2={{
-              value: filters[1].value,
-              onChange: filters[1].onChange,
-              options: [
-                { value: 'all', label: filters[1].placeholderOptionLabel },
-                ...filters[1].options,
-              ],
-              ariaLabel: filters[1].ariaLabel,
-            }}
-          />
+          <AdminListToolbarSection>
+            <AdminListToolbar
+              searchValue={searchValue}
+              onSearchChange={onSearchChange}
+              searchPlaceholder={t('admin.historyUi.searchPlaceholder')}
+              toolbarAriaLabel={t('admin.historyUi.filterToolbar')}
+              filter1={{
+                value: filters[0].value,
+                onChange: filters[0].onChange,
+                options: [
+                  { value: 'all', label: filters[0].placeholderOptionLabel },
+                  ...filters[0].options,
+                ],
+                ariaLabel: filters[0].ariaLabel,
+              }}
+              filter2={{
+                value: filters[1].value,
+                onChange: filters[1].onChange,
+                options: [
+                  { value: 'all', label: filters[1].placeholderOptionLabel },
+                  ...filters[1].options,
+                ],
+                ariaLabel: filters[1].ariaLabel,
+              }}
+            />
+          </AdminListToolbarSection>
         </header>
 
         <div className="admin-history-page__content min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-6 sm:px-5 md:px-6">

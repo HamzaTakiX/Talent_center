@@ -1,6 +1,9 @@
 import { FunctionComponent } from 'react';
 import { AdminListToolbar } from '../../../../ui';
-import type { AllOffersStatus } from '../data/allOffersMockData';
+import { clampSearchQuery } from '../../../../../../design-system/safeContent';
+import type { InternshipOffer } from '../../../types';
+
+export type AllOffersStatus = InternshipOffer['status'];
 
 interface AllOffersSearchToolbarProps {
   query: string;
@@ -26,7 +29,7 @@ const AllOffersSearchToolbar: FunctionComponent<AllOffersSearchToolbarProps> = (
   <div className="admin-panel-toolbar">
     <AdminListToolbar
       searchValue={query}
-      onSearchChange={onQueryChange}
+      onSearchChange={(v) => onQueryChange(clampSearchQuery(v))}
       searchPlaceholder="Search offers..."
       toolbarAriaLabel="Filter all offers"
       filter1={{

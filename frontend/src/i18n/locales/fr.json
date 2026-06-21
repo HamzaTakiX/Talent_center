@@ -22,7 +22,7 @@
     "brand": {
       "title": "Digital Talent",
       "subtitle": "Center",
-      "logoAlt": "ESCA — Digital Talent Center"
+      "logoAlt": "ESCA Digital Talent Center"
     },
     "nav": {
       "dashboard": "Tableau de bord",
@@ -36,8 +36,9 @@
       "admin": "Administrateurs",
       "catalog": "Catalogue des services",
       "chat": "Chat",
+      "drafts": "Brouillons",
       "reports": "Rapports",
-      "smartAssignment": "Affectation intelligente",
+      "smartAssignment": "Affectation des encadrants",
       "meetings": "Réunions",
       "imports": "Imports financiers",
       "config": "Config. examens & alertes",
@@ -303,6 +304,17 @@
         "dark": "Mode sombre",
         "darkDesc": "Confort visuel en faible luminosité"
       },
+      "academicStructure": {
+        "title": "Structure académique",
+        "description": "Gérez les filières, niveaux, classes, cadre de stage et modes de travail ESCA.",
+        "openModule": "Ouvrir le centre de gestion",
+        "loadingHistory": "Chargement de l'historique"
+      },
+      "emailSystem": {
+        "title": "Système email",
+        "description": "Configurez les fournisseurs, expéditeurs, modèles et la livraison email de la plateforme.",
+        "openModule": "Ouvrir le centre email"
+      },
       "preferences": {
         "title": "Préférences",
         "description": "Options d'ergonomie et de personnalisation.",
@@ -348,6 +360,47 @@
       "tagTemplate": "Étiquette ou modèle",
       "sendMessage": "Envoyer le message",
       "unreadCount": "{{count}} non lus"
+    },
+    "chatEmpty": {
+      "stats": {
+        "unread": "Non lues",
+        "pending": "En attente de réponse",
+        "resolved": "Résolues"
+      },
+      "channels": {
+        "offers": {
+          "title": "Chat Stages",
+          "description": "Sélectionnez une conversation pour consulter les messages concernant une offre de stage."
+        },
+        "documents": {
+          "title": "Chat Documents",
+          "description": "Sélectionnez une conversation pour examiner et discuter les soumissions de documents."
+        },
+        "meetings": {
+          "title": "Chat Réunions",
+          "description": "Sélectionnez une conversation pour gérer les échanges liés aux réunions."
+        },
+        "announcements": {
+          "title": "Chat Annonces",
+          "description": "Sélectionnez une conversation pour gérer les réponses et questions aux annonces."
+        },
+        "students": {
+          "title": "Support Étudiant",
+          "description": "Sélectionnez une conversation pour accompagner les étudiants et répondre à leurs demandes."
+        },
+        "srf": {
+          "title": "Support Étudiant",
+          "description": "Sélectionnez une conversation pour accompagner les étudiants et répondre à leurs demandes SRF."
+        },
+        "encadrants": {
+          "title": "Chat Encadrants",
+          "description": "Sélectionnez une conversation pour coordonner la supervision et les échanges académiques."
+        },
+        "admins": {
+          "title": "Chat Administrateurs",
+          "description": "Sélectionnez une conversation pour gérer la communication interne entre administrateurs."
+        }
+      }
     },
     "globalSearch": {
       "open": "Ouvrir la recherche globale",

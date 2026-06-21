@@ -26,7 +26,9 @@ const AdminHeader: FunctionComponent<AdminHeaderProps> = ({ onMenuClick }) => {
     if (pathname === '/admin/dashboard' || pathname.startsWith('/admin/dashboard/')) {
       return t('admin.header.titles.dashboard');
     }
-    if (pathname.startsWith('/admin/students')) return t('admin.header.titles.students');
+    if (pathname.startsWith('/admin/students') || pathname.startsWith('/admin/student')) {
+      return t('admin.header.titles.students');
+    }
     if (pathname.startsWith('/admin/encadrant') || pathname.startsWith('/admin/encadrants')) {
       return t('admin.header.titles.encadrants');
     }

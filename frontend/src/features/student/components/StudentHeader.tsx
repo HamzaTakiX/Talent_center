@@ -92,7 +92,7 @@ const StudentHeader: FunctionComponent<StudentHeaderProps> = ({ onMenuClick }) =
 
           <AdminLanguageSwitcher />
           <AdminNotificationButton />
-          <AdminUserMenu />
+          <AdminUserMenu profileBasePath="/student/profile" />
         </motion.div>
       </header>
     </AdminHeaderSearchProvider>

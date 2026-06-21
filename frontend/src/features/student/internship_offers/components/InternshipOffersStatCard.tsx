@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 import type { InternshipOffersStatItem } from '../types';
-import { internshipOffersStatColorMap, internshipOffersStatIconMap } from '../data/internshipOffersMock';
+import { internshipOffersStatColorMap, internshipOffersStatIconMap } from '../constants/internshipOffersStatConfig';
 
 interface InternshipOffersStatCardProps {
   stat: InternshipOffersStatItem;

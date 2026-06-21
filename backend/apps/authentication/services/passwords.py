@@ -5,10 +5,11 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
+
+from apps.notifications.events.publisher import emit_event
 
 from ..models import PasswordResetRequest
 from ..selectors import get_user_by_email
@@ -44,17 +45,22 @@ def request_password_reset(*, email: str, request=None) -> None:
     )
 
     reset_url = f'{settings.FRONTEND_RESET_PASSWORD_URL}?token={raw_token}'
-    send_mail(
-        subject='Reset your Digital Talent Center password',
-        message=(
-            'We received a request to reset your password.\n\n'
-            f'Use this link within {settings.PASSWORD_RESET_TOKEN_TTL_SECONDS // 60} minutes:\n'
-            f'{reset_url}\n\n'
-            'If you did not request this, you can safely ignore this email.'
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        fail_silently=True,
+    ttl_minutes = settings.PASSWORD_RESET_TOKEN_TTL_SECONDS // 60
+    emit_event(
+        event_code='student.password.reset',
+        source_app='authentication',
+        entity_type='user',
+        entity_id=user.pk,
+        payload={
+            'user_id': user.pk,
+            'reset_url': reset_url,
+            'ttl_minutes': ttl_minutes,
+            'title': 'Password reset',
+            'body': f'Use this link within {ttl_minutes} minutes to reset your password.',
+            'action_url': reset_url,
+        },
+        actor=None,
+        idempotency_key=f'password-reset-{user.pk}-{timezone.now().strftime("%Y%m%d%H")}',
     )
     log_event(
         event_type='PASSWORD_RESET_REQUESTED',

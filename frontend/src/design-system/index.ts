@@ -43,3 +43,5 @@ export {
 export { tonesFromBgClass } from '../features/admin/ui/adminKpiTones';
 
 export { useAdminTheme } from '../features/admin/dashboard/context/AdminThemeContext';
+
+export * from './safeContent';

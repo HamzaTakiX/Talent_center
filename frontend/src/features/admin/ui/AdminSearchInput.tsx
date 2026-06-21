@@ -1,9 +1,10 @@
 import { ChangeEvent, FunctionComponent, InputHTMLAttributes, useRef } from 'react';
-import { Search, X } from 'lucide-react';
+import { Loader2, Search, X } from 'lucide-react';
 
 interface AdminSearchInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   containerClassName?: string;
   onClear?: () => void;
+  loading?: boolean;
 }
 
 const AdminSearchInput: FunctionComponent<AdminSearchInputProps> = ({
@@ -11,6 +12,7 @@ const AdminSearchInput: FunctionComponent<AdminSearchInputProps> = ({
   containerClassName = '',
   value,
   onClear,
+  loading = false,
   ...props
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,17 +32,24 @@ const AdminSearchInput: FunctionComponent<AdminSearchInputProps> = ({
   };
 
   return (
-    <label className={`admin-search-wrap ${containerClassName}`}>
-      <Search className="admin-search-icon" strokeWidth={2} aria-hidden />
+    <label
+      className={`admin-search-wrap${loading ? ' admin-search-wrap--loading' : ''} ${containerClassName}`.trim()}
+    >
+      {loading ? (
+        <Loader2 className="admin-search-icon admin-search-icon--spin" strokeWidth={2} aria-hidden />
+      ) : (
+        <Search className="admin-search-icon" strokeWidth={2} aria-hidden />
+      )}
       <input
         ref={inputRef}
         type="text"
         role="searchbox"
         value={value}
+        aria-busy={loading || undefined}
         className={`admin-search-field ${hasValue ? 'admin-search-field--has-clear' : ''} ${className}`}
         {...props}
       />
-      {hasValue && (
+      {hasValue && !loading ? (
         <button
           type="button"
           className="admin-search-clear"
@@ -50,7 +59,7 @@ const AdminSearchInput: FunctionComponent<AdminSearchInputProps> = ({
         >
           <X className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
         </button>
-      )}
+      ) : null}
     </label>
   );
 };

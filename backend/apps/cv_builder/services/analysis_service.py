@@ -295,4 +295,26 @@ def analyze(cv: StudentCv) -> CvAiAnalysis:
     cv.last_analyzed_at = timezone.now()
     cv.save(update_fields=['current_score', 'last_analyzed_at', 'updated_at'])
 
+    try:
+        from apps.notifications.events.publisher import emit_event
+
+        student_profile = cv.student_profile
+        emit_event(
+            event_code='cv.analysis.completed',
+            source_app='cv_builder',
+            entity_type='student_cv',
+            entity_id=cv.pk,
+            payload={
+                'student_id': student_profile.pk if student_profile else None,
+                'user_id': student_profile.user_id if student_profile else None,
+                'title': 'CV analysis completed',
+                'body': f'Your CV score is {result.score}.',
+                'score': float(result.score),
+                'action_url': f'/student/cv/{cv.pk}',
+            },
+            actor=None,
+        )
+    except Exception:
+        pass
+
     return analysis

@@ -7,12 +7,14 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, ChevronDown, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAdminDropdownPosition } from './hooks/useAdminDropdownPosition';
+import { useAdminDropdownScrollChain } from './hooks/useAdminDropdownScrollChain';
 import { useAdminTheme } from '../dashboard/context/AdminThemeContext';
 
 export interface AdminSelectOption {
@@ -62,6 +64,7 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
   const listboxId = `${id}-listbox`;
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const [open, setOpen] = useState(false);
@@ -78,6 +81,7 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
   }, [options, query, searchable]);
 
   const coords = useAdminDropdownPosition(open, triggerRef, menuRef);
+  useAdminDropdownScrollChain(open && Boolean(coords), menuRef, optionsRef, triggerRef);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -207,7 +211,8 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
                 width: coords.width,
                 maxHeight: coords.maxHeight,
                 zIndex: 'var(--admin-z-dropdown)',
-              }}
+                '--admin-dropdown-max-height': `${coords.maxHeight}px`,
+              } as CSSProperties}
               initial={{ opacity: 0, y: coords.placement === 'bottom' ? -6 : 6, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: coords.placement === 'bottom' ? -4 : 4, scale: 0.98 }}
@@ -228,7 +233,7 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
                   />
                 </div>
               )}
-              <div className="admin-custom-select__options" role="presentation">
+              <div ref={optionsRef} className="admin-custom-select__options" role="presentation">
                 {filtered.length === 0 ? (
                   <div className="admin-custom-select__empty">{emptyMessage}</div>
                 ) : (

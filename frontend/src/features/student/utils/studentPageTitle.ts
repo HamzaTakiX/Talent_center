@@ -3,10 +3,12 @@ import { STUDENT_DASHBOARD_PATH } from '../config/studentNavConfig';
 /** i18n key under `student.header.titles.*` for the current student route. */
 export const getStudentHeaderTitleKey = (pathname: string): string => {
   if (pathname === STUDENT_DASHBOARD_PATH) return 'student.header.titles.dashboard';
+  if (pathname === '/student/profile') return 'student.header.titles.profile';
   if (pathname === '/cv-editor' || pathname.startsWith('/cv/')) {
     return 'student.header.titles.cvEditor';
   }
   if (pathname.includes('/cv-analysis-tool')) return 'student.header.titles.cvAnalysis';
+  if (pathname.includes('/ai-career-coach')) return 'student.header.titles.aiCareerCoach';
   if (pathname.includes('/interview-simulator')) return 'student.header.titles.interviewSimulator';
   if (pathname.includes('/apply')) return 'student.header.titles.apply';
   if (pathname.match(/\/internship-offers\/[^/]+$/) && !pathname.endsWith('/all')) {

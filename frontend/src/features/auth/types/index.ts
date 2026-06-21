@@ -47,6 +47,8 @@ export interface User {
   created_at?: string;
   profile?: UserProfile;
   student_profile?: StudentProfile;
+  admin_level?: string;
+  is_super_admin?: boolean;
 }
 
 export interface LoginSession {

@@ -1,11 +1,10 @@
-/** Auto-generated admin copy — ar */
+/** Admin copy — ar */
 export const adminCopyAr = {
   "contextualChat": {
-    "loading": "مزامنة المحادثات السياقية…",
-    "demoMode": "تعذّر الاتصال بالـ API — عرض بيانات تجريبية. تحقق من تشغيل الخادم وتسجيل الدخول.",
-    "emptyLive": "API متصل — لا محادثات للوحدة « {{module }} ». نفّذ: python manage.py seed_contextual_chat_demo",
-    "liveConnected": "بيانات حية · API متصل",
-    "noThreadsYet": "لا محادثات سياقية بعد — أنشئ محادثة أو نفّذ أمر seed في الخادم.",
+    "loading": "جاري مزامنة المحادثات…",
+    "emptyLive": "لا توجد محادثات تدريب بعد. ستظهر المحادثات عند تبادل الرسائل بين الطلاب والإدارة بخصوص عروض التدريب.",
+    "noThreadsYet": "لا توجد محادثات تدريب بعد",
+    "emptyLiveDescription": "ستظهر المحادثات عند تبادل الطلاب أو المسؤولين رسائل بخصوص عروض التدريب.",
     "messageSent": "تم حفظ الرسالة في سلسلة سير العمل",
     "actionApplied": "تم تطبيق الإجراء «{{action}}»",
     "linkedEntity": "{{type}} · {{id}}",
@@ -52,6 +51,19 @@ export const adminCopyAr = {
     "history": "العودة إلى السجل",
     "administrators": "العودة إلى المسؤولين"
   },
+  "pagination": {
+    "ariaLabel": "ترقيم الصفحات",
+    "empty": "لا توجد {{itemLabel}}",
+    "range": "عرض {{start}}–{{end}} من {{total}} {{itemLabel}}",
+    "previous": "الصفحة السابقة",
+    "next": "الصفحة التالية",
+    "items": "عناصر",
+    "students": "طلاب",
+    "encadrants": "مشرفون",
+    "administrators": "مسؤولون",
+    "srfAccounts": "حسابات",
+    "srfProofs": "إثباتات"
+  },
   "search": {
     "admins": "البحث عن المسؤولين...",
     "students": "البحث عن الطلاب...",
@@ -88,28 +100,28 @@ export const adminCopyAr = {
     },
     "offers": {
       "all": {
-        "title": "All Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "جميع العروض ({{count}})",
+        "subtitle": "قائمة مفلترة لعروض التدريب"
       },
       "active": {
-        "title": "Active Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "العروض النشطة ({{count}})",
+        "subtitle": "قائمة مفلترة لعروض التدريب"
       },
       "closed": {
-        "title": "Closed Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "العروض المغلقة ({{count}})",
+        "subtitle": "قائمة مفلترة لعروض التدريب"
       },
       "draft": {
-        "title": "Draft Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "المسودات ({{count}})",
+        "subtitle": "قائمة مفلترة لعروض التدريب"
       },
       "expired": {
-        "title": "Expired Offers ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "العروض المنتهية ({{count}})",
+        "subtitle": "قائمة مفلترة لعروض التدريب"
       },
       "withApplications": {
-        "title": "Offers with Applications ({{count}})",
-        "subtitle": "Filtered list of internship offers"
+        "title": "عروض مع طلبات ({{count}})",
+        "subtitle": "قائمة مفلترة لعروض التدريب"
       }
     },
     "encadrants": {
@@ -353,15 +365,15 @@ export const adminCopyAr = {
       "internshipType": "نوع التدريب",
       "academicYear": "السنة الأكاديمية",
       "classGroup": "القسم / المجموعة",
-      "selectProgram": "— اختر البرنامج —",
-      "selectLevel": "— اختر المستوى —",
-      "levelNeedsProgram": "— اختر البرنامج أولاً —",
-      "selectSector": "— اختر التخصص —",
-      "selectInternship": "— اختر نوع التدريب —",
-      "internshipNeedsLevel": "— اختر المستوى أولاً —",
-      "selectYear": "— اختر السنة الأكاديمية —",
-      "selectClass": "— اختر القسم —",
-      "classNeedsProgram": "— اختر البرنامج أولاً —",
+      "selectProgram": "اختر البرنامج",
+      "selectLevel": "اختر المستوى",
+      "levelNeedsProgram": "اختر البرنامج أولاً",
+      "selectSector": "اختر التخصص",
+      "selectInternship": "اختر نوع التدريب",
+      "internshipNeedsLevel": "اختر المستوى أولاً",
+      "selectYear": "اختر السنة الأكاديمية",
+      "selectClass": "اختر القسم",
+      "classNeedsProgram": "اختر البرنامج أولاً",
       "internshipAutoHint": "يُحدَّد تلقائياً حسب الشعبة والمستوى الأكاديمي ESCA.",
       "internshipResolving": "جاري تحديد نوع التدريب…",
       "internshipPending": "أكمل المستوى الأكاديمي",
@@ -455,7 +467,7 @@ export const adminCopyAr = {
       },
       "supervisedInternships": {
         "label": "أنواع التدريب المُشرَف عليها",
-        "hint": "التعيين الذكي يطابق فقط الطلاب الذين يطابق نوع تدريبهم الاختيار.",
+        "hint": "تعيين المشرفين يطابق فقط الطلاب الذين يطابق نوع تدريبهم الاختيار.",
         "placeholder": "اختر أنواع التدريب…"
       },
       "detail": {
@@ -522,6 +534,7 @@ export const adminCopyAr = {
         "internal": "المسؤولون الداخليون"
       },
       "actions": {
+        "create": "إنشاء",
         "draft": "حفظ كمسودة",
         "publish": "نشر الآن",
         "cancel": "إلغاء",
@@ -583,6 +596,432 @@ export const adminCopyAr = {
         "contentHint": "عرض الدور والمهارات المطلوبة."
       }
     },
+    "createOfferStudio": {
+      "title": "إنشاء عرض تدريب",
+      "subtitle": "انشر واستهدف فرص التدريب للطلاب المناسبين.",
+      "editTitle": "تعديل عرض التدريب",
+      "editSubtitle": "تابع سير العمل الموجّه لإكمال وإعادة نشر هذا العرض.",
+      "loading": {
+        "title": "جاري تحميل العرض",
+        "retrieving": "جاري استرجاع معلومات العرض…",
+        "preparing": "جاري تجهيز مساحة التعديل…",
+        "subtitle": "يرجى الانتظار أثناء تجهيز مساحة العمل."
+      },
+      "saveStatus": {
+        "idle": "جميع التغييرات متزامنة",
+        "unsaved": "تغييرات غير محفوظة",
+        "saving": "جاري الحفظ…",
+        "saved": "تم الحفظ",
+        "error": "خطأ أثناء الحفظ",
+        "lastSaved": "آخر حفظ: {{time}}"
+      },
+      "actions": {
+        "saveDraft": "حفظ المسودة",
+        "saveChanges": "حفظ التغييرات",
+        "savingDraft": "جاري حفظ المسودة…",
+        "publishing": "جاري النشر…",
+        "preview": "معاينة",
+        "publish": "نشر",
+        "republish": "إعادة النشر",
+        "next": "الخطوة التالية",
+        "previous": "الخطوة السابقة",
+        "changeMethod": "تغيير الطريقة",
+        "backToEdit": "العودة للتعديل"
+      },
+      "messages": {
+        "publishSuccess": "تم نشر العرض بنجاح",
+        "draftSaved": "تم حفظ المسودة",
+        "changesSaved": "تم حفظ التغييرات",
+        "missingTitle": "أضف عنواناً قبل النشر",
+        "incompleteOffer": "أكمل الأقسام الناقصة قبل النشر",
+        "completeOfferUsePublish": "جميع الحقول المطلوبة مكتملة — استخدم النشر بدلاً من حفظ مسودة",
+        "duplicateBlocked": "تكرار محتمل — اعرض العرض الحالي أو تابع على أي حال"
+      },
+      "method": {
+        "eyebrow": "استوديو عرض التدريب",
+        "stepTitle": "كيف تريد إنشاء هذا العرض؟",
+        "stepDesc": "اختر المسار المناسب لسير عملك. كلا الخيارين يدعمان المعاينة المباشرة واستهداف الطلاب والنشر بنقرة واحدة.",
+        "hint": "اختر طريقة للبدء.",
+        "compareNote": "يمكنك الحفظ كمسودة أو النشر في أي وقت بعد اختيار الطريقة.",
+        "manual": {
+          "title": "إنشاء يدوي",
+          "badge": "تحكم كامل",
+          "description": "معالج موجّه خطوة بخطوة للعروض المخصصة.",
+          "longDesc": "أنشئ كل حقل من الصفر عبر مسار منظم من 6 خطوات — مثالي عند الحاجة إلى استهداف دقيق ووصف مخصص وتحكم تحريري كامل.",
+          "benefits": [
+            "معالج من 6 خطوات (معلومات أساسية → مراجعة)",
+            "استهداف الطلاب مع تقدير الجمهور",
+            "معاينة مباشرة أثناء التحرير",
+            "مهارات وإعدادات التوظيف ونقاط التحقق"
+          ],
+          "bestFor": "الأفضل للعروض المخصصة والشراكات الجديدة",
+          "cta": "فتح معالج الإنشاء"
+        },
+        "import": {
+          "title": "استيراد من رابط",
+          "badge": "الأسرع",
+          "description": "الصق رابط منصة توظيف أو صفحة مهنية — نستخرج المسودة لك.",
+          "longDesc": "يدعم LinkedIn وIndeed وReKrute وEmploi.ma وNovojob وصفحات التوظيف. راجع المسودة المستخرجة، عدّل الحقول، ثم انشر خلال دقائق.",
+          "benefits": [
+            "استخراج تلقائي للعنوان والشركة والوصف",
+            "مسودة قابلة للتعديل قبل النشر",
+            "حفظ بيانات المصدر ومعلومات المحلّل",
+            "منصات التوظيف الرئيسية ومواقع الشركات"
+          ],
+          "bestFor": "الأفضل للإعلانات الموجودة والمواعيد الضيقة",
+          "cta": "استيراد من رابط"
+        }
+      },
+      "steps": {
+        "navigation": "تقدم الإنشاء",
+        "basic": "معلومات أساسية",
+        "description": "الوصف",
+        "skills": "المهارات",
+        "targeting": "الاستهداف",
+        "recruitment": "الإعداد",
+        "review": "المراجعة والنشر"
+      },
+      "stepDesc": {
+        "basic": "العنوان والشركة والمكان ونوع التدريب.",
+        "description": "بناء وصف منظم وجذاب.",
+        "skills": "المهارات التقنية واللغات والشهادات.",
+        "targeting": "تحديد قواعد الاستهداف والجمهور المقدر.",
+        "recruitment": "التواريخ والظهور وطريقة التقديم.",
+        "review": "تحقق من كل التفاصيل وانشر بثقة."
+      },
+      "fields": {
+        "title": "عنوان العرض",
+        "company": "الشركة",
+        "internshipType": "نوع التدريب",
+        "location": "المكان",
+        "workMode": "نمط العمل",
+        "department": "القسم",
+        "positions": "عدد المناصب"
+      },
+      "placeholders": {
+        "title": "مثال: تدريب مطور Full Stack",
+        "company": "مثال: TechCorp المغرب",
+        "location": "مثال: الدار البيضاء",
+        "department": "مثال: هندسة المنتج"
+      },
+      "types": {
+        "select": "اختر النوع",
+        "internship": "تدريب",
+        "pfe": "PFE",
+        "pfa": "PFA",
+        "alternance": "تناوب",
+        "summer": "تدريب صيفي",
+        "observation": "تدريب ملاحظة"
+      },
+      "workModes": {
+        "remote": "عن بُعد",
+        "hybrid": "هجين",
+        "onsite": "في الموقع"
+      },
+      "description": {
+        "overview": "نظرة عامة",
+        "responsibilities": "المسؤوليات",
+        "requirements": "المتطلبات",
+        "benefits": "المزايا",
+        "learning": "فرص التعلم",
+        "placeholders": {
+          "overview": "قدّم الدور والسياق…",
+          "responsibilities": "اذكر المسؤوليات الرئيسية…",
+          "requirements": "الملف المطلوب والمتطلبات…",
+          "benefits": "المزايا المقدمة للمتدربين…",
+          "learning": "ما سيكتسبه الطالب…"
+        }
+      },
+      "skills": {
+        "required": "المهارات المطلوبة",
+        "preferred": "المهارات المفضلة",
+        "languages": "اللغات",
+        "softSkills": "المهارات الناعمة",
+        "experience": "سنوات الخبرة",
+        "certifications": "الشهادات (اختياري)",
+        "placeholder": "أضف مهارة واضغط Enter",
+        "languagesPlaceholder": "مثال: الفرنسية، الإنجليزية",
+        "softPlaceholder": "مثال: التواصل، العمل الجماعي",
+        "experiencePlaceholder": "مثال: 0–1 سنة",
+        "certPlaceholder": "مثال: AWS Cloud Practitioner"
+      },
+      "targeting": {
+        "program": "البرنامج",
+        "class": "الفصل",
+        "level": "المستوى",
+        "department": "القسم",
+        "category": "فئة التدريب",
+        "audience": "{{count}} طالب يطابق هذا الاستهداف",
+        "audienceEmpty": "حدد معيار استهداف واحداً على الأقل",
+        "audiencePending": "سيتم حساب تقدير الجمهور بعد النشر",
+        "noAcademicData": "لم يتم إعداد أي برامج أكاديمية بعد. أضفها أولاً في الهيكل الأكاديمي.",
+        "loadError": "تعذّر تحميل البيانات الأكاديمية. يرجى تحديث الصفحة.",
+        "sectionEmpty": "لا توجد خيارات مُعدّة حالياً."
+      },
+      "recruitment": {
+        "deadline": "آخر موعد للتقديم",
+        "startDate": "تاريخ بدء التدريب",
+        "endDate": "تاريخ انتهاء التدريب",
+        "profilesNeeded": "عدد الملفات المطلوبة",
+        "visibility": "الظهور",
+        "visibilityOptions": {
+          "public": "عام",
+          "targeted": "مستهدف",
+          "private": "خاص"
+        },
+        "autoExpiration": "انتهاء تلقائي عند الموعد النهائي",
+        "applicationMethod": "طريقة التقديم",
+        "methodOptions": {
+          "internal": "تقديم داخلي",
+          "external": "رابط خارجي",
+          "email": "بالبريد الإلكتروني"
+        },
+        "externalUrl": "رابط التقديم الخارجي",
+        "submissionEmail": "بريد التقديم"
+      },
+      "review": {
+        "ready": "عرضك جاهز للنشر",
+        "notSet": "غير محدد",
+        "emptyState": {
+          "notConfigured": "غير مُعد",
+          "missingInformation": "معلومات ناقصة",
+          "needsConfiguration": "يتطلب إعداداً"
+        },
+        "banner": {
+          "readyTitle": "جاهز للنشر",
+          "readyDesc": "يلبي عرض التدريب هذا جميع المعايير المطلوبة ويمكن نشره فوراً.",
+          "attentionTitle": "يتطلب انتباهاً",
+          "attentionDesc": "بعض المعلومات غير مكتملة قبل النشر.",
+          "readinessScore": "درجة الجاهزية"
+        },
+        "offerPreview": {
+          "title": "معاينة العرض",
+          "readyBadge": "جاهز",
+          "draftBadge": "مسودة",
+          "duration": "المدة",
+          "requiredSkills": "المهارات المطلوبة"
+        },
+        "completion": {
+          "title": "نظرة على الاكتمال",
+          "completed": "مكتمل",
+          "incomplete": "غير مكتمل",
+          "sections": {
+            "basic": "المعلومات الأساسية",
+            "description": "الوصف",
+            "skills": "المهارات",
+            "targeting": "الاستهداف",
+            "recruitment": "الإعداد",
+            "publication": "إعدادات النشر"
+          },
+          "missing": {
+            "missingBasic": "معلومات أساسية ناقصة",
+            "missingOverview": "نظرة عامة مفقودة",
+            "missingSkills": "مهارات مفقودة",
+            "missingTargeting": "استهداف مفقود",
+            "missingDeadline": "موعد نهائي مفقود"
+          }
+        },
+        "validationCenter": {
+          "title": "اكتمال العرض",
+          "sectionsCompleted": "{{completed}} من {{total}} أقسام مكتملة",
+          "percentComplete": "{{percent}}% مكتمل",
+          "completedSections": "الأقسام المكتملة",
+          "missingSections": "الأقسام الناقصة",
+          "statusCompleted": "مكتمل",
+          "statusMissing": "بيانات ناقصة",
+          "statusReview": "يحتاج مراجعة"
+        },
+        "validation": {
+          "allComplete": "جميع الحقول المطلوبة مكتملة",
+          "missingTitle": "معلومات مطلوبة مفقودة",
+          "fields": {
+            "title": "العنوان",
+            "description": "الوصف",
+            "company": "الشركة",
+            "location": "المكان",
+            "skills": "المهارات",
+            "targeting": "الاستهداف",
+            "recruitment": "الإعداد",
+            "deadline": "الموعد النهائي"
+          }
+        },
+        "audience": {
+          "title": "الجمهور المستهدف",
+          "targeted": "عرض مستهدف",
+          "expectedReach": "الوصول المتوقع"
+        },
+        "skillsSection": {
+          "title": "المهارات",
+          "additional": "اللغات والمهارات الناعمة",
+          "empty": "أضف مهارات مطلوبة لتحسين المطابقة."
+        },
+        "recruitment": {
+          "title": "ملخص الإعداد",
+          "positions": "المناصب المتاحة"
+        },
+        "publication": {
+          "title": "إعدادات النشر",
+          "status": "الحالة",
+          "draft": "مسودة",
+          "publishMode": "وضع النشر",
+          "immediate": "فوري",
+          "createdBy": "أنشأه",
+          "publishedBy": "نشره",
+          "lastUpdated": "آخر تحديث",
+          "notYetSaved": "لم يُحفظ بعد",
+          "defaultAuthor": "المسؤول"
+        },
+        "studentPreview": {
+          "title": "معاينة الطالب",
+          "subtitle": "كيف سيرى الطلاب هذا العرض",
+          "hint": "معاينة فقط — تُحسب نسبة التطابق بعد النشر."
+        },
+        "duration": {
+          "weeks": "{{count}} أسبوع",
+          "months": "{{count}} شهر"
+        },
+        "sections": {
+          "overview": "نظرة على العرض",
+          "audience": "الجمهور المستهدف",
+          "skills": "المهارات",
+          "timeline": "الجدول الزمني",
+          "publication": "إعدادات النشر"
+        },
+        "fields": {
+          "title": "العنوان",
+          "company": "الشركة",
+          "location": "المكان",
+          "type": "النوع",
+          "positions": "المناصب",
+          "programs": "البرامج",
+          "categories": "الفئات",
+          "reach": "الوصول المقدر",
+          "required": "مطلوبة",
+          "preferred": "مفضلة",
+          "deadline": "الموعد النهائي",
+          "start": "البداية",
+          "end": "النهاية",
+          "visibility": "الظهور",
+          "method": "التقديم",
+          "completeness": "الاكتمال",
+          "expectedReach": "الوصول المتوقع"
+        }
+      },
+      "preview": {
+        "title": "معاينة مباشرة",
+        "subtitle": "كيف سيرى الطلاب هذا العرض",
+        "modalTitle": "معاينة العرض",
+        "placeholderTitle": "عنوان العرض",
+        "placeholderCompany": "اسم الشركة",
+        "placeholderLocation": "المكان",
+        "placeholderDesc": "سيظهر الوصف هنا أثناء الكتابة…",
+        "matchLabel": "نسبة التطابق",
+        "matchPending": "يُحسب بعد النشر",
+        "notAvailable": "غير متاح",
+        "applyButton": "تقديم",
+        "audience": "{{count}} طالب مستهدف",
+        "audienceEmpty": "حدد الاستهداف لتقدير الجمهور",
+        "audiencePending": "التقدير متاح بعد النشر",
+        "moreBadges": "+{{count}}",
+        "workModes": {
+          "remote": "عن بُعد",
+          "hybrid": "هجين",
+          "onsite": "في الموقع"
+        },
+        "analytics": {
+          "reach": "الوصول",
+          "completeness": "الاكتمال",
+          "applications": "التقديمات المتوقعة",
+          "visibility": "الظهور"
+        }
+      },
+      "insights": {
+        "title": "توصيات ذكية",
+        "targetingRestrictive": "قد يكون الاستهداف مقيداً جداً.",
+        "lowReach": "الوصول المقدر منخفض.",
+        "addReact": "فكّر في إضافة مهارة React.",
+        "deadlineClose": "موعد التقديم قريب جداً.",
+        "incompleteForm": "أكمل الحقول الأساسية قبل النشر.",
+        "audienceAfterPublish": "سيتم حساب الوصول ودرجات التطابق بعد النشر."
+      },
+      "suggestedStudents": {
+        "title": "أفضل الطلاب المتطابقين",
+        "desc": "بناءً على الاستهداف والمهارات المحددة",
+        "notify": "إشعار",
+        "viewProfile": "عرض الملف",
+        "addToCollection": "إضافة إلى مجموعة"
+      },
+      "duplicate": {
+        "detected": "تم اكتشاف تكرار محتمل",
+        "similarity": "{{percent}}% تشابه",
+        "publishedAgo": "نُشر منذ {{days}} أيام",
+        "viewExisting": "عرض العرض الحالي",
+        "continueAnyway": "المتابعة على أي حال"
+      },
+      "import": {
+        "title": "استيراد من رابط",
+        "desc": "الصق رابط عرض خارجي لاستخراج المعلومات تلقائياً.",
+        "urlLabel": "رابط عرض التدريب",
+        "urlPlaceholder": "https://www.rekrute.com/…",
+        "analyze": "تحليل العرض",
+        "reAnalyze": "إعادة التحليل",
+        "tryAnotherUrl": "رابط آخر",
+        "tryAnotherHint": "غيّر الرابط واضغط إعادة التحليل، أو استخدم رابط آخر للبدء من جديد.",
+        "hint": "يدعم ReKrute وEmploi.ma وNovojob وصفحات التوظيف (LinkedIn/Indeed بشكل محدود).",
+        "extracted": "راجع هذه المسودة قبل النشر.",
+        "parser": "المحلّل: {{name}}",
+        "skillsPlaceholder": "أضف مهارة",
+        "languagesPlaceholder": "مثال: الفرنسية، الإنجليزية",
+        "sections": {
+          "basic": "المعلومات الأساسية",
+          "description": "الوصف",
+          "skills": "المهارات",
+          "targeting": "الاستهداف",
+          "recruitment": "الإعداد",
+          "metadata": "بيانات الاستيراد"
+        },
+        "requiredHint": "الحقول المميزة بـ * إلزامية قبل النشر.",
+        "validation": {
+          "required": "هذا الحقل إلزامي",
+          "incompleteTitle": "أكمل الأقسام التالية قبل النشر"
+        },
+        "metadata": {
+          "source": "الموقع المصدر",
+          "parser": "المحلّل المستخدم",
+          "importDate": "تاريخ الاستيراد",
+          "sourceUrl": "الرابط المصدر",
+          "openLink": "فتح الرابط",
+          "copyLink": "نسخ الرابط",
+          "linkCopied": "تم نسخ الرابط",
+          "copyFailed": "تعذّر نسخ الرابط"
+        },
+        "fields": {
+          "company": "الشركة",
+          "title": "العنوان",
+          "location": "المكان",
+          "internshipType": "نوع التدريب",
+          "skills": "المهارات المطلوبة",
+          "preferredSkills": "المهارات المفضلة",
+          "languages": "اللغات",
+          "description": "الوصف",
+          "requirements": "المتطلبات",
+          "benefits": "المزايا"
+        },
+        "errors": {
+          "title": "تعذّر تحليل هذا الرابط",
+          "retry": "إعادة المحاولة"
+        },
+        "loading": {
+          "analyzingPage": "تحليل الصفحة…",
+          "detectingCompany": "اكتشاف الشركة…",
+          "extractingTitle": "استخراج عنوان التدريب…",
+          "extractingRequirements": "استخراج المتطلبات…",
+          "buildingDraft": "بناء المسودة…",
+          "normalizingContent": "توحيد المحتوى…",
+          "generatingPreview": "إنشاء المعاينة…"
+        }
+      }
+    },
     "createStudent": {
       "title": "إضافة طالب",
       "subtitle": "إنشاء حساب وتعيين الشعبة والفصل وصول المنصة.",
@@ -619,9 +1058,9 @@ export const adminCopyAr = {
         "credentialsHint": "متابعة تسجيل الدخول وإدارة الاعتمادات."
       },
       "select": {
-        "filiere": "— اختر شعبة —",
+        "filiere": "اختر شعبة",
         "class": "— اختر فصلاً —",
-        "classNeedsFiliere": "— اختر شعبة أولاً —"
+        "classNeedsFiliere": "اختر شعبة أولاً"
       },
       "accountStatus": {
         "PENDING": "قيد الانتظار",
@@ -717,6 +1156,215 @@ export const adminCopyAr = {
         }
       }
     },
+    "academicStructure": {
+      "eyebrow": "إعدادات المنصة",
+      "title": "الهيكل الأكاديمي",
+      "subtitle": "المصدر الموحد لفروع ESCA والمستويات والفصول وإطار التدريب وأنماط العمل.",
+      "backToSettings": "العودة إلى الإعدادات",
+      "superAdminOnly": "للمشرف الأعلى فقط",
+      "searchPlaceholder": "بحث…",
+      "allTracks": "جميع الفروع",
+      "toolbarAriaLabel": "بحث وفلاتر الهيكل الأكاديمي",
+      "includeArchived": "تضمين المؤرشف",
+      "noSearchResults": "لا توجد نتائج مطابقة لبحثك",
+      "emptyTab": "لا توجد عناصر في هذا القسم بعد",
+      "create": "إنشاء",
+      "edit": "تعديل",
+      "duplicate": "نسخ",
+      "save": "حفظ",
+      "tablePaginationLabel": "عناصر",
+      "tabs": {
+        "tracks": "الفروع الأكاديمية",
+        "levels": "المستويات الأكاديمية",
+        "classes": "الفصول",
+        "internshipFramework": "إطار التدريب",
+        "workModes": "أنماط العمل",
+        "archived": "المؤرشف"
+      },
+      "archived": {
+        "allTypes": "جميع الأنواع",
+        "filterType": "تصفية حسب النوع",
+        "emptyTitle": "لا توجد عناصر مؤرشفة",
+        "emptyDescription": "ستظهر هنا الفروع والمستويات والفصول والعناصر الأخرى المؤرشفة.",
+        "columns": {
+          "type": "النوع",
+          "context": "السياق"
+        },
+        "types": {
+          "FILIERE": "فرع",
+          "ACADEMIC_LEVEL": "مستوى",
+          "CLASS_GROUP": "فصل",
+          "INTERNSHIP_TYPE": "إطار تدريب",
+          "WORK_MODE": "نمط عمل"
+        }
+      },
+      "columns": {
+        "name": "الاسم",
+        "code": "الرمز",
+        "family": "العائلة",
+        "track": "الفرع",
+        "level": "المستوى",
+        "year": "السنة الأكاديمية",
+        "duration": "المدة",
+        "order": "الترتيب",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "fields": {
+        "name": "الاسم",
+        "nameFr": "الاسم (فرنسي)",
+        "nameEn": "الاسم (إنجليزي)",
+        "code": "الرمز",
+        "family": "عائلة البرنامج",
+        "description": "الوصف",
+        "track": "الفرع الأكاديمي",
+        "level": "المستوى الأكاديمي",
+        "year": "السنة الأكاديمية",
+        "duration": "تلميح المدة",
+        "order": "ترتيب العرض"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "archived": "مؤرشف"
+      },
+      "auditTitle": "سجل التغييرات",
+      "auditEmpty": "لم يُسجَّل أي تغيير بعد.",
+      "audit": {
+        "title": "سجل التغييرات",
+        "subtitle": "الجدول الزمني للإنشاء والتحديث والأرشفة التي نفّذها المشرفون الأعلى.",
+        "emptyTitle": "لم يُسجَّل أي تغيير بعد",
+        "emptyDescription": "ستظهر هنا الإجراءات المتعلقة بالهيكل الأكاديمي.",
+        "noFilterResults": "لا توجد تغييرات تطابق الفترة المحددة",
+        "noFilterResultsDescription": "وسّع نطاق التاريخ أو أعد تعيين الفلاتر.",
+        "paginationLabel": "تغييرات",
+        "filters": {
+          "ariaLabel": "تصفية سجل التغييرات حسب الفترة",
+          "periodLabel": "الفترة",
+          "periodAll": "كل الفترات",
+          "period7d": "آخر 7 أيام",
+          "period30d": "آخر 30 يوماً",
+          "period90d": "آخر 90 يوماً",
+          "periodCustom": "نطاق مخصص",
+          "dateFrom": "من",
+          "dateTo": "إلى",
+          "clear": "إعادة تعيين الفلاتر"
+        }
+      },
+      "errors": {
+        "loadFailed": "تعذّر تحميل الهيكل الأكاديمي."
+      },
+      "archive": {
+        "title": "أرشفة هذا العنصر",
+        "subtitle": "يُعطّل هذا الإجراء العنصر دون حذف البيانات الموجودة.",
+        "confirm": "تأكيد أرشفة «{{name}}». سيتم الاحتفاظ بالمراجع الموجودة.",
+        "notice": "لن يظهر العنصر في القوائم النشطة أو قوائم الإنشاء، لكنه سيبقى مرئياً في تبويب المؤرشف.",
+        "usedBy": "المراجع النشطة",
+        "totalReferences": "{{count}} إجمالاً",
+        "noReferences": "لم يُكتشف أي مرجع نشط لهذا العنصر.",
+        "students": "{{count}} طالب(ين)",
+        "offers": "{{count}} عرض(عروض)",
+        "applications": "{{count}} طلب(طلبات)",
+        "announcements": "{{count}} إعلان(إعلانات)",
+        "meetings": "{{count}} اجتماع(اجتماعات)",
+        "action": "أرشفة",
+        "cancel": "إلغاء",
+        "confirmAction": "تأكيد الأرشفة",
+        "confirming": "جاري الأرشفة…"
+      },
+      "delete": {
+        "title": "حذف نهائي",
+        "subtitle": "يزيل هذا الإجراء العنصر نهائياً من قاعدة البيانات. لا يمكن التراجع عنه.",
+        "confirm": "تأكيد الحذف النهائي لـ «{{name}}».",
+        "notice": "يمكن حذف العناصر التي لا تحتوي على مراجع نشطة فقط. فكّر في الأرشفة إذا كانت البيانات ما زالت مرتبطة.",
+        "blockedBy": "مراجع تمنع الحذف",
+        "totalReferences": "{{count}} إجمالاً",
+        "noReferences": "لم يُكتشف أي مرجع نشط. يمكن حذف هذا العنصر نهائياً.",
+        "blockedHint": "أزل أو أعد تعيين هذه المراجع قبل الحذف، أو قم بأرشفة العنصر بدلاً من ذلك.",
+        "action": "حذف",
+        "cancel": "إلغاء",
+        "confirmAction": "حذف نهائي",
+        "confirming": "جاري الحذف…"
+      },
+      "form": {
+        "titles": {
+          "create": {
+            "tracks": "إنشاء فرع أكاديمي",
+            "levels": "إنشاء مستوى أكاديمي",
+            "classes": "إنشاء فصل",
+            "internshipFramework": "إنشاء إطار تدريب",
+            "workModes": "إنشاء نمط عمل"
+          },
+          "edit": {
+            "tracks": "تعديل الفرع الأكاديمي",
+            "levels": "تعديل المستوى الأكاديمي",
+            "classes": "تعديل الفصل",
+            "internshipFramework": "تعديل إطار التدريب",
+            "workModes": "تعديل نمط العمل"
+          },
+          "duplicate": {
+            "tracks": "نسخ الفرع الأكاديمي",
+            "levels": "نسخ المستوى الأكاديمي",
+            "classes": "نسخ الفصل",
+            "internshipFramework": "نسخ إطار التدريب",
+            "workModes": "نسخ نمط العمل"
+          }
+        },
+        "descriptions": {
+          "tracks": "تحديد فرع أكاديمي جديد متاح على كامل المنصة.",
+          "levels": "إعداد مستوى مرتبط بفرع للاستهداف ومسارات الطلاب.",
+          "classes": "تنظيم فصل لفرع ومستوى وسنة أكاديمية.",
+          "internshipFramework": "تحديد إطار تدريب مرتبط بفرع ومستوى.",
+          "workModes": "إعداد نمط عمل معروض في العروض والإعلانات."
+        },
+        "sections": {
+          "details": "التفاصيل",
+          "detailsHint": "المعلومات الأساسية الظاهرة على كامل المنصة.",
+          "assignment": "الربط الأكاديمي",
+          "assignmentHint": "اربط هذا العنصر بفرع و، عند الحاجة، بمستوى.",
+          "display": "العرض",
+          "displayHint": "ترتيب العرض والحالة النشطة."
+        },
+        "fields": {
+          "orderHint": "يتحكم في ترتيب العرض في القوائم والقوائم المنسدلة.",
+          "active": "نشط على المنصة",
+          "codeOptional": "اختياري — يُولَّد تلقائياً إذا تُرك فارغاً."
+        },
+        "duration": {
+          "value": "المدة",
+          "unit": "الوحدة",
+          "months": "أشهر",
+          "weeks": "أسابيع"
+        },
+        "stepper": {
+          "decrease": "تقليل الترتيب",
+          "increase": "زيادة الترتيب"
+        },
+        "select": {
+          "placeholder": "اختر…",
+          "search": "بحث…",
+          "empty": "لا توجد خيارات",
+          "selectTrackFirst": "اختر فرعاً أولاً."
+        },
+        "preview": {
+          "title": "معاينة",
+          "placeholderName": "اسم العنصر",
+          "duration": "المدة",
+          "year": "السنة"
+        },
+        "actions": {
+          "saveAndCreate": "حفظ وإنشاء آخر"
+        },
+        "validation": {
+          "required": "هذا الحقل مطلوب.",
+          "duplicateName": "هذا الاسم موجود بالفعل.",
+          "duplicateCode": "هذا الرمز موجود بالفعل.",
+          "duplicateFramework": "يوجد إطار مطابق بالفعل لهذا الفرع والمستوى.",
+          "invalidDuration": "يجب أن تكون المدة أكبر من صفر.",
+          "invalidOrder": "يجب أن يكون الترتيب صفراً أو موجباً."
+        }
+      }
+    },
     "encadrants": {
       "title": "المشرفون",
       "subtitle": "إدارة المشرفين والطلاب المعيّنين لهم",
@@ -748,7 +1396,235 @@ export const adminCopyAr = {
     },
     "offers": {
       "title": "عروض التدريب",
-      "subtitle": "إدارة جميع فرص التدريب"
+      "subtitle": "إدارة جميع فرص التدريب",
+      "draftsPage": {
+        "title": "المسودات",
+        "subtitle": "مراجعة ونشر عروض التدريب غير المنشورة"
+      },
+      "actions": {
+        "delete": {
+          "title": "حذف عرض التدريب",
+          "description": "هل أنت متأكد من حذف هذا العرض؟ قد يؤثر هذا على الطلبات ونتائج المطابقة والتحليلات.",
+          "confirm": "حذف العرض",
+          "success": "تم حذف العرض بنجاح.",
+          "errors": {
+            "failed": "تعذر حذف هذا العرض."
+          }
+        },
+        "assign": {
+          "title": "تعيين عرض التدريب",
+          "subtitle": "تحديد الجمهور المستهدف لـ \"{{title}}\".",
+          "targetType": "نوع الهدف",
+          "selection": "الاختيار",
+          "previewTitle": "معاينة",
+          "recipients": "المعايير المحددة",
+          "affectedStudents": "الطلاب المتأثرون",
+          "matchingImpact": "تأثير المطابقة",
+          "matchingRefresh": "سيتم تحديث {{count}} سجل مطابقة",
+          "previewLoading": "جاري حساب الجمهور…",
+          "emptySelection": "حدد معيار استهداف واحدًا على الأقل.",
+          "confirm": "تعيين",
+          "success": "تم تعيين الاستهداف بنجاح.",
+          "errors": {
+            "loadFailed": "تعذر تحميل استهداف العرض.",
+            "previewFailed": "تعذر معاينة تأثير الاستهداف.",
+            "assignFailed": "تعذر تعيين الاستهداف."
+          }
+        },
+        "errors": {
+          "forbidden": "ليس لديك إذن لتنفيذ هذا الإجراء.",
+          "notFound": "العرض غير موجود.",
+          "conflict": "لا يمكن إكمال هذا الإجراء في الحالة الحالية للعرض.",
+          "server": "خطأ في الخادم. يرجى المحاولة مرة أخرى."
+        }
+      },
+      "viewDetail": {
+        "loading": "جاري تحميل تفاصيل العرض…",
+        "navigation": "أقسام العرض",
+        "nav": {
+          "overview": "نظرة عامة",
+          "description": "الوصف",
+          "skills": "المهارات",
+          "targeting": "الاستهداف",
+          "recruitment": "الإعداد",
+          "publication": "النشر",
+          "applications": "الطلبات",
+          "import": "الاستيراد",
+          "audit": "التدقيق"
+        },
+        "sections": {
+          "overview": "رأس العرض والمعلومات الأساسية",
+          "description": "الوصف",
+          "skills": "المهارات",
+          "targeting": "الاستهداف",
+          "recruitment": "الإعداد",
+          "publication": "إعدادات النشر",
+          "applications": "نظرة على الطلبات",
+          "import": "معلومات الاستيراد",
+          "audit": "ملخص التدقيق"
+        },
+        "header": {
+          "offerId": "معرف العرض",
+          "source": "المصدر",
+          "created": "تاريخ الإنشاء"
+        },
+        "status": {
+          "published": "منشور",
+          "draft": "مسودة",
+          "expired": "منتهي",
+          "closed": "مغلق",
+          "archived": "مؤرشف"
+        },
+        "source": {
+          "manual": "إنشاء يدوي",
+          "import": "استيراد من رابط"
+        },
+        "fields": {
+          "positionsAvailable": "المناصب المتاحة",
+          "duration": "المدة",
+          "referenceCode": "رمز المرجع",
+          "language": "اللغة",
+          "createdBy": "أنشأه",
+          "lastUpdated": "آخر تحديث",
+          "additionalNotes": "ملاحظات إضافية",
+          "targetRules": "قواعد الاستهداف",
+          "expectedReach": "الوصول المتوقع (المشاهدات)",
+          "recruitmentProcess": "طريقة التقديم",
+          "compensation": "التعويض",
+          "minEducation": "الحد الأدنى للتعليم",
+          "publicationType": "نوع النشر",
+          "publishedDate": "تاريخ النشر",
+          "expirationDate": "تاريخ الانتهاء",
+          "currentStatus": "الحالة الحالية",
+          "targetAudience": "الجمهور المستهدف",
+          "autoExpiration": "انتهاء تلقائي",
+          "sourcePlatform": "منصة المصدر",
+          "sourceUrl": "رابط المصدر",
+          "importedBy": "استورد بواسطة",
+          "importDate": "تاريخ الاستيراد",
+          "parserUsed": "المحلل المستخدم"
+        },
+        "insights": {
+          "total": "إجمالي الطلبات",
+          "accepted": "مقبولة",
+          "rejected": "مرفوضة",
+          "pending": "قيد الانتظار",
+          "interviewing": "في مقابلة",
+          "conversion": "معدل التحويل"
+        },
+        "audit": {
+          "created": "تم الإنشاء",
+          "updated": "آخر تحديث",
+          "published": "تم النشر",
+          "archived": "تمت الأرشفة",
+          "lastActivity": "آخر نشاط"
+        },
+        "values": {
+          "yes": "نعم",
+          "no": "لا"
+        },
+        "empty": {
+          "notConfigured": "غير مُكوَّن",
+          "notSpecified": "غير محدد",
+          "noTargeting": "لا توجد قواعد استهداف",
+          "noRequiredSkills": "لا توجد مهارات مطلوبة",
+          "noPreferredSkills": "لا توجد مهارات مفضلة"
+        }
+      },
+      "listPages": {
+        "studentsCount": "{{count}} طالب"
+      },
+      "legacyView": {
+        "postedOn": "تاريخ النشر",
+        "applicationDeadline": "آخر موعد للتقديم",
+        "totalApplicants": "إجمالي المتقدمين",
+        "description": "الوصف",
+        "requiredSkills": "المهارات المطلوبة",
+        "applicantsTitle": "المتقدمون ({{count}})",
+        "applicantsSubtitle": "الطلاب الذين تقدموا لهذا المنصب مع درجات المطابقة",
+        "message": "رسالة",
+        "accept": "قبول",
+        "reject": "رفض"
+      },
+      "inbox": {
+        "sidebarTitle": "مركز التوظيف",
+        "filters": "الفلاتر",
+        "searchPlaceholder": "طالب، عرض، شركة…",
+        "searchAria": "البحث في المحادثات",
+        "clearSearch": "مسح",
+        "conversationListAria": "قائمة المحادثات",
+        "filterChipsAria": "فلاتر المحادثة",
+        "noSearchResults": "لا توجد نتائج",
+        "noSearchResultsFor": "لا توجد محادثات لـ « {{query}} »",
+        "clearSearchAction": "مسح البحث",
+        "noConversations": "لا توجد محادثات",
+        "noConversationsDesc": "ستظهر المحادثات المتعلقة بالطلبات هنا.",
+        "noConversationsFilterHint": "جرّب تعديل الفلاتر أو البحث",
+        "noMessages": "لا توجد رسائل بعد. ابدأ المحادثة مع الطالب.",
+        "composerPlaceholder": "اكتب رسالة…",
+        "attachFile": "إرفاق ملف",
+        "sendMessage": "إرسال",
+        "loadError": "خطأ في التحميل",
+        "back": "رجوع",
+        "moreActions": "المزيد من الإجراءات",
+        "resolve": "حل",
+        "archive": "أرشفة",
+        "viewStudent": "عرض الطالب",
+        "viewApplication": "عرض الطلب",
+        "viewOffer": "عرض العرض",
+        "openInModule": "فتح في الوحدة",
+        "contextTitle": "سياق التدريب",
+        "sections": {
+          "student": "الطالب",
+          "currentOffer": "العرض الحالي",
+          "application": "الطلب",
+          "quickActions": "إجراءات سريعة"
+        },
+        "fields": {
+          "name": "الاسم",
+          "program": "البرنامج",
+          "class": "الصف",
+          "email": "البريد الإلكتروني",
+          "phone": "الهاتف",
+          "title": "العنوان",
+          "company": "الشركة",
+          "internshipType": "نوع التدريب",
+          "deadline": "الموعد النهائي",
+          "status": "الحالة",
+          "appliedDate": "تاريخ التقديم",
+          "interview": "المقابلة",
+          "lastChange": "آخر تغيير"
+        },
+        "quickActions": {
+          "sendReminder": "إرسال تذكير",
+          "requestDocuments": "طلب مستندات",
+          "scheduleInterview": "جدولة مقابلة",
+          "updateApplication": "تحديث الطلب",
+          "assignAdmin": "تعيين لمسؤول التدريب"
+        },
+        "filterSections": {
+          "program": "البرنامج",
+          "academicLevel": "المستوى الأكاديمي",
+          "class": "الصف",
+          "internshipType": "نوع التدريب",
+          "applicationStatus": "حالة الطلب",
+          "priority": "الأولوية",
+          "tags": "الوسوم",
+          "clear": "مسح الفلاتر"
+        },
+        "primaryChips": {
+          "all": "الكل",
+          "unread": "غير مقروء",
+          "waiting_admin": "بانتظار المسؤول",
+          "waiting_student": "بانتظار الطالب",
+          "urgent": "عاجل",
+          "resolved": "محلولة",
+          "archived": "مؤرشفة"
+        },
+        "stats": {
+          "waitingAdmin": "بانتظار المسؤول"
+        }
+      }
     },
     "announcements": {
       "title": "الإعلانات",
@@ -924,15 +1800,15 @@ export const adminCopyAr = {
         "heroRemaining": "المتبقي",
         "heroRiskScore": "درجة المخاطر",
         "heroProgram": "البرنامج",
-        "financialIntelligence": "الذكاء المالي",
+        "financialIntelligence": "نظرة مالية",
         "eligibilityScore": "درجة الأهلية",
         "eligibilityLabel": "الأهلية الأكاديمية",
         "eligibilityClear": "تمت التسوية المالية",
         "eligibilityPending": "التسوية قيد المعالجة",
         "chartPaid": "مدفوع",
         "chartRemaining": "متبقي",
-        "riskIntelligence": "ذكاء المخاطر",
-        "smartInsights": "رؤى ذكية",
+        "riskIntelligence": "نظرة على المخاطر",
+        "smartInsights": "ملاحظات رئيسية",
         "riskLow": "منخفض",
         "riskHigh": "مرتفع",
         "installmentVisual": "تقدم الأقساط",
@@ -1176,7 +2052,7 @@ export const adminCopyAr = {
       "overview": {
         "title": "نظرة عامة على الاجتماعات",
         "badge": "عمليات الإشراف",
-        "activePipeline": "الخط النشط",
+        "activePipeline": "قيد التنفيذ",
         "activityRate": "معدل نشاط الإشراف",
         "encadrantLoad": "حمل الإشراف حسب المشرف",
         "empty": "لا نشاط إشراف",
@@ -1206,7 +2082,7 @@ export const adminCopyAr = {
         "totalCaption": "الإجمالي"
       },
       "insights": {
-        "title": "رؤى ذكية",
+        "title": "ملاحظات رئيسية",
         "empty": "مؤشرات الإشراف جيدة — لا تنبيهات حالياً.",
         "needsFollowup": "{{count}} اجتماعات تحتاج متابعة",
         "overdue": "{{count}} اجتماعات متأخرة",
@@ -1459,6 +2335,12 @@ export const adminCopyAr = {
         "searchPlaceholder": "البحث في محادثات العمليات",
         "composerPlaceholder": "نشر ملاحظة حوكمة...",
         "emptyConversation": "اختر محادثة"
+      },
+      "meetings": {
+        "participantSubtitle": "جدول الإشراف",
+        "searchPlaceholder": "البحث عن اجتماعات أو مشاركين",
+        "composerPlaceholder": "الرد في محادثة الاجتماع...",
+        "emptyConversation": "اختر محادثة"
       }
     },
     "create": {
@@ -1473,12 +2355,21 @@ export const adminCopyAr = {
       "filterAnnouncements": "تصفية الإعلانات",
       "filterAnnouncementType": "تصفية حسب نوع الإعلان",
       "searchDocuments": "البحث في المستندات",
-      "filterDocumentRequests": "تصفية طلبات المستندات"
+      "filterDocumentRequests": "تصفية طلبات المستندات",
+      "filterAllOffers": "تصفية جميع العروض",
+      "filterActiveOffers": "تصفية العروض النشطة",
+      "filterClosedOffers": "تصفية العروض المغلقة",
+      "filterDraftOffers": "تصفية المسودات",
+      "filterExpiredOffers": "تصفية العروض المنتهية",
+      "filterOffersWithApplications": "تصفية العروض مع الطلبات",
+      "filterOffersByStatus": "تصفية حسب الحالة",
+      "filterOffersByCompany": "تصفية حسب الشركة"
     }
   },
   "tables": {
     "columns": {
       "title": "العنوان",
+      "image": "الصورة",
       "type": "النوع",
       "targetAudience": "الجمهور المستهدف",
       "audience": "الجمهور",
@@ -1513,6 +2404,7 @@ export const adminCopyAr = {
       "lastLogin": "آخر اتصال",
       "onboarding": "الإعداد",
       "actions": "الإجراءات",
+      "matchScore": "درجة المطابقة",
       "allClasses": "جميع الصفوف",
       "filterByClass": "تصفية حسب الصف",
       "noStudentsMatch": "لا يوجد طلاب يطابقون البحث.",
@@ -1622,7 +2514,10 @@ export const adminCopyAr = {
       "active": "نشط",
       "draft": "مسودة",
       "expired": "منتهٍ",
-      "closed": "مغلق"
+      "closed": "مغلق",
+      "pending": "قيد الانتظار",
+      "accepted": "مقبول",
+      "rejected": "مرفوض"
     },
     "documentStatus": {
       "validated": "مصادق عليه",
@@ -1657,7 +2552,7 @@ export const adminCopyAr = {
     "openEntity": "فتح السجل",
     "analyticsTitle": "الذكاء التشغيلي",
     "analyticsSubtitle": "نشاط المنصة، الإشارات الحرجة والأتمتة",
-    "insightsTitle": "رؤى ذكية",
+    "insightsTitle": "ملاحظات رئيسية",
     "exportCsv": "تصدير CSV",
     "exporting": "جاري التصدير…",
     "entityTimelineTitle": "سجل النشاط",
@@ -1677,6 +2572,24 @@ export const adminCopyAr = {
       "automated7d": "آلي (7 أيام)",
       "activeActors": "فاعلون نشطون (7 أيام)"
     },
+    "cards": {
+      "stripAria": "مؤشرات التدقيق",
+      "events_today": "أحداث اليوم",
+      "critical_events": "أحداث حرجة",
+      "automated_events": "أحداث آلية",
+      "active_users_today": "مستخدمون نشطون",
+      "most_active_module": "الوحدة الأكثر نشاطاً",
+      "events_last_24h": "أحداث (24 س)"
+    },
+    "moduleCards": {
+      "gridAria": "مؤشرات التدقيق — {{module}}"
+    },
+    "roles": {
+      "ADMIN": "مسؤول",
+      "STUDENT": "طالب",
+      "SUPERVISOR": "مشرف",
+      "SYSTEM": "النظام"
+    },
     "charts": {
       "activityTrend": "اتجاه النشاط",
       "moduleDistribution": "توزيع الوحدات",
@@ -1695,7 +2608,7 @@ export const adminCopyAr = {
       "tasks": "المهام",
       "auth": "المصادقة",
       "students": "الطلاب",
-      "smart_assignment": "التعيين الذكي",
+      "smart_assignment": "تعيين المشرفين",
       "notifications": "الإشعارات",
       "history": "السجل"
     },
@@ -1720,8 +2633,22 @@ export const adminCopyAr = {
   "localHistory": {
     "analyticsTitle": "ذكاء الوحدة",
     "analyticsSubtitle": "النشاط والإشارات الحرجة والأتمتة — نطاق هذه الوحدة فقط",
-    "empty": "لا يوجد نشاط مسجّل لهذه الوحدة بعد. ستظهر الإجراءات مع سير العمل.",
+    "empty": "لا شيء لعرضه حالياً. بمجرد تسجيل أي إجراء، سيظهر هنا.",
+    "loadingTimeline": "جارٍ تحميل السجل…",
+    "refreshingResults": "جارٍ تحديث النتائج…",
     "eventsLabel": "أحداث",
+    "activitySummary": {
+      "loading": "جارٍ تحميل الملخص…",
+      "showing": "عرض {{count}} نشاط",
+      "lastActivity": "آخر نشاط: {{time}}",
+      "actionsToday": "{{count}} إجراء اليوم",
+      "stats": {
+        "activities": "الأنشطة",
+        "lastActivity": "آخر نشاط",
+        "today": "إجراءات اليوم",
+        "none": "لا يوجد نشاط"
+      }
+    },
     "charts": {
       "actionDistribution": "توزيع الإجراءات (7 أيام)"
     },
@@ -1738,11 +2665,11 @@ export const adminCopyAr = {
       "subtitle": "النشر والجدولة والاستهداف والتوصيات والتفاعل"
     },
     "internshipOffers": {
-      "title": "سجل تدقيق عروض التدريب",
-      "subtitle": "دورة حياة العروض والطلبات والتعيينات"
+      "title": "سجل العروض",
+      "subtitle": "اطّلع بسرعة على من عدّل أو استورد أو نشر عرضاً."
     },
     "smartAssignment": {
-      "title": "سجل التعيين الذكي",
+      "title": "سجل تعيين المشرفين",
       "subtitle": "تشغيل التعيين والموازنة والتعارضات وإعادة التعيين اليدوي"
     },
     "encadrants": {
@@ -1971,13 +2898,19 @@ export const adminCopyAr = {
       "actions": {
         "all": "جميع الأنواع",
         "create": "إنشاء",
+        "import": "استيراد",
         "update": "تحديث",
+        "delete": "حذف",
         "validate": "تحقق",
-        "archive": "أرشفة",
-        "review": "مراجعة",
+        "reject": "رفض",
         "assign": "تعيين",
+        "publish": "نشر",
+        "archive": "أرشفة",
+        "login": "تسجيل دخول",
+        "logout": "تسجيل خروج",
+        "review": "مراجعة",
         "submit": "إرسال",
-        "delete": "حذف"
+        "system_action": "إجراء نظام"
       },
       "rows": {
         "hist-1": {
@@ -2688,7 +3621,14 @@ export const adminCopyAr = {
       "closedOffers": "عروض مغلقة",
       "totalApplications": "إجمالي الطلبات",
       "acceptanceRate": "معدل القبول",
-      "mostPopular": "الأكثر شعبية"
+      "mostPopular": "الأكثر شعبية",
+      "notDetectedYet": "غير متاح بعد",
+      "draftsPage": {
+        "totalDrafts": "إجمالي المسودات",
+        "pendingReview": "في انتظار المراجعة",
+        "companies": "الشركات",
+        "withoutDeadline": "بدون موعد نهائي"
+      }
     },
     "history": {
       "total_actions": "إجمالي الإجراءات",
@@ -2781,7 +3721,7 @@ export const adminCopyAr = {
     }
   },
   "smartAssignment": {
-    "title": "التعيين الذكي",
+    "title": "تعيين المشرفين",
     "open": "فتح",
     "subtitle": "تحليل ESCA وتوزيع تلقائي للطلاب على المشرفين",
     "academicYear": "السنة الأكاديمية",
@@ -3000,7 +3940,7 @@ export const adminCopyAr = {
       "statusOverCapacity": "معرّض للخطر",
       "statusSurplus": "فائض",
       "statusNoSupervisor": "بدون مشرف",
-      "insightsTitle": "رؤى ذكية",
+      "insightsTitle": "ملاحظات رئيسية",
       "insightLowCoverage": "{{type}}: تغطية إشراف منخفضة",
       "insightBalanced": "{{type}}: توزيع متوازن",
       "insightLimitedSupervisors": "{{type}}: مشرفون محدودون",
@@ -3019,6 +3959,8 @@ export const adminCopyAr = {
     "studentsFilters": "لا يوجد طلاب يطابقون الفلاتر.",
     "studentsSearch": "لا يوجد طلاب يطابقون البحث.",
     "offersFilters": "لا توجد عروض تطابق الفلاتر.",
+    "noApplications": "لا توجد طلبات بعد.",
+    "noApplicationsDesc": "ستظهر طلبات الطلاب هنا بمجرد تقديمها.",
     "encadrantsFilters": "لا يوجد مشرفون يطابقون الفلاتر.",
     "announcementsFilters": "لا توجد إعلانات تطابق الفلاتر.",
     "administratorsSearch": "لا يوجد مسؤولون يطابقون البحث.",

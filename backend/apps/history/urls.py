@@ -8,6 +8,7 @@ from .views import (
     HistoryExportCreateView,
     HistoryExportDownloadView,
     HistoryGlobalCenterView,
+    HistoryInsightsView,
 )
 
 urlpatterns = [
@@ -19,6 +20,7 @@ urlpatterns = [
         name='history-entity-timeline',
     ),
     path('dashboard', HistoryDashboardView.as_view(), name='history-dashboard'),
+    path('insights', HistoryInsightsView.as_view(), name='history-insights'),
     path('center', HistoryGlobalCenterView.as_view(), name='history-center'),
     path('exports', HistoryExportCreateView.as_view(), name='history-exports'),
     path('exports/<uuid:export_uuid>/download', HistoryExportDownloadView.as_view(), name='history-export-download'),

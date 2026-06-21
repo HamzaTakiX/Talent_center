@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { X, Bot, ArrowRight } from 'lucide-react';
 import type { HistoryActionRow } from '../types';
 import { criticalityBadgeClass } from '../constants/criticalityStyles';
+import HistorySummaryText from './HistorySummaryText';
 
 const PREFIX = 'admin.auditCenter';
 
@@ -40,7 +41,9 @@ const HistoryEventDetailDrawer: FunctionComponent<HistoryEventDetailDrawerProps>
               {row.isAutomated ? <Bot className="h-3.5 w-3.5" aria-hidden /> : null}
               {t(`${PREFIX}.criticality.${crit}`)}
             </span>
-            <h2 className="text-base font-semibold leading-snug text-[var(--admin-text)]">{row.title}</h2>
+            <h2 className="text-base font-semibold leading-snug text-[var(--admin-text)]">
+              <HistorySummaryText text={row.title} />
+            </h2>
             <p className="text-xs text-[var(--admin-text-secondary)]">
               {row.actor} · {row.timestamp}
             </p>

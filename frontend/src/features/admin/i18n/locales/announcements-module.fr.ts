@@ -1,11 +1,11 @@
 export const announcementsModuleFr = {
   hero: {
-    badge: 'Intelligence communication',
-    pipeline: 'Pipeline actif',
+    badge: 'Communications',
+    pipeline: 'Activité récente',
   },
   hub: {
     title: 'Annonces',
-    subtitle: 'Plateforme de communication intelligente et d\'opportunités de stage',
+    subtitle: 'Gérer les annonces et les opportunités de stage',
     quickLinks: 'Sections du module',
   },
   feed: { title: 'Publications récentes' },
@@ -115,7 +115,7 @@ export const announcementsModuleFr = {
     },
     insights: {
       title: 'Aucun insight pour l\'instant',
-      subtitle: 'Les recommandations intelligentes apparaîtront avec l\'interaction des étudiants.',
+      subtitle: 'Les recommandations apparaîtront avec l\'interaction des étudiants.',
     },
   },
   detail: {
@@ -142,13 +142,13 @@ export const announcementsModuleFr = {
   insights: {
     title: 'Insights recommandation',
     panelTitle: 'Insights recommandation',
-    subtitle: 'Signaux du moteur de recommandation',
-    empty: 'Les insights apparaîtront avec l\'interaction des étudiants.',
+    subtitle: 'Observations basées sur l\'engagement des étudiants',
+    empty: 'Les observations apparaîtront avec l\'interaction des étudiants.',
   },
   engagement: {
-    title: 'Intelligence d\'engagement',
-    subtitle: 'Analytique entreprise pour la performance communication, les recommandations et le comportement audience',
-    badge: 'Centre d\'intelligence',
+    title: 'Analytique d\'engagement',
+    subtitle: 'Vues, engagement et comportement de l\'audience pour vos annonces',
+    badge: 'Centre d\'analytique',
     hero: {
       activeCampaigns: 'Campagnes actives',
       healthScore: 'Santé engagement',
@@ -229,7 +229,7 @@ export const announcementsModuleFr = {
       confidence: 'Confiance',
     },
     empty: {
-      title: 'Construction de l\'intelligence engagement',
+      title: 'Aucune donnée d\'engagement pour le moment',
       subtitle: 'Publiez des annonces : les métriques se rempliront en temps réel.',
       chart: 'L\'aperçu graphique apparaîtra dès les premières interactions',
     },

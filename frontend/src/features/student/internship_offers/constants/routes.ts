@@ -8,5 +8,10 @@ export const getInternshipOfferDetailsPath = (offerId: string): string =>
 export const getInternshipOfferApplyPath = (offerId: string): string =>
   `/student/internship-offers/${offerId}/apply`;
 
+export const STUDENT_MY_APPLICATIONS_PATH = '/student/internship-offers/applications';
+
+export const getInternshipApplicationDetailPath = (appId: string): string =>
+  `/student/internship-offers/applications/${appId}`;
+
 export const getInternshipOfferCvAnalysisPath = (offerId: string): string =>
   `/student/internship-offers/${offerId}/cv-analysis`;

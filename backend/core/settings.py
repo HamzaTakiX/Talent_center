@@ -106,7 +106,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'apps' / 'notifications' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -268,7 +268,7 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-# ---------- Email ----------
+# ---------- Email (legacy Django SMTP — use Notification Center for app emails) ----------
 EMAIL_BACKEND = env('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', 'no-reply@talent-center.local')
 EMAIL_HOST = env('EMAIL_HOST', '')
@@ -289,6 +289,33 @@ AUTH_FAILED_WINDOW_SECONDS = env_int('AUTH_FAILED_WINDOW_SECONDS', 900)
 AUTH_LOCKOUT_SECONDS = env_int('AUTH_LOCKOUT_SECONDS', 900)
 PASSWORD_RESET_TOKEN_TTL_SECONDS = env_int('PASSWORD_RESET_TOKEN_TTL_SECONDS', 1800)
 FRONTEND_RESET_PASSWORD_URL = env('FRONTEND_RESET_PASSWORD_URL', 'http://localhost:5173/reset-password')
+FRONTEND_BASE_URL = env('FRONTEND_BASE_URL', env('FRONTEND_ORIGIN', 'http://localhost:5173'))
+
+# ---------- Notifications ----------
+NOTIFICATION_EMAIL_PROVIDER = env('NOTIFICATION_EMAIL_PROVIDER', 'mock')
+SENDGRID_API_KEY = env('SENDGRID_API_KEY', '')
+SENDGRID_FROM_EMAIL = env('SENDGRID_FROM_EMAIL', DEFAULT_FROM_EMAIL)
+SENDGRID_FROM_NAME = env('SENDGRID_FROM_NAME', 'Digital Talent Center')
+NOTIFICATIONS_EMAIL_ENABLED = env_bool('NOTIFICATIONS_EMAIL_ENABLED', True)
+NOTIFICATIONS_IN_APP_ENABLED = env_bool('NOTIFICATIONS_IN_APP_ENABLED', True)
+NOTIFICATIONS_SMS_ENABLED = env_bool('NOTIFICATIONS_SMS_ENABLED', False)
+NOTIFICATIONS_PUSH_ENABLED = env_bool('NOTIFICATIONS_PUSH_ENABLED', False)
+NOTIFICATIONS_DIGEST_ENABLED = env_bool('NOTIFICATIONS_DIGEST_ENABLED', True)
+NOTIFICATION_DEFAULT_LANGUAGE = env('NOTIFICATION_DEFAULT_LANGUAGE', 'en')
+NOTIFICATION_RATE_LIMIT_EMAIL_PER_HOUR = env_int('NOTIFICATION_RATE_LIMIT_EMAIL_PER_HOUR', 20)
+NOTIFICATION_RATE_LIMIT_GLOBAL_PER_MINUTE = env_int('NOTIFICATION_RATE_LIMIT_GLOBAL_PER_MINUTE', 100)
+REDIS_URL = env('REDIS_URL', '')
+CELERY_BROKER_URL = env('CELERY_BROKER_URL', REDIS_URL)
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', REDIS_URL)
+CELERY_TASK_ALWAYS_EAGER = env_bool('CELERY_TASK_ALWAYS_EAGER', not bool(REDIS_URL))
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+if REDIS_URL:
+    INSTALLED_APPS += ['django_celery_beat']
+
 
 # ---------- Auth providers ----------
 # Local is always enabled. Remote providers default OFF and ship as stubs

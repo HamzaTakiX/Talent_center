@@ -1,6 +1,8 @@
 import { FunctionComponent } from 'react';
-import { Check, Moon, Palette, SlidersHorizontal, Sun } from 'lucide-react';
+import { Check, Moon, Palette, SlidersHorizontal, Sun, GraduationCap, ChevronRight, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../../auth/hooks/useAuth';
 import AccountSection from './AccountSection';
 import AdminToggle from './AdminToggle';
 import DashboardSectionOrderControls from './DashboardSectionOrderControls';
@@ -17,6 +19,7 @@ interface ProfileSettingsPanelProps {
   onThemeDraftChange: (theme: AdminTheme) => void;
   dashboardOrder: DashboardSectionId[];
   onDashboardOrderChange: (order: DashboardSectionId[]) => void;
+  variant?: 'admin' | 'student';
 }
 
 const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
@@ -26,8 +29,13 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
   onThemeDraftChange,
   dashboardOrder,
   onDashboardOrderChange,
+  variant = 'admin',
 }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const isSuperAdmin =
+    user?.is_super_admin === true ||
+    (user as { admin_level?: string })?.admin_level === 'SUPER';
 
   const setNotification = (key: keyof AdminPreferences['notifications'], value: boolean) => {
     onDraftChange({
@@ -146,6 +154,62 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
         </div>
       </AccountSection>
 
+      {isSuperAdmin ? (
+        <AccountSection
+          sectionId="settings-email-system"
+          title={t('admin.settings.emailSystem.title')}
+          description={t('admin.settings.emailSystem.description')}
+        >
+          <Link
+            to="/admin/settings/email-system"
+            className="group flex items-center justify-between rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-muted)]/50 p-4 no-underline transition hover:border-[var(--admin-brand)]/40 hover:bg-[var(--admin-brand-muted)]/30 hover:no-underline"
+          >
+            <span className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--admin-brand-muted)] text-[var(--admin-brand)]">
+                <Mail className="h-5 w-5" strokeWidth={1.75} />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold text-[var(--admin-text)]">
+                  {t('admin.modules.emailSystem.title')}
+                </span>
+                <span className="text-xs text-[var(--admin-text-secondary)]">
+                  {t('admin.settings.emailSystem.openModule')}
+                </span>
+              </span>
+            </span>
+            <ChevronRight className="h-5 w-5 text-[var(--admin-text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--admin-brand)]" />
+          </Link>
+        </AccountSection>
+      ) : null}
+
+      {isSuperAdmin ? (
+        <AccountSection
+          sectionId="settings-academic-structure"
+          title={t('admin.settings.academicStructure.title')}
+          description={t('admin.settings.academicStructure.description')}
+        >
+          <Link
+            to="/admin/settings/academic-structure"
+            className="group flex items-center justify-between rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-muted)]/50 p-4 no-underline transition hover:border-[var(--admin-brand)]/40 hover:bg-[var(--admin-brand-muted)]/30 hover:no-underline"
+          >
+            <span className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--admin-brand-muted)] text-[var(--admin-brand)]">
+                <GraduationCap className="h-5 w-5" strokeWidth={1.75} />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold text-[var(--admin-text)]">
+                  {t('admin.modules.academicStructure.title')}
+                </span>
+                <span className="text-xs text-[var(--admin-text-secondary)]">
+                  {t('admin.settings.academicStructure.openModule')}
+                </span>
+              </span>
+            </span>
+            <ChevronRight className="h-5 w-5 text-[var(--admin-text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--admin-brand)]" />
+          </Link>
+        </AccountSection>
+      ) : null}
+
       <AccountSection
         sectionId="settings-preferences"
         title={t('admin.settings.preferences.title')}
@@ -166,30 +230,34 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
             checked={draft.autoSave}
             onChange={(autoSave) => onDraftChange({ ...draft, autoSave })}
           />
-          <AdminToggle
-            id="pref-dashboard"
-            label={t('admin.settings.preferences.dashboard')}
-            description={t('admin.settings.preferences.dashboardDesc')}
-            checked={draft.dashboardPersonalization}
-            onChange={(dashboardPersonalization) =>
-              onDraftChange({ ...draft, dashboardPersonalization })
-            }
-          />
+          {variant === 'admin' ? (
+            <AdminToggle
+              id="pref-dashboard"
+              label={t('admin.settings.preferences.dashboard')}
+              description={t('admin.settings.preferences.dashboardDesc')}
+              checked={draft.dashboardPersonalization}
+              onChange={(dashboardPersonalization) =>
+                onDraftChange({ ...draft, dashboardPersonalization })
+              }
+            />
+          ) : null}
         </div>
 
-        <DashboardSectionOrderControls
-          order={dashboardOrder}
-          canPersonalize={draft.dashboardPersonalization}
-          onMove={(id, direction) => {
-            const index = dashboardOrder.indexOf(id);
-            if (index === -1) return;
-            const next = [...dashboardOrder];
-            const swapWith = direction === 'up' ? index - 1 : index + 1;
-            if (swapWith < 0 || swapWith >= next.length) return;
-            [next[index], next[swapWith]] = [next[swapWith], next[index]];
-            onDashboardOrderChange(next);
-          }}
-        />
+        {variant === 'admin' ? (
+          <DashboardSectionOrderControls
+            order={dashboardOrder}
+            canPersonalize={draft.dashboardPersonalization}
+            onMove={(id, direction) => {
+              const index = dashboardOrder.indexOf(id);
+              if (index === -1) return;
+              const next = [...dashboardOrder];
+              const swapWith = direction === 'up' ? index - 1 : index + 1;
+              if (swapWith < 0 || swapWith >= next.length) return;
+              [next[index], next[swapWith]] = [next[swapWith], next[index]];
+              onDashboardOrderChange(next);
+            }}
+          />
+        ) : null}
       </AccountSection>
 
       <div className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--admin-border)] py-4 text-xs text-[var(--admin-text-muted)]">

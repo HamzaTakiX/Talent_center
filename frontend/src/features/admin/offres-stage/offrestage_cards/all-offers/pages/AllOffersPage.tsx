@@ -1,62 +1,43 @@
 import { useAdminCopy } from '../../../../i18n/useAdminCopy';
 import { FunctionComponent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AdminListPageShell, AdminStatDetailPanel, AdminStatChartSection } from '../../../../ui';;
+import { AdminListPageShell, AdminStatDetailPanel, AdminStatChartSection } from '../../../../ui';
 import AllOffersTableContent from '../components/AllOffersTableContent';
-import {
-  ALL_OFFERS_COUNT,
-  allOffersRows,
-  type AllOffersStatus,
-} from '../data/allOffersMockData';
-
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'All statuses' },
-  { value: 'Active', label: 'Active' },
-  { value: 'Draft', label: 'Draft' },
-  { value: 'Expired', label: 'Expired' },
-  { value: 'Closed', label: 'Closed' },
-] as const;
+import { useStageOffersByStatus } from '../../../hooks/useStageOffers';
+import type { InternshipOffer } from '../../../types';
+import OffersListLoading from '../../../components/OffersListLoading';
+import { useOffersListLabels } from '../../../hooks/useOffersListLabels';
 
 const AllOffersPage: FunctionComponent = () => {
-  const { pageTitle, filterSubtitle, searchPlaceholder } = useAdminCopy();
+  const { pageTitle, filterSubtitle } = useAdminCopy();
+  const { searchPlaceholder, statusFilterOptions, toolbarAria, filterByStatusAria } = useOffersListLabels();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | AllOffersStatus>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | InternshipOffer['status']>('all');
 
-  const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return allOffersRows.filter((row) => {
-      const matchStatus = statusFilter === 'all' || row.status === statusFilter;
-      if (!q) return matchStatus;
-      const matchQuery =
-        row.title.toLowerCase().includes(q) || row.company.toLowerCase().includes(q);
-      return matchStatus && matchQuery;
-    });
-  }, [query, statusFilter]);
+  const { items: filteredRows, total, loading, error, refresh } = useStageOffersByStatus(statusFilter, query);
 
-  const totalFormatted = ALL_OFFERS_COUNT.toLocaleString('en-US');
+  const totalFormatted = useMemo(() => total.toLocaleString(), [total]);
 
   return (
-    <AdminListPageShell
-      onBack={() => navigate('/admin/internship-offers')}
-      backTo="offers"
-    >
+    <AdminListPageShell onBack={() => navigate('/admin/internship-offers')} backTo="offers">
       <AdminStatChartSection chartId="offers-all-status" />
       <AdminStatDetailPanel
         title={pageTitle('offers.all.title', { count: totalFormatted })}
         subtitle={filterSubtitle('offers')}
         searchValue={query}
         onSearchChange={setQuery}
-        searchPlaceholder={searchPlaceholder('offers')}
-        toolbarAriaLabel="Filter all offers"
+        searchPlaceholder={searchPlaceholder}
+        toolbarAriaLabel={toolbarAria('filterAllOffers')}
         filter1={{
           value: statusFilter,
-          onChange: (v) => setStatusFilter(v as 'all' | AllOffersStatus),
-          options: [...STATUS_OPTIONS],
-          ariaLabel: 'Filter by status',
+          onChange: (v) => setStatusFilter(v as 'all' | InternshipOffer['status']),
+          options: statusFilterOptions,
+          ariaLabel: filterByStatusAria,
         }}
       >
-        <AllOffersTableContent offers={filteredRows} />
+        {error && <p className="px-4 text-sm text-[var(--admin-danger,#dc2626)]">{error}</p>}
+        {loading ? <OffersListLoading /> : <AllOffersTableContent offers={filteredRows} onRefresh={refresh} />}
       </AdminStatDetailPanel>
     </AdminListPageShell>
   );

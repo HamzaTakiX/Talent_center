@@ -23,6 +23,7 @@ import {
 } from '../../ui';
 import { AdminMobileTableSkeleton, AdminTableSkeletonRows } from '../../ui/AdminTableSkeleton';
 import { SrfEmptyState } from './SrfModuleStates';
+import { SafeText, ADMIN_TABLE_COL } from '../../../../design-system/safeContent';
 import { adminTableBtn, adminTableBtnMobile } from '../../ui/adminTableButtons';
 
 const statusBadgeVariant: Record<StudentFinancialRowStatus, AdminBadgeVariant> = {
@@ -180,12 +181,12 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
         <AdminTableScroll minWidth="880px" className="admin-table-scroll--panel">
           <thead>
             <tr>
-              <th>{tableColumn('studentName')}</th>
-              <th>{tableColumn('class')}</th>
-              <th>{tableColumn('amountDue')}</th>
-              <th>{tableColumn('amountPaid')}</th>
-              <th>{tableColumn('status')}</th>
-              <th className="text-end">{tableColumn('actions')}</th>
+              <th className={ADMIN_TABLE_COL.name}>{tableColumn('studentName')}</th>
+              <th className={ADMIN_TABLE_COL.text}>{tableColumn('class')}</th>
+              <th className={ADMIN_TABLE_COL.text}>{tableColumn('amountDue')}</th>
+              <th className={ADMIN_TABLE_COL.text}>{tableColumn('amountPaid')}</th>
+              <th className={ADMIN_TABLE_COL.status}>{tableColumn('status')}</th>
+              <th className={`text-end ${ADMIN_TABLE_COL.actions}`}>{tableColumn('actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -206,8 +207,8 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
             ) : (
               paginatedItems.map((row) => (
                 <tr key={row.id}>
-                  <td className="font-medium text-[var(--admin-text)]">{row.studentName}</td>
-                  <td>{row.className}</td>
+                  <td className="font-medium text-[var(--admin-text)]"><SafeText>{row.studentName}</SafeText></td>
+                  <td><SafeText>{row.className}</SafeText></td>
                   <td className="tabular-nums">{mad(row.amountDue)}</td>
                   <td className="tabular-nums">{mad(row.amountPaid)}</td>
                   <td>

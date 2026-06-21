@@ -25,6 +25,7 @@ export type AdminNavSectionId =
 export type AdminNavChildId =
   | 'catalog'
   | 'chat'
+  | 'drafts'
   | 'history'
   | 'reports'
   | 'meetings'
@@ -41,7 +42,7 @@ export interface AdminNavItem {
 
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { id: 'dashboard', icon: LayoutDashboard },
-  { id: 'internshipOffers', icon: Briefcase, expandable: true, children: ['chat', 'history'] },
+  { id: 'internshipOffers', icon: Briefcase, expandable: true, children: ['drafts', 'chat', 'history'] },
   { id: 'announcements', icon: Bell, expandable: true, children: ['chat', 'history'] },
   { id: 'history', icon: History },
   { id: 'documents', icon: FileText, expandable: true, children: ['catalog', 'chat', 'history'] },
@@ -111,6 +112,7 @@ export const getChildPath = (
   child: AdminNavChildId
 ): string | undefined => {
   if (section === 'internshipOffers') {
+    if (child === 'drafts') return '/admin/internship-offers/drafts';
     if (child === 'chat') return '/admin/internship-offers/chat';
     if (child === 'history') return '/admin/internship-offers/history';
   }

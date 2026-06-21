@@ -18,6 +18,7 @@ import {
   platformAccountStatusTableBadge,
 } from '../../../../ui/adminStatusBadges';
 import { adminTableBtn } from '../../../../ui/adminTableButtons';
+import { SafeText, ADMIN_TABLE_COL } from '../../../../../../design-system/safeContent';
 import { InternshipStatusLabel } from '../../../../ui/adminTableLabels';
 import { engagementBand, studentInternshipDisplayStatus } from '../utils/studentListFilters';
 
@@ -97,18 +98,18 @@ const StudentSubpageTableSection: FunctionComponent<StudentSubpageTableSectionPr
 
       <div className="overflow-x-auto px-4 pb-6 pt-2 sm:px-6">
         <div className="text-left text-num-14 font-inter text-[var(--admin-text)]">
-          <table className="admin-table w-full min-w-[1180px] border-collapse">
+          <table className="admin-table admin-table--safe w-full min-w-[1180px] border-collapse">
             <thead>
               <tr className="h-10 border-b border-solid border-[var(--admin-border)]">
-                <th className="box-border py-[8.75px] pl-2 pr-4 text-left font-medium leading-num-20">Name</th>
-                <th className="box-border px-4 py-[8.75px] text-left font-medium leading-num-20">Class</th>
-                <th className="box-border px-4 py-[8.75px] text-left font-medium leading-num-20">Field</th>
-                <th className="box-border px-4 py-[8.75px] text-left font-medium leading-num-20">Internship Status</th>
+                <th className={`box-border py-[8.75px] pl-2 pr-4 text-left font-medium leading-num-20 ${ADMIN_TABLE_COL.name}`}>Name</th>
+                <th className={`box-border px-4 py-[8.75px] text-left font-medium leading-num-20 ${ADMIN_TABLE_COL.text}`}>Class</th>
+                <th className={`box-border px-4 py-[8.75px] text-left font-medium leading-num-20 ${ADMIN_TABLE_COL.text}`}>Field</th>
+                <th className={`box-border px-4 py-[8.75px] text-left font-medium leading-num-20 ${ADMIN_TABLE_COL.status}`}>Internship Status</th>
                 {showEngagement ? (
-                  <th className="box-border px-4 py-[8.75px] text-left font-medium leading-num-20">Engagement</th>
+                  <th className={`box-border px-4 py-[8.75px] text-left font-medium leading-num-20 ${ADMIN_TABLE_COL.text}`}>Engagement</th>
                 ) : null}
-                <th className="box-border px-4 py-[8.75px] text-left font-medium leading-num-20">Status</th>
-                <th className="box-border py-[8.75px] pl-4 pr-2 text-right font-medium leading-num-20">Actions</th>
+                <th className={`box-border px-4 py-[8.75px] text-left font-medium leading-num-20 ${ADMIN_TABLE_COL.status}`}>Status</th>
+                <th className={`box-border py-[8.75px] pl-4 pr-2 text-right font-medium leading-num-20 ${ADMIN_TABLE_COL.actions}`}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -127,13 +128,13 @@ const StudentSubpageTableSection: FunctionComponent<StudentSubpageTableSectionPr
                       className="min-h-[49px] border-b border-solid border-[var(--admin-border)] last:border-b-0"
                     >
                       <td className="box-border min-h-[49px] py-[13.5px] pl-2 pr-4 align-middle font-medium leading-num-20">
-                        {student.full_name || student.email}
+                        <SafeText>{student.full_name || student.email}</SafeText>
                       </td>
                       <td className="box-border min-h-[49px] px-4 py-[13.5px] align-middle leading-num-20">
-                        {student.current_class || '—'}
+                        <SafeText>{student.current_class || '—'}</SafeText>
                       </td>
                       <td className="box-border min-h-[49px] px-4 py-[13.5px] align-middle leading-num-20">
-                        {field}
+                        <SafeText>{field}</SafeText>
                       </td>
                       <td className="box-border min-h-[49px] px-4 py-[13.5px] align-middle">
                         <span className={internshipStatusTableBadge(internshipStatus)}>

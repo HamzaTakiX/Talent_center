@@ -9,6 +9,7 @@ export const studentCopyAr = {
     encadrant: 'المشرف',
     resources: 'الموارد',
     cvAnalysis: 'تحليل السيرة الذاتية',
+    aiCareerCoach: 'مدرب المسار المهني',
     interviewSimulator: 'محاكي المقابلة',
     chat: 'المحادثة',
     agenda: 'الأجندة',
@@ -25,6 +26,7 @@ export const studentCopyAr = {
     defaultSubtitle: 'بوابة الطالب',
     titles: {
       dashboard: 'لوحة التحكم',
+      profile: 'حسابي',
       internshipOffers: 'عروض التدريب',
       announcements: 'الإعلانات',
       history: 'السجل',
@@ -32,6 +34,7 @@ export const studentCopyAr = {
       srf: 'SRF (المالية)',
       encadrant: 'المشرف',
       cvAnalysis: 'تحليل السيرة الذاتية',
+      aiCareerCoach: 'مدرب المسار المهني',
       interviewSimulator: 'محاكي المقابلة',
       chat: 'المحادثة',
       apply: 'التقديم على العرض',

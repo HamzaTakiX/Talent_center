@@ -1,59 +1,56 @@
 import { useAdminCopy } from '../../../../i18n/useAdminCopy';
 import { FunctionComponent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AdminListPageShell, AdminStatDetailPanel, AdminStatChartSection } from '../../../../ui';;
+import { AdminListPageShell, AdminStatDetailPanel, AdminStatChartSection } from '../../../../ui';
 import OffersWithApplicationsListTableContent from '../components/OffersWithApplicationsListTableContent';
-import {
-  OFFERS_WITH_APPLICATIONS_COUNT,
-  offersWithApplicationsRows,
-} from '../data/offersWithApplicationsMockData';
-
-const companyOptions = [...new Set(offersWithApplicationsRows.map((r) => r.company))].sort();
+import { useStageOffersByStatus } from '../../../hooks/useStageOffers';
+import OffersListLoading from '../../../components/OffersListLoading';
+import { useOffersListLabels } from '../../../hooks/useOffersListLabels';
 
 const OffersWithApplicationsListPage: FunctionComponent = () => {
-  const { pageTitle, filterSubtitle, searchPlaceholder } = useAdminCopy();
+  const { pageTitle, filterSubtitle } = useAdminCopy();
+  const { searchPlaceholder, toolbarAria, filterByCompanyAria, allCompaniesLabel } = useOffersListLabels();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [companyFilter, setCompanyFilter] = useState('all');
 
-  const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return offersWithApplicationsRows.filter((row) => {
-      const matchCompany = companyFilter === 'all' || row.company === companyFilter;
-      if (!q) return matchCompany;
-      const matchQuery =
-        row.title.toLowerCase().includes(q) || row.company.toLowerCase().includes(q);
-      return matchCompany && matchQuery;
-    });
-  }, [query, companyFilter]);
+  const { items: allRows, total, loading, error, refresh } = useStageOffersByStatus('all', query);
 
-  const totalFormatted = OFFERS_WITH_APPLICATIONS_COUNT.toLocaleString('en-US');
-  const companySelectOptions = useMemo(
-    () => [{ value: 'all', label: 'All companies' }, ...companyOptions.map((c) => ({ value: c, label: c }))],
-    [],
-  );
+  const filteredRows = useMemo(() => {
+    const withApps = allRows.filter((row) => row.applicants > 0);
+    return withApps.filter((row) => companyFilter === 'all' || row.company === companyFilter);
+  }, [allRows, companyFilter]);
+
+  const companySelectOptions = useMemo(() => {
+    const companies = [...new Set(allRows.filter((r) => r.applicants > 0).map((r) => r.company))].sort();
+    return [{ value: 'all', label: allCompaniesLabel }, ...companies.map((c) => ({ value: c, label: c }))];
+  }, [allRows, allCompaniesLabel]);
+
+  const totalFormatted = filteredRows.length.toLocaleString();
 
   return (
-    <AdminListPageShell
-      onBack={() => navigate('/admin/internship-offers')}
-      backTo="offers"
-    >
+    <AdminListPageShell onBack={() => navigate('/admin/internship-offers')} backTo="offers">
       <AdminStatChartSection chartId="offers-applications-volume" />
       <AdminStatDetailPanel
         title={pageTitle('offers.withApplications.title', { count: totalFormatted })}
         subtitle={filterSubtitle('offers')}
         searchValue={query}
         onSearchChange={setQuery}
-        searchPlaceholder={searchPlaceholder('offers')}
-        toolbarAriaLabel="Filter offers with applications"
+        searchPlaceholder={searchPlaceholder}
+        toolbarAriaLabel={toolbarAria('filterOffersWithApplications')}
         filter1={{
           value: companyFilter,
           onChange: setCompanyFilter,
           options: companySelectOptions,
-          ariaLabel: 'Filter by company',
+          ariaLabel: filterByCompanyAria,
         }}
       >
-        <OffersWithApplicationsListTableContent offers={filteredRows} />
+        {error && <p className="px-4 text-sm text-[var(--admin-danger,#dc2626)]">{error}</p>}
+        {loading ? (
+          <OffersListLoading />
+        ) : (
+          <OffersWithApplicationsListTableContent offers={filteredRows} onRefresh={refresh} />
+        )}
       </AdminStatDetailPanel>
     </AdminListPageShell>
   );

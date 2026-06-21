@@ -1,11 +1,11 @@
 export const announcementsModuleAr = {
   hero: {
-    badge: 'ذكاء التواصل',
-    pipeline: 'الخط النشط',
+    badge: 'الاتصالات',
+    pipeline: 'النشاط الأخير',
   },
   hub: {
     title: 'الإعلانات',
-    subtitle: 'منصة تواصل ذكية وفرص تدريب',
+    subtitle: 'إدارة الإعلانات وفرص التدريب',
     quickLinks: 'أقسام الوحدة',
   },
   feed: { title: 'أحدث المنشورات' },
@@ -146,9 +146,9 @@ export const announcementsModuleAr = {
     empty: 'ستظهر الرؤى مع تفاعل الطلاب.',
   },
   engagement: {
-    title: 'ذكاء التفاعل',
+    title: 'تحليلات التفاعل',
     subtitle: 'تحليلات مؤسسية لأداء التواصل والتوصيات وسلوك الجمهور',
-    badge: 'مركز الذكاء',
+    badge: 'مركز التحليلات',
     hero: {
       activeCampaigns: 'حملات نشطة',
       healthScore: 'صحة التفاعل',
@@ -229,7 +229,7 @@ export const announcementsModuleAr = {
       confidence: 'الثقة',
     },
     empty: {
-      title: 'بناء ذكاء التفاعل',
+      title: 'بناء تحليلات التفاعل',
       subtitle: 'انشر إعلانات وتفاعل الطلاب — ستظهر المقاييس فوراً.',
       chart: 'سيظهر المعاينة البيانية عند توفر بيانات التفاعل',
     },

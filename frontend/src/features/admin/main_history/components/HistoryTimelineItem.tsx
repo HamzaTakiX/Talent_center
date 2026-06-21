@@ -9,6 +9,9 @@ import {
 } from '../constants/historyConstants';
 import { criticalityBadgeClass, criticalityTimelineVariant } from '../constants/criticalityStyles';
 import { HISTORY_MODULE_I18N_KEY } from '../constants/historyModuleI18n';
+import { formatRelativeTime } from '../utils/formatRelativeTime';
+import { textContainsUrl } from '../../shared/formatSourceUrl';
+import HistorySummaryText from './HistorySummaryText';
 import type { HistoryActionRow } from '../types';
 
 const MAIN_PREFIX = 'admin.historyUi.main';
@@ -20,13 +23,19 @@ interface HistoryTimelineItemProps {
   hideModuleBadge?: boolean;
 }
 
+function formatEntityLabel(entityType?: string, entityId?: number | null): string | null {
+  if (!entityType) return null;
+  const label = entityType.replace(/_/g, ' ');
+  if (entityId != null) return `${label} #${entityId}`;
+  return label;
+}
+
 const HistoryTimelineItem: FunctionComponent<HistoryTimelineItemProps> = ({
   row,
   onViewDetails,
   hideModuleBadge = false,
 }) => {
   const { t } = useTranslation();
-  const [date, time] = row.timestamp.split(' ');
 
   const moduleLabel = t(`${MAIN_PREFIX}.modules.${HISTORY_MODULE_I18N_KEY[row.module]}`);
   const actionLabel = t(`${MAIN_PREFIX}.actions.${row.actionType}`);
@@ -44,12 +53,23 @@ const HistoryTimelineItem: FunctionComponent<HistoryTimelineItemProps> = ({
     };
   }, [row.id, row.title, row.actor, t]);
 
-  const formattedDate = date?.includes('-') ? date.split('-').reverse().join('/') : date;
+  const relativeTime = formatRelativeTime(
+    row.occurredAt ?? row.timestamp,
+    Date.now(),
+    (key, opts) => t(key, opts ?? {}),
+  );
+  const entityLabel = formatEntityLabel(row.entityType, row.entityId);
+  const roleLabel = row.actorRole
+    ? t(`${AUDIT_PREFIX}.roles.${row.actorRole}`, row.actorRole)
+    : null;
 
   return (
-    <article className="admin-main-history-item relative flex min-w-0 max-w-full items-start gap-0 pl-0">
+    <article className="admin-main-history-item admin-audit-timeline-item relative flex min-w-0 max-w-full items-start gap-0 pl-0">
       <div className="relative z-[1] flex w-12 shrink-0 justify-center pt-3 sm:w-14">
-        <span className="admin-history-circle ring-2 ring-[var(--admin-bg-elevated)]" data-history-variant={variant}>
+        <span
+          className="admin-history-circle ring-2 ring-[var(--admin-bg-elevated)]"
+          data-history-variant={variant}
+        >
           {row.isAutomated ? (
             <Bot className="admin-history-circle__icon h-4 w-4" strokeWidth={2} aria-hidden />
           ) : (
@@ -59,9 +79,35 @@ const HistoryTimelineItem: FunctionComponent<HistoryTimelineItemProps> = ({
       </div>
 
       <div className="admin-main-history-item__body box-border min-w-0 flex-1 py-1 pl-2 sm:pl-3">
-        <div className="admin-main-history-item__card admin-mobile-card box-border min-w-0 max-w-full overflow-hidden p-3 transition hover:bg-[var(--admin-row-hover)] sm:min-h-[72px] sm:p-3.5">
-          <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-3">
-            <div className="min-w-0 space-y-1">
+        <div className="admin-main-history-item__card admin-audit-timeline-card admin-mobile-card box-border min-w-0 max-w-full overflow-hidden p-3 transition hover:bg-[var(--admin-row-hover)] sm:min-h-[80px] sm:p-4">
+          <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-3">
+            <div className="min-w-0 space-y-1.5">
+              <div className="admin-audit-timeline-item__meta flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--admin-text-secondary)]">
+                <span className="font-medium text-[var(--admin-text)]">{actor}</span>
+                {roleLabel ? (
+                  <>
+                    <span aria-hidden>·</span>
+                    <span>{roleLabel}</span>
+                  </>
+                ) : null}
+                {!hideModuleBadge ? (
+                  <>
+                    <span aria-hidden>·</span>
+                    <span>{moduleLabel}</span>
+                  </>
+                ) : null}
+                {entityLabel ? (
+                  <>
+                    <span aria-hidden>·</span>
+                    <span className="truncate">{entityLabel}</span>
+                  </>
+                ) : null}
+                <span aria-hidden>·</span>
+                <time className="tabular-nums text-[var(--admin-text-secondary)]" dateTime={row.occurredAt}>
+                  {relativeTime}
+                </time>
+              </div>
+
               <div className="admin-main-history-item__badges flex max-w-full flex-wrap items-center gap-1">
                 <span
                   className={historyTimelineBadgeClass(criticalityBadgeClass(crit))}
@@ -69,11 +115,11 @@ const HistoryTimelineItem: FunctionComponent<HistoryTimelineItemProps> = ({
                 >
                   {t(`${AUDIT_PREFIX}.criticality.${crit}`)}
                 </span>
-                {hideModuleBadge ? null : (
+                {!hideModuleBadge ? (
                   <span className={historyTimelineBadgeClass(historyModuleBadgeClass())} title={moduleLabel}>
                     {moduleLabel}
                   </span>
-                )}
+                ) : null}
                 <span
                   className={historyTimelineBadgeClass(historyActionBadgeClass(row.actionType))}
                   title={actionLabel}
@@ -82,8 +128,8 @@ const HistoryTimelineItem: FunctionComponent<HistoryTimelineItemProps> = ({
                 </span>
               </div>
 
-              <p className="break-words text-sm font-medium leading-5 text-[var(--admin-text)]">
-                {row.entityPath ? (
+              <p className="text-sm font-semibold leading-5 text-[var(--admin-text)]">
+                {row.entityPath && !textContainsUrl(title) ? (
                   <Link
                     to={row.entityPath}
                     className="text-[var(--admin-primary)] hover:underline"
@@ -92,11 +138,8 @@ const HistoryTimelineItem: FunctionComponent<HistoryTimelineItemProps> = ({
                     {title}
                   </Link>
                 ) : (
-                  title
+                  <HistorySummaryText text={title} />
                 )}
-              </p>
-              <p className="truncate text-xs leading-4 text-[var(--admin-text-secondary)]">
-                {actor} {formattedDate ? `• ${formattedDate}` : ''} {time ?? ''}
               </p>
             </div>
 

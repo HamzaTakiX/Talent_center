@@ -5,6 +5,7 @@ import { adminCrudRoutes } from '../../../../shared/navigation/adminCrudRoutes';
 import type { EncadrantRow } from '../../../data/encadrantsMockData';
 import AdminMobileRowCard from '../../../../shared/AdminMobileRowCard';
 import { AdminSearchEmptyState, AdminTableEmptyState, AdminTableScroll } from '../../../../ui';
+import { ADMIN_TABLE_COL, SafeText } from '../../../../../../design-system/safeContent';
 
 import { adminTableBtn, adminTableBtnMobile, adminTableBtnMobilePrimary, adminTableBtnPrimary } from '../../../../ui/adminTableButtons';
 
@@ -28,9 +29,9 @@ const EncadrantListTableContent: FunctionComponent<EncadrantListTableContentProp
           rows.map((row, index) => (
             <AdminMobileRowCard
               key={`${row.name}-${index}`}
-              title={row.name}
+              title={<SafeText as="span">{row.name}</SafeText>}
               fields={[
-                { label: 'Department', value: row.department },
+                { label: 'Department', value: <SafeText>{row.department}</SafeText> },
                 {
                   label: 'Students assigned',
                   value: (
@@ -75,11 +76,11 @@ const EncadrantListTableContent: FunctionComponent<EncadrantListTableContentProp
         <AdminTableScroll minWidth="800px" className="admin-table-scroll--panel">
           <thead>
             <tr className="border-b border-[var(--admin-border)]">
-              <th className="py-2.5 pl-2 pr-4 text-left text-sm font-medium leading-5 text-[var(--admin-text-secondary)]">Name</th>
-              <th className="py-2.5 px-4 text-left text-sm font-medium leading-5 text-[var(--admin-text-secondary)]">Department</th>
-              <th className="py-2.5 px-4 text-left text-sm font-medium leading-5 text-[var(--admin-text-secondary)]">Students Assigned</th>
-              <th className="py-2.5 px-4 text-left text-sm font-medium leading-5 text-[var(--admin-text-secondary)]">Reports in Progress</th>
-              <th className="py-2.5 pl-4 pr-2 text-right text-sm font-medium leading-5 text-[var(--admin-text-secondary)]">Actions</th>
+              <th className={`py-2.5 pl-2 pr-4 text-left text-sm font-medium leading-5 text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.name}`}>Name</th>
+              <th className={`py-2.5 px-4 text-left text-sm font-medium leading-5 text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.text}`}>Department</th>
+              <th className={`py-2.5 px-4 text-left text-sm font-medium leading-5 text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.applicants}`}>Students Assigned</th>
+              <th className={`py-2.5 px-4 text-left text-sm font-medium leading-5 text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.text}`}>Reports in Progress</th>
+              <th className={`py-2.5 pl-4 pr-2 text-right text-sm font-medium leading-5 text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.actions}`}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -92,8 +93,8 @@ const EncadrantListTableContent: FunctionComponent<EncadrantListTableContentProp
                   className="cursor-pointer border-b border-[var(--admin-border)] last:border-b-0 hover:bg-[var(--admin-row-hover)]"
                   onClick={() => {}}
                 >
-                  <td className="py-3 pl-2 pr-4 align-middle text-sm font-medium leading-5 text-[var(--admin-text)]">{row.name}</td>
-                  <td className="py-3 px-4 align-middle text-sm leading-5">{row.department}</td>
+                  <td className="py-3 pl-2 pr-4 align-middle text-sm font-medium leading-5 text-[var(--admin-text)]"><SafeText>{row.name}</SafeText></td>
+                  <td className="py-3 px-4 align-middle text-sm leading-5"><SafeText>{row.department}</SafeText></td>
                   <td className="py-3 px-4 align-middle">
                     <div className="flex items-center gap-1.5 text-sm leading-5">
                       <Users className="h-4 w-4 shrink-0 text-[var(--admin-text-secondary)]" strokeWidth={1.75} aria-hidden />

@@ -5,10 +5,8 @@ from __future__ import annotations
 from typing import Iterable
 
 from apps.admin_management.models import InternshipType
-from apps.admin_management.services.academic_reference import (
-    localized_label,
-    serialize_internship_type,
-)
+from apps.admin_management.services.academic_reference import serialize_internship_type
+from apps.admin_management.services.i18n_labels import entity_localized_name
 
 
 def validate_supervised_internship_type_ids(ids: Iterable[int]) -> list[int]:
@@ -51,6 +49,6 @@ def build_encadrant_supervised_internship_payload(encadrant, lang: str = '') -> 
 
 def build_encadrant_supervised_internship_labels(encadrant, lang: str = '') -> list[str]:
     return [
-        localized_label(item.name_i18n, item.name, lang)
+        entity_localized_name(item, lang)
         for item in encadrant.supervised_internship_types.filter(is_active=True).order_by('name')
     ]

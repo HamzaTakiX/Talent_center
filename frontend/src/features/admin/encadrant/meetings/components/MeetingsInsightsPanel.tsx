@@ -32,13 +32,13 @@ const MeetingsInsightsPanel: FunctionComponent<MeetingsInsightsPanelProps> = ({
       <div className="admin-meetings-insights__head">
         <Lightbulb className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
         <h3 id="meetings-insights-title" className="admin-meetings-panel-title">
-          {t('admin.modules.meetings.insights.title', { defaultValue: 'Smart insights' })}
+          {t('admin.modules.meetings.insights.title', { defaultValue: 'Key observations' })}
         </h3>
       </div>
       {insights.length === 0 ? (
         <p className="admin-meetings-insights__empty text-sm text-[var(--admin-text-muted)]">
           {t('admin.modules.meetings.insights.empty', {
-            defaultValue: 'Supervision metrics look healthy — no alerts right now.',
+            defaultValue: 'Supervision metrics are within normal range. No alerts at this time.',
           })}
         </p>
       ) : (

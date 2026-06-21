@@ -1,11 +1,11 @@
 export const announcementsModuleEn = {
   hero: {
-    badge: 'Communication intelligence',
-    pipeline: 'Live pipeline',
+    badge: 'Communications',
+    pipeline: 'Recent activity',
   },
   hub: {
     title: 'Announcements',
-    subtitle: 'Intelligent communication & internship opportunities platform',
+    subtitle: 'Manage announcements and internship opportunities',
     quickLinks: 'Module sections',
   },
   feed: {
@@ -37,7 +37,7 @@ export const announcementsModuleEn = {
     internships: 'Internship offers',
     types: 'Announcement types',
     analytics: 'Analytics',
-    insights: 'Recommendation insights',
+    insights: 'Engagement observations',
     engagement: 'Engagement analytics',
   },
   kpi: {
@@ -117,7 +117,7 @@ export const announcementsModuleEn = {
     },
     insights: {
       title: 'No insights yet',
-      subtitle: 'Smart recommendations will appear as students interact with your content.',
+      subtitle: 'Recommendations will appear as students interact with your content.',
     },
   },
   detail: {
@@ -145,15 +145,15 @@ export const announcementsModuleEn = {
     saves: 'Saves',
   },
   insights: {
-    title: 'Recommendation insights',
-    panelTitle: 'Recommendation insights',
-    subtitle: 'Smart signals from the recommendation engine',
+    title: 'Engagement observations',
+    panelTitle: 'Engagement observations',
+    subtitle: 'Observations based on student engagement',
     empty: 'Insights will appear as students interact with announcements.',
   },
   engagement: {
-    title: 'Engagement Intelligence',
-    subtitle: 'Enterprise analytics for communication performance, recommendations, and audience behavior',
-    badge: 'Intelligence center',
+    title: 'Engagement analytics',
+    subtitle: 'Views, engagement, and audience behavior for your announcements',
+    badge: 'Analytics center',
     hero: {
       activeCampaigns: 'Active campaigns',
       healthScore: 'Engagement health',
@@ -229,13 +229,13 @@ export const announcementsModuleEn = {
       title: 'Engagement insights',
       internshipLead: 'Internship offers drive the highest engagement in your catalog',
       urgentLead: 'Urgent announcements convert faster among PGE students',
-      lmeDrop: 'LME segment engagement shifted this week — review targeting',
+      lmeDrop: 'LME segment engagement shifted this week. Review targeting.',
       recoBoost: 'Recommendations improved save rate across active campaigns',
       confidence: 'Confidence',
     },
     empty: {
-      title: 'Building engagement intelligence',
-      subtitle: 'Publish announcements and let students interact — analytics will populate in real time.',
+      title: 'No engagement data yet',
+      subtitle: 'Publish announcements and let students interact. Analytics will update as activity occurs.',
       chart: 'Chart preview will appear once interaction data is available',
     },
     trend: { up: 'Growing', down: 'Declining', flat: 'Stable' },

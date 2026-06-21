@@ -35,7 +35,7 @@ export function useContextualChat({
   module,
   mockParticipants,
   mockMessages,
-  useMockOnError = true,
+  useMockOnError = false,
   enableApi = true,
 }: UseContextualChatOptions) {
   const { i18n } = useTranslation();
@@ -68,8 +68,8 @@ export function useContextualChat({
       if (items.length === 0) {
         setDataSource('live_empty');
         setConversations([]);
-        setParticipants(mockParticipants);
-        setMessagesByConv(mockMessages);
+        setParticipants([]);
+        setMessagesByConv({});
       } else {
         setDataSource('live');
         setConversations(items);

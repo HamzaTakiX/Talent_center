@@ -1,39 +1,65 @@
-import { FunctionComponent } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { FunctionComponent, useState } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import StudentLayout from '../../components/StudentLayout';
 import BackToOfferDetailsLink from '../components/apply/BackToOfferDetailsLink';
 import ApplyInternshipHeader from '../components/apply/ApplyInternshipHeader';
-import CreateEditCvCard from '../components/apply/CreateEditCvCard';
-import UseExistingCvCard from '../components/apply/UseExistingCvCard';
-import { STUDENT_ALL_INTERNSHIP_OFFERS_PATH } from '../constants/routes';
+import ApplicationReadinessChecklist from '../components/journey/ApplicationReadinessChecklist';
+import { InternshipOfferPageLoadingState } from '../components/loading/InternshipOfferPageSkeleton';
+import { STUDENT_ALL_INTERNSHIP_OFFERS_PATH, STUDENT_MY_APPLICATIONS_PATH } from '../constants/routes';
 import { INTERNSHIP_OFFERS_PAGE_ROOT } from '../constants/internshipOffersLayout';
-import { defaultStudentCvFile, getCvEditorFeatures } from '../data/internshipApplyMock';
-import { getInternshipOfferById } from '../helpers/getInternshipOfferById';
+import { useApplicationReadiness } from '../hooks/useInternshipJourney';
+import { submitStudentApplication, useStudentOfferDetail } from '../hooks/useStudentStageOffers';
+import { parseAdminApiError } from '../../../admin/shared/utils/parseAdminApiError';
 
 const ApplyToInternshipPage: FunctionComponent = () => {
+  const navigate = useNavigate();
   const { offerId } = useParams<{ offerId: string }>();
-  const offer = getInternshipOfferById(offerId);
+  const { detail: offer, loading, error } = useStudentOfferDetail(offerId);
+  const { readiness, loading: readinessLoading } = useApplicationReadiness(offerId);
+  const [applying, setApplying] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
 
-  if (!offer) {
+  const handleApply = async () => {
+    if (!offerId || !readiness?.can_apply) return;
+    setApplying(true);
+    setApplyError(null);
+    try {
+      await submitStudentApplication(offerId, {});
+      navigate(STUDENT_MY_APPLICATIONS_PATH);
+    } catch (err) {
+      setApplyError(parseAdminApiError(err, 'application_failed').message);
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  if (loading || readinessLoading) {
+    return <InternshipOfferPageLoadingState variant="apply" loadingLabelKey="loadingApply" />;
+  }
+
+  if (error || !offer) {
     return <Navigate to={STUDENT_ALL_INTERNSHIP_OFFERS_PATH} replace />;
   }
 
-  const cvFeatures = getCvEditorFeatures(offer.title);
-
   return (
     <StudentLayout>
-      <div
-        id="student-apply-internship-root"
-        className={INTERNSHIP_OFFERS_PAGE_ROOT}
-      >
+      <div id="student-apply-internship-root" className={INTERNSHIP_OFFERS_PAGE_ROOT}>
         <BackToOfferDetailsLink offerId={offer.id} />
-
         <ApplyInternshipHeader offer={offer} />
 
-        <div className="grid min-w-0 grid-cols-1 items-stretch gap-4 sm:gap-5 md:grid-cols-2 md:gap-6">
-          <UseExistingCvCard offerId={offer.id} cvFile={defaultStudentCvFile} />
-          <CreateEditCvCard offerTitle={offer.title} features={cvFeatures} />
-        </div>
+        {applyError && (
+          <p className="rounded-lg border border-[var(--admin-danger)]/30 bg-[var(--admin-danger)]/5 px-4 py-3 text-sm text-[var(--admin-danger)]">
+            {applyError}
+          </p>
+        )}
+
+        {readiness && (
+          <ApplicationReadinessChecklist
+            readiness={readiness}
+            onApply={handleApply}
+            applying={applying}
+          />
+        )}
       </div>
     </StudentLayout>
   );

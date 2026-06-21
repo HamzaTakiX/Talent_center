@@ -2,7 +2,7 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, MessageSquare, Clock, FileText, CalendarDays, Brain, Upload, Settings2, BookOpen, LucideIcon } from 'lucide-react';
+import { ChevronDown, MessageSquare, Clock, FileText, FilePenLine, CalendarDays, Brain, Upload, Settings2, BookOpen, LucideIcon } from 'lucide-react';
 import escaLogoLight from '../../../auth/assets/images/common/Logo_ESCA.png';
 import escaLogoDark from '../../../auth/assets/images/common/logo-esca.png';
 import { useAuth } from '../../../auth/hooks/useAuth';
@@ -23,6 +23,7 @@ import {
 const subIconMap: Record<AdminNavChildId, LucideIcon> = {
   catalog: BookOpen,
   chat: MessageSquare,
+  drafts: FilePenLine,
   history: Clock,
   reports: FileText,
   meetings: CalendarDays,

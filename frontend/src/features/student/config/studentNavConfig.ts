@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { STUDENT_INTERNSHIP_OFFERS_PATH } from '../internship_offers/constants/routes';
 import { STUDENT_CV_ANALYSIS_TOOL_PATH } from '../internship_offers/CV_Analyse/constants/routes';
+import { STUDENT_AI_CAREER_COACH_PATH } from '../internship_offers/AI_Career_Coach/constants/routes';
 import { STUDENT_INTERVIEW_SIMULATOR_PATH } from '../internship_offers/interview_Simulator/constants/routes';
 import { STUDENT_CHAT_PATH } from '../internship_offers/chat/constants/routes';
 import { STUDENT_HISTORY_PATH } from '../internship_offers/history/constants/routes';
@@ -44,6 +45,7 @@ export type StudentNavSectionId =
 
 export type StudentNavChildId =
   | 'cvAnalysis'
+  | 'aiCareerCoach'
   | 'interviewSimulator'
   | 'chat'
   | 'history'
@@ -67,7 +69,7 @@ export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
     id: 'internshipOffers',
     icon: Briefcase,
     expandable: true,
-    children: ['cvAnalysis', 'interviewSimulator', 'chat', 'history'],
+    children: ['cvAnalysis', 'aiCareerCoach', 'interviewSimulator', 'chat', 'history'],
   },
   { id: 'announcements', icon: Bell, expandable: true, children: ['chat', 'history'] },
   { id: 'history', icon: History },
@@ -156,6 +158,7 @@ export const getChildPath = (
 ): string | undefined => {
   if (section === 'internshipOffers') {
     if (child === 'cvAnalysis') return STUDENT_CV_ANALYSIS_TOOL_PATH;
+    if (child === 'aiCareerCoach') return STUDENT_AI_CAREER_COACH_PATH;
     if (child === 'interviewSimulator') return STUDENT_INTERVIEW_SIMULATOR_PATH;
     if (child === 'chat') return STUDENT_CHAT_PATH;
     if (child === 'history') return STUDENT_HISTORY_PATH;

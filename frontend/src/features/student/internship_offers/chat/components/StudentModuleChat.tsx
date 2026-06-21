@@ -4,6 +4,7 @@ import AdminModuleChat from '../../../../admin/shared/admin-module-chat/AdminMod
 import type { AdminChatMessage, AdminChatParticipant } from '../../../../admin/shared/admin-module-chat/adminChatTypes';
 import StudentLayout from '../../../components/StudentLayout';
 import type { ChatMessage, ChatParticipant } from '../types';
+import { OFFER_FIELD_LIMITS } from '../../../../../design-system/safeContent';
 
 export interface StudentModuleChatProps {
   participantsSeed: ChatParticipant[];
@@ -37,6 +38,7 @@ const StudentModuleChat: FunctionComponent<StudentModuleChatProps> = ({
     searchPlaceholder={searchPlaceholder}
     composerPlaceholder={composerPlaceholder}
     emptyConversationLabel={emptyLabel}
+    composerMaxLength={OFFER_FIELD_LIMITS.chatMessage}
   />
   );
 };

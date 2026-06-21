@@ -13,6 +13,7 @@ import {
   adminTableBtnMobile,
   adminTableBtnMobileDanger,
 } from '../../../../ui/adminTableButtons';
+import { SafeTitleCell, SafeText, ADMIN_TABLE_COL } from '../../../../../../design-system/safeContent';
 
 interface AllAnnouncementsTableContentProps {
   rows: AnnouncementRow[];
@@ -30,7 +31,7 @@ const AllAnnouncementsTableContent: FunctionComponent<AllAnnouncementsTableConte
           rows.map((row) => (
             <AdminMobileRowCard
               key={row.id}
-              title={row.title}
+              title={<SafeText as="span">{row.title}</SafeText>}
               badges={<span className={announcementTypeTableBadge(row.type)}>{<AnnouncementTypeLabel type={row.type} />}</span>}
               fields={[
                 {
@@ -77,11 +78,11 @@ const AllAnnouncementsTableContent: FunctionComponent<AllAnnouncementsTableConte
         <AdminTableScroll minWidth="880px" className="admin-table-scroll--panel">
           <thead>
             <tr className="border-b border-[var(--admin-border)]">
-              <th className="py-2.5 pl-2 pr-4 text-left text-sm font-medium text-[var(--admin-text-secondary)]">Title</th>
-              <th className="py-2.5 px-4 text-left text-sm font-medium text-[var(--admin-text-secondary)]">Type</th>
-              <th className="py-2.5 px-4 text-left text-sm font-medium text-[var(--admin-text-secondary)]">Target Audience</th>
-              <th className="py-2.5 px-4 text-left text-sm font-medium text-[var(--admin-text-secondary)]">Date</th>
-              <th className="py-2.5 px-4 text-right text-sm font-medium text-[var(--admin-text-secondary)]">Actions</th>
+              <th className={`py-2.5 pl-2 pr-4 text-left text-sm font-medium text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.title}`}>Title</th>
+              <th className={`py-2.5 px-4 text-left text-sm font-medium text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.status}`}>Type</th>
+              <th className={`py-2.5 px-4 text-left text-sm font-medium text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.text}`}>Target Audience</th>
+              <th className={`py-2.5 px-4 text-left text-sm font-medium text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.deadline}`}>Date</th>
+              <th className={`py-2.5 px-4 text-right text-sm font-medium text-[var(--admin-text-secondary)] ${ADMIN_TABLE_COL.actions}`}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -91,7 +92,7 @@ const AllAnnouncementsTableContent: FunctionComponent<AllAnnouncementsTableConte
               rows.map((row) => (
                 <tr key={row.id} className="border-b border-[var(--admin-border)] last:border-b-0">
                   <td className="max-w-0 py-3 pl-2 pr-4 align-middle font-medium">
-                    <span className="line-clamp-2">{row.title}</span>
+                    <SafeTitleCell>{row.title}</SafeTitleCell>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 align-middle">
                     <span className={announcementTypeTableBadge(row.type)}>{<AnnouncementTypeLabel type={row.type} />}</span>
@@ -99,7 +100,7 @@ const AllAnnouncementsTableContent: FunctionComponent<AllAnnouncementsTableConte
                   <td className="px-4 py-3 align-middle">
                     <div className="flex items-center gap-1.5">
                       <User className="h-4 w-4 shrink-0 text-[var(--admin-text-secondary)]" strokeWidth={1.75} aria-hidden />
-                      <span className="truncate">{row.targetAudience}</span>
+                      <SafeText>{row.targetAudience}</SafeText>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 align-middle">

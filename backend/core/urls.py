@@ -16,6 +16,10 @@ urlpatterns = [
     path('api/', include('apps.documents.urls')),
     path('api/history/', include('apps.history.urls')),
     path('api/chat/', include('apps.chat.urls')),
+    path('api/notifications/', include('apps.notifications.api.urls')),
+    path('api/admin/notifications/', include('apps.notifications.api.admin_urls')),
+    path('api/admin/email-system/', include('apps.notifications.api.email_system_urls')),
+    path('api/', include('apps.stage.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

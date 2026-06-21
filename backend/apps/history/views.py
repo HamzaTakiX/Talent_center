@@ -16,7 +16,7 @@ from apps.history.serializers import (
     HistoryEventListSerializer,
     HistoryExportLogSerializer,
 )
-from apps.history.services.analytics import build_dashboard
+from apps.history.services.analytics import build_audit_dashboard, build_dashboard, build_insights
 from apps.history.services.export import create_csv_export
 from apps.history.services.queries import apply_list_filters, base_queryset, entity_timeline
 from apps.history.services.visibility import filter_events_for_user
@@ -60,7 +60,11 @@ class HistoryDashboardView(APIView):
     permission_classes = history_read_permissions()
 
     def get(self, request):
-        return Response(envelope(True, 'Dashboard', data=build_dashboard(request.user)))
+        kpi = (request.query_params.get('kpi') or request.query_params.get('kpi_key') or '').strip() or None
+        lite = (request.query_params.get('lite') or '').lower() in ('1', 'true', 'yes')
+        if lite:
+            return Response(envelope(True, 'Dashboard', data=build_audit_dashboard(request.user, kpi=kpi)))
+        return Response(envelope(True, 'Dashboard', data=build_dashboard(request.user, kpi=kpi)))
 
 
 class HistoryExportCreateView(APIView):
@@ -92,6 +96,15 @@ class HistoryExportDownloadView(APIView):
         return FileResponse(export_log.file.open('rb'), as_attachment=True, filename=export_log.file.name)
 
 
+class HistoryInsightsView(APIView):
+    permission_classes = history_read_permissions()
+
+    def get(self, request):
+        return Response(
+            envelope(True, 'Insights', data={'items': build_insights(request.user)}),
+        )
+
+
 class HistoryGlobalCenterView(APIView):
     """Combined payload for admin history center (dashboard + first page)."""
 
@@ -101,12 +114,17 @@ class HistoryGlobalCenterView(APIView):
         qs = apply_list_filters(base_queryset(request.user), request.query_params)
         items, meta = paginate_queryset(qs, request, default_page_size=25, max_page_size=100)
         ser = HistoryEventListSerializer(items, many=True)
+        kpi = (request.query_params.get('kpi') or request.query_params.get('kpi_key') or '').strip()
         return Response(
             envelope(
                 True,
                 'History center',
                 data={
-                    'dashboard': build_dashboard(request.user, queryset=qs),
+                    'dashboard': build_dashboard(
+                        request.user,
+                        queryset=filter_events_for_user(HistoryEvent.objects.all(), request.user),
+                        kpi=kpi or None,
+                    ),
                     'timeline': paginated_payload(ser.data, meta),
                 },
             )

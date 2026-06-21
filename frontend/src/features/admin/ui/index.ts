@@ -12,6 +12,7 @@ export type {
   AdminListToolbarControlsLayout,
 } from './AdminListToolbar';
 export { default as AdminKpiGrid } from './AdminKpiGrid';
+export { AdminKpiGridSkeleton } from './AdminKpiGridSkeleton';
 export { default as AdminKpiStatCard } from './AdminKpiStatCard';
 export { default as AdminModal } from './AdminModal';
 export { default as AdminFormPageShell } from './AdminFormPageShell';
@@ -30,6 +31,12 @@ export type { AdminStatDetailPanelProps } from './AdminStatDetailPanel';
 export { useAdminListFilter } from './hooks/useAdminListFilter';
 export { default as AdminPagination } from './AdminPagination';
 export { default as AdminEmptyState } from './AdminEmptyState';
+export { default as ChatEmptyState } from '../shared/admin-module-chat/components/ChatEmptyState';
+export type {
+  ChatEmptyModuleType,
+  ChatEmptyStateProps,
+  ChatEmptyStateStats,
+} from '../shared/admin-module-chat/types/chatEmptyStateTypes';
 export { default as AdminSearchEmptyState } from './AdminSearchEmptyState';
 export type { AdminSearchEmptyStateProps } from './AdminSearchEmptyState';
 export { default as AdminTableEmptyState } from './AdminTableEmptyState';

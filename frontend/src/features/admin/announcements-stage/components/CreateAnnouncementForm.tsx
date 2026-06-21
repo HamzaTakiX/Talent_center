@@ -12,7 +12,7 @@ import {
 import AdminFormPanelHeader from '../../shared/forms/AdminFormPanelHeader';
 import AdminFormSection from '../../shared/forms/AdminFormSection';
 import {
-  adminFormActionsFooterClass,
+  adminFormActionsClass,
   adminFormBodyScrollClass,
   adminFormPanelFlexClass,
   adminFormBtnPrimaryClass,
@@ -29,9 +29,12 @@ import {
 
 const FORM_PREFIX = 'admin.forms.createAnnouncement';
 
+const CREATE_FORM_ID = 'create-announcement-form';
+
 interface CreateAnnouncementFormProps {
   variant?: 'create' | 'edit';
   hidePanelHeader?: boolean;
+  formId?: string;
   title: string;
   type: string;
   audience: string;
@@ -53,6 +56,7 @@ interface CreateAnnouncementFormProps {
 const CreateAnnouncementForm: FunctionComponent<CreateAnnouncementFormProps> = ({
   variant = 'create',
   hidePanelHeader = false,
+  formId = CREATE_FORM_ID,
   title,
   type,
   audience,
@@ -121,7 +125,7 @@ const CreateAnnouncementForm: FunctionComponent<CreateAnnouncementFormProps> = (
     variant === 'edit' ? t(`${FORM_PREFIX}.editSubtitle`) : t(`${FORM_PREFIX}.subtitle`);
 
   return (
-    <form className={adminFormPanelFlexClass} onSubmit={handlePublish} noValidate>
+    <form id={formId} className={adminFormPanelFlexClass} onSubmit={handlePublish} noValidate>
       {!hidePanelHeader && <AdminFormPanelHeader title={formTitle} subtitle={formSubtitle} />}
 
       <div className={adminFormBodyScrollClass}>
@@ -215,7 +219,7 @@ const CreateAnnouncementForm: FunctionComponent<CreateAnnouncementFormProps> = (
         </div>
       </div>
 
-      <div className={adminFormActionsFooterClass}>
+      <div className={adminFormActionsClass}>
         <button type="button" onClick={onDraft} className={adminFormBtnSecondaryClass}>
           <FileText className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
           {variant === 'edit'
@@ -231,4 +235,5 @@ const CreateAnnouncementForm: FunctionComponent<CreateAnnouncementFormProps> = (
   );
 };
 
+export { CREATE_FORM_ID };
 export default CreateAnnouncementForm;

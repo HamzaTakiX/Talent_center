@@ -1,6 +1,6 @@
 import { FunctionComponent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { adminHistoryApi } from '../../api/history';
 import type { HistoryListParams } from '../../api/history';
 
@@ -33,10 +33,15 @@ const HistoryExportButton: FunctionComponent<HistoryExportButtonProps> = ({ filt
       type="button"
       disabled={loading}
       onClick={() => void handleExport()}
-      className="inline-flex items-center gap-2 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg)] px-3 py-2 text-sm font-medium text-[var(--admin-text)] transition hover:bg-[var(--admin-row-hover)] disabled:opacity-60"
+      className="admin-module-toolbar__btn shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
+      aria-busy={loading}
     >
-      <Download className="h-4 w-4" aria-hidden />
-      {loading ? t(`${PREFIX}.exporting`) : t(`${PREFIX}.exportCsv`)}
+      {loading ? (
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[var(--admin-brand)]" aria-hidden />
+      ) : (
+        <Download className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+      )}
+      <span>{loading ? t(`${PREFIX}.exporting`) : t(`${PREFIX}.exportCsv`)}</span>
     </button>
   );
 };

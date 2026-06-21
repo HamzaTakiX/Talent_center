@@ -1,4 +1,5 @@
 import {
+  forwardRef,
   FunctionComponent,
   type InputHTMLAttributes,
   type ReactNode,
@@ -100,9 +101,10 @@ export const AdminFormInput: FunctionComponent<
   return <InputIconWrap icon={Icon}>{input}</InputIconWrap>;
 };
 
-export const AdminFormTextarea: FunctionComponent<
+export const AdminFormTextarea = forwardRef<
+  HTMLTextAreaElement,
   TextareaHTMLAttributes<HTMLTextAreaElement> & IconInputProps
-> = ({ className = '', leadingIcon, fieldKey, disabled, readOnly, ...props }) => {
+>(({ className = '', leadingIcon, fieldKey, disabled, readOnly, ...props }, ref) => {
   const Icon = resolveLeadingIcon(leadingIcon, fieldKey);
   const stateClass = [
     Icon ? 'admin-form-textarea--with-icon' : '',
@@ -114,6 +116,7 @@ export const AdminFormTextarea: FunctionComponent<
 
   const textarea = (
     <textarea
+      ref={ref}
       {...props}
       disabled={disabled}
       readOnly={readOnly}
@@ -126,7 +129,9 @@ export const AdminFormTextarea: FunctionComponent<
       {textarea}
     </InputIconWrap>
   );
-};
+});
+
+AdminFormTextarea.displayName = 'AdminFormTextarea';
 
 export const AdminFormDateInput: FunctionComponent<
   Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>

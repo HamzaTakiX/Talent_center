@@ -1,22 +1,24 @@
 import { FunctionComponent } from 'react';
-import InterviewSimulatorHeader from './InterviewSimulatorHeader';
-import InterviewSimulatorWelcomeMessage from './InterviewSimulatorWelcomeMessage';
-import InterviewSimulatorActions from './InterviewSimulatorActions';
-import {
-  INTERVIEW_SIMULATOR_ACTIONS,
-  INTERVIEW_SIMULATOR_WELCOME_MESSAGE,
-} from '../data/interviewSimulatorMock';
-import { IS_BODY, IS_MAIN_PAGE } from '../constants/interviewSimulatorStyles';
+import { useTranslation } from 'react-i18next';
+import StudentLayout from '../../../components/StudentLayout';
+import { INTERNSHIP_OFFERS_PAGE_ROOT } from '../../constants/internshipOffersLayout';
 
+/** Simulateur d'entretien — en attente d'API backend dédiée. */
 const InterviewSimulatorMain: FunctionComponent = () => {
+  const { t } = useTranslation();
+
   return (
-    <article className={IS_MAIN_PAGE}>
-      <InterviewSimulatorHeader />
-      <div className={IS_BODY}>
-        <InterviewSimulatorWelcomeMessage paragraphs={INTERVIEW_SIMULATOR_WELCOME_MESSAGE.paragraphs} />
-        <InterviewSimulatorActions actions={INTERVIEW_SIMULATOR_ACTIONS} />
-      </div>
-    </article>
+    <StudentLayout>
+      <article className={`${INTERNSHIP_OFFERS_PAGE_ROOT} px-4 py-12 text-center`}>
+        <h1 className="text-xl font-semibold text-[var(--admin-text)]">
+          {t('student.internshipOffers.interviewSimulator.title', 'Simulateur d\'entretien')}
+        </h1>
+        <p className="mx-auto mt-3 max-w-md text-sm text-[var(--admin-text-secondary)]">
+          Cette fonctionnalité nécessite une connexion au service backend d&apos;entretiens simulés.
+          Les sessions seront chargées depuis la base de données lorsque l&apos;endpoint sera disponible.
+        </p>
+      </article>
+    </StudentLayout>
   );
 };
 

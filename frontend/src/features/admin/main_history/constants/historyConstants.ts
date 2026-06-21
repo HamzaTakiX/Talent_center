@@ -51,26 +51,40 @@ export const HISTORY_PRIORITY_BADGE_CLASS: Record<HistoryPriority, string> = {
 export const HISTORY_ACTION_LABEL: Record<HistoryActionType, string> = {
   create: 'Create',
   update: 'Update',
+  delete: 'Delete',
   validate: 'Validate',
-  archive: 'Archive',
-  review: 'Review',
+  reject: 'Reject',
   assign: 'Assign',
+  publish: 'Publish',
+  archive: 'Archive',
+  login: 'Login',
+  logout: 'Logout',
+  review: 'Review',
   submit: 'Submit',
+  import: 'Import',
+  system_action: 'System',
 };
 
 /** Variantes badge design system (light + dark). */
 export const HISTORY_ACTION_BADGE_VARIANT: Record<HistoryActionType, AdminBadgeVariant> = {
   create: 'success',
   update: 'info',
+  delete: 'danger',
   validate: 'interview',
-  archive: 'danger',
-  review: 'warning',
+  reject: 'danger',
   assign: 'event',
+  publish: 'success',
+  archive: 'danger',
+  login: 'info',
+  logout: 'neutral',
+  review: 'warning',
   submit: 'warning',
+  import: 'info',
+  system_action: 'event',
 };
 
 export function historyActionBadgeClass(actionType: HistoryActionType): string {
-  return adminBadgeClass(HISTORY_ACTION_BADGE_VARIANT[actionType], ADMIN_CHIP_BADGE);
+  return adminBadgeClass(HISTORY_ACTION_BADGE_VARIANT[actionType] ?? 'neutral', ADMIN_CHIP_BADGE);
 }
 
 export function historyModuleBadgeClass(): string {
@@ -89,9 +103,16 @@ export function historyTimelineBadgeClass(baseClass: string): string {
 export const HISTORY_ACTION_BADGE_CLASS: Record<HistoryActionType, string> = {
   create: 'bg-[#dcfce7] text-[#016630]',
   update: 'bg-[#dbeafe] text-[#193cb8]',
+  delete: 'bg-[#fee9eb] text-[#b4232d]',
   validate: 'bg-[#f3e8ff] text-[#6e11b0]',
-  archive: 'bg-[#fee9eb] text-[#b4232d]',
-  review: 'bg-[#fff4db] text-[#9a5c00]',
+  reject: 'bg-[#fee9eb] text-[#b4232d]',
   assign: 'bg-[#e0e7ff] text-[#372aac]',
+  publish: 'bg-[#dcfce7] text-[#016630]',
+  archive: 'bg-[#fee9eb] text-[#b4232d]',
+  login: 'bg-[#dbeafe] text-[#193cb8]',
+  logout: 'bg-[#f3f4f6] text-[#6b7280]',
+  review: 'bg-[#fff4db] text-[#9a5c00]',
   submit: 'bg-[#ffedd4] text-[#9f2d00]',
+  import: 'bg-[#dbeafe] text-[#193cb8]',
+  system_action: 'bg-[#e0e7ff] text-[#372aac]',
 };

@@ -1,5 +1,6 @@
 import { FunctionComponent, useMemo } from 'react';
 import { AdminListToolbar, AdminListToolbarSection } from '../../../../ui';
+import { clampSearchQuery } from '../../../../../../design-system/safeContent';
 
 interface ActiveOffersListSearchToolbarProps {
   query: string;
@@ -28,7 +29,7 @@ const ActiveOffersListSearchToolbar: FunctionComponent<ActiveOffersListSearchToo
     <AdminListToolbarSection>
       <AdminListToolbar
         searchValue={query}
-        onSearchChange={onQueryChange}
+        onSearchChange={(v) => onQueryChange(clampSearchQuery(v))}
         searchPlaceholder="Search offers..."
         toolbarAriaLabel="Filter active offers"
         filter1={{

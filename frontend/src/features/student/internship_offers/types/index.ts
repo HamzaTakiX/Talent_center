@@ -19,6 +19,7 @@ export interface InternshipOffer {
   id: string;
   title: string;
   company: string;
+  companyLogoUrl?: string | null;
   location: string;
   tags: string[];
   matchPercent: number;
@@ -53,6 +54,7 @@ export interface InternshipOfferDetails extends InternshipOffer {
   relevantExperience: string[];
   skillsToDevelop: InternshipOfferGrowthItem[];
   aiRecommendations: string[];
+  matchReasons?: string[];
 }
 
 export type InternshipOffersStatIconMap = Record<InternshipOffersStatIconKey, LucideIcon>;

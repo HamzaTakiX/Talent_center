@@ -1,24 +1,23 @@
 import { FunctionComponent } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import StudentLayout from '../../components/StudentLayout';
 import BackToApplicationLink from '../components/cv_analysis/BackToApplicationLink';
-import CvAnalysisActionBar from '../components/cv_analysis/CvAnalysisActionBar';
-import CvAnalysisAiBanner from '../components/cv_analysis/CvAnalysisAiBanner';
-import CvAnalysisColumnsGrid from '../components/cv_analysis/CvAnalysisColumnsGrid';
 import CvAnalysisHeader from '../components/cv_analysis/CvAnalysisHeader';
-import CvAnalysisOverallAssessment from '../components/cv_analysis/CvAnalysisOverallAssessment';
-import CvAnalysisSummaryBanner from '../components/cv_analysis/CvAnalysisSummaryBanner';
-import { STUDENT_ALL_INTERNSHIP_OFFERS_PATH } from '../constants/routes';
+import { InternshipOfferPageLoadingState } from '../components/loading/InternshipOfferPageSkeleton';
+import { STUDENT_ALL_INTERNSHIP_OFFERS_PATH, getInternshipOfferApplyPath } from '../constants/routes';
 import { INTERNSHIP_OFFERS_PAGE_ROOT } from '../constants/internshipOffersLayout';
-import { getCvAnalysisByOfferId } from '../helpers/getCvAnalysisByOfferId';
-import { getInternshipOfferById } from '../helpers/getInternshipOfferById';
+import { useStudentOfferDetail } from '../hooks/useStudentStageOffers';
 
 const CvAnalysisPage: FunctionComponent = () => {
   const { offerId } = useParams<{ offerId: string }>();
-  const offer = getInternshipOfferById(offerId);
-  const analysis = getCvAnalysisByOfferId(offerId);
+  const navigate = useNavigate();
+  const { detail: offer, loading } = useStudentOfferDetail(offerId);
 
-  if (!offer || !analysis) {
+  if (loading) {
+    return <InternshipOfferPageLoadingState variant="apply" loadingLabelKey="loadingCvAnalysis" />;
+  }
+
+  if (!offer) {
     return <Navigate to={STUDENT_ALL_INTERNSHIP_OFFERS_PATH} replace />;
   }
 
@@ -27,15 +26,27 @@ const CvAnalysisPage: FunctionComponent = () => {
       <div id="student-cv-analysis-root" className={INTERNSHIP_OFFERS_PAGE_ROOT}>
         <BackToApplicationLink offerId={offer.id} />
         <CvAnalysisHeader offer={offer} />
-        <CvAnalysisSummaryBanner matchScore={analysis.matchScore} />
-        <CvAnalysisAiBanner />
-        <CvAnalysisColumnsGrid analysis={analysis} />
-        <CvAnalysisOverallAssessment
-          assessment={analysis.overallAssessment}
-          interviewProbability={analysis.interviewProbability}
-          potentialScore={analysis.potentialScore}
-        />
-        <CvAnalysisActionBar offerId={offer.id} />
+        <div className="mt-6 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-6 py-8 text-center">
+          <p className="m-0 text-sm text-[var(--admin-text-secondary)]">
+            Lancez l&apos;analyse CV depuis l&apos;outil dédié ou postulez directement avec votre CV enregistré.
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <button
+              type="button"
+              className="admin-btn-primary px-4 py-2 text-sm"
+              onClick={() => navigate('/student/internship-offers/cv-analysis-tool')}
+            >
+              Ouvrir l&apos;outil d&apos;analyse
+            </button>
+            <button
+              type="button"
+              className="admin-btn-secondary px-4 py-2 text-sm"
+              onClick={() => navigate(getInternshipOfferApplyPath(offer.id))}
+            >
+              Postuler
+            </button>
+          </div>
+        </div>
       </div>
     </StudentLayout>
   );

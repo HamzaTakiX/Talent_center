@@ -38,6 +38,8 @@ def _upsert_filiere(
         code=code,
         defaults={
             'name': name,
+            'name_fr': name_i18n.get('fr', ''),
+            'name_en': name_i18n.get('en', name),
             'name_i18n': name_i18n,
             'program_family': family,
             'department': 'ESCA',
@@ -63,6 +65,8 @@ def _upsert_level(
         code=code,
         defaults={
             'name': name,
+            'name_fr': name_i18n.get('fr', ''),
+            'name_en': name_i18n.get('en', name),
             'name_i18n': name_i18n,
             'year_number': year_number,
             'has_sectors': has_sectors,
@@ -86,6 +90,8 @@ def _upsert_sector(
         code=code,
         defaults={
             'name': name,
+            'name_fr': name_i18n.get('fr', ''),
+            'name_en': name_i18n.get('en', name),
             'name_i18n': name_i18n,
             'sort_order': sort_order,
             'is_active': True,
@@ -110,6 +116,8 @@ def _upsert_internship(
         code=code,
         defaults={
             'name': name,
+            'name_fr': name_i18n.get('fr', ''),
+            'name_en': name_i18n.get('en', name),
             'name_i18n': name_i18n,
             'duration_hint': duration_hint,
             'sort_order': sort_order,

@@ -20,6 +20,7 @@ import AdminToolbarDeleteControl from '../../ui/AdminToolbarDeleteControl';
 import StudentsImportModal from './StudentsImportModal';
 import { platformAccountStatusTableBadge } from '../../ui/adminStatusBadges';
 import { adminTableBtn } from '../../ui/adminTableButtons';
+import { SafeTitleCell, SafeText, ADMIN_TABLE_COL } from '../../../../design-system/safeContent';
 
 interface StudentsDashboardTableProps {
   students: AdminStudentRow[];
@@ -178,13 +179,13 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
                     />
                   </th>
                 ) : null}
-                <th>{tableColumn('name')}</th>
-                <th>{tableColumn('class')}</th>
-                <th>{tableColumn('field')}</th>
-                <th>SSO</th>
-                <th>Onboarding</th>
-                <th>{tableColumn('status')}</th>
-                <th>{tableColumn('actions')}</th>
+                <th className={ADMIN_TABLE_COL.name}>{tableColumn('name')}</th>
+                <th className={ADMIN_TABLE_COL.text}>{tableColumn('class')}</th>
+                <th className={ADMIN_TABLE_COL.text}>{tableColumn('field')}</th>
+                <th className={ADMIN_TABLE_COL.status}>SSO</th>
+                <th className={ADMIN_TABLE_COL.text}>Onboarding</th>
+                <th className={ADMIN_TABLE_COL.status}>{tableColumn('status')}</th>
+                <th className={`text-end ${ADMIN_TABLE_COL.actions}`}>{tableColumn('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -207,12 +208,12 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
                       </td>
                     ) : null}
                     <td className="font-medium">
-                      <div>{student.full_name || student.email}</div>
-                      <div className="text-xs text-[var(--admin-text-secondary)]">{student.email}</div>
+                      <SafeTitleCell>{student.full_name || student.email}</SafeTitleCell>
+                      <SafeText className="text-xs text-[var(--admin-text-secondary)]">{student.email}</SafeText>
                     </td>
-                    <td>{student.current_class || '—'}</td>
-                    <td className="whitespace-nowrap font-medium">
-                      {programTableLabel(student.filiere_code, student.program_major)}
+                    <td><SafeText>{student.current_class || '—'}</SafeText></td>
+                    <td className="font-medium">
+                      <SafeText>{programTableLabel(student.filiere_code, student.program_major)}</SafeText>
                     </td>
                     <td>
                       <span

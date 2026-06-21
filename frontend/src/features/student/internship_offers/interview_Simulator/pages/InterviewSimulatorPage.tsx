@@ -1,19 +1,12 @@
 import { FunctionComponent } from 'react';
 import StudentLayout from '../../../components/StudentLayout';
-import InterviewSimulatorMain from '../components/InterviewSimulatorMain';
-import {
-  INTERVIEW_SIMULATOR_PAGE_ROOT,
-  INTERVIEW_SIMULATOR_VIEWPORT_SHELL,
-} from '../constants/interviewSimulatorLayout';
+import InterviewSimulatorDashboard from '../components/dashboard/InterviewSimulatorDashboard';
 
 const InterviewSimulatorPage: FunctionComponent = () => {
   return (
-    <StudentLayout contentFlush>
-      <div
-        id="student-interview-simulator-root"
-        className={`${INTERVIEW_SIMULATOR_VIEWPORT_SHELL} ${INTERVIEW_SIMULATOR_PAGE_ROOT}`}
-      >
-        <InterviewSimulatorMain />
+    <StudentLayout>
+      <div id="student-interview-simulator-root" className="mx-auto w-full min-w-0 max-w-[1600px] pb-4">
+        <InterviewSimulatorDashboard />
       </div>
     </StudentLayout>
   );

@@ -14,6 +14,7 @@ import { Check, ChevronDown, Loader2, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAdminTheme } from '../../dashboard/context/AdminThemeContext';
 import { useAdminDropdownPosition } from '../../ui/hooks/useAdminDropdownPosition';
+import { useAdminDropdownScrollChain } from '../../ui/hooks/useAdminDropdownScrollChain';
 import { adminFormLabelClass, adminFormRequiredClass } from './adminFormClasses';
 
 export interface TagOption {
@@ -22,12 +23,18 @@ export interface TagOption {
   disabled?: boolean;
 }
 
+export interface TagOptionGroup {
+  label: string;
+  options: TagOption[];
+}
+
 interface AdminTagMultiSelectProps {
   id: string;
   label: string;
   hint?: string;
   values: string[];
-  options: TagOption[];
+  options?: TagOption[];
+  groups?: TagOptionGroup[];
   onChange: (values: string[]) => void;
   disabled?: boolean;
   loading?: boolean;
@@ -45,7 +52,8 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
   label,
   hint,
   values,
-  options,
+  options = [],
+  groups,
   onChange,
   disabled = false,
   loading = false,
@@ -64,6 +72,7 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
   const listboxId = `${controlId}-listbox`;
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const [open, setOpen] = useState(false);
@@ -79,6 +88,12 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
     disabledHint ?? t('admin.forms.academicScope.disabledHint');
 
   const selectedSet = useMemo(() => new Set(values), [values]);
+  const useGroups = Boolean(groups?.length);
+
+  const allOptions = useMemo(
+    () => (useGroups ? (groups ?? []).flatMap((group) => group.options) : options),
+    [useGroups, groups, options],
+  );
 
   const filtered = useMemo(() => {
     if (!searchable || !query.trim()) return options;
@@ -86,7 +101,28 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
     return options.filter((o) => o.label.toLowerCase().includes(q));
   }, [options, query, searchable]);
 
+  const filteredGroups = useMemo(() => {
+    if (!useGroups) return [];
+    const source = groups ?? [];
+    if (!searchable || !query.trim()) return source;
+    const q = query.trim().toLowerCase();
+    return source
+      .map((group) => ({
+        label: group.label,
+        options: group.options.filter(
+          (option) =>
+            option.label.toLowerCase().includes(q) || group.label.toLowerCase().includes(q),
+        ),
+      }))
+      .filter((group) => group.options.length > 0);
+  }, [useGroups, groups, query, searchable]);
+
+  const menuOptions = useGroups
+    ? filteredGroups.flatMap((group) => group.options)
+    : filtered;
+
   const coords = useAdminDropdownPosition(open, triggerRef, menuRef);
+  useAdminDropdownScrollChain(open && Boolean(coords), menuRef, optionsRef, triggerRef);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -100,8 +136,10 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
       } else {
         onChange([...values, value]);
       }
+      close();
+      triggerRef.current?.focus();
     },
-    [onChange, selectedSet, values],
+    [close, onChange, selectedSet, values],
   );
 
   const removeValue = (value: string) => {
@@ -110,9 +148,9 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
 
   useEffect(() => {
     if (!open) return;
-    const idx = filtered.findIndex((o) => !o.disabled);
+    const idx = menuOptions.findIndex((o) => !o.disabled);
     setActiveIndex(idx >= 0 ? idx : 0);
-  }, [open, filtered]);
+  }, [open, menuOptions]);
 
   useEffect(() => {
     if (open && searchable) {
@@ -139,7 +177,7 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
       case ' ':
         e.preventDefault();
         if (!open) setOpen(true);
-        else setActiveIndex((i) => Math.min(i + 1, filtered.length - 1));
+        else setActiveIndex((i) => Math.min(i + 1, menuOptions.length - 1));
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -162,22 +200,22 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
         e.preventDefault();
         setActiveIndex((i) => {
           let next = i + 1;
-          while (next < filtered.length && filtered[next]?.disabled) next += 1;
-          return Math.min(next, filtered.length - 1);
+          while (next < menuOptions.length && menuOptions[next]?.disabled) next += 1;
+          return Math.min(next, menuOptions.length - 1);
         });
         break;
       case 'ArrowUp':
         e.preventDefault();
         setActiveIndex((i) => {
           let next = i - 1;
-          while (next >= 0 && filtered[next]?.disabled) next -= 1;
+          while (next >= 0 && menuOptions[next]?.disabled) next -= 1;
           return Math.max(next, 0);
         });
         break;
       case 'Enter':
         e.preventDefault();
-        if (!filtered[activeIndex]?.disabled) {
-          toggleValue(filtered[activeIndex].value);
+        if (!menuOptions[activeIndex]?.disabled) {
+          toggleValue(menuOptions[activeIndex].value);
         }
         break;
       case 'Escape':
@@ -192,9 +230,9 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
 
   const labelByValue = useMemo(() => {
     const map = new Map<string, string>();
-    options.forEach((o) => map.set(o.value, o.label));
+    allOptions.forEach((o) => map.set(o.value, o.label));
     return map;
-  }, [options]);
+  }, [allOptions]);
 
   const isRtl = i18n.dir() === 'rtl';
   const triggerLabel = disabled
@@ -222,7 +260,8 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
             width: coords.width,
             maxHeight: coords.maxHeight,
             zIndex: 'var(--admin-z-dropdown)',
-          }}
+            '--admin-dropdown-max-height': `${coords.maxHeight}px`,
+          } as React.CSSProperties}
           initial={{ opacity: 0, y: coords.placement === 'bottom' ? -6 : 6, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: coords.placement === 'bottom' ? -4 : 4, scale: 0.98 }}
@@ -244,9 +283,62 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
               />
             </div>
           ) : null}
-          <div className="admin-custom-select__options" role="presentation">
-            {filtered.length === 0 ? (
+          <div ref={optionsRef} className="admin-custom-select__options" role="presentation">
+            {menuOptions.length === 0 ? (
               <div className="admin-custom-select__empty">{resolvedEmpty}</div>
+            ) : useGroups ? (
+              (() => {
+                let optionIndex = 0;
+                return filteredGroups.map((group) => (
+                  <div key={group.label} className="admin-custom-select__option-group" role="presentation">
+                    <div className="admin-custom-select__group-label">{group.label}</div>
+                    {group.options.map((opt) => {
+                      const index = optionIndex;
+                      optionIndex += 1;
+                      const checked = selectedSet.has(opt.value);
+                      const isActive = index === activeIndex;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          role="option"
+                          aria-selected={checked}
+                          disabled={opt.disabled}
+                          className={[
+                            'admin-custom-select__option',
+                            'admin-tag-multi-select__option',
+                            checked && 'admin-custom-select__option--selected',
+                            isActive && 'admin-custom-select__option--active',
+                            opt.disabled && 'admin-custom-select__option--disabled',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                          onMouseEnter={() => setActiveIndex(index)}
+                          onClick={() => !opt.disabled && toggleValue(opt.value)}
+                        >
+                          <span
+                            className={[
+                              'admin-tag-multi-select__checkbox',
+                              checked && 'admin-tag-multi-select__checkbox--checked',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
+                            aria-hidden
+                          >
+                            {checked ? (
+                              <Check
+                                className="admin-tag-multi-select__checkbox-icon"
+                                strokeWidth={2.5}
+                              />
+                            ) : null}
+                          </span>
+                          <span className="admin-custom-select__option-label">{opt.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ));
+              })()
             ) : (
               filtered.map((opt, index) => {
                 const checked = selectedSet.has(opt.value);

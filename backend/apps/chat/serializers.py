@@ -77,6 +77,7 @@ class ConversationListSerializer(serializers.ModelSerializer):
             'title',
             'conversation_type',
             'last_message_at',
+            'is_archived',
             'context',
             'unread_count',
             'last_preview',

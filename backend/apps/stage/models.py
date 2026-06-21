@@ -28,6 +28,7 @@ from apps.accounts_et_roles.models import StudentProfile, TimestampedModel
 # scope cannot see attributes defined in the enclosing class).
 APPLICATION_ACTIVE_STATUSES = (
     'SUBMITTED', 'UNDER_REVIEW', 'SHORTLISTED', 'INTERVIEW', 'ACCEPTED',
+    'OFFER_ACCEPTED', 'INTERNSHIP_STARTED',
 )
 
 
@@ -67,10 +68,13 @@ class InternshipOffer(TimestampedModel):
 
     class Status(models.TextChoices):
         DRAFT = 'DRAFT', _('Draft')
+        PENDING_REVIEW = 'PENDING_REVIEW', _('Pending review')
         PUBLISHED = 'PUBLISHED', _('Published')
+        OPEN = 'OPEN', _('Open')
         CLOSED = 'CLOSED', _('Closed')
         EXPIRED = 'EXPIRED', _('Expired')
         ARCHIVED = 'ARCHIVED', _('Archived')
+        DELETED = 'DELETED', _('Deleted')
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
@@ -79,7 +83,14 @@ class InternshipOffer(TimestampedModel):
     slug = models.SlugField(max_length=280, blank=True, default='', db_index=True)
     description = models.TextField(blank=True, default='')
 
-    # Company
+    # Company — denormalized cache; canonical entity is Company (models_extended)
+    company = models.ForeignKey(
+        'stage.Company',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='offers',
+    )
     company_name = models.CharField(max_length=255, db_index=True)
     company_logo = models.ImageField(upload_to='offers/logos/', null=True, blank=True)
     company_website = models.URLField(max_length=512, blank=True, default='')
@@ -134,8 +145,19 @@ class InternshipOffer(TimestampedModel):
         db_index=True,
     )
     published_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    opened_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)
     archived_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    submitted_for_review_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_offers',
+    )
 
     # Authorship
     posted_by = models.ForeignKey(
@@ -200,6 +222,7 @@ class OfferTargetingRule(TimestampedModel):
         FILIERE = 'FILIERE', _('Filière')
         CLASS_GROUP = 'CLASS_GROUP', _('Class group')
         LEVEL = 'LEVEL', _('Education level')
+        INTERNSHIP_TYPE = 'INTERNSHIP_TYPE', _('Internship type')
         SKILL = 'SKILL', _('Skill')
         LANGUAGE = 'LANGUAGE', _('Language')
         AVAILABILITY = 'AVAILABILITY', _('Availability')
@@ -304,6 +327,10 @@ class OfferApplication(TimestampedModel):
         REJECTED = 'REJECTED', _('Rejected')
         WITHDRAWN = 'WITHDRAWN', _('Withdrawn')
         EXPIRED = 'EXPIRED', _('Expired')
+        OFFER_ACCEPTED = 'OFFER_ACCEPTED', _('Offer accepted')
+        OFFER_DECLINED = 'OFFER_DECLINED', _('Offer declined')
+        INTERNSHIP_STARTED = 'INTERNSHIP_STARTED', _('Internship started')
+        INTERNSHIP_COMPLETED = 'INTERNSHIP_COMPLETED', _('Internship completed')
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
@@ -336,7 +363,7 @@ class OfferApplication(TimestampedModel):
     )
 
     status = models.CharField(
-        max_length=16,
+        max_length=24,
         choices=Status.choices,
         default=Status.SUBMITTED,
         db_index=True,
@@ -445,6 +472,13 @@ class CandidateCollection(TimestampedModel):
 
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, default='')
+    linked_offer = models.ForeignKey(
+        InternshipOffer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='candidate_collections',
+    )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -557,3 +591,273 @@ class ExternalLinkFollowup(models.Model):
 
     def __str__(self) -> str:
         return f'ExternalFollowup<{self.offer_id} {self.event_type}>'
+
+
+# ============================================================================
+# 8. OFFER STATUS HISTORY — workflow audit trail
+# ============================================================================
+
+class OfferStatusHistory(TimestampedModel):
+    """Append-only row for every offer status transition."""
+
+    offer = models.ForeignKey(
+        InternshipOffer,
+        on_delete=models.CASCADE,
+        related_name='status_history',
+    )
+    previous_status = models.CharField(max_length=16, blank=True, default='')
+    new_status = models.CharField(max_length=16, db_index=True)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+    reason = models.TextField(blank=True, default='')
+    is_automated = models.BooleanField(default=False, db_index=True)
+    metadata_json = models.JSONField(default=dict, blank=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['offer', '-created_at']),
+            models.Index(fields=['new_status', '-created_at']),
+        ]
+
+
+# ============================================================================
+# 9. APPLICATION STATUS HISTORY — candidate workflow audit trail
+# ============================================================================
+
+class ApplicationStatusHistory(TimestampedModel):
+    """Append-only row for every application status transition."""
+
+    application = models.ForeignKey(
+        OfferApplication,
+        on_delete=models.CASCADE,
+        related_name='status_history',
+    )
+    previous_status = models.CharField(max_length=24, blank=True, default='')
+    new_status = models.CharField(max_length=24, db_index=True)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+    reason = models.TextField(blank=True, default='')
+    is_automated = models.BooleanField(default=False, db_index=True)
+    metadata_json = models.JSONField(default=dict, blank=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['application', '-created_at']),
+            models.Index(fields=['new_status', '-created_at']),
+        ]
+
+
+# ============================================================================
+# 10. OFFER IMPORT — jobs, history, extracted preview
+# ============================================================================
+
+class OfferImportJob(TimestampedModel):
+    """Async import job triggered by URL paste or batch import."""
+
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', _('Pending')
+        VALIDATING = 'VALIDATING', _('Validating URL')
+        EXTRACTING = 'EXTRACTING', _('Extracting data')
+        PREVIEW_READY = 'PREVIEW_READY', _('Preview ready')
+        AWAITING_ADMIN = 'AWAITING_ADMIN', _('Awaiting admin validation')
+        PUBLISHING = 'PUBLISHING', _('Publishing')
+        COMPLETED = 'COMPLETED', _('Completed')
+        FAILED = 'FAILED', _('Failed')
+        CANCELLED = 'CANCELLED', _('Cancelled')
+
+    class Platform(models.TextChoices):
+        LINKEDIN = 'LINKEDIN', _('LinkedIn')
+        INDEED = 'INDEED', _('Indeed')
+        REKRUTE = 'REKRUTE', _('Rekrute')
+        EMPLOI_MA = 'EMPLOI_MA', _('Emploi.ma')
+        NOVOJOB = 'NOVOJOB', _('Novojob')
+        COMPANY_WEBSITE = 'COMPANY_WEBSITE', _('Company website')
+        UNKNOWN = 'UNKNOWN', _('Unknown')
+
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    source_url = models.URLField(max_length=1024)
+    detected_platform = models.CharField(
+        max_length=32,
+        choices=Platform.choices,
+        default=Platform.UNKNOWN,
+        db_index=True,
+    )
+    status = models.CharField(
+        max_length=24,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    initiated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='offer_import_jobs',
+    )
+    extracted_data = models.JSONField(default=dict, blank=True)
+    normalized_data = models.JSONField(default=dict, blank=True)
+    validation_errors = models.JSONField(default=list, blank=True)
+    duplicate_offer = models.ForeignKey(
+        InternshipOffer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='duplicate_import_jobs',
+    )
+    resulting_offer = models.ForeignKey(
+        InternshipOffer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='import_jobs',
+    )
+    error_message = models.TextField(blank=True, default='')
+    completed_at = models.DateTimeField(null=True, blank=True)
+    metadata_json = models.JSONField(default=dict, blank=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['detected_platform', '-created_at']),
+        ]
+
+
+class OfferImportHistory(TimestampedModel):
+    """Immutable log entry for each step of an import workflow."""
+
+    class Step(models.TextChoices):
+        URL_VALIDATED = 'URL_VALIDATED', _('URL validated')
+        PLATFORM_DETECTED = 'PLATFORM_DETECTED', _('Platform detected')
+        DATA_EXTRACTED = 'DATA_EXTRACTED', _('Data extracted')
+        DATA_NORMALIZED = 'DATA_NORMALIZED', _('Data normalized')
+        PREVIEW_GENERATED = 'PREVIEW_GENERATED', _('Preview generated')
+        ADMIN_APPROVED = 'ADMIN_APPROVED', _('Admin approved')
+        ADMIN_REJECTED = 'ADMIN_REJECTED', _('Admin rejected')
+        OFFER_PUBLISHED = 'OFFER_PUBLISHED', _('Offer published')
+        FAILED = 'FAILED', _('Failed')
+
+    job = models.ForeignKey(
+        OfferImportJob,
+        on_delete=models.CASCADE,
+        related_name='history',
+    )
+    step = models.CharField(max_length=32, choices=Step.choices, db_index=True)
+    message = models.TextField(blank=True, default='')
+    payload_json = models.JSONField(default=dict, blank=True)
+    performed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['created_at']
+
+
+# ============================================================================
+# 11. MATCHING HISTORY — score recalculation audit
+# ============================================================================
+
+class MatchingHistory(TimestampedModel):
+    """Audit trail when match scores are computed or refreshed."""
+
+    class Trigger(models.TextChoices):
+        MANUAL = 'MANUAL', _('Manual')
+        SCHEDULED = 'SCHEDULED', _('Scheduled job')
+        OFFER_PUBLISHED = 'OFFER_PUBLISHED', _('Offer published')
+        PROFILE_UPDATED = 'PROFILE_UPDATED', _('Student profile updated')
+        APPLICATION = 'APPLICATION', _('Application submitted')
+
+    student_profile = models.ForeignKey(
+        StudentProfile,
+        on_delete=models.CASCADE,
+        related_name='matching_history',
+        null=True,
+        blank=True,
+    )
+    offer = models.ForeignKey(
+        InternshipOffer,
+        on_delete=models.CASCADE,
+        related_name='matching_history',
+        null=True,
+        blank=True,
+    )
+    previous_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    new_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    match_reasons = models.JSONField(default=list, blank=True)
+    trigger = models.CharField(max_length=24, choices=Trigger.choices, db_index=True)
+    metadata_json = models.JSONField(default=dict, blank=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['student_profile', '-created_at']),
+            models.Index(fields=['offer', '-created_at']),
+            models.Index(fields=['trigger', '-created_at']),
+        ]
+
+
+# ============================================================================
+# 12. ANALYTICS SNAPSHOTS — periodic rollups
+# ============================================================================
+
+class OfferAnalyticsSnapshot(TimestampedModel):
+    """Point-in-time analytics snapshot generated by scheduled jobs."""
+
+    snapshot_date = models.DateField(db_index=True)
+    period = models.CharField(max_length=16, default='daily', db_index=True)
+    metrics_json = models.JSONField(default=dict, blank=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['-snapshot_date']
+        constraints = [
+            UniqueConstraint(
+                fields=['snapshot_date', 'period'],
+                name='uniq_offer_analytics_snapshot',
+            ),
+        ]
+
+
+# Extended domain models (Company, Interview, Webhooks, SLA, Versioning, Pipeline)
+from apps.stage.models_extended import (  # noqa: E402, F401
+    Company,
+    CompanyContact,
+    CompanyDocument,
+    CompanyInteraction,
+    CompanyNote,
+    CompanyRelationship,
+    CompanyStatusHistory,
+    Interview,
+    InterviewFeedback,
+    InterviewResult,
+    InterviewSchedule,
+    InterviewStatusHistory,
+    MatchingWeightConfig,
+    OfferContentHistory,
+    OfferRecommendation,
+    OfferVersion,
+    PipelineColumn,
+    SlaRule,
+    SlaViolation,
+    WebhookDelivery,
+    WebhookEvent,
+    WebhookLog,
+    WebhookRetry,
+    WebhookSubscription,
+)

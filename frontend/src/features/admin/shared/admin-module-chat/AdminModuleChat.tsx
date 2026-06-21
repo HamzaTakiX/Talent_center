@@ -26,6 +26,8 @@ import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../dashboard/components/AdminLayout';
 import { useAdminToast } from '../../dashboard/context/AdminToastContext';
 import type { AdminChatMessage, AdminChatParticipant } from './adminChatTypes';
+import ChatEmptyState from './components/ChatEmptyState';
+import type { ChatEmptyStateProps, ChatEmptyStateStats } from './types/chatEmptyStateTypes';
 
 const DEFAULT_RINGS = [
   'bg-[#5ba3ff] text-white',
@@ -154,7 +156,9 @@ export interface AdminModuleChatProps {
   avatarClassByParticipantId?: Record<string, string>;
   searchPlaceholder?: string;
   composerPlaceholder?: string;
-  emptyConversationLabel: string;
+  /** @deprecated Prefer chatEmptyState for the unified empty illustration */
+  emptyConversationLabel?: string;
+  chatEmptyState?: Omit<ChatEmptyStateProps, 'className' | 'stats'> & { stats?: ChatEmptyStateStats };
   /** Shell layout (default: AdminLayout). Student portal passes StudentLayout. */
   Layout?: ComponentType<AdminModuleChatLayoutProps>;
   /** Status strip above chat (live / demo / loading) */
@@ -163,13 +167,15 @@ export interface AdminModuleChatProps {
   contextHeader?: ReactNode;
   /** Right-side contextual panel (workflow summary) */
   rightPanel?: ReactNode;
-  /** Smart workflow actions above composer */
+  /** Workflow actions above composer */
   smartActionsBar?: ReactNode;
   selectedConversationId?: string;
   onSelectConversation?: (id: string) => void;
   onSendMessage?: (text: string, conversationId: string) => boolean | Promise<boolean>;
   renderConversationBadge?: (participant: AdminChatParticipant) => ReactNode;
   renderListMeta?: (participant: AdminChatParticipant) => ReactNode;
+  /** Max characters allowed in composer (default: no limit) */
+  composerMaxLength?: number;
 }
 
 const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
@@ -180,6 +186,7 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
   searchPlaceholder,
   composerPlaceholder,
   emptyConversationLabel,
+  chatEmptyState,
   Layout = AdminLayout,
   topBanner,
   contextHeader,
@@ -190,6 +197,7 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
   onSendMessage,
   renderConversationBadge,
   renderListMeta,
+  composerMaxLength,
 }) => {
   const { t, i18n } = useTranslation();
   const toast = useAdminToast();
@@ -257,6 +265,13 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
         (m.separatorBefore?.toLowerCase().includes(q) ?? false)
     );
   }, [thread, threadSearch]);
+
+  const computedEmptyStats = useMemo((): ChatEmptyStateStats | undefined => {
+    if (chatEmptyState?.stats) return chatEmptyState.stats;
+    const unread = Object.values(unreadByConv).reduce((sum, count) => sum + count, 0);
+    if (unread === 0) return undefined;
+    return { unread };
+  }, [chatEmptyState?.stats, unreadByConv]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -662,7 +677,7 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
                             <div className="max-w-[min(480px,88%)]">
                               <div
                                 dir="auto"
-                                className="admin-chat-bubble--in rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm leading-relaxed"
+                                className="admin-chat-bubble--in safe-chat-bubble safe-chat-message rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm leading-relaxed"
                               >
                                 {msg.text}
                               </div>
@@ -674,7 +689,7 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
                             <div className="max-w-[min(480px,88%)]">
                               <div
                                 dir="auto"
-                                className="admin-chat-bubble--out rounded-2xl rounded-br-md px-3.5 py-2.5 text-sm leading-relaxed"
+                                className="admin-chat-bubble--out safe-chat-bubble safe-chat-message rounded-2xl rounded-br-md px-3.5 py-2.5 text-sm leading-relaxed"
                               >
                                 {msg.text}
                               </div>
@@ -715,9 +730,13 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
                       rows={1}
                       value={draft}
                       onChange={(e) => {
-                        setDraft(e.target.value);
+                        const next = composerMaxLength
+                          ? e.target.value.slice(0, composerMaxLength)
+                          : e.target.value;
+                        setDraft(next);
                         adjustComposerHeight();
                       }}
+                      maxLength={composerMaxLength}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
@@ -740,6 +759,15 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
                   </div>
                 </footer>
               </>
+            ) : chatEmptyState ? (
+              <div className="admin-chat-empty relative z-[1] flex flex-1 items-center justify-center px-6 py-8">
+                <ChatEmptyState
+                  title={chatEmptyState.title}
+                  description={chatEmptyState.description}
+                  moduleType={chatEmptyState.moduleType}
+                  stats={computedEmptyStats}
+                />
+              </div>
             ) : (
               <div className="admin-chat-empty relative z-[1] flex flex-1 items-center justify-center text-sm font-medium">
                 {emptyConversationLabel}

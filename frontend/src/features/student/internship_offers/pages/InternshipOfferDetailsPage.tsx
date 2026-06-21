@@ -1,19 +1,24 @@
 import { FunctionComponent } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
-import StudentLayout from '../../components/StudentLayout';
 import BackToOffersLink from '../components/BackToOffersLink';
 import InternshipOfferDetailsHeader from '../components/details/InternshipOfferDetailsHeader';
 import InternshipOfferDetailsMain from '../components/details/InternshipOfferDetailsMain';
 import InternshipOfferDetailsSidebar from '../components/details/InternshipOfferDetailsSidebar';
+import { InternshipOfferPageLoadingState } from '../components/loading/InternshipOfferPageSkeleton';
 import { STUDENT_ALL_INTERNSHIP_OFFERS_PATH } from '../constants/routes';
 import { INTERNSHIP_OFFERS_PAGE_ROOT } from '../constants/internshipOffersLayout';
-import { getInternshipOfferById } from '../helpers/getInternshipOfferById';
+import { useStudentOfferDetail } from '../hooks/useStudentStageOffers';
+import StudentLayout from '../../components/StudentLayout';
 
 const InternshipOfferDetailsPage: FunctionComponent = () => {
   const { offerId } = useParams<{ offerId: string }>();
-  const offer = getInternshipOfferById(offerId);
+  const { detail: offer, loading, error } = useStudentOfferDetail(offerId);
 
-  if (!offer) {
+  if (loading) {
+    return <InternshipOfferPageLoadingState variant="details" loadingLabelKey="loadingOfferDetails" />;
+  }
+
+  if (error || !offer) {
     return <Navigate to={STUDENT_ALL_INTERNSHIP_OFFERS_PATH} replace />;
   }
 

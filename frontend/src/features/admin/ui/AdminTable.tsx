@@ -13,7 +13,7 @@ export const AdminTableScroll: FunctionComponent<AdminTableProps> = ({
   className = '',
 }) => (
   <div className={`admin-table-scroll ${className}`}>
-    <table className="admin-table" style={{ minWidth }}>
+    <table className="admin-table admin-table--safe" style={{ minWidth }}>
       {children}
     </table>
   </div>

@@ -9,6 +9,7 @@ export const studentCopyFr = {
     encadrant: 'Encadrant',
     resources: 'Ressources',
     cvAnalysis: 'Analyse CV',
+    aiCareerCoach: 'Coach Carrière IA',
     interviewSimulator: 'Simulateur d\'entretien',
     chat: 'Chat',
     agenda: 'Agenda',
@@ -25,6 +26,7 @@ export const studentCopyFr = {
     defaultSubtitle: 'Portail étudiant',
     titles: {
       dashboard: 'Tableau de bord',
+      profile: 'Mon compte',
       internshipOffers: 'Offres de stage',
       announcements: 'Annonces',
       history: 'Historique',
@@ -32,6 +34,7 @@ export const studentCopyFr = {
       srf: 'SRF (Finance)',
       encadrant: 'Encadrant',
       cvAnalysis: 'Analyse CV',
+      aiCareerCoach: 'Coach Carrière IA',
       interviewSimulator: 'Simulateur d\'entretien',
       chat: 'Chat',
       apply: 'Candidater à l\'offre',

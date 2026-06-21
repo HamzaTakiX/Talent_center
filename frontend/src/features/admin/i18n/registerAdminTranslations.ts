@@ -10,6 +10,8 @@ import { announcementsModuleFr } from './locales/announcements-module.fr';
 import { documentsModuleAr } from './locales/documents-module.ar';
 import { documentsModuleEn } from './locales/documents-module.en';
 import { documentsModuleFr } from './locales/documents-module.fr';
+import { emailSystemModuleEn } from './locales/email-system-module.en';
+import { emailSystemModuleFr } from './locales/email-system-module.fr';
 
 let registered = false;
 
@@ -20,7 +22,7 @@ export function registerAdminTranslations(): void {
   i18n.addResourceBundle(
     'en',
     'translation',
-    { admin: { ...adminCopyEn, announcementsModule: announcementsModuleEn, documentsModule: documentsModuleEn } },
+    { admin: { ...adminCopyEn, announcementsModule: announcementsModuleEn, documentsModule: documentsModuleEn, modules: { ...adminCopyEn.modules, emailSystem: emailSystemModuleEn } } },
     true,
     true,
   );
@@ -33,6 +35,7 @@ export function registerAdminTranslations(): void {
         chatMocks: adminChatMocksFr,
         announcementsModule: announcementsModuleFr,
         documentsModule: documentsModuleFr,
+        modules: { ...adminCopyFr.modules, emailSystem: emailSystemModuleFr },
       },
     },
     true,

@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 import AdminModulePageShell from '../../ui/AdminModulePageShell';
 import { AdminSearchEmptyState } from '../../ui';
 import HistoryFiltersBar, { HISTORY_ACTION_FILTER_ALL } from '../components/HistoryFiltersBar';
-import HistoryStatsGrid from '../components/HistoryStatsGrid';
+import HistoryAuditGrid from '../components/HistoryAuditGrid';
+import HistoryActivitySummaryBar from '../components/HistoryActivitySummaryBar';
 import HistoryTimelineList from '../components/HistoryTimelineList';
 import HistoryEventDetailDrawer from '../components/HistoryEventDetailDrawer';
 import HistoryExportButton from '../components/HistoryExportButton';
 import { useHistoryCenter } from '../hooks/useHistoryCenter';
 import type { ModuleLocalHistoryConfig } from '../config/moduleLocalHistoryConfig';
+import type { ModuleAuditKey } from '../constants/moduleAuditDefinitions';
 import type { HistoryActionRow } from '../types';
 import type { HistoryListParams } from '../../api/history';
 
@@ -24,6 +26,15 @@ const ModuleLocalHistoryPage: FunctionComponent<ModuleLocalHistoryPageProps> = (
   const [automatedFilter, setAutomatedFilter] = useState('all');
   const [selectedRow, setSelectedRow] = useState<HistoryActionRow | null>(null);
 
+  const moduleKey = config.kpiKey as ModuleAuditKey;
+  const hideAuditCards = config.hideAuditCards ?? false;
+  const showActivitySummary = config.showActivitySummary ?? false;
+  const auditStatsMode = hideAuditCards
+    ? showActivitySummary
+      ? 'summary-only'
+      : 'off'
+    : 'cards';
+
   const apiFilters: HistoryListParams = useMemo(
     () => ({
       search: search.trim() || undefined,
@@ -36,14 +47,20 @@ const ModuleLocalHistoryPage: FunctionComponent<ModuleLocalHistoryPageProps> = (
     [search, config.kpiKey, actionFilter, criticalityFilter, automatedFilter],
   );
 
-  const { rows, stats, loading, error } = useHistoryCenter(apiFilters);
+  const { rows, stats, statsLoading, timelineLoading, error, total, eventsToday } = useHistoryCenter(
+    apiFilters,
+    {
+      moduleKey: hideAuditCards ? undefined : moduleKey,
+      auditStatsMode,
+    },
+  );
 
   const title = t(`admin.localHistory.${config.id}.title`);
   const subtitle = t(`admin.localHistory.${config.id}.subtitle`);
 
   return (
     <AdminModulePageShell width="wide">
-      <div className="flex w-full min-w-0 flex-col gap-5 md:gap-7">
+      <div className="admin-audit-center flex w-full min-w-0 flex-col gap-4 md:gap-5">
         {error ? (
           <p
             role="alert"
@@ -53,12 +70,23 @@ const ModuleLocalHistoryPage: FunctionComponent<ModuleLocalHistoryPageProps> = (
           </p>
         ) : null}
 
-        {stats.length > 0 ? <HistoryStatsGrid stats={stats} loading={loading} /> : null}
+        {!hideAuditCards ? (
+          <HistoryAuditGrid stats={stats} loading={statsLoading} moduleKey={moduleKey} />
+        ) : null}
 
         <section
           data-admin-search-id={config.searchId}
-          className="admin-history-page admin-history-page--panel admin-module-panel w-full min-w-0 overflow-x-hidden shadow-sm"
+          className="admin-history-page admin-history-page--panel admin-history-page--hero admin-module-panel w-full min-w-0 overflow-x-hidden shadow-sm"
         >
+          {showActivitySummary ? (
+            <HistoryActivitySummaryBar
+              total={total}
+              lastActivityAt={rows[0]?.timestamp}
+              actionsToday={eventsToday}
+              loading={timelineLoading || statsLoading}
+            />
+          ) : null}
+
           <HistoryFiltersBar
             search={search}
             moduleFilter=""
@@ -74,16 +102,12 @@ const ModuleLocalHistoryPage: FunctionComponent<ModuleLocalHistoryPageProps> = (
             title={title}
             subtitle={subtitle}
             trailingActions={<HistoryExportButton filters={apiFilters} />}
+            isRefreshing={timelineLoading && rows.length > 0}
+            searchLoading={timelineLoading}
           />
 
-          <div className="flex min-w-0 max-w-full flex-col gap-3 overflow-x-hidden px-4 pb-4 pt-0 sm:gap-4 sm:px-6 sm:pb-6">
-            {loading ? (
-              <div className="space-y-3">
-                {[0, 1, 2, 3].map((i) => (
-                  <div key={i} className="admin-skeleton h-[76px] rounded-xl" />
-                ))}
-              </div>
-            ) : error ? (
+          <div className="admin-audit-timeline-body flex min-w-0 max-w-full flex-col gap-3 overflow-x-hidden px-4 pb-5 pt-0 sm:gap-4 sm:px-6 sm:pb-6">
+            {error ? (
               <AdminSearchEmptyState titleKey="admin.auditCenter.loadError" />
             ) : (
               <HistoryTimelineList
@@ -91,6 +115,7 @@ const ModuleLocalHistoryPage: FunctionComponent<ModuleLocalHistoryPageProps> = (
                 onViewDetails={setSelectedRow}
                 hideModuleBadge
                 emptyTitleKey="admin.localHistory.empty"
+                loading={timelineLoading}
               />
             )}
           </div>

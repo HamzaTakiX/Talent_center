@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Settings, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../dashboard/components/AdminLayout';
+import StudentLayout from '../../../student/components/StudentLayout';
 import { authApi } from '../../../auth/api';
 import { useAuth } from '../../../auth/hooks/useAuth';
 import {
@@ -53,7 +54,11 @@ const emptyForm = (email: string, fullName = ''): ProfileFormState => ({
   confirmPassword: '',
 });
 
-const AdminProfilePage: FunctionComponent = () => {
+const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = ({
+  variant = 'admin',
+}) => {
+  const isStudentPortal = variant === 'student';
+  const Layout = isStudentPortal ? StudentLayout : AdminLayout;
   const { t } = useTranslation();
   const { user, updateUser } = useAuth();
   const ready = useAccountHydration();
@@ -108,7 +113,8 @@ const AdminProfilePage: FunctionComponent = () => {
 
   const isSettingsDirty = !areAdminPreferencesEqual(settingsDraft, savedPreferences);
   const isThemeDirty = themeDraft !== savedTheme;
-  const isOrderDirty = !areDashboardOrdersEqual(dashboardOrderDraft, savedDashboardOrder);
+  const isOrderDirty =
+    !isStudentPortal && !areDashboardOrdersEqual(dashboardOrderDraft, savedDashboardOrder);
   const isDirty = isProfileDirty || isSettingsDirty || isThemeDirty || isOrderDirty;
 
   const draftsInitializedRef = useRef(false);
@@ -237,12 +243,14 @@ const AdminProfilePage: FunctionComponent = () => {
       await applyAdminSettings({
         preferences: settingsDraft,
         theme: themeDraft,
-        dashboardOrder: dashboardOrderDraft,
+        dashboardOrder: isStudentPortal ? storedOrder : dashboardOrderDraft,
       });
 
       setSavedPreferences(settingsDraft);
       setSavedTheme(themeDraft);
-      setSavedDashboardOrder(dashboardOrderDraft);
+      if (!isStudentPortal) {
+        setSavedDashboardOrder(dashboardOrderDraft);
+      }
 
       toast.success(t('admin.account.saved'));
     } catch {
@@ -261,7 +269,9 @@ const AdminProfilePage: FunctionComponent = () => {
     setErrors({});
     setSettingsDraft(savedPreferences);
     setThemeDraft(savedTheme);
-    setDashboardOrderDraft(savedDashboardOrder);
+    if (!isStudentPortal) {
+      setDashboardOrderDraft(savedDashboardOrder);
+    }
   };
 
   const handleResetAll = async () => {
@@ -276,29 +286,31 @@ const AdminProfilePage: FunctionComponent = () => {
     await applyAdminSettings({
       preferences: defaultAdminPreferences,
       theme: 'light',
-      dashboardOrder: DEFAULT_DASHBOARD_SECTIONS,
+      dashboardOrder: isStudentPortal ? storedOrder : DEFAULT_DASHBOARD_SECTIONS,
     });
 
     setSettingsDraft(defaultAdminPreferences);
     setSavedPreferences(defaultAdminPreferences);
     setThemeDraft('light');
     setSavedTheme('light');
-    setDashboardOrderDraft(DEFAULT_DASHBOARD_SECTIONS);
-    setSavedDashboardOrder(DEFAULT_DASHBOARD_SECTIONS);
+    if (!isStudentPortal) {
+      setDashboardOrderDraft(DEFAULT_DASHBOARD_SECTIONS);
+      setSavedDashboardOrder(DEFAULT_DASHBOARD_SECTIONS);
+    }
 
     toast.success(t('admin.account.saved'));
   };
 
   if (!ready) {
     return (
-      <AdminLayout>
+      <Layout>
         <ProfilePageSkeleton />
-      </AdminLayout>
+      </Layout>
     );
   }
 
   return (
-    <AdminLayout>
+    <Layout>
       <motion.div
         variants={staggerContainer}
         initial="initial"
@@ -460,6 +472,7 @@ const AdminProfilePage: FunctionComponent = () => {
               onThemeDraftChange={setThemeDraft}
               dashboardOrder={dashboardOrderDraft}
               onDashboardOrderChange={setDashboardOrderDraft}
+              variant={variant}
             />
           )}
         </section>
@@ -474,7 +487,7 @@ const AdminProfilePage: FunctionComponent = () => {
           />
         )}
       </motion.div>
-    </AdminLayout>
+    </Layout>
   );
 };
 

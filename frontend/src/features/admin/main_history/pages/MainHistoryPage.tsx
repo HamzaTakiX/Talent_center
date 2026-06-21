@@ -5,7 +5,7 @@ import HistoryFiltersBar, {
   HISTORY_ACTION_FILTER_ALL,
   HISTORY_MODULE_FILTER_ALL,
 } from '../components/HistoryFiltersBar';
-import HistoryStatsGrid from '../components/HistoryStatsGrid';
+import HistoryAuditGrid from '../components/HistoryAuditGrid';
 import HistoryTimelineList from '../components/HistoryTimelineList';
 import HistoryEventDetailDrawer from '../components/HistoryEventDetailDrawer';
 import HistoryExportButton from '../components/HistoryExportButton';
@@ -44,11 +44,11 @@ const MainHistoryPage: FunctionComponent = () => {
     [search, moduleFilter, actionFilter, criticalityFilter, automatedFilter],
   );
 
-  const { rows, stats, loading, error } = useHistoryCenter(apiFilters);
+  const { rows, stats, statsLoading, timelineLoading, error } = useHistoryCenter(apiFilters);
 
   return (
     <AdminModulePageShell width="wide">
-      <div className="flex w-full min-w-0 flex-col gap-5 md:gap-7">
+      <div className="admin-audit-center flex w-full min-w-0 flex-col gap-4 md:gap-5">
         {error ? (
           <p
             role="alert"
@@ -58,11 +58,11 @@ const MainHistoryPage: FunctionComponent = () => {
           </p>
         ) : null}
 
-        {stats.length > 0 ? <HistoryStatsGrid stats={stats} loading={loading} /> : null}
+        <HistoryAuditGrid stats={stats} loading={statsLoading} columns={4} />
 
         <section
           data-admin-search-id="history-timeline"
-          className="admin-history-page admin-history-page--panel admin-module-panel w-full min-w-0 overflow-x-hidden shadow-sm"
+          className="admin-history-page admin-history-page--panel admin-history-page--hero admin-module-panel w-full min-w-0 overflow-x-hidden shadow-sm"
         >
           <HistoryFiltersBar
             search={search}
@@ -76,19 +76,15 @@ const MainHistoryPage: FunctionComponent = () => {
             onCriticalityChange={setCriticalityFilter}
             onAutomatedChange={setAutomatedFilter}
             trailingActions={<HistoryExportButton filters={apiFilters} />}
+            isRefreshing={timelineLoading && rows.length > 0}
+            searchLoading={timelineLoading}
           />
 
-          <div className="flex min-w-0 max-w-full flex-col gap-3 overflow-x-hidden px-4 pb-4 pt-0 sm:gap-4 sm:px-6 sm:pb-6">
-            {loading ? (
-              <div className="space-y-3">
-                {[0, 1, 2, 3].map((i) => (
-                  <div key={i} className="admin-skeleton h-[76px] rounded-xl" />
-                ))}
-              </div>
-            ) : error ? (
+          <div className="admin-audit-timeline-body flex min-w-0 max-w-full flex-col gap-3 overflow-x-hidden px-4 pb-5 pt-0 sm:gap-4 sm:px-6 sm:pb-6">
+            {error ? (
               <AdminSearchEmptyState titleKey="admin.auditCenter.loadError" />
             ) : (
-              <HistoryTimelineList rows={rows} onViewDetails={setSelectedRow} />
+              <HistoryTimelineList rows={rows} onViewDetails={setSelectedRow} loading={timelineLoading} />
             )}
           </div>
         </section>

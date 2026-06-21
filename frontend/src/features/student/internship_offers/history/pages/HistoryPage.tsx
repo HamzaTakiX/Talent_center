@@ -12,77 +12,58 @@ import {
   Users,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import type { HistoryEventDto } from '../../../../admin/api/history';
 import {
   ADMIN_HISTORY_ICON_PROPS,
   type AdminHistoryCircleVariant,
 } from '../../../../admin/shared/admin-module-history/adminHistoryUi';
+import { useStudentInternshipHistory } from '../../hooks/useStudentStageOffers';
 import StudentModuleHistory from '../components/StudentModuleHistory';
 import type { HistoryRowDisplay } from '../types';
-import {
-  studentInternshipHistoryTimelineSeed,
-  StudentInternshipHistoryRow,
-  StudentInternshipHistoryStatus,
-} from '../data/studentInternshipHistoryMock';
 
-const STATUS_I18N_KEY: Record<StudentInternshipHistoryStatus, string> = {
-  viewed_offer: 'student.internshipOffers.history.statuses.viewed',
-  saved_offer: 'student.internshipOffers.history.statuses.saved',
-  applied: 'student.internshipOffers.history.statuses.applied',
-  cv_uploaded: 'student.internshipOffers.history.statuses.cvUploaded',
-  cv_analysis_used: 'student.internshipOffers.history.statuses.cvAnalysis',
-  interview_simulator_used: 'student.internshipOffers.history.statuses.interviewSimulator',
-  chat_question: 'student.internshipOffers.history.statuses.chatQuestion',
-  external_link_confirmed: 'student.internshipOffers.history.statuses.externalLink',
-  application_status_changed: 'student.internshipOffers.history.statuses.statusUpdated',
-  deadline_reminder: 'student.internshipOffers.history.statuses.deadlineReminder',
-};
-
-function statusCircleVariant(status: StudentInternshipHistoryStatus): AdminHistoryCircleVariant {
-  switch (status) {
-    case 'viewed_offer':
-    case 'saved_offer':
-    case 'cv_analysis_used':
-    case 'interview_simulator_used':
-      return 'info';
-    case 'applied':
-    case 'cv_uploaded':
-    case 'external_link_confirmed':
-      return 'event';
-    case 'chat_question':
-    case 'application_status_changed':
-      return 'success';
-    case 'deadline_reminder':
-      return 'danger';
-    default:
-      return 'neutral';
+function formatEventDate(iso: string): { date: string; time: string } {
+  try {
+    const d = new Date(iso);
+    return {
+      date: new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d),
+      time: new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false }).format(d),
+    };
+  } catch {
+    return { date: iso.slice(0, 10), time: iso.slice(11, 16) };
   }
 }
 
-function glyphFor(status: StudentInternshipHistoryStatus) {
-  switch (status) {
-    case 'viewed_offer':
-      return <Eye {...ADMIN_HISTORY_ICON_PROPS} />;
-    case 'saved_offer':
-      return <Bookmark {...ADMIN_HISTORY_ICON_PROPS} />;
-    case 'applied':
-      return <User {...ADMIN_HISTORY_ICON_PROPS} />;
-    case 'cv_uploaded':
-      return <Upload {...ADMIN_HISTORY_ICON_PROPS} />;
-    case 'cv_analysis_used':
-      return <FileText {...ADMIN_HISTORY_ICON_PROPS} />;
-    case 'interview_simulator_used':
-      return <Users {...ADMIN_HISTORY_ICON_PROPS} />;
-    case 'chat_question':
-      return <MessageSquare {...ADMIN_HISTORY_ICON_PROPS} />;
-    case 'external_link_confirmed':
-      return <ExternalLink {...ADMIN_HISTORY_ICON_PROPS} />;
-    case 'application_status_changed':
-      return <RefreshCw {...ADMIN_HISTORY_ICON_PROPS} />;
-    case 'deadline_reminder':
-      return <CalendarClock {...ADMIN_HISTORY_ICON_PROPS} />;
-    default:
-      return <User {...ADMIN_HISTORY_ICON_PROPS} />;
-  }
+function circleVariantFor(event: HistoryEventDto): AdminHistoryCircleVariant {
+  const code = event.event_code.toLowerCase();
+  if (code.includes('reject') || code.includes('deadline')) return 'danger';
+  if (code.includes('accept') || code.includes('publish')) return 'success';
+  if (code.includes('apply') || code.includes('submit')) return 'event';
+  if (code.includes('view') || code.includes('chat')) return 'info';
+  return 'neutral';
+}
+
+function glyphForEvent(event: HistoryEventDto) {
+  const code = event.event_code.toLowerCase();
+  if (code.includes('view')) return <Eye {...ADMIN_HISTORY_ICON_PROPS} />;
+  if (code.includes('save') || code.includes('bookmark')) return <Bookmark {...ADMIN_HISTORY_ICON_PROPS} />;
+  if (code.includes('apply') || code.includes('submit')) return <User {...ADMIN_HISTORY_ICON_PROPS} />;
+  if (code.includes('upload') || code.includes('cv')) return <Upload {...ADMIN_HISTORY_ICON_PROPS} />;
+  if (code.includes('analysis')) return <FileText {...ADMIN_HISTORY_ICON_PROPS} />;
+  if (code.includes('interview')) return <Users {...ADMIN_HISTORY_ICON_PROPS} />;
+  if (code.includes('chat')) return <MessageSquare {...ADMIN_HISTORY_ICON_PROPS} />;
+  if (code.includes('external') || code.includes('link')) return <ExternalLink {...ADMIN_HISTORY_ICON_PROPS} />;
+  if (code.includes('status') || code.includes('update')) return <RefreshCw {...ADMIN_HISTORY_ICON_PROPS} />;
+  if (code.includes('deadline')) return <CalendarClock {...ADMIN_HISTORY_ICON_PROPS} />;
+  return <User {...ADMIN_HISTORY_ICON_PROPS} />;
+}
+
+function activityCategoryFor(event: HistoryEventDto): string {
+  const code = event.event_code.toLowerCase();
+  if (code.includes('apply') || code.includes('application')) return 'applications';
+  if (code.includes('save') || code.includes('bookmark')) return 'saved';
+  if (code.includes('chat')) return 'chat';
+  if (code.includes('cv') || code.includes('interview') || code.includes('analysis')) return 'tools';
+  return 'offers';
 }
 
 const HistoryPage: FunctionComponent = () => {
@@ -91,46 +72,40 @@ const HistoryPage: FunctionComponent = () => {
   const [activityType, setActivityType] = useState('all');
   const [expireOffer, setExpireOffer] = useState('all');
 
-  const statusLabel = useCallback(
-    (status: StudentInternshipHistoryStatus) => t(STATUS_I18N_KEY[status] ?? status),
-    [t],
-  );
+  const { rows: apiRows, loading, error } = useStudentInternshipHistory(search, activityType);
 
-  const rowToDisplay = useCallback(
-    (row: StudentInternshipHistoryRow): HistoryRowDisplay => ({
-      id: row.id,
-      glyph: glyphFor(row.status),
-      badgeLabel: statusLabel(row.status),
-      circleVariant: statusCircleVariant(row.status),
-      actorName: row.actorName,
-      headline: row.headline,
-      metaLine: row.company,
-      date: row.date,
-      time: row.time,
-    }),
-    [statusLabel],
-  );
+  const rowToDisplay = useCallback((row: HistoryEventDto): HistoryRowDisplay => {
+    const { date, time } = formatEventDate(row.occurred_at);
+    const company =
+      (row.details?.company_name as string | undefined) ??
+      (row.new_values?.company_name as string | undefined) ??
+      row.entity_type;
+
+    return {
+      id: String(row.id),
+      glyph: glyphForEvent(row),
+      badgeLabel: row.summary.slice(0, 48),
+      circleVariant: circleVariantFor(row),
+      actorName: row.is_automated ? 'Système' : row.actor_name || row.actor_email,
+      headline: row.summary,
+      metaLine: company,
+      date,
+      time,
+    };
+  }, []);
 
   const rows = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return studentInternshipHistoryTimelineSeed
+    return apiRows
       .filter((row) => {
-        if (activityType !== 'all' && row.activityCategory !== activityType) return false;
-        if (expireOffer !== 'all' && row.offerExpiry !== expireOffer) return false;
-        if (!q) return true;
-        const hay = [
-          row.actorName,
-          row.headline,
-          row.company,
-          statusLabel(row.status),
-          row.activityCategory,
-        ]
-          .join(' ')
-          .toLowerCase();
-        return hay.includes(q);
+        if (activityType !== 'all' && activityCategoryFor(row) !== activityType) return false;
+        if (expireOffer !== 'all') {
+          const expiry = (row.details?.offer_expiry as string | undefined) ?? 'active';
+          if (expiry !== expireOffer) return false;
+        }
+        return true;
       })
       .map(rowToDisplay);
-  }, [search, activityType, expireOffer, statusLabel, rowToDisplay]);
+  }, [apiRows, activityType, expireOffer, rowToDisplay]);
 
   return (
     <StudentModuleHistory
@@ -163,7 +138,11 @@ const HistoryPage: FunctionComponent = () => {
         },
       ]}
       rows={rows}
-      emptyMessage={t('student.internshipOffers.history.empty')}
+      emptyMessage={
+        loading
+          ? 'Chargement…'
+          : error ?? t('student.internshipOffers.history.empty')
+      }
     />
   );
 };

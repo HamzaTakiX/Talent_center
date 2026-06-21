@@ -25,6 +25,9 @@ export interface AdminChatParticipant {
   lastPreview: string;
   timeLabel: string;
   unreadCount: number;
+  program?: string;
+  academicLevel?: string;
+  className?: string;
   contextKind?: ChatContextKind;
   urgency?: ChatUrgency;
   workflowStatus?: string;

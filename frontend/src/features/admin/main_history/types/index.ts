@@ -11,11 +11,18 @@ export type HistoryModule =
 export type HistoryActionType =
   | 'create'
   | 'update'
+  | 'delete'
   | 'validate'
-  | 'archive'
-  | 'review'
+  | 'reject'
   | 'assign'
-  | 'submit';
+  | 'publish'
+  | 'archive'
+  | 'login'
+  | 'logout'
+  | 'submit'
+  | 'review'
+  | 'import'
+  | 'system_action';
 
 export type HistoryStatus = 'success' | 'pending' | 'warning';
 
@@ -27,6 +34,7 @@ export interface HistoryStatItem {
   value: string;
   icon: 'activity' | 'users' | 'shield' | 'graduation' | 'briefcase' | 'file' | 'receipt' | 'message';
   colorClassName: string;
+  meta?: Record<string, unknown>;
 }
 
 export type HistoryCriticality = 'INFO' | 'IMPORTANT' | 'CRITICAL' | 'AUTOMATED';
@@ -39,7 +47,9 @@ export interface HistoryActionRow {
   priority: HistoryPriority;
   title: string;
   actor: string;
+  actorRole?: string;
   timestamp: string;
+  occurredAt?: string;
   criticality?: HistoryCriticality;
   sourceApp?: string;
   entityType?: string;

@@ -373,6 +373,16 @@ export const ADMIN_SEARCH_SUPPLEMENT: AdminSearchRegistryEntry[] = [
     keywords: ['message', 'discussion', 'messagerie'],
   }),
   s({
+    id: 'page-drafts-offers',
+    titleKey: 'admin.nav.drafts',
+    subtitleKey: 'admin.nav.internshipOffers',
+    category: 'page',
+    path: '/admin/internship-offers/drafts',
+    icon: FileText,
+    priority: 68,
+    keywords: ['draft', 'brouillon', 'مسودة'],
+  }),
+  s({
     id: 'page-chat-announcements',
     titleKey: 'admin.nav.chat',
     subtitleKey: 'admin.nav.announcements',

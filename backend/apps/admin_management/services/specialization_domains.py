@@ -10,20 +10,18 @@ from django.db.models import Q
 from apps.admin_management.models import Filiere, SpecializationDomain
 
 
+from apps.admin_management.services.i18n_labels import entity_localized_name, management_name_fields
+
+
 def localized_name(domain: SpecializationDomain, lang: str = '') -> str:
-    lang_key = (lang or '').split('-')[0].lower()
-    if lang_key and isinstance(domain.name_i18n, dict):
-        translated = domain.name_i18n.get(lang_key)
-        if translated:
-            return translated
-    return domain.name
+    return entity_localized_name(domain, lang)
 
 
 def serialize_specialization_domain(domain: SpecializationDomain, lang: str = '') -> dict:
     return {
         'id': domain.id,
         'code': domain.code,
-        'name': localized_name(domain, lang),
+        **management_name_fields(domain, lang),
         'category': domain.category,
         'program_families': list(domain.program_families or []),
         'master_tracks': list(domain.master_tracks or []),

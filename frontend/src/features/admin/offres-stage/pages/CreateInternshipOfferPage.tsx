@@ -1,27 +1,26 @@
 import { FunctionComponent } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useAdminBackLabel } from '../../i18n/useAdminCopy';
-import AdminFormPageShell from '../../ui/AdminFormPageShell';
-import CreateInternshipOfferForm from '../components/CreateInternshipOfferForm';
-
-const FORM_PREFIX = 'admin.forms.createOffer';
+import { motion } from 'framer-motion';
+import AdminLayout from '../../dashboard/components/AdminLayout';
+import { staggerContainer } from '../../dashboard/ui/animations';
+import CreateOfferStudio from '../components/create/CreateOfferStudio';
+import '../styles/create-offer-studio.css';
 
 const CreateInternshipOfferPage: FunctionComponent = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const backLabel = useAdminBackLabel('offers');
   const goBack = () => navigate('/admin/internship-offers');
 
   return (
-    <AdminFormPageShell
-      backLabel={backLabel}
-      onBack={goBack}
-      heroTitle={t(`${FORM_PREFIX}.title`)}
-      heroSubtitle={t(`${FORM_PREFIX}.subtitle`)}
-    >
-      <CreateInternshipOfferForm hidePanelHeader onCancel={goBack} onPublish={goBack} />
-    </AdminFormPageShell>
+    <AdminLayout mainFillHeight>
+      <motion.div
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+        className="offer-create-page flex h-full min-h-0 w-full min-w-0 max-w-none flex-1 flex-col self-stretch font-inter"
+      >
+        <CreateOfferStudio onBack={goBack} />
+      </motion.div>
+    </AdminLayout>
   );
 };
 

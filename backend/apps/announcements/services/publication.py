@@ -62,6 +62,29 @@ def publish_announcement(announcement: Announcement, user) -> Announcement:
         )
     except Exception:
         pass
+    try:
+        from apps.notifications.events.publisher import emit_event
+
+        targets = announcement.targets.all()
+        filiere_ids = [t.filiere_id for t in targets if t.filiere_id]
+        class_group_ids = [t.class_group_id for t in targets if t.class_group_id]
+        emit_event(
+            event_code='announcement.published',
+            source_app='announcements',
+            entity_type='announcement',
+            entity_id=announcement.pk,
+            payload={
+                'announcement_id': announcement.pk,
+                'title': announcement.title,
+                'body': announcement.summary or announcement.body[:200],
+                'action_url': f'/student/announcements/{announcement.uuid}',
+                'filiere_ids': filiere_ids,
+                'class_group_ids': class_group_ids,
+            },
+            actor=user,
+        )
+    except Exception:
+        pass
     return announcement
 
 

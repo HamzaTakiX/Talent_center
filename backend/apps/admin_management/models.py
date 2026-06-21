@@ -28,7 +28,7 @@ from apps.accounts_et_roles.models import (
 # ============================================================================
 
 class Filiere(TimestampedModel):
-    """Academic program / filière (PGE, LME, IBA, or a Master track)."""
+    """Academic program / track (PGE, LME, IBA, or a Master track)."""
 
     class ProgramFamily(models.TextChoices):
         PGE = 'PGE', _('Programme Grande École')
@@ -38,18 +38,21 @@ class Filiere(TimestampedModel):
 
     code = models.SlugField(max_length=64, unique=True)
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(max_length=255, blank=True, default='')
+    name_en = models.CharField(max_length=255, blank=True, default='')
     name_i18n = models.JSONField(default=dict, blank=True)
     description = models.TextField(blank=True, default='')
     program_family = models.CharField(
-        max_length=16,
-        choices=ProgramFamily.choices,
+        max_length=32,
         blank=True,
         default='',
         db_index=True,
+        help_text=_('Dynamic program family code (PGE, LME, IBA, MASTER, …).'),
     )
     department = models.CharField(max_length=128, blank=True, default='', db_index=True)
     sort_order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
+    is_archived = models.BooleanField(default=False, db_index=True)
 
     class Meta(TimestampedModel.Meta):
         ordering = ['sort_order', 'code']
@@ -86,6 +89,8 @@ class AcademicLevel(TimestampedModel):
     )
     code = models.SlugField(max_length=64)
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(max_length=255, blank=True, default='')
+    name_en = models.CharField(max_length=255, blank=True, default='')
     name_i18n = models.JSONField(default=dict, blank=True)
     year_number = models.PositiveSmallIntegerField(default=1)
     has_sectors = models.BooleanField(
@@ -94,6 +99,7 @@ class AcademicLevel(TimestampedModel):
     )
     sort_order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
+    is_archived = models.BooleanField(default=False, db_index=True)
 
     class Meta(TimestampedModel.Meta):
         ordering = ['filiere', 'sort_order', 'year_number']
@@ -118,6 +124,8 @@ class AcademicSector(TimestampedModel):
     )
     code = models.SlugField(max_length=64)
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(max_length=255, blank=True, default='')
+    name_en = models.CharField(max_length=255, blank=True, default='')
     name_i18n = models.JSONField(default=dict, blank=True)
     sort_order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
@@ -153,10 +161,13 @@ class InternshipType(TimestampedModel):
     )
     code = models.SlugField(max_length=64)
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(max_length=255, blank=True, default='')
+    name_en = models.CharField(max_length=255, blank=True, default='')
     name_i18n = models.JSONField(default=dict, blank=True)
     duration_hint = models.CharField(max_length=64, blank=True, default='')
     sort_order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
+    is_archived = models.BooleanField(default=False, db_index=True)
 
     class Meta(TimestampedModel.Meta):
         ordering = ['academic_level', 'sort_order', 'code']
@@ -171,6 +182,26 @@ class InternshipType(TimestampedModel):
         return f'InternshipType<{self.code}>'
 
 
+class WorkMode(TimestampedModel):
+    """Configurable work arrangement (Remote, Hybrid, On-Site, …)."""
+
+    code = models.SlugField(max_length=32, unique=True)
+    name = models.CharField(max_length=128)
+    name_fr = models.CharField(max_length=128, blank=True, default='')
+    name_en = models.CharField(max_length=128, blank=True, default='')
+    name_i18n = models.JSONField(default=dict, blank=True)
+    description = models.TextField(blank=True, default='')
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True, db_index=True)
+    is_archived = models.BooleanField(default=False, db_index=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['sort_order', 'name']
+
+    def __str__(self) -> str:
+        return f'WorkMode<{self.code}>'
+
+
 class ClassGroup(TimestampedModel):
     """
     Cohort/class within a Filiere (e.g. ING-INFO-2025-A).
@@ -181,6 +212,8 @@ class ClassGroup(TimestampedModel):
 
     code = models.SlugField(max_length=64, unique=True)
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(max_length=255, blank=True, default='')
+    name_en = models.CharField(max_length=255, blank=True, default='')
     filiere = models.ForeignKey(
         Filiere,
         on_delete=models.PROTECT,
@@ -220,6 +253,7 @@ class ClassGroup(TimestampedModel):
     )
     student_capacity = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
+    is_archived = models.BooleanField(default=False, db_index=True)
 
     class Meta(TimestampedModel.Meta):
         ordering = ['-academic_year', 'filiere', 'code']
@@ -229,6 +263,44 @@ class ClassGroup(TimestampedModel):
 
     def __str__(self) -> str:
         return f'ClassGroup<{self.code} {self.academic_year}>'
+
+
+class AcademicStructureAuditLog(TimestampedModel):
+    """Audit trail for academic structure CRUD operations."""
+
+    class Action(models.TextChoices):
+        CREATED = 'CREATED', _('Created')
+        UPDATED = 'UPDATED', _('Updated')
+        ARCHIVED = 'ARCHIVED', _('Archived')
+        DELETED = 'DELETED', _('Deleted')
+        ACTIVATED = 'ACTIVATED', _('Activated')
+        DEACTIVATED = 'DEACTIVATED', _('Deactivated')
+        REORDERED = 'REORDERED', _('Reordered')
+
+    entity_type = models.CharField(max_length=32, db_index=True)
+    entity_id = models.PositiveIntegerField(db_index=True)
+    entity_label = models.CharField(max_length=255, blank=True, default='')
+    action = models.CharField(max_length=16, choices=Action.choices, db_index=True)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='academic_structure_audit_logs',
+    )
+    old_values = models.JSONField(default=dict, blank=True)
+    new_values = models.JSONField(default=dict, blank=True)
+    summary = models.CharField(max_length=512, blank=True, default='')
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['entity_type', 'entity_id']),
+            models.Index(fields=['-created_at']),
+        ]
+
+    def __str__(self) -> str:
+        return f'AcademicAudit<{self.entity_type}:{self.entity_id} {self.action}>'
 
 
 # ============================================================================
@@ -315,6 +387,8 @@ class SpecializationDomain(TimestampedModel):
 
     code = models.SlugField(max_length=64, unique=True)
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(max_length=255, blank=True, default='')
+    name_en = models.CharField(max_length=255, blank=True, default='')
     name_i18n = models.JSONField(default=dict, blank=True)
     category = models.CharField(
         max_length=16,

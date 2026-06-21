@@ -20,6 +20,7 @@ import InternshipDraftOffersListPage from '../../features/admin/pages/Internship
 import InternshipClosedOffersListPage from '../../features/admin/pages/InternshipClosedOffersListPage';
 import InternshipOffersWithApplicationsListPage from '../../features/admin/pages/InternshipOffersWithApplicationsListPage';
 import InternshipOffersChatPage from '../../features/admin/pages/InternshipOffersChatPage';
+import InternshipOffersDraftsPage from '../../features/admin/pages/InternshipOffersDraftsPage';
 import InternshipOffersHistoryPage from '../../features/admin/pages/InternshipOffersHistoryPage';
 import AnnouncementsPage from '../../features/admin/announcements-stage/pages/AnnouncementsPage';
 import AllAnnouncementsListPage from '../../features/admin/pages/AllAnnouncementsListPage';
@@ -69,6 +70,7 @@ import ReportsPendingValidationListPage from '../../features/admin/encadrant/rep
 import ReportsRiskAlertsListPage from '../../features/admin/encadrant/reports/pages/ReportsRiskAlertsListPage';
 import SupervisionReportDetailPage from '../../features/admin/encadrant/reports/pages/SupervisionReportDetailPage';
 import EncadrantMeetingsPage from '../../features/admin/encadrant/meetings/pages/EncadrantMeetingsPage';
+import MeetingsChatPage from '../../features/admin/encadrant/meetings/chat/pages/MeetingsChatPage';
 import SupervisionMeetingDetailPage from '../../features/admin/encadrant/meetings/pages/SupervisionMeetingDetailPage';
 import StudentChatPage from '../../features/admin/student/chat/pages/StudentChatPage';
 import SousAdminChatPage from '../../features/admin/sous_Admin/pages/SousAdminChatPage';
@@ -134,6 +136,8 @@ import TasksHistoryCardPage from '../../features/admin/main_history/History_card
 import MeetingsHistoryCardPage from '../../features/admin/main_history/History_card/Meetings_card/pages/MeetingsHistoryCardPage';
 import AdminProfilePage from '../../features/admin/account/pages/AdminProfilePage';
 import AdminSettingsPage from '../../features/admin/account/pages/AdminSettingsPage';
+import AcademicStructurePage from '../../features/admin/academic-structure/pages/AcademicStructurePage';
+import EmailSystemPage from '../../features/admin/email-system/pages/EmailSystemPage';
 
 // Student Pages
 import StudentDashboardPage from '../../features/student/Dashboard/pages/StudentDashboardPage';
@@ -141,8 +145,11 @@ import StudentInternshipOffersPage from '../../features/student/internship_offer
 import AllInternshipOffersPage from '../../features/student/internship_offers/pages/AllInternshipOffersPage';
 import InternshipOfferDetailsPage from '../../features/student/internship_offers/pages/InternshipOfferDetailsPage';
 import ApplyToInternshipPage from '../../features/student/internship_offers/pages/ApplyToInternshipPage';
+import MyApplicationsPage from '../../features/student/internship_offers/pages/MyApplicationsPage';
+import ApplicationDetailPage from '../../features/student/internship_offers/pages/ApplicationDetailPage';
 import CvAnalysisPage from '../../features/student/internship_offers/pages/CvAnalysisPage';
 import { CvAnalysisToolPage } from '../../features/student/internship_offers/CV_Analyse';
+import { AiCareerCoachPage } from '../../features/student/internship_offers/AI_Career_Coach';
 import { InterviewSimulatorPage } from '../../features/student/internship_offers/interview_Simulator';
 import { ChatPage } from '../../features/student/internship_offers/chat';
 import { HistoryPage } from '../../features/student/internship_offers/history';
@@ -255,6 +262,10 @@ export const router = createBrowserRouter([
         element: <StudentDashboardPage />
       },
       {
+        path: '/student/profile',
+        element: <AdminProfilePage variant="student" />
+      },
+      {
         path: '/student/announcements',
         element: <StudentAnnouncementsPage />
       },
@@ -347,6 +358,10 @@ export const router = createBrowserRouter([
         element: <CvAnalysisToolPage />
       },
       {
+        path: '/student/internship-offers/ai-career-coach',
+        element: <AiCareerCoachPage />
+      },
+      {
         path: '/student/internship-offers/interview-simulator',
         element: <InterviewSimulatorPage />
       },
@@ -357,6 +372,14 @@ export const router = createBrowserRouter([
       {
         path: '/student/internship-offers/history',
         element: <HistoryPage />
+      },
+      {
+        path: '/student/internship-offers/applications',
+        element: <MyApplicationsPage />
+      },
+      {
+        path: '/student/internship-offers/applications/:appId',
+        element: <ApplicationDetailPage />
       },
       {
         path: '/student/internship-offers/:offerId/apply',
@@ -385,6 +408,14 @@ export const router = createBrowserRouter([
       {
         path: '/admin/settings',
         element: <AdminSettingsPage />
+      },
+      {
+        path: '/admin/settings/academic-structure',
+        element: <AcademicStructurePage />
+      },
+      {
+        path: '/admin/settings/email-system',
+        element: <EmailSystemPage />
       },
       {
         path: '/admin/dashboard/students',
@@ -437,6 +468,10 @@ export const router = createBrowserRouter([
       {
         path: '/admin/internship-offers/chat',
         element: <InternshipOffersChatPage />
+      },
+      {
+        path: '/admin/internship-offers/drafts',
+        element: <InternshipOffersDraftsPage />
       },
       {
         path: '/admin/internship-offers/history',
@@ -705,6 +740,10 @@ export const router = createBrowserRouter([
       {
         path: '/admin/encadrant/meetings',
         element: <EncadrantMeetingsPage />
+      },
+      {
+        path: '/admin/encadrant/meetings/chat',
+        element: <MeetingsChatPage />
       },
       {
         path: '/admin/encadrant/meetings/:id',

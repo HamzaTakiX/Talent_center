@@ -4,20 +4,89 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
+from apps.accounts_et_roles.models import User
 from apps.history.models import HistoryEvent
+from apps.history.services.module_analytics import (
+    build_module_audit_stats,
+    build_student_audit_stats,
+    resolve_most_active_module,
+)
+from apps.history.services.queries import KPI_SOURCE_APPS
 from apps.history.services.visibility import filter_events_for_user
 
 
-def build_dashboard(user, queryset=None) -> dict:
+def build_audit_dashboard(user, *, kpi: str | None = None) -> dict:
+    """Lightweight dashboard for KPI cards only — 1-2 SQL queries."""
+    base = filter_events_for_user(HistoryEvent.objects.all(), user)
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    last_24h = now - timedelta(hours=24)
+
+    is_student = getattr(user, 'role', None) == User.RoleChoices.STUDENT
+    if is_student:
+        audit_stats = build_student_audit_stats(base)
+    elif kpi and kpi in KPI_SOURCE_APPS:
+        audit_stats = build_module_audit_stats(kpi, base)
+    else:
+        audit_stats = _global_audit_stats_fast(base, today_start, last_24h)
+
+    return {'audit_stats': audit_stats}
+
+
+def _global_audit_stats_fast(base, today_start, last_24h) -> list[dict]:
+    critical = [HistoryEvent.Severity.ERROR, HistoryEvent.Severity.CRITICAL]
+    agg = base.aggregate(
+        events_today=Count('id', filter=Q(occurred_at__gte=today_start)),
+        critical_events=Count(
+            'id',
+            filter=Q(occurred_at__gte=today_start, severity__in=critical),
+        ),
+        automated_events=Count(
+            'id',
+            filter=Q(occurred_at__gte=today_start, is_automated=True),
+        ),
+        active_users_today=Count(
+            'actor_user',
+            filter=Q(
+                occurred_at__gte=today_start,
+                actor_user__isnull=False,
+                is_automated=False,
+            ),
+            distinct=True,
+        ),
+        events_last_24h=Count('id', filter=Q(occurred_at__gte=last_24h)),
+    )
+
+    top_module_row = (
+        base.filter(occurred_at__gte=last_24h)
+        .values('source_app')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+        .first()
+    )
+    most_active = resolve_most_active_module([top_module_row] if top_module_row else [])
+
+    return _global_audit_stats(
+        events_today=agg['events_today'],
+        critical_events=agg['critical_events'],
+        automated_events=agg['automated_events'],
+        active_users_today=agg['active_users_today'],
+        most_active_module=most_active,
+        events_last_24h=agg['events_last_24h'],
+    )
+
+
+def build_dashboard(user, queryset=None, *, kpi: str | None = None) -> dict:
     if queryset is not None:
         base = queryset
     else:
         base = filter_events_for_user(HistoryEvent.objects.all(), user)
     now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     last_24h = now - timedelta(hours=24)
     last_7d = now - timedelta(days=7)
 
@@ -32,6 +101,27 @@ def build_dashboard(user, queryset=None) -> dict:
         .values('actor_user')
         .distinct()
         .count()
+    )
+
+    events_today = base.filter(occurred_at__gte=today_start).count()
+    critical_today = base.filter(
+        severity__in=[HistoryEvent.Severity.ERROR, HistoryEvent.Severity.CRITICAL],
+        occurred_at__gte=today_start,
+    ).count()
+    automated_today = base.filter(is_automated=True, occurred_at__gte=today_start).count()
+    active_users_today = (
+        base.filter(occurred_at__gte=today_start, actor_user__isnull=False, is_automated=False)
+        .values('actor_user')
+        .distinct()
+        .count()
+    )
+    events_last_24h = base.filter(occurred_at__gte=last_24h).count()
+
+    by_module_24h = list(
+        base.filter(occurred_at__gte=last_24h)
+        .values('source_app')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:12]
     )
 
     by_module = list(
@@ -56,6 +146,23 @@ def build_dashboard(user, queryset=None) -> dict:
     )
 
     module_stats = _module_kpi_stats(base)
+    most_active = resolve_most_active_module(by_module_24h)
+
+    is_student = getattr(user, 'role', None) == User.RoleChoices.STUDENT
+    audit_stats: list[dict] = []
+    if is_student:
+        audit_stats = build_student_audit_stats(base)
+    elif kpi and kpi in KPI_SOURCE_APPS:
+        audit_stats = build_module_audit_stats(kpi, base)
+    else:
+        audit_stats = _global_audit_stats(
+            events_today=events_today,
+            critical_events=critical_today,
+            automated_events=automated_today,
+            active_users_today=active_users_today,
+            most_active_module=most_active,
+            events_last_24h=events_last_24h,
+        )
 
     return {
         'summary': {
@@ -63,13 +170,48 @@ def build_dashboard(user, queryset=None) -> dict:
             'critical_last_24h': critical_24h,
             'automated_last_7d': automated_7d,
             'active_actors_7d': active_actors_7d,
+            'events_today': events_today,
+            'critical_events': critical_today,
+            'automated_events': automated_today,
+            'active_users_today': active_users_today,
+            'events_last_24h': events_last_24h,
+            'most_active_module': most_active,
         },
+        'audit_stats': audit_stats,
         'by_module': by_module,
         'by_severity': by_severity,
         'by_action': by_action,
         'module_stats': module_stats,
         'activity_trend': _activity_trend(base, days=14),
     }
+
+
+def _global_audit_stats(
+    *,
+    events_today: int,
+    critical_events: int,
+    automated_events: int,
+    active_users_today: int,
+    most_active_module: dict | None,
+    events_last_24h: int,
+) -> list[dict]:
+    stats = [
+        {'key': 'events_today', 'value': events_today},
+        {'key': 'critical_events', 'value': critical_events},
+        {'key': 'automated_events', 'value': automated_events},
+        {'key': 'active_users_today', 'value': active_users_today},
+        {'key': 'events_last_24h', 'value': events_last_24h},
+    ]
+    if most_active_module:
+        stats.insert(
+            4,
+            {
+                'key': 'most_active_module',
+                'value': most_active_module['count'],
+                'meta': most_active_module,
+            },
+        )
+    return stats
 
 
 def build_insights(user) -> list[dict]:

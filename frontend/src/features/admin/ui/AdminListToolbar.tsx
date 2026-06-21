@@ -13,11 +13,17 @@ export interface AdminListToolbarFilterConfig {
 
 export type AdminListToolbarControlsLayout = 'grid' | 'grouped';
 
+function selectFieldProps(filter: AdminListToolbarFilterConfig) {
+  const { ariaLabel, ...rest } = filter;
+  return { ...rest, 'aria-label': ariaLabel };
+}
+
 export interface AdminListToolbarProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
   searchPlaceholder?: string;
   searchAriaLabel?: string;
+  searchLoading?: boolean;
   filter1?: AdminListToolbarFilterConfig;
   filter2?: AdminListToolbarFilterConfig;
   createLabel?: string;
@@ -33,6 +39,7 @@ const AdminListToolbar: FunctionComponent<AdminListToolbarProps> = ({
   onSearchChange,
   searchPlaceholder = 'Search...',
   searchAriaLabel,
+  searchLoading = false,
   filter1,
   filter2,
   createLabel,
@@ -52,14 +59,15 @@ const AdminListToolbar: FunctionComponent<AdminListToolbarProps> = ({
       onClear={() => onSearchChange('')}
       placeholder={searchPlaceholder}
       aria-label={searchAriaLabel ?? searchPlaceholder}
+      loading={searchLoading}
     />
   );
 
   const actionContent = (
     <div className="admin-list-toolbar__actions">
       {controlsLayout === 'grouped' ? searchInput : null}
-      {filter1 ? <AdminSelectField {...filter1} /> : null}
-      {filter2 ? <AdminSelectField {...filter2} /> : null}
+      {filter1 ? <AdminSelectField {...selectFieldProps(filter1)} /> : null}
+      {filter2 ? <AdminSelectField {...selectFieldProps(filter2)} /> : null}
       {actionExtra}
       {beforeCreate}
       {hasCreate && (
@@ -87,8 +95,8 @@ const AdminListToolbar: FunctionComponent<AdminListToolbarProps> = ({
     <AdminModuleToolbar
       aria-label={toolbarAriaLabel}
       search={searchInput}
-      filter1={filter1 ? <AdminSelectField {...filter1} /> : undefined}
-      filter2={filter2 ? <AdminSelectField {...filter2} /> : undefined}
+      filter1={filter1 ? <AdminSelectField {...selectFieldProps(filter1)} /> : undefined}
+      filter2={filter2 ? <AdminSelectField {...selectFieldProps(filter2)} /> : undefined}
       action={hasAction ? actionContent : undefined}
     />
   );

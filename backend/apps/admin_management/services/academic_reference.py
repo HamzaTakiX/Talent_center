@@ -18,7 +18,11 @@ from apps.admin_management.services.esca_catalog import (
     ESCA_CATALOG_FILIERE_CODES,
     ESCA_PROGRAM_FAMILIES,
 )
-from apps.admin_management.services.i18n_labels import localized_label, request_lang
+from apps.admin_management.services.i18n_labels import (
+    entity_localized_name,
+    management_name_fields,
+    request_lang,
+)
 
 
 def _parse_id_list(raw: Optional[str]) -> list[int]:
@@ -57,7 +61,7 @@ def parse_level_ids_param(request) -> list[int]:
 
 
 def active_filieres(*, program_family: Optional[str] = None, student_catalog: bool = False):
-    qs = Filiere.objects.filter(is_active=True)
+    qs = Filiere.objects.filter(is_active=True, is_archived=False)
     if student_catalog:
         qs = qs.filter(
             program_family__in=ESCA_PROGRAM_FAMILIES,
@@ -73,7 +77,7 @@ def active_academic_years():
 
 
 def active_levels(*, filiere_ids: Optional[Iterable[int]] = None):
-    qs = AcademicLevel.objects.filter(is_active=True).select_related('filiere')
+    qs = AcademicLevel.objects.filter(is_active=True, is_archived=False).select_related('filiere')
     if filiere_ids:
         qs = qs.filter(filiere_id__in=list(filiere_ids))
     return qs.order_by('filiere__sort_order', 'sort_order', 'year_number')
@@ -91,7 +95,7 @@ def active_internship_types(
     level_ids: Optional[Iterable[int]] = None,
     sector_id: Optional[int] = None,
 ):
-    qs = InternshipType.objects.filter(is_active=True).select_related(
+    qs = InternshipType.objects.filter(is_active=True, is_archived=False).select_related(
         'academic_level', 'academic_sector',
     )
     if level_ids:
@@ -111,7 +115,7 @@ def active_class_groups(
     level_ids: Optional[Iterable[int]] = None,
     sector_ids: Optional[Iterable[int]] = None,
 ):
-    qs = ClassGroup.objects.filter(is_active=True).select_related(
+    qs = ClassGroup.objects.filter(is_active=True, is_archived=False).select_related(
         'filiere', 'academic_level', 'academic_sector', 'academic_year_ref',
     )
     if filiere_ids:
@@ -168,7 +172,7 @@ def serialize_filiere(filiere: Filiere, lang: str) -> dict:
     return {
         'id': filiere.id,
         'code': filiere.code,
-        'name': localized_label(filiere.name_i18n, filiere.name, lang),
+        **management_name_fields(filiere, lang),
         'program_family': filiere.program_family,
         'department': filiere.department,
         'is_active': filiere.is_active,
@@ -191,7 +195,7 @@ def serialize_level(level: AcademicLevel, lang: str) -> dict:
     return {
         'id': level.id,
         'code': level.code,
-        'name': localized_label(level.name_i18n, level.name, lang),
+        **management_name_fields(level, lang),
         'filiere_id': level.filiere_id,
         'filiere_code': level.filiere.code,
         'year_number': level.year_number,
@@ -205,7 +209,7 @@ def serialize_sector(sector: AcademicSector, lang: str) -> dict:
     return {
         'id': sector.id,
         'code': sector.code,
-        'name': localized_label(sector.name_i18n, sector.name, lang),
+        **management_name_fields(sector, lang),
         'academic_level_id': sector.academic_level_id,
         'level_code': sector.academic_level.code,
         'is_active': sector.is_active,
@@ -216,7 +220,7 @@ def serialize_internship_type(item: InternshipType, lang: str) -> dict:
     return {
         'id': item.id,
         'code': item.code,
-        'name': localized_label(item.name_i18n, item.name, lang),
+        **management_name_fields(item, lang),
         'academic_level_id': item.academic_level_id,
         'academic_sector_id': item.academic_sector_id,
         'duration_hint': item.duration_hint,
@@ -227,17 +231,17 @@ def serialize_internship_type(item: InternshipType, lang: str) -> dict:
 def serialize_class_group(cg: ClassGroup, lang: str) -> dict:
     level_label = ''
     if cg.academic_level_id:
-        level_label = localized_label(cg.academic_level.name_i18n, cg.academic_level.name, lang)
+        level_label = entity_localized_name(cg.academic_level, lang)
     sector_label = ''
     if cg.academic_sector_id:
-        sector_label = localized_label(cg.academic_sector.name_i18n, cg.academic_sector.name, lang)
+        sector_label = entity_localized_name(cg.academic_sector, lang)
     return {
         'id': cg.id,
         'code': cg.code,
-        'name': cg.name,
+        **management_name_fields(cg, lang),
         'filiere': cg.filiere_id,
         'filiere_code': cg.filiere.code,
-        'filiere_name': localized_label(cg.filiere.name_i18n, cg.filiere.name, lang),
+        'filiere_name': entity_localized_name(cg.filiere, lang),
         'academic_year': cg.academic_year,
         'academic_year_id': cg.academic_year_ref_id,
         'level': cg.level or (cg.academic_level.code if cg.academic_level_id else ''),

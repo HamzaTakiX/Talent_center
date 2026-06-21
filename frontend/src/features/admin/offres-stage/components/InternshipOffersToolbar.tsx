@@ -45,7 +45,7 @@ const InternshipOffersToolbar: FunctionComponent<InternshipOffersToolbarProps> =
   return (
     <AdminListToolbar
       searchValue={search}
-      onSearchChange={onSearchChange}
+      onSearchChange={(v) => onSearchChange(v.slice(0, 120))}
       searchPlaceholder={searchPh}
       searchAriaLabel={searchPh}
       toolbarAriaLabel={filterLabel('filterByCompany')}

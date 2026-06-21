@@ -153,6 +153,14 @@ def apply_smart_action(
         ctx.urgency = ConversationContext.Urgency.CRITICAL
         ctx.save(update_fields=['urgency', 'updated_at'])
 
+    if ctx and ctx.module == ConversationContext.Module.OFFERS:
+        from apps.stage.services import chat_service as offer_chat
+
+        if action_code == 'mark_resolved':
+            offer_chat.resolve_offer_conversation(conversation, actor, meta.get('note', ''))
+        elif action_code == 'archive_conversation':
+            offer_chat.archive_offer_conversation(conversation, actor)
+
     record_chat_action(
         action_code=action_code,
         summary=f'Smart action {action_code} on conversation {conversation.pk}',

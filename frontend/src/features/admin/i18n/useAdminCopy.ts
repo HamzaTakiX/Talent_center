@@ -1,5 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { ChatModule } from '../../shared/contextual-chat/types';
+import type {
+  ChatEmptyModuleType,
+  ChatEmptyStateProps,
+} from '../shared/admin-module-chat/types/chatEmptyStateTypes';
 
 export type AdminBackTarget =
   | 'dashboard'
@@ -42,7 +47,19 @@ export type AdminChatChannel =
   | 'offers'
   | 'announcements'
   | 'srf'
-  | 'admins';
+  | 'admins'
+  | 'meetings';
+
+const CHANNEL_MODULE_TYPE: Record<AdminChatChannel, ChatEmptyModuleType> = {
+  offers: 'internship',
+  documents: 'documents',
+  announcements: 'announcements',
+  meetings: 'meetings',
+  students: 'student-support',
+  srf: 'student-support',
+  encadrants: 'meetings',
+  admins: 'general',
+};
 
 export function useAdminChatChannel(channel: AdminChatChannel) {
   const { t } = useTranslation();
@@ -52,6 +69,29 @@ export function useAdminChatChannel(channel: AdminChatChannel) {
     composerPlaceholder: t(`admin.common.chatChannels.${channel}.composerPlaceholder`),
     emptyConversationLabel: t(`admin.common.chatChannels.${channel}.emptyConversation`),
   };
+}
+
+export function useChatEmptyState(channel: AdminChatChannel): Omit<ChatEmptyStateProps, 'stats' | 'className'> {
+  const { t } = useTranslation();
+  return {
+    title: t(`admin.chatEmpty.channels.${channel}.title`),
+    description: t(`admin.chatEmpty.channels.${channel}.description`),
+    moduleType: CHANNEL_MODULE_TYPE[channel],
+  };
+}
+
+export function chatModuleToEmptyModuleType(module: ChatModule): ChatEmptyModuleType {
+  const map: Record<ChatModule, ChatEmptyModuleType> = {
+    offers: 'internship',
+    documents: 'documents',
+    meetings: 'meetings',
+    announcements: 'announcements',
+    srf: 'student-support',
+    encadrant: 'meetings',
+    platform: 'general',
+    smart_assignment: 'general',
+  };
+  return map[module];
 }
 
 export function useAdminCopy() {

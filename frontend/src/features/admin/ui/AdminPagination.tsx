@@ -1,5 +1,8 @@
 import { FunctionComponent } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+const PAGINATION_PREFIX = 'admin.pagination';
 
 interface AdminPaginationProps {
   page: number;
@@ -16,8 +19,11 @@ const AdminPagination: FunctionComponent<AdminPaginationProps> = ({
   totalItems,
   pageSize,
   onPageChange,
-  itemLabel = 'items',
+  itemLabel,
 }) => {
+  const { t } = useTranslation();
+  const resolvedItemLabel = itemLabel ?? t(`${PAGINATION_PREFIX}.items`, { defaultValue: 'items' });
+
   if (totalPages <= 1 && totalItems <= pageSize) return null;
 
   const start = (page - 1) * pageSize + 1;
@@ -28,20 +34,30 @@ const AdminPagination: FunctionComponent<AdminPaginationProps> = ({
     return p === 1 || p === totalPages || Math.abs(p - page) <= 1;
   });
 
+  const statusText =
+    totalItems === 0
+      ? t(`${PAGINATION_PREFIX}.empty`, {
+          itemLabel: resolvedItemLabel,
+          defaultValue: `No ${resolvedItemLabel}`,
+        })
+      : t(`${PAGINATION_PREFIX}.range`, {
+          start,
+          end,
+          total: totalItems,
+          itemLabel: resolvedItemLabel,
+          defaultValue: `Showing ${start}–${end} of ${totalItems} ${resolvedItemLabel}`,
+        });
+
   return (
-    <nav className="admin-pagination" aria-label="Pagination">
-      <p className="text-sm text-[var(--admin-text-secondary)]">
-        {totalItems === 0
-          ? `No ${itemLabel}`
-          : `Showing ${start}–${end} of ${totalItems} ${itemLabel}`}
-      </p>
+    <nav className="admin-pagination" aria-label={t(`${PAGINATION_PREFIX}.ariaLabel`, { defaultValue: 'Pagination' })}>
+      <p className="text-sm text-[var(--admin-text-secondary)]">{statusText}</p>
       <div className="admin-pagination-pages">
         <button
           type="button"
           className="admin-pagination-btn"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          aria-label="Previous page"
+          aria-label={t(`${PAGINATION_PREFIX}.previous`, { defaultValue: 'Previous page' })}
         >
           <ChevronLeft className="h-4 w-4" aria-hidden />
         </button>
@@ -71,7 +87,7 @@ const AdminPagination: FunctionComponent<AdminPaginationProps> = ({
           className="admin-pagination-btn"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          aria-label="Next page"
+          aria-label={t(`${PAGINATION_PREFIX}.next`, { defaultValue: 'Next page' })}
         >
           <ChevronRight className="h-4 w-4" aria-hidden />
         </button>

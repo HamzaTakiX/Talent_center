@@ -6,6 +6,7 @@ import DocumentsStatusBadge from './DocumentsStatusBadge';
 import DocumentsSlaBar from './DocumentsSlaBar';
 import DocumentsPremiumEmpty from './DocumentsPremiumEmpty';
 import type { DocumentRequestListItem } from '../types';
+import { sanitizeTableCellText } from '../../../../design-system/safeContent';
 
 interface Props {
   rows: DocumentRequestListItem[];
@@ -50,22 +51,22 @@ const DocumentsRequestsModernTable: FunctionComponent<Props> = ({ rows, loading 
           onClick={() => navigate(`/admin/documents/requests/${row.id}`)}
           role="row"
         >
-          <span className="admin-doc-table__ref">{row.reference}</span>
+          <span className="admin-doc-table__ref">{sanitizeTableCellText(row.reference)}</span>
           <span className="admin-doc-table__student">
             <span className="admin-doc-avatar">{row.student.avatarInitials}</span>
             <span>
-              <strong>{row.student.fullName}</strong>
-              <small>{row.student.classGroup}</small>
+              <strong>{sanitizeTableCellText(row.student.fullName)}</strong>
+              <small>{sanitizeTableCellText(row.student.classGroup)}</small>
             </span>
           </span>
-          <span className="admin-doc-table__type">{row.documentTypeCode}</span>
+          <span className="admin-doc-table__type">{sanitizeTableCellText(row.documentTypeCode)}</span>
           <span>
             <DocumentsStatusBadge status={row.status} />
           </span>
           <span>
             <DocumentsSlaBar percent={row.slaPercent} compact />
           </span>
-          <span>{row.serviceName}</span>
+          <span>{sanitizeTableCellText(row.serviceName)}</span>
           <span className="admin-doc-table__chevron">
             <ChevronRight className="h-4 w-4" aria-hidden />
           </span>

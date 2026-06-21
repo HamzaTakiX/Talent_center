@@ -22,7 +22,7 @@
     "brand": {
       "title": "Digital Talent",
       "subtitle": "Center",
-      "logoAlt": "ESCA — Digital Talent Center"
+      "logoAlt": "ESCA Digital Talent Center"
     },
     "nav": {
       "dashboard": "Dashboard",
@@ -36,8 +36,9 @@
       "admin": "Administrators",
       "catalog": "Service catalog",
       "chat": "Chat",
+      "drafts": "Drafts",
       "reports": "Reports",
-      "smartAssignment": "Smart Assignment",
+      "smartAssignment": "Supervisor Assignment",
       "meetings": "Meetings",
       "imports": "Financial imports",
       "config": "Exam & alerts config",
@@ -303,6 +304,17 @@
         "dark": "Dark mode",
         "darkDesc": "Comfortable in low light"
       },
+      "academicStructure": {
+        "title": "Academic Structure",
+        "description": "Manage ESCA tracks, levels, classes, internship framework, and work modes.",
+        "openModule": "Open management center",
+        "loadingHistory": "Loading change history"
+      },
+      "emailSystem": {
+        "title": "Email System",
+        "description": "Configure providers, senders, templates and platform email delivery.",
+        "openModule": "Open email center"
+      },
       "preferences": {
         "title": "Preferences",
         "description": "Ergonomics and personalization options.",
@@ -348,6 +360,47 @@
       "tagTemplate": "Tag or template",
       "sendMessage": "Send message",
       "unreadCount": "{{count}} unread"
+    },
+    "chatEmpty": {
+      "stats": {
+        "unread": "Unread",
+        "pending": "Waiting response",
+        "resolved": "Resolved"
+      },
+      "channels": {
+        "offers": {
+          "title": "Internship Chat",
+          "description": "Select a conversation to view messages about an internship offer."
+        },
+        "documents": {
+          "title": "Documents Chat",
+          "description": "Select a conversation to review and discuss document submissions."
+        },
+        "meetings": {
+          "title": "Meetings Chat",
+          "description": "Select a conversation to manage meeting-related discussions."
+        },
+        "announcements": {
+          "title": "Announcements Chat",
+          "description": "Select a conversation to manage announcement responses and questions."
+        },
+        "students": {
+          "title": "Student Support",
+          "description": "Select a conversation to assist students and respond to inquiries."
+        },
+        "srf": {
+          "title": "Student Support",
+          "description": "Select a conversation to assist students and respond to SRF inquiries."
+        },
+        "encadrants": {
+          "title": "Supervisor Chat",
+          "description": "Select a conversation to coordinate supervision and academic communication."
+        },
+        "admins": {
+          "title": "Administrator Chat",
+          "description": "Select a conversation to manage internal administrator communication."
+        }
+      }
     },
     "globalSearch": {
       "open": "Open global search",

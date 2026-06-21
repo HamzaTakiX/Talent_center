@@ -82,17 +82,46 @@ def send_message(
     )
 
     publish_message_created(conv.pk, {'message_id': msg.pk, 'sender_id': user.pk})
+
+    try:
+        from apps.notifications.events.publisher import emit_event
+
+        event_code = 'chat.urgent' if (metadata or {}).get('urgent') else 'chat.message.received'
+        emit_event(
+            event_code=event_code,
+            source_app='chat',
+            entity_type='conversation',
+            entity_id=conv.pk,
+            payload={
+                'conversation_id': conv.pk,
+                'sender_user_id': user.pk,
+                'title': conv.title or 'New message',
+                'body': body.strip()[:200],
+                'action_url': f'/chat/conversations/{conv.pk}',
+            },
+            actor=user,
+        )
+    except Exception:
+        pass
+
     return msg
 
 
 def mark_read(user: User, conversation_id: int, message_id: int) -> bool:
+    from ..models import Conversation
+    from ..permissions import ensure_conversation_participant, user_can_access_conversation
+
+    conv = Conversation.objects.filter(pk=conversation_id).select_related('context').first()
+    if not conv or not user_can_access_conversation(user, conv):
+        return False
+
     part = ConversationParticipant.objects.filter(
         conversation_id=conversation_id,
         user=user,
         left_at__isnull=True,
     ).first()
     if not part:
-        return False
+        part = ensure_conversation_participant(conv, user)
     part.last_read_message_id = message_id
     part.save(update_fields=['last_read_message_id', 'updated_at'])
     publish_read_receipt(conversation_id, user.pk, message_id)
@@ -112,13 +141,20 @@ def toggle_reaction(user: User, message_id: int, emoji_code: str) -> dict[str, A
 
 
 def unread_count_for_user(user: User, conversation_id: int) -> int:
+    from ..models import Conversation
+    from ..permissions import ensure_conversation_participant, user_can_access_conversation
+
+    conv = Conversation.objects.filter(pk=conversation_id).select_related('context').first()
+    if not conv or not user_can_access_conversation(user, conv):
+        return 0
+
     part = ConversationParticipant.objects.filter(
         conversation_id=conversation_id,
         user=user,
         left_at__isnull=True,
     ).first()
     if not part:
-        return 0
+        part = ensure_conversation_participant(conv, user)
     last_read = part.last_read_message_id or 0
     return Message.objects.filter(
         conversation_id=conversation_id,
