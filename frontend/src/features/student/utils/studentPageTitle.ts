@@ -15,6 +15,7 @@ export const getStudentHeaderTitleKey = (pathname: string): string => {
   if (pathname.match(/\/internship-offers\/[^/]+$/) && !pathname.endsWith('/all')) {
     return 'student.header.titles.offerDetails';
   }
+  if (pathname === '/student/support/chat') return 'student.header.titles.supportChat';
   if (pathname === '/student/srf/chat') return 'student.header.titles.srfChat';
   if (pathname.includes('/chat')) return 'student.header.titles.chat';
   if (pathname === '/student/main-history' || pathname.includes('/history')) {
@@ -44,6 +45,7 @@ export const getStudentHeaderTitleKey = (pathname: string): string => {
 
 /** i18n key under `student.header.subtitles.*` — falls back to defaultSubtitle when missing. */
 export const getStudentHeaderSubtitleKey = (pathname: string): string | null => {
+  if (pathname === '/student/support/chat') return 'student.header.subtitles.supportChat';
   if (pathname === '/student/srf/chat') return 'student.header.subtitles.srfChat';
   return null;
 };

@@ -19,4 +19,5 @@ export const STUDENT_NAV_CHAT_MODULES: Partial<Record<StudentNavSectionId, ChatM
   documents: 'documents',
   srf: 'srf',
   encadrant: 'encadrant',
+  support: 'platform',
 };

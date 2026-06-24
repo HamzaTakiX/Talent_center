@@ -7,6 +7,7 @@ export const studentCopyAr = {
     documents: 'المستندات',
     srf: 'SRF (المالية)',
     encadrant: 'المشرف',
+    support: 'الدعم',
     resources: 'الموارد',
     cvBuilder: 'منشئ السيرة الذاتية',
     cvAnalysis: 'تحليل السيرة الذاتية',
@@ -50,9 +51,11 @@ export const studentCopyAr = {
       whiteboard: 'السبورة',
       report: 'التقارير',
       srfChat: 'دردشة SRF',
+      supportChat: 'دعم إداري',
     },
     subtitles: {
       srfChat: 'تحدث مع خدمة الموارد المالية',
+      supportChat: 'تواصل مع الفريق الإداري',
     },
   },
   profile: {

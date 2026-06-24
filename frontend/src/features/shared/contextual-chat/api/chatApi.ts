@@ -26,6 +26,7 @@ export async function fetchConversations(
   const params: Record<string, string> = { module };
   if (filters?.urgency) params.urgency = filters.urgency;
   if (filters?.contextKind) params.context_kind = filters.contextKind;
+  if (filters?.entityType) params.entity_type = filters.entityType;
   if (filters?.unreadOnly) params.unread = '1';
   if (filters?.includeArchived) params.include_archived = '1';
   if (filters?.q) params.q = filters.q;

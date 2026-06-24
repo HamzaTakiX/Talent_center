@@ -7,6 +7,7 @@ import {
   FileText,
   DollarSign,
   UserCheck,
+  LifeBuoy,
 } from 'lucide-react';
 import { STUDENT_INTERNSHIP_OFFERS_PATH } from '../internship_offers/constants/routes';
 import { STUDENT_CV_BUILDER_PATH } from '../internship_offers/cv_builder/constants/routes';
@@ -33,6 +34,7 @@ import {
 } from '../Encadrant/constants/routes';
 import { STUDENT_REPORTS_PATH } from '../reports/constants/routes';
 import { STUDENT_SRF_CHAT_PATH, STUDENT_SRF_PATH } from '../SRF/constants/routes';
+import { STUDENT_SUPPORT_CHAT_PATH } from '../support/chat/constants/routes';
 
 export const STUDENT_DASHBOARD_PATH = '/student-dashboard';
 
@@ -43,7 +45,8 @@ export type StudentNavSectionId =
   | 'history'
   | 'documents'
   | 'srf'
-  | 'encadrant';
+  | 'encadrant'
+  | 'support';
 
 export type StudentNavChildId =
   | 'cvBuilder'
@@ -85,6 +88,7 @@ export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
     expandable: true,
     children: ['chat', 'agenda', 'task', 'workspace', 'report'],
   },
+  { id: 'support', icon: LifeBuoy, expandable: true, children: ['chat'] },
 ];
 
 export const getActiveSectionFromPath = (pathname: string): StudentNavSectionId => {
@@ -110,6 +114,9 @@ export const getActiveSectionFromPath = (pathname: string): StudentNavSectionId 
   if (pathname === STUDENT_ENCADRANT_PATH || pathname.startsWith(`${STUDENT_ENCADRANT_PATH}/`)) {
     return 'encadrant';
   }
+  if (pathname === STUDENT_SUPPORT_CHAT_PATH || pathname.startsWith(`${STUDENT_SUPPORT_CHAT_PATH}/`)) {
+    return 'support';
+  }
   return 'dashboard';
 };
 
@@ -132,6 +139,9 @@ export const sectionToExpandForPath = (pathname: string): StudentNavSectionId | 
   if (pathname === STUDENT_REPORTS_PATH || pathname.startsWith(`${STUDENT_REPORTS_PATH}/`)) {
     return 'encadrant';
   }
+  if (pathname === STUDENT_SUPPORT_CHAT_PATH || pathname.startsWith(`${STUDENT_SUPPORT_CHAT_PATH}/`)) {
+    return 'support';
+  }
   return null;
 };
 
@@ -151,6 +161,8 @@ export const getSectionPath = (section: StudentNavSectionId): string | undefined
       return STUDENT_SRF_PATH;
     case 'encadrant':
       return STUDENT_ENCADRANT_PATH;
+    case 'support':
+      return STUDENT_SUPPORT_CHAT_PATH;
     default:
       return undefined;
   }
@@ -182,6 +194,7 @@ export const getChildPath = (
     if (child === 'workspace') return STUDENT_ENCADRANT_WORKSPACE_PATH;
     if (child === 'report') return STUDENT_REPORTS_PATH;
   }
+  if (section === 'support' && child === 'chat') return STUDENT_SUPPORT_CHAT_PATH;
   return undefined;
 };
 

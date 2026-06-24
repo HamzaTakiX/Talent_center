@@ -113,6 +113,36 @@ def list_module_conversations(
         and user.role == User.RoleChoices.ADMIN
     ):
         qs = qs.exclude(metadata_json__contains={'admin_inbox_archived': True})
+    if (
+        not include_archived
+        and module == ConversationContext.Module.PLATFORM
+        and user.role == User.RoleChoices.ADMIN
+    ):
+        qs = qs.exclude(metadata_json__contains={'admin_inbox_archived': True})
+    if (
+        module == ConversationContext.Module.PLATFORM
+        and entity_type in ('student_desk', 'student_admin_dm')
+        and user.role == User.RoleChoices.ADMIN
+    ):
+        from .platform_chat_service import sync_student_admin_dms_for_admin
+
+        sync_student_admin_dms_for_admin(user)
+    if (
+        module == ConversationContext.Module.PLATFORM
+        and entity_type in ('student_desk', 'student_admin_dm')
+        and user.role == User.RoleChoices.STUDENT
+    ):
+        from .platform_chat_service import sync_student_admin_dms_for_student
+
+        sync_student_admin_dms_for_student(user)
+    if (
+        module == ConversationContext.Module.PLATFORM
+        and entity_type == 'admin_desk'
+        and user.role == User.RoleChoices.ADMIN
+    ):
+        from .platform_chat_service import sync_admin_desk_conversations_for_admin
+
+        sync_admin_desk_conversations_for_admin(user)
     if context_kind:
         qs = qs.filter(context__context_kind=context_kind)
     if entity_type:
@@ -247,6 +277,20 @@ def apply_smart_action(
                 announcement_chat.unarchive_student_announcement_conversation(conversation, actor)
             else:
                 announcement_chat.unarchive_announcement_conversation(conversation, actor)
+
+    if ctx and ctx.module == ConversationContext.Module.PLATFORM:
+        from .platform_chat_service import (
+            archive_platform_desk_conversation,
+            resolve_platform_desk_conversation,
+            unarchive_platform_desk_conversation,
+        )
+
+        if action_code == 'mark_resolved':
+            resolve_platform_desk_conversation(conversation, actor, meta.get('note', ''))
+        elif action_code == 'archive_conversation':
+            archive_platform_desk_conversation(conversation, actor)
+        elif action_code == 'unarchive_conversation':
+            unarchive_platform_desk_conversation(conversation, actor)
 
     record_chat_action(
         action_code=action_code,

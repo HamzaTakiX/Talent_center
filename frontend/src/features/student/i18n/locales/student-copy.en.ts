@@ -7,6 +7,7 @@ export const studentCopyEn = {
     documents: 'Documents',
     srf: 'SRF (Finance)',
     encadrant: 'Supervisor',
+    support: 'Support',
     resources: 'Resources',
     cvBuilder: 'CV Builder',
     cvAnalysis: 'CV Analysis',
@@ -50,9 +51,11 @@ export const studentCopyEn = {
       whiteboard: 'Whiteboard',
       report: 'Reports',
       srfChat: 'SRF Chat',
+      supportChat: 'Admin support',
     },
     subtitles: {
       srfChat: 'Chat with the Financial Resources Service',
+      supportChat: 'Reach the administrative team',
     },
   },
   profile: {

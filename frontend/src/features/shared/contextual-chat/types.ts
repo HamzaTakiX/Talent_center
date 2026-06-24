@@ -74,6 +74,7 @@ export interface MessageDto {
 export interface ContextualChatFilters {
   urgency?: ChatUrgency;
   contextKind?: ChatContextKind;
+  entityType?: string;
   tag?: string;
   unreadOnly?: boolean;
   includeArchived?: boolean;

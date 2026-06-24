@@ -64,3 +64,17 @@ export const useAdminToast = (): AdminToastContextValue => {
   }
   return ctx;
 };
+
+const noopAdminToast: AdminToastContextValue = {
+  toasts: [],
+  showToast: () => undefined,
+  dismissToast: () => undefined,
+  success: () => undefined,
+  error: () => undefined,
+  warning: () => undefined,
+};
+
+/** Safe for student portal pages that reuse admin inbox components without a toast provider. */
+export const useOptionalAdminToast = (): AdminToastContextValue => {
+  return useContext(AdminToastContext) ?? noopAdminToast;
+};

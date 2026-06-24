@@ -185,6 +185,7 @@ import {
   ReportsHubPage as StudentReportsHubPage,
 } from '../../features/student/reports';
 import { SrfChatPage as StudentSrfChatPage, SrfPage as StudentSrfPage } from '../../features/student/SRF';
+import StudentSupportChatPage from '../../features/student/support/chat/pages/StudentSupportChatPage';
 
 // CV Pages
 import CVListPage from '../../features/cv/pages/CVListPage';
@@ -328,6 +329,10 @@ export const router = createBrowserRouter(
       {
         path: '/student/encadrant/chat',
         element: <StudentEncadrantChatPage />
+      },
+      {
+        path: '/student/support/chat',
+        element: <StudentSupportChatPage />
       },
       {
         path: '/student/encadrant/agenda',

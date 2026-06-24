@@ -112,6 +112,25 @@ def _admin_can_access(user: User, conversation: Conversation) -> bool:
             role=ConversationParticipant.Role.ADMIN,
         )
         return True
+    if ctx and ctx.module == ConversationContext.Module.PLATFORM:
+        from apps.chat.services.platform_chat_service import (
+            ADMIN_DESK_ENTITY,
+            STUDENT_ADMIN_DM,
+            STUDENT_DESK_ENTITY,
+            user_can_manage_platform_desk,
+        )
+
+        if user_can_manage_platform_desk(user) and ctx.entity_type in (
+            STUDENT_ADMIN_DM,
+            STUDENT_DESK_ENTITY,
+            ADMIN_DESK_ENTITY,
+        ):
+            ensure_conversation_participant(
+                conversation,
+                user,
+                role=ConversationParticipant.Role.ADMIN,
+            )
+            return True
     return False
 
 
@@ -149,6 +168,10 @@ def conversations_for_user(user: User, *, include_archived: bool = False) -> Que
             module_filters.append(ConversationContext.Module.OFFERS)
         if _user_can_manage_announcements(user):
             module_filters.append(ConversationContext.Module.ANNOUNCEMENTS)
+        from apps.chat.services.platform_chat_service import user_can_manage_platform_desk
+
+        if user_can_manage_platform_desk(user):
+            module_filters.append(ConversationContext.Module.PLATFORM)
         if module_filters:
             extra = qs.filter(context__module__in=module_filters)
             return (base | extra).distinct()
@@ -185,6 +208,10 @@ def user_can_apply_smart_action(user: User, conversation: Conversation, action_c
             return _user_can_manage_internship_offers(user)
         if ctx and ctx.module == ConversationContext.Module.ANNOUNCEMENTS:
             return _user_can_manage_announcements(user)
+        if ctx and ctx.module == ConversationContext.Module.PLATFORM:
+            from apps.chat.services.platform_chat_service import user_can_manage_platform_desk
+
+            return user_can_manage_platform_desk(user)
         return ConversationParticipant.objects.filter(
             conversation=conversation,
             user=user,
