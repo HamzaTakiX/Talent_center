@@ -2,6 +2,8 @@ import { FunctionComponent } from 'react';
 import { ArrowLeft, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { InternshipConversation } from '../../../../admin/offres-stage/chat/types/internshipChatTypes';
+import InternshipOfferAvatar from '../../../../admin/offres-stage/chat/components/InternshipOfferAvatar';
+import { applicationStatusPillClass } from '../../../../admin/offres-stage/chat/utils/internshipChatStatusStyles';
 
 type Props = {
   conversation: InternshipConversation;
@@ -17,7 +19,7 @@ const StudentInternshipChatHeader: FunctionComponent<Props> = ({
   const { t } = useTranslation();
 
   return (
-    <header className="isi-chat-header">
+    <header className="isi-chat-header isi-chat-header--student">
       <div className="isi-chat-header-left">
         {onBack ? (
           <button
@@ -29,23 +31,28 @@ const StudentInternshipChatHeader: FunctionComponent<Props> = ({
             <ArrowLeft className="size-5" />
           </button>
         ) : null}
-        <div className="isi-avatar isi-avatar--header">
-          {(conversation.company || conversation.offerTitle).slice(0, 2).toUpperCase()}
-        </div>
-        <div className="min-w-0">
+        <InternshipOfferAvatar
+          url={conversation.companyLogoUrl}
+          companyName={conversation.company}
+          offerTitle={conversation.offerTitle}
+          size="header"
+        />
+        <div className="isi-chat-header-copy min-w-0">
           <h2 className="isi-chat-name truncate">{conversation.offerTitle}</h2>
-          <p className="isi-chat-meta truncate">
-            {conversation.company}
-            <span className="isi-chat-meta-sep" aria-hidden> · </span>
-            {conversation.internshipType}
-            <span className="isi-chat-meta-sep" aria-hidden> · </span>
-            {conversation.applicationStatus}
-          </p>
+          <div className="isi-chat-header-badges">
+            <span className="isi-chat-company-chip">{conversation.company}</span>
+            {conversation.internshipType !== 'Other' ? (
+              <span className="isi-chat-type-chip">{conversation.internshipType}</span>
+            ) : null}
+            <span className={applicationStatusPillClass(conversation.applicationStatus)}>
+              {conversation.applicationStatus}
+            </span>
+          </div>
         </div>
       </div>
 
       <div className="isi-chat-actions">
-        <button type="button" onClick={onViewOffer} className="isi-header-btn">
+        <button type="button" onClick={onViewOffer} className="isi-header-btn isi-header-btn--accent">
           <Briefcase className="size-4" />
           <span>{t('student.internshipOffers.chat.viewOffer')}</span>
         </button>

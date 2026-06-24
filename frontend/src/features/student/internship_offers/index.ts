@@ -7,6 +7,8 @@ export {
   STUDENT_DASHBOARD_PATH,
   STUDENT_INTERNSHIP_OFFERS_PATH,
   STUDENT_ALL_INTERNSHIP_OFFERS_PATH,
+  STUDENT_ALL_OFFERS_SECTION_ID,
+  scrollToAllInternshipOffersSection,
   getInternshipOfferDetailsPath,
   getInternshipOfferApplyPath,
   getInternshipOfferCvAnalysisPath,

@@ -2,21 +2,18 @@ import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  Archive,
   ArchiveRestore,
   BookOpen,
   Briefcase,
-  Copy,
   GraduationCap,
   Layers,
   MapPin,
-  Pencil,
   Shield,
   Settings2,
-  Trash2,
 } from 'lucide-react';
 import AdminModulePageShell from '../../ui/AdminModulePageShell';
 import AdminBackButton from '../../ui/AdminBackButton';
+import AdminRowActionsMenu from '../../ui/AdminRowActionsMenu';
 import { useAdminPagination } from '../../shared/hooks/useAdminPagination';
 import { AdminPagination, AdminTableEmptyState, AdminTableScroll } from '../../ui';
 import { academicStructureApi } from '../api/academicStructureApi';
@@ -69,80 +66,6 @@ function StatusBadge({ active, archived }: { active: boolean; archived: boolean 
     <span className={`admin-badge ${active ? 'admin-badge--success' : 'admin-badge--neutral'}`}>
       {active ? t(`${PREFIX}.status.active`) : t(`${PREFIX}.status.inactive`)}
     </span>
-  );
-}
-
-function RowActions({
-  onEdit,
-  onDuplicate,
-  onArchive,
-  onDelete,
-  archived,
-  editLabel,
-  duplicateLabel,
-  archiveLabel,
-  deleteLabel,
-}: {
-  onEdit?: () => void;
-  onDuplicate?: () => void;
-  onArchive?: () => void;
-  onDelete?: () => void;
-  archived: boolean;
-  editLabel: string;
-  duplicateLabel: string;
-  archiveLabel: string;
-  deleteLabel: string;
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-2">
-      {onEdit ? (
-        <button
-          type="button"
-          className="academic-row-edit-btn inline-flex items-center gap-1.5"
-          title={editLabel}
-          aria-label={editLabel}
-          onClick={onEdit}
-        >
-          <Pencil className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
-          <span>{editLabel}</span>
-        </button>
-      ) : null}
-      {!archived && onDuplicate ? (
-        <button
-          type="button"
-          className="text-[var(--admin-text-secondary)] hover:text-[var(--admin-brand)]"
-          title={duplicateLabel}
-          aria-label={duplicateLabel}
-          onClick={onDuplicate}
-        >
-          <Copy className="h-4 w-4" />
-        </button>
-      ) : null}
-      {!archived && onArchive ? (
-        <button
-          type="button"
-          className="academic-row-archive-btn inline-flex items-center gap-1.5"
-          title={archiveLabel}
-          aria-label={archiveLabel}
-          onClick={onArchive}
-        >
-          <Archive className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
-          <span>{archiveLabel}</span>
-        </button>
-      ) : null}
-      {onDelete ? (
-        <button
-          type="button"
-          className="academic-row-delete-btn inline-flex items-center gap-1.5"
-          title={deleteLabel}
-          aria-label={deleteLabel}
-          onClick={onDelete}
-        >
-          <Trash2 className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
-          <span>{deleteLabel}</span>
-        </button>
-      ) : null}
-    </div>
   );
 }
 
@@ -373,24 +296,13 @@ const AcademicStructurePage: FunctionComponent = () => {
     }
   };
 
-  const actionLabels = {
-    edit: t(`${PREFIX}.edit`),
-    duplicate: t(`${PREFIX}.duplicate`),
-    archive: t(`${PREFIX}.archive.action`),
-    delete: t(`${PREFIX}.delete.action`),
-  };
-
   const renderRowActions = (
     row: { id: number; name: string; is_archived?: boolean },
     type: ArchivedEntityKind,
     options?: { allowEdit?: boolean; allowDuplicate?: boolean; allowArchive?: boolean },
   ) => (
-    <RowActions
-      editLabel={actionLabels.edit}
-      duplicateLabel={actionLabels.duplicate}
-      archiveLabel={actionLabels.archive}
-      deleteLabel={actionLabels.delete}
-      archived={Boolean(row.is_archived)}
+    <AdminRowActionsMenu
+      ariaLabel={t('admin.common.actions.menuAria')}
       onEdit={
         options?.allowEdit === false
           ? undefined
@@ -517,7 +429,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.family`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.order`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.status`)}</th>
-                  <th className={TH_CELL}>{t(`${PREFIX}.columns.actions`)}</th>
+                  <th className={`${TH_CELL} text-end`}>{t(`${PREFIX}.columns.actions`)}</th>
                 </tr>
               )}
               {activeTab === 'levels' && (
@@ -527,7 +439,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.track`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.order`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.status`)}</th>
-                  <th className={TH_CELL}>{t(`${PREFIX}.columns.actions`)}</th>
+                  <th className={`${TH_CELL} text-end`}>{t(`${PREFIX}.columns.actions`)}</th>
                 </tr>
               )}
               {activeTab === 'classes' && (
@@ -537,7 +449,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.level`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.year`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.status`)}</th>
-                  <th className={TH_CELL}>{t(`${PREFIX}.columns.actions`)}</th>
+                  <th className={`${TH_CELL} text-end`}>{t(`${PREFIX}.columns.actions`)}</th>
                 </tr>
               )}
               {activeTab === 'internship-framework' && (
@@ -547,7 +459,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.level`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.duration`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.status`)}</th>
-                  <th className={TH_CELL}>{t(`${PREFIX}.columns.actions`)}</th>
+                  <th className={`${TH_CELL} text-end`}>{t(`${PREFIX}.columns.actions`)}</th>
                 </tr>
               )}
               {activeTab === 'work-modes' && (
@@ -556,7 +468,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.code`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.order`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.status`)}</th>
-                  <th className={TH_CELL}>{t(`${PREFIX}.columns.actions`)}</th>
+                  <th className={`${TH_CELL} text-end`}>{t(`${PREFIX}.columns.actions`)}</th>
                 </tr>
               )}
               {activeTab === 'archived' && (
@@ -566,7 +478,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.code`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.archived.columns.context`)}</th>
                   <th className={TH_CELL}>{t(`${PREFIX}.columns.status`)}</th>
-                  <th className={TH_CELL}>{t(`${PREFIX}.columns.actions`)}</th>
+                  <th className={`${TH_CELL} text-end`}>{t(`${PREFIX}.columns.actions`)}</th>
                 </tr>
               )}
             </thead>
@@ -590,7 +502,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                         <StatusBadge active={row.is_active} archived={row.is_archived} />
                       </div>
                     </td>
-                    <td className={TD_CELL}>
+                    <td className={`${TD_CELL} admin-offers-table__actions`}>
                       {renderRowActions(row, 'FILIERE')}
                     </td>
                   </tr>
@@ -617,7 +529,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                         <StatusBadge active={row.is_active} archived={row.is_archived} />
                       </div>
                     </td>
-                    <td className={TD_CELL}>
+                    <td className={`${TD_CELL} admin-offers-table__actions`}>
                       {renderRowActions(row, 'ACADEMIC_LEVEL')}
                     </td>
                   </tr>
@@ -642,7 +554,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                           <StatusBadge active={row.is_active} archived={row.is_archived} />
                         </div>
                       </td>
-                      <td className={TD_CELL}>
+                      <td className={`${TD_CELL} admin-offers-table__actions`}>
                         {renderRowActions(row, 'CLASS_GROUP')}
                       </td>
                     </tr>
@@ -667,7 +579,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                           <StatusBadge active={row.is_active} archived={row.is_archived} />
                         </div>
                       </td>
-                      <td className={TD_CELL}>
+                      <td className={`${TD_CELL} admin-offers-table__actions`}>
                         {renderRowActions(row, 'INTERNSHIP_TYPE')}
                       </td>
                     </tr>
@@ -691,7 +603,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                           <StatusBadge active={row.is_active} archived={row.is_archived} />
                         </div>
                       </td>
-                      <td className={TD_CELL}>
+                      <td className={`${TD_CELL} admin-offers-table__actions`}>
                         {renderRowActions(row, 'WORK_MODE')}
                       </td>
                     </tr>
@@ -722,7 +634,7 @@ const AcademicStructurePage: FunctionComponent = () => {
                           <StatusBadge active={false} archived />
                         </div>
                       </td>
-                      <td className={TD_CELL}>
+                      <td className={`${TD_CELL} admin-offers-table__actions`}>
                         {renderRowActions(
                           { id: row.id, name: row.name, is_archived: true },
                           row.kind,

@@ -2,7 +2,6 @@ import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Brain,
-  Clock,
   FileUp,
   Lightbulb,
   MessageSquare,
@@ -20,7 +19,6 @@ const NAV_ITEMS: { id: CvAnalysisNavSection; icon: typeof Sparkles; labelKey: st
   { id: 'skills', icon: Wrench, labelKey: 'student.internshipOffers.cvDashboard.nav.skills' },
   { id: 'ai-suggestions', icon: Brain, labelKey: 'student.internshipOffers.cvDashboard.nav.aiSuggestions' },
   { id: 'interview', icon: MessageSquare, labelKey: 'student.internshipOffers.cvDashboard.nav.interview' },
-  { id: 'history', icon: Clock, labelKey: 'student.internshipOffers.cvDashboard.nav.history' },
 ];
 
 interface CvAnalysisNavSidebarProps {

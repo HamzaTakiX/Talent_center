@@ -42,6 +42,7 @@ OFFER_TRANSITIONS: dict[str, dict[str, tuple[bool, bool]]] = {
     InternshipOffer.Status.ARCHIVED: {
         InternshipOffer.Status.DELETED: (True, True),
         InternshipOffer.Status.DRAFT: (True, False),
+        InternshipOffer.Status.OPEN: (True, False),
     },
 }
 
@@ -55,6 +56,7 @@ PUBLICLY_VISIBLE_STATUSES = {
 }
 
 STUDENT_APPLYABLE_STATUSES = {
+    InternshipOffer.Status.PUBLISHED,
     InternshipOffer.Status.OPEN,
 }
 
@@ -147,8 +149,19 @@ def transition_offer(
 
 def is_offer_expired(offer: InternshipOffer, *, now=None) -> bool:
     now = now or timezone.now()
-    if offer.application_deadline and offer.application_deadline < now:
-        return True
+    if offer.application_deadline:
+        deadline = offer.application_deadline
+        # Date-only deadlines (midnight) stay open through that calendar day.
+        if (
+            deadline.hour == 0
+            and deadline.minute == 0
+            and deadline.second == 0
+            and deadline.microsecond == 0
+        ):
+            if now.date() > deadline.date():
+                return True
+        elif deadline < now:
+            return True
     if offer.end_date and offer.end_date < now.date():
         return True
     return False

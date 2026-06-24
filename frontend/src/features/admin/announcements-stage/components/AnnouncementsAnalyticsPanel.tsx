@@ -1,5 +1,6 @@
 import { FunctionComponent, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { BarChart3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminDonutChart from '../../ui/charts/AdminDonutChart';
 import { AdminChartDonutSkeleton } from '../../ui/AdminSectionSkeleton';
@@ -26,7 +27,7 @@ const AnnouncementsAnalyticsPanel: FunctionComponent<Props> = ({
         key: d.code,
         label: d.name,
         value: d.count,
-        color: ['#2563eb', '#3b82f6', '#60a5fa', '#0891b2', '#1d4ed8'][i % 5],
+        color: ['#2563eb', '#16a34a', '#d97706', '#7c3aed', '#0891b2'][i % 5],
       })),
     [typeDistribution],
   );
@@ -55,9 +56,12 @@ const AnnouncementsAnalyticsPanel: FunctionComponent<Props> = ({
 
   return (
     <motion.section {...fadeInUp} className="admin-ann-analytics" aria-labelledby="ann-analytics-title">
-      <h3 id="ann-analytics-title" className="admin-ann-panel-title">
-        {t('admin.announcementsModule.analytics.panelTitle')}
-      </h3>
+      <div className="admin-ann-analytics__head">
+        <BarChart3 className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
+        <h3 id="ann-analytics-title" className="admin-ann-panel-title">
+          {t('admin.announcementsModule.analytics.panelTitle')}
+        </h3>
+      </div>
 
       <div className="admin-ann-analytics__bars">
         {barItems.map((b) => (
@@ -81,7 +85,7 @@ const AnnouncementsAnalyticsPanel: FunctionComponent<Props> = ({
         {loading ? (
           <AdminChartDonutSkeleton legendItems={4} />
         ) : segments.length > 0 ? (
-          <AdminDonutChart segments={segments} ariaLabel={chartAria} />
+          <AdminDonutChart segments={segments} ariaLabel={chartAria} premiumGradients />
         ) : (
           <AnnouncementsPanelEmpty variant="chart" />
         )}

@@ -12,6 +12,7 @@ const OFFER_STATUS_KEY: Record<string, string> = {
   Draft: 'draft',
   Expired: 'expired',
   Closed: 'closed',
+  Archived: 'archived',
 };
 
 const DOCUMENT_STATUS_KEY: Record<string, string> = {

@@ -13,7 +13,6 @@ import {
   adminFormBtnPrimaryClass,
   adminFormBtnSecondaryClass,
 } from '../../shared/forms/adminFormClasses';
-import { academicReferenceApi } from '../../api/reference';
 import type { AcademicLevelOption } from '../../api/types';
 import type {
   AcademicClassRow,
@@ -197,11 +196,24 @@ const EntityFormDialog: FunctionComponent<EntityFormDialogProps> = ({
       return;
     }
     if (tab === 'classes' || tab === 'internship-framework') {
-      void academicReferenceApi.listAcademicLevels({ filiere_ids: [fid], lang }).then((data) => {
-        setLevelOptions(data as AcademicLevelOption[]);
-      });
+      const filtered: AcademicLevelOption[] = levels
+        .filter((level) => level.filiere_id === fid && level.is_active && !level.is_archived)
+        .map((level) => ({
+          id: level.id,
+          code: level.code,
+          name: level.name,
+          name_fr: level.name_fr,
+          name_en: level.name_en,
+          filiere_id: level.filiere_id,
+          filiere_code: level.filiere_code ?? '',
+          year_number: level.year_number,
+          has_sectors: false,
+          sort_order: level.sort_order,
+          is_active: level.is_active,
+        }));
+      setLevelOptions(filtered);
     }
-  }, [values.filiere_id, tab, lang]);
+  }, [values.filiere_id, tab, levels]);
 
   const existingRows = useMemo(() => {
     if (tab === 'tracks') return tracks;

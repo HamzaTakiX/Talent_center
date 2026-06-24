@@ -19,6 +19,7 @@ export interface AnnouncementListItem {
   summary: string;
   typeCode: string;
   typeName: string;
+  coverImageUrl?: string | null;
   status: AnnouncementStatus;
   priority: AnnouncementPriority;
   target_scope: string;
@@ -35,6 +36,9 @@ export interface AnnouncementListItem {
   engagementRate?: number;
   created_at: string;
   updated_at: string;
+  createdByName?: string;
+  targetAudienceLabel?: string;
+  scheduleTimezone?: string;
 }
 
 export interface AnnouncementListParams {
@@ -46,6 +50,13 @@ export interface AnnouncementListParams {
   type?: string;
   internship_only?: boolean | string;
   ordering?: string;
+  scheduled_only?: boolean | string;
+  date_range?: string;
+  publish_start_from?: string;
+  publish_start_to?: string;
+  filiere?: string;
+  class_group?: string;
+  academic_level?: string;
 }
 
 export interface PaginatedAnnouncements {
@@ -100,6 +111,9 @@ export interface AnnouncementWritePayload {
   publish_start_at?: string | null;
   publish_end_at?: string | null;
   application_deadline?: string | null;
+  schedule_date?: string;
+  schedule_time?: string;
+  schedule_timezone?: string;
   is_pinned?: boolean;
   targets?: AnnouncementTargetPayload[];
   internshipDetails?: InternshipDetailsPayload;
@@ -111,6 +125,9 @@ export interface AnnouncementTypeItem {
   name: string;
   nameLocalized: string;
   name_i18n: Record<string, string>;
+  description?: string;
+  icon?: string;
+  color?: string;
   default_priority: string;
   is_active: boolean;
   is_system: boolean;
@@ -119,6 +136,25 @@ export interface AnnouncementTypeItem {
   is_internship_related: boolean;
   recommendation_weight: string;
   recommendation_boost: string;
+  sort_order?: number;
+  announcementCount?: number;
+}
+
+export interface AnnouncementTypeWritePayload {
+  code: string;
+  name: string;
+  name_i18n?: Record<string, string>;
+  description?: string;
+  icon?: string;
+  color?: string;
+  default_priority: string;
+  is_active?: boolean;
+  is_mutable?: boolean;
+  is_bannable?: boolean;
+  is_internship_related?: boolean;
+  recommendation_weight?: string | number;
+  recommendation_boost?: string | number;
+  sort_order?: number;
 }
 
 export interface AnnouncementDashboardData {
@@ -129,6 +165,8 @@ export interface AnnouncementDashboardData {
     urgentCount: number;
     draftCount: number;
     scheduledCount: number;
+    publishingTodayCount?: number;
+    publishingThisWeekCount?: number;
     totalViews: number;
     totalClicks: number;
     totalSaves: number;
@@ -146,8 +184,20 @@ export interface AnnouncementDashboardData {
   insights: { kind: string; severity: string; title: string; message: string; announcementId?: string }[];
 }
 
+export interface ScheduledDashboardData {
+  scheduledCount: number;
+  publishingTodayCount: number;
+  publishingThisWeekCount: number;
+  nextPublication: {
+    id: string;
+    title: string;
+    publish_start_at: string | null;
+    typeCode: string;
+  } | null;
+}
+
 export interface AnnouncementDetailResponse {
   announcement: Record<string, unknown>;
-  publicationHistory: { action: string; created_at: string; note?: string }[];
-  audienceCount: number;
+  publicationHistory?: { action: string; created_at: string; note?: string }[];
+  audienceCount?: number;
 }

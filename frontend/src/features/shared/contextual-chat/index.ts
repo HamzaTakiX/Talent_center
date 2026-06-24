@@ -2,4 +2,7 @@ export { default as ContextualChatShell } from './components/ContextualChatShell
 export type { ContextualChatShellProps } from './components/ContextualChatShell';
 export { useContextualChat } from './hooks/useContextualChat';
 export type { ChatModule, SmartActionCode, ConversationDto } from './types';
+export { ChatUnreadProvider, useChatUnread, useChatUnreadCount } from './context/ChatUnreadContext';
+export { default as NavChatUnreadBadge } from './components/NavChatUnreadBadge';
+export { ADMIN_NAV_CHAT_MODULES, STUDENT_NAV_CHAT_MODULES } from './config/chatNavModuleMap';
 export * from './api/chatApi';

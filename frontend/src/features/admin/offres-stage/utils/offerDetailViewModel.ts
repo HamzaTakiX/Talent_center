@@ -1,7 +1,7 @@
 import { IMPORT_PLATFORM_LABELS } from '../constants/createOfferWorkflow';
 import type { TargetingRules } from '../types/createOfferWorkflow';
 import { mapBackendRulesToTargetingRules } from '../../../shared/utils/targetingMappers';
-import { mapBackendStatusToUi } from '../../../shared/utils/stageMappers';
+import { mapBackendStatusToUi, resolveStageOfferLogoUrl } from '../../../shared/utils/stageMappers';
 import type { BackendOfferStatus, StageApplication, StageOfferDetail } from '../../../shared/types/stageTypes';
 
 export type OfferDetailNavSection =
@@ -67,6 +67,7 @@ export interface OfferDetailViewModel {
   startDate: string;
   endDate: string;
   externalUrl: string;
+  companyLogoUrl: string | null;
   applicationMethod: string;
   visibility: string;
   autoExpiration: boolean | null;
@@ -162,18 +163,35 @@ function resolvePublicationStatus(status: BackendOfferStatus): string {
   }
 }
 
-function extractDescriptionSections(offer: StageOfferDetail): OfferDescriptionSections {
+export function extractDescriptionSections(offer: StageOfferDetail): OfferDescriptionSections {
   const meta = readMeta(offer);
   const descMeta =
     meta.description_sections && typeof meta.description_sections === 'object'
       ? (meta.description_sections as Record<string, unknown>)
       : {};
 
+  const parsedParts = (offer.description ?? '')
+    .split(/\n\n+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
   return {
-    overview: readString(descMeta.overview) || readString(meta.overview) || readString(offer.description),
+    overview:
+      readString(descMeta.overview) ||
+      readString(meta.overview) ||
+      parsedParts[0] ||
+      readString(offer.description),
     responsibilities: readString(descMeta.responsibilities) || readString(meta.responsibilities),
-    requirements: readString(descMeta.requirements) || readString(meta.requirements),
-    benefits: readString(descMeta.benefits) || readString(meta.benefits),
+    requirements:
+      readString(descMeta.requirements) ||
+      readString(meta.requirements) ||
+      parsedParts[1] ||
+      '',
+    benefits:
+      readString(descMeta.benefits) ||
+      readString(meta.benefits) ||
+      parsedParts[2] ||
+      '',
     additionalNotes:
       readString(descMeta.learningOpportunities) ||
       readString(descMeta.additional_notes) ||
@@ -298,6 +316,7 @@ export function buildOfferDetailViewModel(
     startDate: formatOfferDetailDateOnly(readString(offer.start_date)),
     endDate: formatOfferDetailDateOnly(readString(offer.end_date)),
     externalUrl,
+    companyLogoUrl: resolveStageOfferLogoUrl(offer),
     applicationMethod: resolveApplicationMethod(offer, meta),
     visibility: resolveVisibility(meta, hasTargeting),
     autoExpiration:

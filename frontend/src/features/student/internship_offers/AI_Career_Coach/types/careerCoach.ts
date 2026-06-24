@@ -14,6 +14,8 @@ export type MessageQuickAction =
 
 export interface CoachContextData {
   cvFileName: string;
+  hasCv: boolean;
+  hasAnalysis: boolean;
   cvScore: number;
   atsScore: number;
   lastAnalysis: string;
@@ -33,6 +35,30 @@ export interface StructuredBlock {
   items?: StructuredListItem[];
   actionKeys?: string[];
   improvement?: { cvScore?: number; atsScore?: number };
+}
+
+export interface CoachOfferContext {
+  offerId?: string;
+  title?: string;
+  company?: string;
+  companyLogoUrl?: string;
+  internshipType?: string;
+  deadline?: string;
+  applicationStatus?: string;
+  appliedDate?: string;
+  interviewDate?: string;
+}
+
+export interface CoachConversation {
+  id: string;
+  title: string;
+  preview?: string;
+  messageCount?: number;
+  mode: CoachMode;
+  messages: CoachMessage[];
+  updatedAt: number;
+  archived?: boolean;
+  offerContext?: CoachOfferContext;
 }
 
 export interface CoachMessage {
@@ -58,6 +84,26 @@ export interface CoachModeConfig {
   emptyHintKey: string;
   prompts: CoachPrompt[];
   blocks: StructuredBlock[];
+}
+
+export type CoachSummaryCategory = 'cv' | 'internship' | 'interview' | 'career' | 'skills';
+
+export interface CoachChatHighlight {
+  category: CoachSummaryCategory | string;
+  question: string;
+  answer_preview: string;
+  created_at: string;
+}
+
+export interface CoachChatSummary {
+  session_id: string;
+  overview: string;
+  key_topics: CoachSummaryCategory[];
+  highlights: CoachChatHighlight[];
+  total_messages: number;
+  important_count: number;
+  generated_at: string;
+  has_important_content: boolean;
 }
 
 export const COACH_MODES: CoachMode[] = [

@@ -5,8 +5,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import { CheckCheck, Mic, Paperclip, Send } from 'lucide-react';
+import { CheckCheck, Paperclip } from 'lucide-react';
 import ChatEmptyState from '../../../shared/admin-module-chat/components/ChatEmptyState';
+import SupportMessageComposer from '../../../shared/admin-support-inbox/components/SupportMessageComposer';
 import { useChatEmptyState } from '../../../i18n/useAdminCopy';
 import type { DocumentConversation, InboxStats } from '../types/documentChatTypes';
 import DocumentChatHeader from './DocumentChatHeader';
@@ -37,14 +38,6 @@ const DocumentChatArea: FunctionComponent<Props> = ({
   const [draft, setDraft] = useState('');
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const composerRef = useRef<HTMLTextAreaElement>(null);
-
-  const adjustComposer = useCallback(() => {
-    const el = composerRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 24), 120)}px`;
-  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -52,7 +45,6 @@ const DocumentChatArea: FunctionComponent<Props> = ({
 
   useEffect(() => {
     setDraft('');
-    if (composerRef.current) composerRef.current.style.height = '24px';
   }, [conversation?.id]);
 
   useEffect(() => {
@@ -62,16 +54,11 @@ const DocumentChatArea: FunctionComponent<Props> = ({
     return () => window.clearTimeout(t);
   }, [conversation?.id]);
 
-  useEffect(() => {
-    adjustComposer();
-  }, [draft, adjustComposer]);
-
   const handleSend = useCallback(() => {
     const text = draft.trim();
     if (!text) return;
     onSend(text);
     setDraft('');
-    if (composerRef.current) composerRef.current.style.height = '24px';
   }, [draft, onSend]);
 
   const emptyState = useChatEmptyState('documents');
@@ -141,40 +128,12 @@ const DocumentChatArea: FunctionComponent<Props> = ({
         ) : null}
       </div>
 
-      <footer className="isi-composer-wrap">
-        <div className="isi-composer">
-          <button type="button" className="isi-composer-action" aria-label="Pièce jointe">
-            <Paperclip className="size-4" strokeWidth={1.85} />
-          </button>
-          <textarea
-            ref={composerRef}
-            rows={1}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Écrire un message…"
-            className="isi-composer-input"
-            aria-label="Message"
-          />
-          <button type="button" className="isi-composer-action" aria-label="Note vocale">
-            <Mic className="size-4" strokeWidth={1.85} />
-          </button>
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={!draft.trim()}
-            className="isi-composer-send"
-            aria-label="Envoyer"
-          >
-            <Send className="size-4" strokeWidth={2} />
-          </button>
-        </div>
-      </footer>
+      <SupportMessageComposer
+        value={draft}
+        onChange={setDraft}
+        onSend={handleSend}
+        showVoice
+      />
     </section>
   );
 };

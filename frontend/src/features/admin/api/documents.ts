@@ -9,6 +9,7 @@ import type {
   DocumentTemplateItem,
   DocumentTypeConfig,
   PaginatedDocumentRequests,
+  ReservationSlot,
   SlaRuleItem,
   WorkflowDefinition,
 } from '../Documents_admin/types';
@@ -90,14 +91,26 @@ export const adminDocumentsApi = {
     return res.data.data!;
   },
 
-  reservations: async (params?: { date?: string }) => {
-    const res = await apiClient.get<ApiEnvelope<unknown>>(`${BASE}/reservations`, { params });
-    return res.data.data;
+  reservations: async (params?: { date?: string }): Promise<{
+    date: string;
+    occupancy: DocumentsDashboardData['reservationOccupancy'];
+    total: number;
+    items: ReservationSlot[];
+  }> => {
+    const res = await apiClient.get<ApiEnvelope<{
+      date: string;
+      occupancy: DocumentsDashboardData['reservationOccupancy'];
+      total: number;
+      items: ReservationSlot[];
+    }>>(`${BASE}/reservations`, { params });
+    return res.data.data ?? { date: '', occupancy: [], total: 0, items: [] };
   },
 
-  workload: async () => {
-    const res = await apiClient.get<ApiEnvelope<unknown>>(`${BASE}/workload`);
-    return res.data.data;
+  workload: async (): Promise<{ items: DocumentsDashboardData['serviceWorkload'] }> => {
+    const res = await apiClient.get<ApiEnvelope<{ items: DocumentsDashboardData['serviceWorkload'] }>>(
+      `${BASE}/workload`,
+    );
+    return res.data.data ?? { items: [] };
   },
 
   catalogList: async (): Promise<DocumentServiceCatalogItem[]> => {

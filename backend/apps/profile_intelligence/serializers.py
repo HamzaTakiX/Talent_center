@@ -29,7 +29,18 @@ class StudentProfileIndicatorSerializer(serializers.ModelSerializer):
             'health_score',
             'engagement_score',
             'risk_score',
+            'employability_score',
+            'internship_readiness_score',
+            'profile_completion_score',
+            'interview_readiness_score',
+            'career_progress_score',
+            'placement_probability',
+            'risk_category',
+            'engagement_category',
+            'health_index',
+            'score_breakdown_json',
             'last_activity_at',
+            'computed_at',
             'is_at_risk',
             'updated_at',
         )
@@ -174,6 +185,7 @@ class ProfileDashboardSerializer(serializers.Serializer):
     student_profile_id = serializers.IntegerField()
     completion_rate = serializers.IntegerField()
     indicator = StudentProfileIndicatorSerializer(allow_null=True)
+    intelligence = StudentProfileIndicatorSerializer(allow_null=True)
     contexts = StudentProfileContextSerializer(many=True)
     modules = serializers.ListField(child=serializers.DictField())
     suggestions = StudentProfileSuggestionSerializer(many=True)

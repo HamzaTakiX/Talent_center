@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, ReactNode } from 'react';
 import { Eye, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminModal from './AdminModal';
@@ -16,6 +16,8 @@ export interface AdminEntityDetailModalProps {
   sections: AdminDetailSection[];
   onEdit?: () => void;
   maxWidthClass?: string;
+  headerContent?: ReactNode;
+  showReadOnlyBanner?: boolean;
 }
 
 const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = ({
@@ -26,6 +28,8 @@ const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = (
   sections,
   onEdit,
   maxWidthClass = 'max-w-[720px]',
+  headerContent,
+  showReadOnlyBanner = true,
 }) => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
@@ -38,10 +42,7 @@ const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = (
       <button
         type="button"
         className={adminFormBtnPrimaryClass}
-        onClick={() => {
-          onClose();
-          onEdit();
-        }}
+        onClick={() => onEdit()}
       >
         <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
         {t('admin.common.actions.edit')}
@@ -60,12 +61,15 @@ const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = (
       dir={isRtl ? 'rtl' : 'ltr'}
       closeAriaLabel={t('admin.common.detailModal.close')}
     >
-      <div className="admin-detail-modal-banner">
-        <span className="admin-detail-modal-banner__icon-wrap" aria-hidden>
-          <Eye className="admin-detail-modal-banner__icon" strokeWidth={1.75} />
-        </span>
-        <p className="admin-detail-modal-hint">{t('admin.common.detailModal.readOnlyHint')}</p>
-      </div>
+      {headerContent}
+      {showReadOnlyBanner ? (
+        <div className="admin-detail-modal-banner">
+          <span className="admin-detail-modal-banner__icon-wrap" aria-hidden>
+            <Eye className="admin-detail-modal-banner__icon" strokeWidth={1.75} />
+          </span>
+          <p className="admin-detail-modal-hint">{t('admin.common.detailModal.readOnlyHint')}</p>
+        </div>
+      ) : null}
       <AdminDetailGrid sections={sections} />
     </AdminModal>
   );

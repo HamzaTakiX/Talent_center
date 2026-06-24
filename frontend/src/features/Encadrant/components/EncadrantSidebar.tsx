@@ -3,6 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../../student/assets/Icon.svg';
 import { ENCADRANT_NAV_BUTTON_BASE } from '../constants/encadrantLayout';
 import { ENCADRANT_NAV_ITEMS } from '../constants/navigation';
+import { ENCADRANT_CHAT_PATH } from '../constants/routes';
+import { useChatUnread } from '../../shared/contextual-chat/context/ChatUnreadContext';
+import NavChatUnreadBadge from '../../shared/contextual-chat/components/NavChatUnreadBadge';
 
 interface EncadrantSidebarProps {
   mobileOpen: boolean;
@@ -12,6 +15,8 @@ interface EncadrantSidebarProps {
 const EncadrantSidebar: FunctionComponent<EncadrantSidebarProps> = ({ mobileOpen, onMobileClose }) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { getModuleUnread } = useChatUnread();
+  const encadrantChatUnread = getModuleUnread('encadrant');
 
   useEffect(() => {
     onMobileClose();
@@ -74,6 +79,9 @@ const EncadrantSidebar: FunctionComponent<EncadrantSidebarProps> = ({ mobileOpen
               >
                 <ItemIcon className="relative h-4 w-4 shrink-0 text-[#171717]" strokeWidth={1.5} />
                 <span className="min-w-0 flex-1 truncate leading-5">{item.label}</span>
+                {item.path === ENCADRANT_CHAT_PATH && encadrantChatUnread > 0 ? (
+                  <NavChatUnreadBadge count={encadrantChatUnread} variant="encadrant" />
+                ) : null}
               </button>
             );
           })}

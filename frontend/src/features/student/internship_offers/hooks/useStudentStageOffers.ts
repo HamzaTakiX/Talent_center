@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { adminHistoryApi, type HistoryEventDto } from '../../../admin/api/history';
+import { useAuth } from '../../../auth/hooks/useAuth';
 import { stageApi } from '../../../shared/api/stageApi';
 import {
   mapRecommendationToStudentCard,
@@ -7,44 +8,64 @@ import {
   mapStageOfferToStudentCard,
 } from '../../../shared/utils/stageMappers';
 import { parseAdminApiError } from '../../../admin/shared/utils/parseAdminApiError';
+import {
+  getCvMatchPercent,
+  loadCvInternshipMatchMap,
+} from '../CV_Analyse/utils/cvInternshipMatchMap';
+import { buildRecommendedInternshipOffers } from '../helpers/recommendedInternshipOffers';
+import { applyInternshipOfferFilters } from '../helpers/applyInternshipOfferFilters';
+import type {
+  InternshipOfferDateFilter,
+  InternshipOfferDistanceSort,
+} from '../constants/internshipOfferFilters';
+import { useStudentOfferLocation } from './useStudentOfferLocation';
 import type { InternshipOfferDetails, InternshipOffersStatItem } from '../types';
-import type { StageMatchScore, StageOfferListItem } from '../../../shared/types/stageTypes';
-
-function buildMatchByOfferMap(matches: StageMatchScore[]) {
-  const map = new Map<string, number>();
-  for (const match of matches) {
-    if (match.offer_uuid) {
-      map.set(match.offer_uuid, Math.round(match.score));
-    }
-    if (match.offer_title) {
-      map.set(match.offer_title.toLowerCase(), Math.round(match.score));
-    }
-  }
-  return map;
-}
+import type { StageOfferListItem } from '../../../shared/types/stageTypes';
 
 function mapVisibleOffersToStudentCards(
   items: StageOfferListItem[],
-  matchByOffer: Map<string, number>,
+  matchMap: Map<string, number>,
 ) {
   return items.map((offer) =>
-    mapStageOfferToStudentCard(
-      offer,
-      matchByOffer.get(offer.uuid) ?? matchByOffer.get(offer.title.toLowerCase()) ?? 0,
-    ),
+    mapStageOfferToStudentCard(offer, getCvMatchPercent(matchMap, offer.uuid)),
   );
 }
 
-async function loadVisibleStudentOffers(limit = 20) {
-  const [list, matchScores] = await Promise.all([
-    stageApi.list({ page_size: limit }),
-    stageApi.studentMatches(limit).catch(() => [] as StageMatchScore[]),
-  ]);
-  const matchByOffer = buildMatchByOfferMap(matchScores);
-  return mapVisibleOffersToStudentCards(list.items, matchByOffer);
+export function useStudentRecentOffers(limit = 3) {
+  const [offers, setOffers] = useState<ReturnType<typeof mapStageOfferToStudentCard>[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    void Promise.all([stageApi.list({ page_size: limit }), loadCvInternshipMatchMap(100)])
+      .then(([list, matchMap]) => {
+        if (cancelled) return;
+        setOffers(mapVisibleOffersToStudentCards(list.items, matchMap).slice(0, limit));
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(parseAdminApiError(err, 'offers_load_failed').message);
+        setOffers([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [limit]);
+
+  return { offers, loading, error };
 }
 
 export function useStudentRecommendations() {
+  const { user } = useAuth();
+  const studentInternshipTypeName = user?.student_profile?.internship_type_name;
   const [offers, setOffers] = useState<ReturnType<typeof mapRecommendationToStudentCard>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,19 +74,21 @@ export function useStudentRecommendations() {
     setLoading(true);
     setError(null);
     try {
-      const recs = await stageApi.recommendations();
-      if (recs.length > 0) {
-        setOffers(recs.map(mapRecommendationToStudentCard));
-        return;
-      }
-      setOffers(await loadVisibleStudentOffers(12));
+      const [recs, matchMap] = await Promise.all([
+        stageApi.recommendations(),
+        loadCvInternshipMatchMap(100),
+      ]);
+      const mapped = recs.map((rec) =>
+        mapRecommendationToStudentCard(rec, getCvMatchPercent(matchMap, rec.offer_uuid)),
+      );
+      setOffers(buildRecommendedInternshipOffers(mapped, studentInternshipTypeName));
     } catch (err) {
       setError(parseAdminApiError(err, 'recommendations_load_failed').message);
       setOffers([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [studentInternshipTypeName]);
 
   useEffect(() => {
     void refresh();
@@ -74,9 +97,23 @@ export function useStudentRecommendations() {
   return { offers, loading, error, refresh };
 }
 
-export function useStudentAllOffers(search = '', category = 'all') {
+export interface StudentAllOffersFilters {
+  search?: string;
+  dateFilter?: InternshipOfferDateFilter;
+  maxDistanceKm?: number;
+  distanceSort?: InternshipOfferDistanceSort;
+}
+
+export function useStudentAllOffers(filters: StudentAllOffersFilters = {}) {
+  const {
+    search = '',
+    dateFilter = 'all',
+    maxDistanceKm = 100,
+    distanceSort = 'none',
+  } = filters;
+  const studentLocation = useStudentOfferLocation();
   const [rawOffers, setRawOffers] = useState<StageOfferListItem[]>([]);
-  const [matches, setMatches] = useState<StageMatchScore[]>([]);
+  const [matchMap, setMatchMap] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,11 +122,11 @@ export function useStudentAllOffers(search = '', category = 'all') {
     setError(null);
     Promise.all([
       stageApi.list({ page_size: 100 }),
-      stageApi.studentMatches(100).catch(() => [] as StageMatchScore[]),
+      loadCvInternshipMatchMap(100),
     ])
-      .then(([list, matchScores]) => {
+      .then(([list, scores]) => {
         setRawOffers(list.items);
-        setMatches(matchScores);
+        setMatchMap(scores);
       })
       .catch((err) => {
         setError(parseAdminApiError(err, 'offers_load_failed').message);
@@ -98,22 +135,27 @@ export function useStudentAllOffers(search = '', category = 'all') {
       .finally(() => setLoading(false));
   }, []);
 
-  const matchByOffer = useMemo(() => buildMatchByOfferMap(matches), [matches]);
-
   const offers = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const filtered = rawOffers.filter((o) => {
-      if (category !== 'all' && o.offer_type !== category) return false;
-      if (!q) return true;
-      return (
-        o.title.toLowerCase().includes(q) ||
-        o.company_name.toLowerCase().includes(q)
-      );
+    const mapped = mapVisibleOffersToStudentCards(rawOffers, matchMap);
+    return applyInternshipOfferFilters({
+      offers: mapped,
+      search,
+      dateFilter,
+      maxDistanceKm,
+      distanceSort,
+      userLocation: studentLocation.point,
     });
-    return mapVisibleOffersToStudentCards(filtered, matchByOffer);
-  }, [rawOffers, search, category, matchByOffer]);
+  }, [
+    rawOffers,
+    search,
+    dateFilter,
+    maxDistanceKm,
+    distanceSort,
+    matchMap,
+    studentLocation.point,
+  ]);
 
-  return { offers, loading, error };
+  return { offers, loading, error, studentLocation };
 }
 
 export function useStudentOfferDetail(uuid: string | undefined) {
@@ -128,9 +170,10 @@ export function useStudentOfferDetail(uuid: string | undefined) {
     Promise.all([
       stageApi.detail(uuid),
       stageApi.offerMatch(uuid).catch(() => null),
+      loadCvInternshipMatchMap(100),
     ])
-      .then(([offer, match]) => {
-        const matchPercent = match ? Math.round(match.score) : 0;
+      .then(([offer, match, matchMap]) => {
+        const matchPercent = getCvMatchPercent(matchMap, uuid) || (match ? Math.round(match.score) : 0);
         const details = mapStageDetailToStudentDetails(offer, matchPercent);
         if (match) {
           details.matchReasons = match.reasons.map((r) => r.reason);
@@ -206,7 +249,11 @@ export function useStudentInternshipHistory(search = '', activityType = 'all') {
 
 export async function submitStudentApplication(
   offerUuid: string,
-  payload: { cover_letter?: string; student_cv_id?: number },
+  payload: { cover_letter?: string; student_cv_id?: number; external_confirmation?: boolean },
 ) {
   return stageApi.apply(offerUuid, payload);
+}
+
+export async function submitExternalStudentApplication(offerUuid: string) {
+  return stageApi.apply(offerUuid, { external_confirmation: true });
 }

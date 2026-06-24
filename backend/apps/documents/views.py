@@ -34,18 +34,26 @@ class DocumentRequestDetailView(APIView):
     required_permission = 'documents.validate'
 
     def get(self, request, uuid):
+        req = get_object_or_404(
+            DocumentRequest.objects.select_related(*admin_api.LIST_SELECT_RELATED).prefetch_related(
+                'fields', 'attachments', 'outputs', 'workflow_steps'
+            ),
+            uuid=uuid,
+        )
+        return Response(envelope(True, 'Detail loaded', data=admin_api.detail_payload(req)))
+
+
+class DocumentRequestActionView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'documents.validate'
+
+    def post(self, request, uuid, action):
         req = get_object_or_404(DocumentRequest, uuid=uuid)
-        item = admin_api._serialize_list_item(req)
-        item.update({
-            'reason': req.reason,
-            'fields': [],
-            'attachments': [],
-            'workflowSteps': [],
-            'validationHistory': [],
-            'generatedOutputs': [],
-            'insights': ['admin.documentsModule.insights.srfClear'],
-        })
-        return Response(envelope(True, 'Detail loaded', data=item))
+        try:
+            data = admin_api.perform_request_action(req, action, request.user, request.data)
+        except ValueError as exc:
+            return Response(envelope(False, str(exc)), status=400)
+        return Response(envelope(True, f'Action {action} completed', data=data))
 
 
 class DocumentTypesListView(APIView):
@@ -94,6 +102,23 @@ class DocumentAnalyticsView(APIView):
 
     def get(self, request):
         return Response(envelope(True, 'Analytics loaded', data=admin_api.analytics_payload()))
+
+
+class DocumentWorkloadView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'documents.validate'
+
+    def get(self, request):
+        return Response(envelope(True, 'Workload loaded', data=admin_api.workload_payload()))
+
+
+class DocumentReservationsView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'documents.validate'
+
+    def get(self, request):
+        data = admin_api.reservations_payload(request.query_params.dict())
+        return Response(envelope(True, 'Reservations loaded', data=data))
 
 
 class ServiceCatalogListCreateView(APIView):

@@ -2,11 +2,13 @@ import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AdminButton from '../../ui/AdminButton';
 import { AdminTableEmptyState } from '../../ui';
+import { AdminTableSkeletonRows } from '../../ui/AdminTableSkeleton';
 import { adminTableBtn, adminTableBtnDanger, adminTableBtnSuccess } from '../../ui/adminTableButtons';
 import type { QueueItem } from '../types/emailSystemTypes';
 import {
   EmailSystemStatusBadge,
   EmailSystemTablePanel,
+  EmailSystemTabLoading,
   emailSystemTableTdClass,
   emailSystemTableThClass,
 } from '../ui/EmailSystemPrimitives';
@@ -34,12 +36,16 @@ const QueueTab: FunctionComponent<Props> = ({ load, onRetry, onCancel }) => {
   const [filter, setFilter] = useState<string>('');
   const [items, setItems] = useState<QueueItem[]>([]);
   const [stats, setStats] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(() => {
-    void load(filter || undefined).then((res) => {
-      setItems(res.items);
-      setStats(res.stats);
-    });
+    setLoading(true);
+    void load(filter || undefined)
+      .then((res) => {
+        setItems(res.items);
+        setStats(res.stats);
+      })
+      .finally(() => setLoading(false));
   }, [filter, load]);
 
   useEffect(() => {
@@ -53,6 +59,7 @@ const QueueTab: FunctionComponent<Props> = ({ load, onRetry, onCancel }) => {
           key={f || 'all'}
           variant={filter === f ? 'primary' : 'outline'}
           size="sm"
+          disabled={loading}
           onClick={() => setFilter(f)}
         >
           {f ? t(`${PREFIX}.filters.${f.toLowerCase()}`) : t(`${PREFIX}.filters.all`)}
@@ -66,6 +73,10 @@ const QueueTab: FunctionComponent<Props> = ({ load, onRetry, onCancel }) => {
     </>
   );
 
+  if (loading && items.length === 0) {
+    return <EmailSystemTabLoading variant="table" tableCols={6} tableRows={8} />;
+  }
+
   return (
     <EmailSystemTablePanel
       title={t(`${PREFIX}.title`, { defaultValue: 'Email queue' })}
@@ -73,7 +84,7 @@ const QueueTab: FunctionComponent<Props> = ({ load, onRetry, onCancel }) => {
       toolbar={toolbar}
       minWidth="1000px"
     >
-      <table className="admin-table admin-table--safe w-full">
+      <table className="admin-table admin-table--safe w-full" aria-busy={loading}>
         <thead>
           <tr>
             <th className={emailSystemTableThClass}>{t(`${PREFIX}.recipient`)}</th>
@@ -85,7 +96,9 @@ const QueueTab: FunctionComponent<Props> = ({ load, onRetry, onCancel }) => {
           </tr>
         </thead>
         <tbody>
-          {items.length === 0 ? (
+          {loading ? (
+            <AdminTableSkeletonRows colSpan={6} rows={6} />
+          ) : items.length === 0 ? (
             <AdminTableEmptyState colSpan={6} title={t(`${PREFIX}.empty`)} />
           ) : (
             items.map((row) => (

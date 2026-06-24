@@ -22,6 +22,7 @@ from .models import (
     StudentProfileModuleRegistry,
 )
 from .services import activity_tracking_service
+from .jobs.celery_tasks import schedule_student_recompute
 
 
 # ---------------------------------------------------------------------------
@@ -42,6 +43,7 @@ def on_user_logged_in(sender, user, request, **kwargs):
             'auth_provider': getattr(user, 'auth_provider', ''),
         },
     )
+    schedule_student_recompute(profile.pk)
 
 
 # ---------------------------------------------------------------------------
@@ -118,6 +120,7 @@ def on_cv_saved(sender, instance: StudentCv, created: bool, **kwargs):
         action_code='cv.created' if created else 'cv.updated',
         metadata={'cv_id': instance.pk, 'status': instance.status},
     )
+    schedule_student_recompute(profile.pk)
 
 
 # ---------------------------------------------------------------------------

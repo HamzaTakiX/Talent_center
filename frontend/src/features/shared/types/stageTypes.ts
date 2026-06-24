@@ -12,7 +12,7 @@ export type BackendOfferStatus =
   | 'DELETED';
 
 /** UI display status used in admin tables. */
-export type UiOfferStatus = 'Active' | 'Draft' | 'Expired' | 'Closed';
+export type UiOfferStatus = 'Active' | 'Draft' | 'Expired' | 'Closed' | 'Archived';
 
 export interface StageOfferListItem {
   uuid: string;
@@ -39,7 +39,14 @@ export interface StageOfferDetail extends StageOfferListItem {
   is_hybrid?: boolean;
   required_skills?: string[];
   preferred_skills?: string[];
+  required_languages?: string[];
+  min_education_level?: string;
+  duration_months?: number | null;
+  start_date?: string | null;
+  end_date?: string | null;
   compensation_amount?: string | null;
+  compensation_currency?: string;
+  compensation_period?: string;
   external_url?: string;
   updated_at?: string;
   metadata_json?: Record<string, unknown>;
@@ -85,10 +92,18 @@ export interface StageOfferWritePayload {
   is_remote?: boolean;
   is_hybrid?: boolean;
   application_deadline?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  duration_months?: number | null;
   required_skills?: string[];
   preferred_skills?: string[];
+  required_languages?: string[];
+  min_education_level?: string;
   compensation_amount?: number | null;
+  compensation_currency?: string;
+  compensation_period?: string;
   external_url?: string;
+  metadata_json?: Record<string, unknown>;
   targeting_rules?: unknown[];
   programs?: string[];
   classes?: string[];
@@ -106,6 +121,10 @@ export interface StageApplication {
   applied_at: string;
   last_status_change_at: string | null;
   student_email: string;
+  student_name?: string;
+  student_class?: string;
+  student_field?: string;
+  student_avatar_url?: string | null;
   reviewer_notes?: string;
   metadata_json?: Record<string, unknown>;
 }
@@ -126,6 +145,11 @@ export interface StageRecommendation {
   offer_uuid: string;
   offer_title: string;
   company_name: string;
+  company_logo_url?: string | null;
+  location_city?: string;
+  location_country?: string;
+  offer_type?: string;
+  required_skills?: string[];
 }
 
 export interface StageDashboardSummary {
@@ -133,6 +157,8 @@ export interface StageDashboardSummary {
   open_offers: number;
   published_offers: number;
   total_applications: number;
+  ongoing_applications?: number;
+  expiring_offers_this_week?: number;
   acceptance_rate: number;
   total_views: number;
 }
@@ -150,6 +176,10 @@ export interface StageAnalyticsDashboard {
     uuid: string;
     title: string;
     company_name: string;
+    company_logo_url?: string | null;
+    location_city?: string | null;
+    application_deadline?: string | null;
+    status?: string;
     view_count: number;
     application_count: number;
   }[];

@@ -6,7 +6,7 @@ type AuthLoadingGateProps = {
   message?: string;
 };
 
-/** Blocks protected UI until auth/role validation completes (no layout flash). */
+/** Full-screen loader only during cold auth bootstrap (login, callback, token without cache). */
 export const AuthLoadingGate = ({ children, message }: AuthLoadingGateProps) => {
   if (children) {
     return (

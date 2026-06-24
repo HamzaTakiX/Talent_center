@@ -2,7 +2,7 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, MessageSquare, Clock, FileText, FilePenLine, CalendarDays, Brain, Upload, Settings2, BookOpen, LucideIcon } from 'lucide-react';
+import { ChevronDown, MessageSquare, Clock, Archive, FileText, FilePenLine, CalendarDays, Brain, Upload, Settings2, BookOpen, LucideIcon } from 'lucide-react';
 import escaLogoLight from '../../../auth/assets/images/common/Logo_ESCA.png';
 import escaLogoDark from '../../../auth/assets/images/common/logo-esca.png';
 import { useAuth } from '../../../auth/hooks/useAuth';
@@ -19,12 +19,16 @@ import {
   type AdminNavChildId,
   type AdminNavSectionId,
 } from '../config/adminNavConfig';
+import { ADMIN_NAV_CHAT_MODULES } from '../../../shared/contextual-chat/config/chatNavModuleMap';
+import { useChatUnread } from '../../../shared/contextual-chat/context/ChatUnreadContext';
+import NavChatUnreadBadge from '../../../shared/contextual-chat/components/NavChatUnreadBadge';
 
 const subIconMap: Record<AdminNavChildId, LucideIcon> = {
   catalog: BookOpen,
   chat: MessageSquare,
   drafts: FilePenLine,
   history: Clock,
+  archived: Archive,
   reports: FileText,
   meetings: CalendarDays,
   smartAssignment: Brain,
@@ -75,6 +79,7 @@ interface SidebarSubButtonProps {
   active?: boolean;
   onClick?: () => void;
   childId: AdminNavChildId;
+  unreadCount?: number;
 }
 
 const SidebarSubButton: FunctionComponent<SidebarSubButtonProps> = ({
@@ -82,6 +87,7 @@ const SidebarSubButton: FunctionComponent<SidebarSubButtonProps> = ({
   active,
   onClick,
   childId,
+  unreadCount = 0,
 }) => {
   const SubIcon = subIconMap[childId] ?? MessageSquare;
   return (
@@ -94,7 +100,8 @@ const SidebarSubButton: FunctionComponent<SidebarSubButtonProps> = ({
         className={`relative h-3.5 w-3.5 shrink-0 ${active ? 'text-[var(--admin-brand)]' : 'text-[var(--admin-text-muted)]'}`}
         strokeWidth={1.75}
       />
-      <span className="truncate leading-5 text-inherit">{label}</span>
+      <span className="min-w-0 flex-1 truncate leading-5 text-inherit">{label}</span>
+      {childId === 'chat' && unreadCount > 0 ? <NavChatUnreadBadge count={unreadCount} /> : null}
     </button>
   );
 };
@@ -131,6 +138,7 @@ const AdminSidebar: FunctionComponent<AdminSidebarProps> = ({ mobileOpen, onMobi
   const { theme } = useAdminTheme();
   const pathname = location.pathname;
   const escaLogo = theme === 'dark' ? escaLogoDark : escaLogoLight;
+  const { getModuleUnread } = useChatUnread();
 
   const [manuallyExpanded, setManuallyExpanded] = useState<AdminNavSectionId[]>([]);
   const [manuallyCollapsed, setManuallyCollapsed] = useState<AdminNavSectionId[]>([]);
@@ -240,12 +248,15 @@ const AdminSidebar: FunctionComponent<AdminSidebarProps> = ({ mobileOpen, onMobi
                     {item.children?.map((child) => {
                       const subPath = getChildPath(item.id, child);
                       const isSubActive = isChildNavActive(item.id, child, pathname);
+                      const chatModule = child === 'chat' ? ADMIN_NAV_CHAT_MODULES[item.id] : undefined;
+                      const unreadCount = chatModule ? getModuleUnread(chatModule) : 0;
                       return (
                         <SidebarSubButton
                           key={child}
                           childId={child}
                           label={navLabel(child)}
                           active={isSubActive}
+                          unreadCount={unreadCount}
                           onClick={subPath !== undefined ? () => navigate(subPath) : undefined}
                         />
                       );

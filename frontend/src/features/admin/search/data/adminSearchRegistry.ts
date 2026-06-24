@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Archive,
   Brain,
   Ban,
   Wallet,
@@ -147,6 +148,7 @@ export const ADMIN_SEARCH_REGISTRY: AdminSearchRegistryEntry[] = [
   e({ id: 'nav-announcements-all', titleKey: 'admin.globalSearch.items.allAnnouncements', subtitleKey: 'admin.nav.announcements', category: 'navigation', path: '/admin/announcements/all', icon: Bell, priority: 65 }),
   e({ id: 'nav-announcements-active', titleKey: 'admin.globalSearch.items.activeAnnouncements', subtitleKey: 'admin.nav.announcements', category: 'navigation', path: '/admin/announcements/active', icon: CheckCircle2, priority: 65 }),
   e({ id: 'nav-announcements-chat', titleKey: 'admin.nav.chat', subtitleKey: 'admin.nav.announcements', category: 'navigation', path: '/admin/announcements/chat', icon: MessageSquare, priority: 58 }),
+  e({ id: 'nav-announcements-archived', titleKey: 'admin.nav.archived', subtitleKey: 'admin.nav.announcements', category: 'navigation', path: '/admin/announcements/archived', icon: Archive, priority: 58 }),
   e({ id: 'nav-announcements-history', titleKey: 'admin.nav.history', subtitleKey: 'admin.nav.announcements', category: 'navigation', path: '/admin/announcements/history', icon: History, priority: 58 }),
 
   // ── Global history cards ──

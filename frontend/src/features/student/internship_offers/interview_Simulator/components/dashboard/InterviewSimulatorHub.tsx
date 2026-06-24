@@ -6,19 +6,7 @@ import { motion } from 'framer-motion';
 
 import {
 
-  ArrowRight,
-
   BarChart3,
-
-  Briefcase,
-
-  Code,
-
-  Heart,
-
-  History,
-
-  MessageSquare,
 
   Play,
 
@@ -30,10 +18,6 @@ import {
 
 import {
 
-  INTERVIEW_HISTORY,
-
-  INTERVIEW_MODES,
-
   INTERVIEW_STUDENT_PROFILE,
 
 } from '../../data/interviewSimulatorDashboardMock';
@@ -42,27 +26,9 @@ import type { InterviewModeId } from '../../types/interviewSimulatorDashboard';
 
 import InterviewAnalyticsPanel from './InterviewAnalyticsPanel';
 
-import InterviewCoachSidebar from './InterviewCoachSidebar';
+import InterviewHistoryPanel from './InterviewHistoryPanel';
 
 import { AnimatedCounter, fadeUp } from './InterviewPrimitives';
-
-
-
-const MODE_ICONS: Record<string, typeof Users> = {
-
-  users: Users,
-
-  briefcase: Briefcase,
-
-  heart: Heart,
-
-  code: Code,
-
-  message: MessageSquare,
-
-  sparkles: Users,
-
-};
 
 
 
@@ -138,9 +104,7 @@ const InterviewSimulatorHub: FunctionComponent<InterviewSimulatorHubProps> = ({
 
     <div className="sr-is__root sr-is">
 
-      <div className="sr-is__layout">
-
-        <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5">
 
           {/* Hero */}
 
@@ -218,171 +182,7 @@ const InterviewSimulatorHub: FunctionComponent<InterviewSimulatorHubProps> = ({
 
 
 
-          {/* Interview Modes */}
-
-          <motion.section {...fadeUp}>
-
-            <h2 className="sr-is-section-title">
-
-              {t('student.internshipOffers.interviewSim.modes.title')}
-
-            </h2>
-
-            <div className="sr-is-modes-grid">
-
-              {INTERVIEW_MODES.map((mode) => {
-
-                const Icon = MODE_ICONS[mode.icon] ?? Users;
-
-                return (
-
-                  <motion.button
-
-                    key={mode.id}
-
-                    type="button"
-
-                    className="sr-is-mode-card"
-
-                    onClick={() => onStartMode(mode.id)}
-
-                    whileTap={{ scale: 0.995 }}
-
-                  >
-
-                    <div className="sr-is-mode-card__top">
-
-                      <div className="sr-is-mode-card__icon">
-
-                        <Icon className="h-[1.125rem] w-[1.125rem]" aria-hidden strokeWidth={2} />
-
-                      </div>
-
-                      <span className="sr-is-mode-card__arrow" aria-hidden>
-
-                        <ArrowRight className="h-3.5 w-3.5" />
-
-                      </span>
-
-                    </div>
-
-                    <h3 className="sr-is-mode-card__title">{t(mode.titleKey)}</h3>
-
-                    <p className="sr-is-mode-card__desc">{t(mode.descKey)}</p>
-
-                    {mode.examples && (
-
-                      <div className="sr-is-mode-card__tags">
-
-                        {mode.examples.slice(0, 4).map((ex) => (
-
-                          <span key={ex} className="sr-is-tag">{ex}</span>
-
-                        ))}
-
-                      </div>
-
-                    )}
-
-                  </motion.button>
-
-                );
-
-              })}
-
-            </div>
-
-          </motion.section>
-
-
-
-          {/* History */}
-
-          <motion.section className="sr-is-panel sr-is-panel--flush" {...fadeUp}>
-
-            <h2 className="sr-is-section-title sr-is-section-title--padded">
-
-              <History className="h-4 w-4" aria-hidden />
-
-              {t('student.internshipOffers.interviewSim.history.title')}
-
-            </h2>
-
-            <div className="sr-is-table-wrap">
-
-              <table className="sr-is-table">
-
-                <thead>
-
-                  <tr>
-
-                    <th>{t('student.internshipOffers.interviewSim.history.date')}</th>
-
-                    <th>{t('student.internshipOffers.interviewSim.history.type')}</th>
-
-                    <th>{t('student.internshipOffers.interviewSim.history.difficulty')}</th>
-
-                    <th>{t('student.internshipOffers.interviewSim.history.score')}</th>
-
-                    <th>{t('student.internshipOffers.interviewSim.history.duration')}</th>
-
-                    <th>{t('student.internshipOffers.interviewSim.history.statusCol')}</th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody>
-
-                  {INTERVIEW_HISTORY.map((row) => (
-
-                    <tr key={row.id}>
-
-                      <td>{row.date}</td>
-
-                      <td>{t(row.typeKey)}</td>
-
-                      <td className="capitalize">{row.difficulty}</td>
-
-                      <td>
-
-                        <span className="sr-is-table__score">{row.score}</span>
-
-                      </td>
-
-                      <td>{row.duration}</td>
-
-                      <td>
-
-                        <span className="admin-badge admin-badge--success text-xs">{t(row.statusKey)}</span>
-
-                      </td>
-
-                    </tr>
-
-                  ))}
-
-                </tbody>
-
-              </table>
-
-            </div>
-
-          </motion.section>
-
-
-
-          <div className="sr-is__coach--mobile">
-
-            <InterviewCoachSidebar />
-
-          </div>
-
-        </div>
-
-
-
-        <InterviewCoachSidebar className="sr-is__coach--desktop" />
+          <InterviewHistoryPanel />
 
       </div>
 

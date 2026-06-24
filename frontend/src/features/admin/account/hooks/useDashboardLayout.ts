@@ -34,11 +34,15 @@ export const useDashboardLayout = () => {
   useEffect(() => {
     if (!preferences.dashboardPersonalization) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(order));
-    window.dispatchEvent(new Event('admin-dashboard-layout-changed'));
   }, [order, preferences.dashboardPersonalization]);
 
   useEffect(() => {
-    const syncFromStorage = () => setOrder(loadOrder());
+    const syncFromStorage = () => {
+      setOrder((prev) => {
+        const loaded = loadOrder();
+        return isSameOrder(prev, loaded) ? prev : loaded;
+      });
+    };
     window.addEventListener('admin-dashboard-layout-changed', syncFromStorage);
     return () => window.removeEventListener('admin-dashboard-layout-changed', syncFromStorage);
   }, []);

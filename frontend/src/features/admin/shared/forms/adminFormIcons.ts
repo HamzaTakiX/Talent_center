@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
+  Camera,
   AtSign,
   Building2,
   Calendar,
@@ -24,11 +25,13 @@ import {
   Globe,
   BookOpen,
   Activity,
+  ImagePlus,
 } from 'lucide-react';
 
 /** Clés de section formulaire — icône bleue accent dashboard. */
 export type AdminFormSectionKey =
   | 'personal'
+  | 'photo'
   | 'identity'
   | 'academic'
   | 'access'
@@ -47,10 +50,13 @@ export type AdminFormSectionKey =
   | 'activity'
   | 'profile'
   | 'bio'
-  | 'overview';
+  | 'overview'
+  | 'targeting'
+  | 'cover';
 
 export const ADMIN_FORM_SECTION_ICONS: Record<AdminFormSectionKey, LucideIcon> = {
   personal: User,
+  photo: Camera,
   identity: User,
   academic: GraduationCap,
   access: Shield,
@@ -70,6 +76,8 @@ export const ADMIN_FORM_SECTION_ICONS: Record<AdminFormSectionKey, LucideIcon> =
   profile: User,
   bio: MessageSquare,
   overview: FileText,
+  targeting: Users,
+  cover: ImagePlus,
 };
 
 /** Clés de champs — icône dans l’input (leading). */

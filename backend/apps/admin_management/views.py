@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -35,6 +36,7 @@ from .serializers import (
     UpdateEncadrantSerializer,
     UpdateStudentAccessSerializer,
     UpdateStudentAssignmentSerializer,
+    UpdateStudentProfileSerializer,
     BulkDeleteUsersSerializer,
 )
 from .services.academic_reference import (
@@ -56,7 +58,7 @@ from .services.academic_reference import (
     serialize_level,
     serialize_sector,
 )
-from .services.esca_academic_seed import seed_class_groups, seed_esca_academic
+from .services.esca_academic_seed import seed_esca_academic
 from .services.specialization_domains import (
     list_specialization_domains,
     master_tracks_for_filiere_ids,
@@ -85,6 +87,7 @@ from .services.students import (
     student_dashboard_stats,
     update_student_access,
     update_student_assignment,
+    update_student_profile,
 )
 from .services.user_deletion import (
     UserDeletionError,
@@ -136,8 +139,6 @@ class FiliereListView(APIView):
     permission_classes = [IsAuthenticated, IsPlatformAdminOrStudentCatalogRead]
 
     def get(self, request):
-        if not Filiere.objects.filter(is_active=True).exists():
-            seed_esca_academic()
         lang = request_lang(request)
         family = request.query_params.get('program_family', '').strip() or None
         student_catalog = request.query_params.get('student_catalog', '').lower() in (
@@ -162,11 +163,6 @@ class ClassGroupListView(APIView):
     permission_classes = [IsAuthenticated, IsPlatformAdminOrStudentCatalogRead]
 
     def get(self, request):
-        if not ClassGroup.objects.filter(is_active=True).exists():
-            if Filiere.objects.filter(is_active=True).exists():
-                seed_class_groups()
-            else:
-                seed_esca_academic()
         filiere_ids = parse_filiere_ids_param(request)
         level_ids = parse_level_ids_param(request)
         sector_raw = request.query_params.get('sector_id') or request.query_params.get('academic_sector_id')
@@ -197,8 +193,6 @@ class AcademicYearListView(APIView):
     def get(self, request):
         structured = request.query_params.get('structured', '').lower() in ('1', 'true')
         if structured:
-            if not AcademicYear.objects.filter(is_active=True).exists():
-                seed_esca_academic()
             data = [serialize_academic_year(y) for y in active_academic_years()]
             return Response(envelope(True, 'OK', data=data), status=status.HTTP_200_OK)
         filiere_ids = parse_filiere_ids_param(request)
@@ -233,8 +227,6 @@ class AcademicLevelListView(APIView):
 
         if not filiere_ids:
             return Response(envelope(True, 'OK', data=[]), status=status.HTTP_200_OK)
-        if not AcademicLevel.objects.filter(is_active=True).exists():
-            seed_esca_academic()
         lang = request_lang(request)
         qs = active_levels(filiere_ids=filiere_ids)
         return Response(
@@ -319,7 +311,7 @@ class AdminStudentListCreateView(APIView):
                 True,
                 'OK',
                 data=paginated_payload(
-                    AdminStudentListSerializer(page_items, many=True).data,
+                    AdminStudentListSerializer(page_items, many=True, context={'request': request}).data,
                     meta,
                 ),
             ),
@@ -565,6 +557,32 @@ class AdminStudentAssignmentView(APIView):
         )
 
 
+class AdminStudentProfileView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def patch(self, request, student_id: int):
+        user = list_students_queryset(acting_user=request.user).filter(pk=student_id).first()
+        if user is None:
+            return Response(envelope(False, 'Student not found'), status=status.HTTP_404_NOT_FOUND)
+        try:
+            assert_student_in_scope(request.user, user)
+        except PermissionDenied as exc:
+            return Response(envelope(False, str(exc.detail)), status=status.HTTP_403_FORBIDDEN)
+        serializer = UpdateStudentProfileSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        user = update_student_profile(
+            user=user,
+            avatar=data.get('avatar'),
+            remove_avatar=bool(data.get('remove_avatar')),
+        )
+        return Response(
+            envelope(True, 'Profile updated', data=AdminStudentDetailSerializer(user).data),
+            status=status.HTTP_200_OK,
+        )
+
+
 class AdminStudentRegeneratePasswordView(APIView):
     permission_classes = [IsAuthenticated, IsPlatformAdmin]
 
@@ -645,7 +663,7 @@ class AdminAdministratorListCreateView(APIView):
                 True,
                 'OK',
                 data=paginated_payload(
-                    AdminAdministratorListSerializer(page_items, many=True).data,
+                    AdminAdministratorListSerializer(page_items, many=True, context={'request': request}).data,
                     meta,
                 ),
             ),

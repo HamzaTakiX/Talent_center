@@ -118,6 +118,39 @@ def detect_risk(student_profile: StudentProfile) -> list[StudentProfileRisk]:
     else:
         _resolve_risk(student_profile, 'missing_cv')
 
+    # --- Rule: no applications ---
+    try:
+        from apps.stage.models import OfferApplication
+        app_count = OfferApplication.objects.filter(
+            student_profile=student_profile,
+        ).exclude(status='WITHDRAWN').count()
+        if app_count == 0 and student_profile.profile_completed:
+            _upsert_risk(
+                student_profile=student_profile,
+                risk_type='no_applications',
+                risk_level=StudentProfileRisk.RiskLevel.MEDIUM,
+                details={'application_count': 0},
+            )
+        else:
+            _resolve_risk(student_profile, 'no_applications')
+    except Exception:
+        pass
+
+    # --- Rule: low engagement ---
+    try:
+        indicator = getattr(student_profile, 'indicator', None)
+        if indicator and indicator.engagement_score < 15:
+            _upsert_risk(
+                student_profile=student_profile,
+                risk_type='low_engagement',
+                risk_level=StudentProfileRisk.RiskLevel.MEDIUM,
+                details={'engagement_score': indicator.engagement_score},
+            )
+        else:
+            _resolve_risk(student_profile, 'low_engagement')
+    except Exception:
+        pass
+
     active = list(
         StudentProfileRisk.objects
         .filter(student_profile=student_profile, is_active=True)

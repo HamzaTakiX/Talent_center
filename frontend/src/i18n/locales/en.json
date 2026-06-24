@@ -37,6 +37,7 @@
       "catalog": "Service catalog",
       "chat": "Chat",
       "drafts": "Drafts",
+      "archived": "Archived",
       "reports": "Reports",
       "smartAssignment": "Supervisor Assignment",
       "meetings": "Meetings",
@@ -359,6 +360,8 @@
       "attachFile": "Attach file",
       "tagTemplate": "Tag or template",
       "sendMessage": "Send message",
+      "voiceNote": "Voice note",
+      "composerHint": "Enter to send · Shift+Enter for new line",
       "unreadCount": "{{count}} unread"
     },
     "chatEmpty": {
@@ -606,6 +609,11 @@
         "firstNameRequired": "First name is required.",
         "lastNameRequired": "Last name is required.",
         "dateOfBirthRequired": "Date of birth is required.",
+        "dateOfBirthInvalid": "Invalid date of birth.",
+        "dateOfBirthFuture": "Date of birth cannot be in the future.",
+        "dateOfBirthTooYoung": "You must be at least {{minAge}} years old.",
+        "dateOfBirthTooOld": "This date of birth seems incorrect (age over {{maxAge}} years).",
+        "dateOfBirthFixRequired": "The date of birth seems incorrect. Click \"Edit information\" to fix it.",
         "programRequired": "Please select your ESCA program.",
         "classRequired": "Please select your class group.",
         "referenceLoadFailed": "Unable to load ESCA programs and classes. Check your connection and try again."
@@ -1024,6 +1032,60 @@
         "linkedin": "linkedin.com/in/you",
         "website": "yoursite.com",
         "location": "City, Country"
+      }
+    }
+  },
+  "notifications": {
+    "center": {
+      "badge": "Notification Center",
+      "title": "Notification Center",
+      "subtitle": "All your platform alerts in one place.",
+      "loading": "Loading…",
+      "loadMore": "Load more",
+      "markRead": "Mark as read",
+      "archive": "Archive",
+      "actionRequired": "Action required",
+      "panelTitle": "Recent notifications",
+      "emptyTitle": "No notifications",
+      "emptyDesc": "You will be alerted here when something important happens.",
+      "sections": {
+        "all": "All",
+        "unread": "Unread",
+        "read": "Read",
+        "archived": "Archived",
+        "action_required": "Action required"
+      },
+      "filters": {
+        "allCategories": "All categories",
+        "allPriorities": "All priorities"
+      }
+    },
+    "preferences": {
+      "save": "Save preferences",
+      "channels": {
+        "in_app": "In-app",
+        "email": "Email",
+        "push": "Push"
+      }
+    },
+    "analytics": {
+      "title": "Notification analytics",
+      "subtitle": "Track sent, delivered, read, and clicked notifications.",
+      "matrixTitle": "Event → recipients → channels matrix",
+      "metrics": {
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "opened": "Opened",
+        "clicked": "Clicked",
+        "failed": "Failed",
+        "suppressed": "Suppressed"
+      },
+      "columns": {
+        "event": "Event",
+        "category": "Category",
+        "priority": "Priority",
+        "channels": "Channels",
+        "recipients": "Recipients"
       }
     }
   }

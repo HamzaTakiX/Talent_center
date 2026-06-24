@@ -1,12 +1,27 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import StudentLayout from '../../components/StudentLayout';
 import InternshipOffersStatsGrid from '../components/InternshipOffersStatsGrid';
 import RecommendedInternshipOffersSection from '../components/RecommendedInternshipOffersSection';
+import AllInternshipOffersSection from '../components/AllInternshipOffersSection';
 import { INTERNSHIP_OFFERS_PAGE_ROOT } from '../constants/internshipOffersLayout';
+import { STUDENT_ALL_OFFERS_SECTION_ID } from '../constants/routes';
+import '../../../admin/announcements-stage/styles/admin-announcements.css';
 
 const StudentInternshipOffersPage: FunctionComponent = () => {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (window.location.hash !== `#${STUDENT_ALL_OFFERS_SECTION_ID}`) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      document
+        .getElementById(STUDENT_ALL_OFFERS_SECTION_ID)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, []);
 
   return (
     <StudentLayout>
@@ -19,6 +34,8 @@ const StudentInternshipOffersPage: FunctionComponent = () => {
         </section>
 
         <RecommendedInternshipOffersSection />
+
+        <AllInternshipOffersSection />
       </div>
     </StudentLayout>
   );

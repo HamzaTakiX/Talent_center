@@ -50,6 +50,7 @@ ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1') or ['*']
 
 # ---------- Applications ----------
 INSTALLED_APPS = [
+    'daphne',  # Must be first — enables runserver ASGI + WebSocket routing
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -61,11 +62,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'channels',
 
     # Local apps
     'apps.accounts_et_roles.apps.AccountsEtRolesConfig',
     'apps.authentication.apps.AuthenticationConfig',
     'apps.cv_builder.apps.CvBuilderConfig',
+    'apps.cv_intelligence.apps.CvIntelligenceConfig',
+    'apps.career_coach.apps.CareerCoachConfig',
     'apps.profile_intelligence.apps.ProfileIntelligenceConfig',
 
     # Tier 1
@@ -120,6 +124,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
+ASGI_APPLICATION = 'core.asgi.application'
 
 # ---------- Database ----------
 def _database_url_from_pg_env() -> str:
@@ -283,6 +288,38 @@ ANTHROPIC_API_KEY = env('ANTHROPIC_API_KEY', '')
 CV_ANALYSIS_MODEL = env('CV_ANALYSIS_MODEL', 'claude-haiku-4-5')
 CV_PUBLIC_SHARE_BASE_URL = env('CV_PUBLIC_SHARE_BASE_URL', 'http://localhost:5173/cv/public')
 
+# ---------- CV Intelligence (Ollama local AI — budget 0 DH) ----------
+CV_INTELLIGENCE_PROVIDER = env('CV_INTELLIGENCE_PROVIDER', 'ollama')
+OLLAMA_BASE_URL = env('OLLAMA_BASE_URL', 'http://localhost:11434')
+OLLAMA_MODEL = env('OLLAMA_MODEL', 'qwen3:8b')
+OLLAMA_FALLBACK_MODEL = env('OLLAMA_FALLBACK_MODEL', 'llama3.1:8b')
+OLLAMA_AUTO_START = env_bool('OLLAMA_AUTO_START', DEBUG)
+OLLAMA_AUTO_PULL_MODELS = env_bool('OLLAMA_AUTO_PULL_MODELS', DEBUG)
+OLLAMA_STARTUP_TIMEOUT = env_int('OLLAMA_STARTUP_TIMEOUT', 45)
+OLLAMA_BINARY = env('OLLAMA_BINARY', '')
+OLLAMA_CHAT_TIMEOUT = env_int('OLLAMA_CHAT_TIMEOUT', 20)
+# When True, only semantic + SWOT use Ollama; other sections use fast rule-based logic.
+CV_INTELLIGENCE_LIGHT_AI = env_bool('CV_INTELLIGENCE_LIGHT_AI', True)
+CV_INTELLIGENCE_OFFER_AI_ENABLED = env_bool('CV_INTELLIGENCE_OFFER_AI_ENABLED', False)
+
+# ---------- AI Career Coach (Ollama + ChromaDB RAG — budget 0 DH) ----------
+CAREER_COACH_PROVIDER = env('CAREER_COACH_PROVIDER', 'ollama')
+CAREER_COACH_EMBEDDING_MODEL = env('CAREER_COACH_EMBEDDING_MODEL', 'bge-m3')
+CAREER_COACH_RAG_ENABLED = env_bool('CAREER_COACH_RAG_ENABLED', True)
+CAREER_COACH_RAG_TOP_K = env_int('CAREER_COACH_RAG_TOP_K', 4)
+CAREER_COACH_MAX_HISTORY = env_int('CAREER_COACH_MAX_HISTORY', 12)
+CAREER_COACH_NUM_PREDICT = env_int('CAREER_COACH_NUM_PREDICT', 220)
+CAREER_COACH_CHAT_TIMEOUT = env_int('CAREER_COACH_CHAT_TIMEOUT', 45)
+CAREER_COACH_CHROMA_DIR = env('CAREER_COACH_CHROMA_DIR', '')
+
+# ---------- AI Matching (PyMuPDF + GPT-4o Mini + Embeddings) ----------
+OPENAI_API_KEY = env('OPENAI_API_KEY', '')
+OPENAI_CV_MODEL = env('OPENAI_CV_MODEL', 'gpt-4o-mini')
+OPENAI_EMBEDDING_MODEL = env('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small')
+AI_CV_PARSING_ENABLED = env_bool('AI_CV_PARSING_ENABLED', True)
+AI_SEMANTIC_SEARCH_ENABLED = env_bool('AI_SEMANTIC_SEARCH_ENABLED', True)
+AI_MATCHING_ENABLED = env_bool('AI_MATCHING_ENABLED', True)
+
 # ---------- Auth policy ----------
 AUTH_MAX_FAILED_ATTEMPTS = env_int('AUTH_MAX_FAILED_ATTEMPTS', 5)
 AUTH_FAILED_WINDOW_SECONDS = env_int('AUTH_FAILED_WINDOW_SECONDS', 900)
@@ -315,6 +352,21 @@ CELERY_TIMEZONE = TIME_ZONE
 
 if REDIS_URL:
     INSTALLED_APPS += ['django_celery_beat']
+
+# ---------- Django Channels (real-time chat) ----------
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [REDIS_URL]},
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 
 # ---------- Auth providers ----------

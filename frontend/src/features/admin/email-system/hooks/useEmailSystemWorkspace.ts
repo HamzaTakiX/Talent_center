@@ -3,8 +3,6 @@ import { emailSystemApi } from '../api/emailSystemApi';
 import type {
   AdvancedSettings,
   AnalyticsOverview,
-  CategoryConfig,
-  EmailTemplateRow,
   GeneralSettings,
   ProviderConfig,
   QueueItem,
@@ -18,8 +16,6 @@ export function useEmailSystemWorkspace() {
   const [general, setGeneral] = useState<GeneralSettings | null>(null);
   const [provider, setProvider] = useState<ProviderConfig | null>(null);
   const [senders, setSenders] = useState<SenderIdentity[]>([]);
-  const [categories, setCategories] = useState<CategoryConfig[]>([]);
-  const [templates, setTemplates] = useState<EmailTemplateRow[]>([]);
   const [advanced, setAdvanced] = useState<AdvancedSettings | null>(null);
 
   const refresh = useCallback(async () => {
@@ -27,19 +23,15 @@ export function useEmailSystemWorkspace() {
     setError(null);
     try {
       await emailSystemApi.bootstrap();
-      const [g, p, s, c, t, a] = await Promise.all([
+      const [g, p, s, a] = await Promise.all([
         emailSystemApi.getGeneral(),
         emailSystemApi.getProvider(),
         emailSystemApi.listSenders(),
-        emailSystemApi.listCategories(),
-        emailSystemApi.listTemplates(),
         emailSystemApi.getAdvanced(),
       ]);
       setGeneral(g);
       setProvider(p);
       setSenders(s);
-      setCategories(c);
-      setTemplates(t);
       setAdvanced(a);
     } catch {
       setError('load_failed');
@@ -72,8 +64,6 @@ export function useEmailSystemWorkspace() {
     general,
     provider,
     senders,
-    categories,
-    templates,
     advanced,
     refresh,
     saveGeneral: (payload: Partial<GeneralSettings>) =>
@@ -131,12 +121,6 @@ export function useEmailSystemWorkspace() {
         await emailSystemApi.verifySender(id);
         setSenders(await emailSystemApi.listSenders());
       }),
-    saveCategories: (items: Partial<CategoryConfig>[]) =>
-      withSave(async () => {
-        const data = await emailSystemApi.saveCategories(items);
-        setCategories(data);
-        return data;
-      }),
     saveAdvanced: (payload: Partial<AdvancedSettings>) =>
       withSave(async () => {
         const data = await emailSystemApi.saveAdvanced(payload);
@@ -148,11 +132,6 @@ export function useEmailSystemWorkspace() {
       emailSystemApi.getQueue(status),
     retryQueue: (id: number) => emailSystemApi.retryQueueItem(id),
     cancelQueue: (id: number) => emailSystemApi.cancelQueueItem(id),
-    sendTest: emailSystemApi.sendTest,
-    loadTemplate: emailSystemApi.getTemplate,
-    updateTemplate: emailSystemApi.updateTemplate,
-    previewTemplate: emailSystemApi.previewTemplate,
-    testTemplate: emailSystemApi.testTemplate,
     loadAudit: emailSystemApi.getAudit,
   };
 }

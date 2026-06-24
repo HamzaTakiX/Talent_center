@@ -12,6 +12,7 @@ Each dimension produces a MatchReason entry explaining the contribution.
 
 from __future__ import annotations
 
+import re
 from decimal import Decimal
 from typing import Any, Optional
 
@@ -28,6 +29,9 @@ WEIGHTS = {
     'education_level': Decimal('10'),
     'location': Decimal('10'),
 }
+
+# When vector embeddings exist, blend rule-based score with semantic score.
+SEMANTIC_BLEND_WEIGHT = Decimal('0.30')
 
 EDUCATION_RANK = {
     '': 0,
@@ -56,6 +60,45 @@ def _score_skills(required: set[str], candidate: set[str], weight: Decimal) -> t
         'score': float(points),
         'weight': float(weight),
     }
+
+
+def _normalize_type_token(value: str) -> str:
+    return re.sub(r'[\s_\-]+', '', (value or '').strip().lower())
+
+
+def offer_matches_student_internship_type(student: StudentProfile, offer: InternshipOffer) -> bool:
+    """True when the offer targets the same internship type as the student."""
+    student_type = getattr(student, 'internship_type', None)
+    if not student_type:
+        return False
+
+    student_tokens = {
+        _normalize_type_token(student_type.code),
+        _normalize_type_token(student_type.name),
+    }
+    student_tokens.discard('')
+
+    offer_token = _normalize_type_token(offer.offer_type or '')
+    if offer_token:
+        if offer_token in student_tokens:
+            return True
+        if any(
+            token and (token in offer_token or offer_token in token)
+            for token in student_tokens
+        ):
+            return True
+
+    internship_rules = offer.targeting_rules.filter(
+        is_active=True,
+        rule_type=OfferTargetingRule.RuleType.INTERNSHIP_TYPE,
+    )
+    if internship_rules.exists():
+        from apps.stage.services.targeting_service import _student_matches_rule
+
+        return any(_student_matches_rule(student, rule) for rule in internship_rules)
+
+    type_pts, _ = _score_internship_type(student, offer)
+    return type_pts >= WEIGHTS['internship_type']
 
 
 def _score_internship_type(student: StudentProfile, offer: InternshipOffer) -> tuple[Decimal, dict]:
@@ -94,16 +137,30 @@ def _score_education(student: StudentProfile, offer: InternshipOffer) -> tuple[D
     return partial, {'reason': f'Education gap: {gap} level(s)', 'score': float(partial)}
 
 
+_RELOCATION_MOBILITY = frozenset({'national', 'international', 'high'})
+
+
+def _student_mobility_tokens(student: StudentProfile) -> set[str]:
+    raw = getattr(student, 'mobility', None) or []
+    if isinstance(raw, str):
+        parts = [p.strip() for p in raw.split(',') if p.strip()]
+    elif isinstance(raw, list):
+        parts = [str(p).strip() for p in raw if str(p).strip()]
+    else:
+        parts = []
+    return {p.lower().replace(' ', '_').replace('-', '_') for p in parts}
+
+
 def _score_location(student: StudentProfile, offer: InternshipOffer) -> tuple[Decimal, dict]:
     weight = WEIGHTS['location']
     if offer.is_remote:
         return weight, {'reason': 'Remote offer — full location score', 'score': float(weight)}
-    mobility = (getattr(student, 'mobility', '') or '').lower()
+    mobility = _student_mobility_tokens(student)
     city = (offer.location_city or '').lower()
     student_city = (getattr(student, 'city', '') or '').lower()
     if city and student_city and city == student_city:
         return weight, {'reason': f'Same city: {offer.location_city}', 'score': float(weight)}
-    if mobility in ('national', 'international', 'high'):
+    if mobility & _RELOCATION_MOBILITY:
         return (weight * Decimal('0.8')).quantize(Decimal('0.01')), {
             'reason': 'Student mobility supports relocation',
             'score': float(weight * Decimal('0.8')),
@@ -167,6 +224,15 @@ def compute_match_score(
     total += loc_pts
     breakdown['location'] = loc_reason
     reasons.append({'dimension': 'location', **loc_reason})
+
+    from apps.stage.services.ai_pipeline.semantic_matching import get_semantic_match_score
+
+    semantic_score, semantic_reason = get_semantic_match_score(student, offer)
+    if semantic_score is not None:
+        breakdown['semantic'] = semantic_reason
+        reasons.append({'dimension': 'semantic', **semantic_reason})
+        rule_weight = Decimal('1') - SEMANTIC_BLEND_WEIGHT
+        total = (total * rule_weight + semantic_score * SEMANTIC_BLEND_WEIGHT).quantize(Decimal('0.01'))
 
     total = min(total, Decimal('100')).quantize(Decimal('0.01'))
     return total, reasons, breakdown

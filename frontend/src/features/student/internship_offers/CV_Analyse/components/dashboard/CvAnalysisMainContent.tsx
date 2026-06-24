@@ -1,4 +1,4 @@
-import { FunctionComponent, type ChangeEvent, type RefObject } from 'react';
+import { FunctionComponent, useCallback, useState, type ChangeEvent, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -6,11 +6,14 @@ import {
   AlertTriangle,
   ArrowRight,
   Check,
+  CheckCircle2,
   ChevronDown,
   Download,
   FileText,
+  Loader2,
   Lightbulb,
   MapPin,
+  Mic,
   RefreshCw,
   Sparkles,
   Target,
@@ -20,21 +23,29 @@ import {
   Wrench,
   Zap,
 } from 'lucide-react';
-import type { CvAnalysisDashboardData } from '../../types/cvAnalysisDashboard';
+import type { CvAnalysisDashboardData, CvAnalysisStatus } from '../../types/cvAnalysisDashboard';
 import { STUDENT_INTERVIEW_SIMULATOR_PATH } from '../../../interview_Simulator/constants/routes';
+import OfferCompanyLogo from '../../../../../admin/offres-stage/components/OfferCompanyLogo';
+import { resolveMediaUrl } from '../../../../../../shared/api/mediaUrl';
+import { formatInterviewSuggestionTitle, resolveDynamicLabel } from '../../utils/resolveDynamicLabel';
 import {
   AnimatedCounter,
   CircularScoreRing,
   fadeUp,
   fadeUpVariant,
   ScoreProgressBar,
-  Sparkline,
   stagger,
 } from './CvAnalysisPrimitives';
 import { getScoreColorVar, getScoreTone } from '../../utils/cvAnalysisScore';
+import CvFullPreview from './CvFullPreview';
+import CvAnalysisHeroAvatar from './CvAnalysisHeroAvatar';
+import ImprovementRoadmap from './ImprovementRoadmap';
+import { downloadCvAnalysisReport } from '../../utils/downloadCvAnalysisReport';
 
 interface CvAnalysisMainContentProps {
   data: CvAnalysisDashboardData;
+  analysisStatus: CvAnalysisStatus;
+  isAnalyzing?: boolean;
   expandedMatchId: string | null;
   onToggleMatch: (id: string) => void;
   expandedRecId: string | null;
@@ -54,6 +65,8 @@ const INSIGHT_ICONS = {
 
 const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
   data,
+  analysisStatus,
+  isAnalyzing = false,
   expandedMatchId,
   onToggleMatch,
   expandedRecId,
@@ -64,7 +77,8 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
   onImportFileChange,
 }) => {
   const { t } = useTranslation();
-  const { profile, meta, breakdown, insights, detectedSkills, missingSkills, internshipMatches, recommendations, roadmap, interviewSuggestions, careerMetrics } = data;
+  const [isDownloadingReport, setIsDownloadingReport] = useState(false);
+  const { profile, meta, breakdown, insights, detectedSkills, missingSkills, internshipMatches, recommendations, roadmap, interviewSuggestions } = data;
   const isDefaultCv = data.isDefaultCv !== false;
 
   const recsByPriority = {
@@ -73,8 +87,59 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
     low: recommendations.filter((r) => r.priority === 'low'),
   };
 
+  const handleDownloadReport = useCallback(async () => {
+    if (isDownloadingReport) return;
+    setIsDownloadingReport(true);
+    try {
+      await downloadCvAnalysisReport(data, t);
+    } catch {
+      // Silent fail — user can retry
+    } finally {
+      setIsDownloadingReport(false);
+    }
+  }, [data, isDownloadingReport, t]);
+
+  const statusKey = analysisStatus === 'up_to_date'
+    ? 'upToDate'
+    : analysisStatus === 'outdated'
+      ? 'outdated'
+      : analysisStatus === 'processing' || isAnalyzing
+        ? 'processing'
+        : analysisStatus === 'failed'
+          ? 'failed'
+          : 'none';
+
   return (
     <div className="sr-cva__main">
+      {analysisStatus === 'none' ? (
+        <div className="sr-cva-outdated-banner" role="status">
+          <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+          <p className="m-0 flex-1 text-sm">{t('student.internshipOffers.cvDashboard.status.noneMessage')}</p>
+          <button type="button" className="sr-cva-btn sr-cva-btn--primary sr-cva-btn--sm" onClick={onReanalyze}>
+            <Sparkles className="h-3.5 w-3.5" aria-hidden />
+            {t('student.internshipOffers.cvDashboard.hero.startAnalysis')}
+          </button>
+        </div>
+      ) : null}
+
+      {analysisStatus === 'outdated' ? (
+        <div className="sr-cva-outdated-banner" role="status">
+          <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+          <p className="m-0 flex-1 text-sm">{t('student.internshipOffers.cvDashboard.status.outdatedMessage')}</p>
+          <button type="button" className="sr-cva-btn sr-cva-btn--primary sr-cva-btn--sm" onClick={onReanalyze}>
+            <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+            {t('student.internshipOffers.cvDashboard.hero.reanalyze')}
+          </button>
+        </div>
+      ) : null}
+
+      {isAnalyzing ? (
+        <div className="sr-cva-processing-banner" role="status">
+          <RefreshCw className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+          <p className="m-0 text-sm">{t('student.internshipOffers.cvDashboard.analyzing.desc')}</p>
+        </div>
+      ) : null}
+
       <input
         ref={fileInputRef}
         type="file"
@@ -90,7 +155,7 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
         <div className="sr-cva-hero__inner">
           <div className="min-w-0 flex-1">
             <div className="sr-cva-hero__profile">
-              <div className="sr-cva-hero__avatar" aria-hidden>{profile.avatarInitials}</div>
+              <CvAnalysisHeroAvatar profile={profile} />
               <div>
                 <p className="m-0 text-sm font-semibold text-[var(--admin-text)]">{profile.name}</p>
                 <p className="m-0 text-xs text-[var(--admin-text-secondary)]">{profile.program}</p>
@@ -123,31 +188,56 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
             </p>
           </div>
           <div className="sr-cva-hero__actions">
-            <button type="button" className="sr-cva-btn sr-cva-btn--secondary" onClick={onReanalyze}>
-              <RefreshCw className="h-4 w-4" aria-hidden />
-              {t('student.internshipOffers.cvDashboard.hero.reanalyze')}
-            </button>
-            <button type="button" className="sr-cva-btn sr-cva-btn--secondary">
-              <Download className="h-4 w-4" aria-hidden />
-              {t('student.internshipOffers.cvDashboard.hero.download')}
+            {analysisStatus === 'none' ? (
+              <button type="button" className="sr-cva-btn sr-cva-btn--primary" onClick={onReanalyze}>
+                <Sparkles className="h-4 w-4" aria-hidden />
+                {t('student.internshipOffers.cvDashboard.hero.startAnalysis')}
+              </button>
+            ) : (
+              <button type="button" className="sr-cva-btn sr-cva-btn--secondary" onClick={onReanalyze} disabled={isAnalyzing}>
+                <RefreshCw className={`h-4 w-4 ${isAnalyzing ? 'animate-spin' : ''}`} aria-hidden />
+                {t('student.internshipOffers.cvDashboard.hero.reanalyze')}
+              </button>
+            )}
+            {analysisStatus !== 'none' ? (
+              <button
+                type="button"
+                className="sr-cva-btn sr-cva-btn--secondary"
+                onClick={() => void handleDownloadReport()}
+                disabled={isDownloadingReport || isAnalyzing}
+                aria-busy={isDownloadingReport}
+              >
+                {isDownloadingReport ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Download className="h-4 w-4" aria-hidden />
+                )}
+                {isDownloadingReport
+                  ? t('student.internshipOffers.cvDashboard.hero.downloading', { defaultValue: 'Génération…' })
+                  : t('student.internshipOffers.cvDashboard.hero.download')}
+              </button>
+            ) : null}
+            <button type="button" className="sr-cva-btn sr-cva-btn--primary" onClick={onImport}>
+              <Upload className="h-4 w-4" aria-hidden />
+              {t('student.internshipOffers.cvDashboard.hero.importOtherCv')}
             </button>
           </div>
         </div>
 
-        <div className="sr-cva-hero__import-prompt">
-          <div className="min-w-0 flex-1">
-            <p className="sr-cva-hero__import-title m-0">
-              {t('student.internshipOffers.cvDashboard.hero.importPrompt')}
-            </p>
-            <p className="sr-cva-hero__import-desc m-0">
-              {t('student.internshipOffers.cvDashboard.hero.importHint')}
-            </p>
-          </div>
-          <button type="button" className="sr-cva-btn sr-cva-btn--primary shrink-0" onClick={onImport}>
-            <Upload className="h-4 w-4" aria-hidden />
-            {t('student.internshipOffers.cvDashboard.hero.importOtherCv')}
-          </button>
-        </div>
+        {(data.importedPreview || data.cvSnapshot) ? (
+          <CvFullPreview
+            key={
+              data.importedPreview?.objectUrl ??
+              data.importedPreview?.fileName ??
+              data.cvFileName ??
+              'cv-preview'
+            }
+            snapshot={data.cvSnapshot}
+            importedPreview={data.importedPreview}
+            cvFileUrl={data.cvFileUrl}
+            fileName={data.cvFileName}
+          />
+        ) : null}
       </section>
 
       {/* Score Card */}
@@ -164,6 +254,14 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
             <p className="text-xs text-[var(--admin-text-muted)]">
               {t('student.internshipOffers.cvDashboard.score.version', { version: meta.analysisVersion })}
             </p>
+            {meta.cvVersion ? (
+              <p className="text-xs text-[var(--admin-text-muted)]">
+                {t('student.internshipOffers.cvDashboard.score.cvVersion', { version: meta.cvVersion })}
+              </p>
+            ) : null}
+            <span className={`sr-cva-status-badge sr-cva-status-badge--${statusKey} mt-2`}>
+              {t(`student.internshipOffers.cvDashboard.status.${statusKey}`)}
+            </span>
             <p className="mt-2 text-xs text-[var(--admin-text-muted)]">
               {data.cvFileName}
             </p>
@@ -206,8 +304,30 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
             {t('student.internshipOffers.cvDashboard.compatibility.subtitle')}
           </p>
           <div className="flex flex-col gap-3">
+            {internshipMatches.length === 0 ? (
+              <p className="text-sm text-[var(--admin-text-secondary)]">
+                {t('student.internshipOffers.cvDashboard.compatibility.empty', {
+                  defaultValue: 'Aucune offre publiée disponible pour le moment.',
+                })}
+              </p>
+            ) : null}
             {internshipMatches.map((match) => {
               const isOpen = expandedMatchId === match.id;
+              const level = match.matchLevel;
+              const levelLabel =
+                level === 'strong'
+                  ? 'Forte'
+                  : level === 'partial'
+                    ? 'Partielle'
+                    : level === 'weak'
+                      ? 'Faible'
+                      : 'Non compatible';
+              const levelClass =
+                level === 'strong'
+                  ? 'admin-badge--success'
+                  : level === 'partial'
+                    ? 'admin-badge--info'
+                    : 'admin-badge--warning';
               return (
                 <motion.div
                   key={match.id}
@@ -219,13 +339,20 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
                   onKeyDown={(e) => e.key === 'Enter' && onToggleMatch(match.id)}
                 >
                   <div className="sr-cva-match-card__head">
-                    <div className="sr-cva-match-logo" aria-hidden>{match.companyInitials}</div>
+                    <OfferCompanyLogo
+                      url={resolveMediaUrl(match.companyLogoUrl)}
+                      companyName={match.company}
+                      size="table"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="m-0 text-sm font-bold text-[var(--admin-text)]">{match.title}</p>
                       <p className="m-0 flex items-center gap-1 text-xs text-[var(--admin-text-muted)]">
                         <MapPin className="h-3 w-3" aria-hidden />
                         {match.company} · {match.location}
                       </p>
+                      {level ? (
+                        <span className={`admin-badge ${levelClass} mt-1 text-[10px]`}>{levelLabel}</span>
+                      ) : null}
                     </div>
                     <span className="sr-cva-match-pct">{match.matchPercent}%</span>
                     <ChevronDown
@@ -244,6 +371,9 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
                         <p className="m-0 text-xs font-semibold text-[var(--admin-text)]">
                           {t('student.internshipOffers.cvDashboard.compatibility.whyScore')}
                         </p>
+                        {match.explanation ? (
+                          <p className="m-0 mb-2 text-xs text-[var(--admin-text-secondary)]">{match.explanation}</p>
+                        ) : null}
                         {[
                           { key: 'skills', val: match.breakdown.skills },
                           { key: 'location', val: match.breakdown.location },
@@ -294,7 +424,9 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
                           onKeyDown={(e) => e.key === 'Enter' && onToggleRec(rec.id)}
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="m-0 text-sm font-semibold text-[var(--admin-text)]">{t(rec.titleKey)}</p>
+                            <p className="m-0 text-sm font-semibold text-[var(--admin-text)]">
+                              {resolveDynamicLabel(t, rec.titleKey, rec.isDynamic)}
+                            </p>
                             <AnimatePresence>
                               {isOpen && (
                                 <motion.p
@@ -303,7 +435,7 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
                                   animate={{ opacity: 1 }}
                                   exit={{ opacity: 0 }}
                                 >
-                                  {t(rec.descriptionKey)}
+                                  {resolveDynamicLabel(t, rec.descriptionKey, rec.isDynamic)}
                                 </motion.p>
                               )}
                             </AnimatePresence>
@@ -343,27 +475,7 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
           })}
         </motion.div>
 
-        {/* Roadmap */}
-        <motion.div className="sr-cva-glass mt-4" {...fadeUp}>
-          <div className="sr-cva-section-card" style={{ paddingBottom: 0 }}>
-            <h3 className="sr-cva-section-title">{t('student.internshipOffers.cvDashboard.roadmap.title')}</h3>
-          </div>
-          <div className="sr-cva-roadmap">
-            {roadmap.map((step) => (
-              <div key={step.id} className="sr-cva-roadmap__step">
-                <div className={`sr-cva-roadmap__dot${step.completed ? ' sr-cva-roadmap__dot--done' : ''}`}>
-                  {step.completed ? <Check className="h-3 w-3" aria-hidden /> : step.step}
-                </div>
-                <div>
-                  <p className="m-0 text-sm font-semibold text-[var(--admin-text)]">
-                    {t('student.internshipOffers.cvDashboard.roadmap.step', { n: step.step })}
-                  </p>
-                  <p className="m-0 text-xs text-[var(--admin-text-secondary)]">{t(step.titleKey)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+        <ImprovementRoadmap steps={roadmap} />
 
         {/* Before / After */}
         <motion.div className="sr-cva-glass sr-cva-compare mt-4" {...fadeUp}>
@@ -385,34 +497,88 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
 
       {/* Skills */}
       <section id="cva-section-skills">
-        <motion.div className="sr-cva-glass sr-cva-section-card" {...fadeUp}>
-          <h3 className="sr-cva-section-title">
-            <Wrench className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
-            {t('student.internshipOffers.cvDashboard.skills.title')}
-          </h3>
-          <p className="mb-3 text-sm font-semibold text-[var(--admin-text)]">
-            {t('student.internshipOffers.cvDashboard.skills.detected')}
-          </p>
-          <div className="sr-cva-chips mb-5">
-            {detectedSkills.map((skill) => (
-              <span key={skill.id} className="sr-cva-chip">{skill.name}</span>
-            ))}
+        <motion.div className="sr-cva-glass sr-cva-section-card sr-cva-skills" {...fadeUp}>
+          <div className="sr-cva-skills__header">
+            <h3 className="sr-cva-section-title m-0">
+              <Wrench className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
+              {t('student.internshipOffers.cvDashboard.skills.title')}
+            </h3>
           </div>
-          <p className="mb-3 text-sm font-semibold text-[var(--admin-text)]">
-            {t('student.internshipOffers.cvDashboard.skills.missing')}
-          </p>
-          <div className="sr-cva-chips">
-            {missingSkills.map((skill) => (
-              <span
-                key={skill.id}
-                className={`sr-cva-chip sr-cva-chip--missing-${skill.priority ?? 'optional'}`}
-              >
-                {skill.name}
-                <span className="text-[0.625rem] opacity-80">
-                  {t(`student.internshipOffers.cvDashboard.skills.priority.${skill.priority}`)}
+
+          <div className="sr-cva-skills-grid">
+            <div className="sr-cva-skills-panel sr-cva-skills-panel--detected">
+              <div className="sr-cva-skills-panel__head">
+                <span className="sr-cva-skills-panel__icon" aria-hidden>
+                  <CheckCircle2 className="h-4 w-4" />
                 </span>
-              </span>
-            ))}
+                <div className="min-w-0 flex-1">
+                  <p className="sr-cva-skills-panel__title">
+                    {t('student.internshipOffers.cvDashboard.skills.detected')}
+                  </p>
+                  <p className="sr-cva-skills-panel__count">
+                    {t('student.internshipOffers.cvDashboard.skills.detectedCount', {
+                      count: detectedSkills.length,
+                      defaultValue: '{{count}} compétence(s)',
+                    })}
+                  </p>
+                </div>
+              </div>
+              <div className="sr-cva-skills-chips">
+                {detectedSkills.length === 0 ? (
+                  <p className="sr-cva-skills-empty">
+                    {t('student.internshipOffers.cvDashboard.skills.noDetected', {
+                      defaultValue: 'Aucune compétence détectée pour le moment.',
+                    })}
+                  </p>
+                ) : (
+                  detectedSkills.map((skill) => (
+                    <span key={skill.id} className="sr-cva-skill-chip sr-cva-skill-chip--detected">
+                      {skill.name}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="sr-cva-skills-panel sr-cva-skills-panel--missing">
+              <div className="sr-cva-skills-panel__head">
+                <span className="sr-cva-skills-panel__icon" aria-hidden>
+                  <AlertTriangle className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="sr-cva-skills-panel__title">
+                    {t('student.internshipOffers.cvDashboard.skills.missing')}
+                  </p>
+                  <p className="sr-cva-skills-panel__count">
+                    {t('student.internshipOffers.cvDashboard.skills.missingCount', {
+                      count: missingSkills.length,
+                      defaultValue: '{{count}} à développer',
+                    })}
+                  </p>
+                </div>
+              </div>
+              <div className="sr-cva-skills-chips">
+                {missingSkills.length === 0 ? (
+                  <p className="sr-cva-skills-empty">
+                    {t('student.internshipOffers.cvDashboard.skills.noMissing', {
+                      defaultValue: 'Aucune lacune identifiée — excellent profil !',
+                    })}
+                  </p>
+                ) : (
+                  missingSkills.map((skill) => (
+                    <span
+                      key={skill.id}
+                      className={`sr-cva-skill-chip sr-cva-skill-chip--missing-${skill.priority ?? 'optional'}`}
+                    >
+                      <span className="sr-cva-skill-chip__name">{skill.name}</span>
+                      <span className="sr-cva-skill-chip__priority">
+                        {t(`student.internshipOffers.cvDashboard.skills.priority.${skill.priority ?? 'optional'}`)}
+                      </span>
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </motion.div>
       </section>
@@ -450,49 +616,44 @@ const CvAnalysisMainContent: FunctionComponent<CvAnalysisMainContentProps> = ({
 
       {/* Interview */}
       <section id="cva-section-interview">
-        <motion.div className="sr-cva-glass sr-cva-section-card" {...fadeUp}>
-          <h3 className="sr-cva-section-title">
-            <Sparkles className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
-            {t('student.internshipOffers.cvDashboard.interview.title')}
-          </h3>
-          <p className="mb-4 text-sm text-[var(--admin-text-secondary)]">
-            {t('student.internshipOffers.cvDashboard.interview.subtitle')}
-          </p>
-          <div className="mb-4 flex flex-col gap-2">
-            {interviewSuggestions.map((s) => (
-              <div
-                key={s.id}
-                className="sr-cva-glass flex items-center justify-between gap-3 p-3 sr-cva-glass--hover"
-              >
-                <span className="text-sm font-medium text-[var(--admin-text)]">{t(s.titleKey)}</span>
-                <span className="admin-badge admin-badge--info text-xs">{s.type}</span>
+        <motion.div className="sr-cva-glass sr-cva-section-card sr-cva-interview" {...fadeUp}>
+          <div className="sr-cva-interview__header">
+            <h3 className="sr-cva-section-title m-0">
+              <Sparkles className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
+              {t('student.internshipOffers.cvDashboard.interview.title')}
+            </h3>
+            <p className="sr-cva-interview__subtitle">
+              {t('student.internshipOffers.cvDashboard.interview.subtitle')}
+            </p>
+          </div>
+          <div className="sr-cva-interview-list">
+            {interviewSuggestions.map((s, index) => (
+              <div key={s.id} className="sr-cva-interview-item sr-cva-glass--hover">
+                <span className="sr-cva-interview-item__index" aria-hidden>
+                  {index + 1}
+                </span>
+                <span className="sr-cva-interview-item__icon" aria-hidden>
+                  <Mic className="h-4 w-4" />
+                </span>
+                <div className="sr-cva-interview-item__body">
+                  <p className="sr-cva-interview-item__title">
+                    {formatInterviewSuggestionTitle(resolveDynamicLabel(t, s.titleKey, true))}
+                  </p>
+                  {s.reason ? (
+                    <p className="sr-cva-interview-item__reason">{s.reason}</p>
+                  ) : null}
+                </div>
+                <span className={`sr-cva-interview-type-badge sr-cva-interview-type-badge--${s.type}`}>
+                  {t(`student.internshipOffers.cvDashboard.interview.types.${s.type}`, s.type)}
+                </span>
               </div>
             ))}
           </div>
-          <Link to={STUDENT_INTERVIEW_SIMULATOR_PATH} className="sr-cva-btn sr-cva-btn--primary w-full sm:w-auto">
-            {t('student.internshipOffers.cvDashboard.interview.cta')}
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </motion.div>
-      </section>
-
-      {/* Career Insights */}
-      <section id="cva-section-career">
-        <motion.div className="sr-cva-glass sr-cva-section-card" {...fadeUp}>
-          <h3 className="sr-cva-section-title">
-            <TrendingUp className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
-            {t('student.internshipOffers.cvDashboard.career.title')}
-          </h3>
-          <div className="sr-cva-metrics-grid">
-            {careerMetrics.map((metric) => (
-              <div key={metric.id} className="sr-cva-glass sr-cva-metric-card sr-cva-glass--hover">
-                <div className="sr-cva-metric-card__value">
-                  <AnimatedCounter value={metric.value} suffix={metric.unit ?? ''} />
-                </div>
-                <div className="sr-cva-metric-card__label">{t(metric.labelKey)}</div>
-                <Sparkline values={metric.trend} />
-              </div>
-            ))}
+          <div className="sr-cva-interview-cta">
+            <Link to={STUDENT_INTERVIEW_SIMULATOR_PATH} className="sr-cva-btn sr-cva-btn--ai">
+              {t('student.internshipOffers.cvDashboard.interview.cta')}
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
           </div>
         </motion.div>
       </section>

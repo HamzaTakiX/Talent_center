@@ -320,6 +320,12 @@ class StudentProfile(TimestampedModel):
     city = models.CharField(max_length=100, blank=True, default='')
     mobility = models.JSONField(default=list, blank=True)
     has_applied = models.BooleanField(null=True, blank=True)
+    has_internship = models.BooleanField(default=False)
+    internship_status_acknowledged = models.BooleanField(default=False)
+    internship_company_name = models.CharField(max_length=255, blank=True, default='')
+    internship_specialization = models.CharField(max_length=255, blank=True, default='')
+    internship_company_city = models.CharField(max_length=100, blank=True, default='')
+    internship_stage_duration = models.CharField(max_length=64, blank=True, default='')
 
     # Legacy duplicated fields kept for a single release to ease migration.
     # New code must read UserProfile.first_name / last_name / date_of_birth.

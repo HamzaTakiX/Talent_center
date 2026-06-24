@@ -66,19 +66,25 @@ const RecentActivity: FunctionComponent = () => {
       />
 
       <motion.div className="admin-section-list flex flex-col">
-        {recentActivity.map((activity, index) => (
-          <RecentActivityRow
-            key={activity.id}
-            action={activity.action}
-            user={activity.user}
-            time={activity.time}
-            index={index}
-            onClick={(e: MouseEvent<HTMLButtonElement>) => {
-              e.stopPropagation();
-              handleActivityClick(activity.id);
-            }}
-          />
-        ))}
+        {recentActivity.length === 0 ? (
+          <p className="px-4 py-6 text-center text-sm text-[var(--admin-text-secondary)] sm:px-5">
+            {t('admin.dashboard.activity.empty', { defaultValue: 'No recent activity on the platform.' })}
+          </p>
+        ) : (
+          recentActivity.map((activity, index) => (
+            <RecentActivityRow
+              key={activity.id}
+              action={activity.action}
+              user={activity.user}
+              time={activity.time}
+              index={index}
+              onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                e.stopPropagation();
+                handleActivityClick(activity.id);
+              }}
+            />
+          ))
+        )}
       </motion.div>
     </DashboardPanel>
   );

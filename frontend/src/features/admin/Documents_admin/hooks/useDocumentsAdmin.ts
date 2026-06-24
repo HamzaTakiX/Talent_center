@@ -1,16 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { isAxiosError } from 'axios';
 import { adminDocumentsApi } from '../../api/documents';
-import {
-  filterMockRequests,
-  getMockRequestDetail,
-  MOCK_ANALYTICS,
-  MOCK_DASHBOARD,
-  MOCK_RESOURCES,
-  MOCK_SLA_RULES,
-  MOCK_TEMPLATES,
-  MOCK_WORKFLOWS,
-  DOCUMENT_TYPE_CONFIGS,
-} from '../data/documentsMockData';
 import type {
   AdministrativeResourceItem,
   DocumentListParams,
@@ -24,40 +14,23 @@ import type {
   WorkflowDefinition,
 } from '../types';
 
-/** When the API succeeds but the DB is empty, keep charts/table usable with demo rows. */
-function mergeDashboardWithDemo(api: DocumentsDashboardData): DocumentsDashboardData {
-  const emptyRecent = !api.recentRequests?.length;
-  const emptyCharts =
-    !api.statusDistribution?.length && !api.reservationOccupancy?.length;
-
-  if (!emptyRecent && !emptyCharts) return api;
-
-  return {
-    ...api,
-    summary: emptyRecent
-      ? MOCK_DASHBOARD.summary
-      : {
-          ...MOCK_DASHBOARD.summary,
-          ...api.summary,
-          avgProcessingHours:
-            api.summary.avgProcessingHours || MOCK_DASHBOARD.summary.avgProcessingHours,
-        },
-    recentRequests: emptyRecent ? MOCK_DASHBOARD.recentRequests : api.recentRequests,
-    statusDistribution: api.statusDistribution?.length
-      ? api.statusDistribution
-      : MOCK_DASHBOARD.statusDistribution,
-    serviceWorkload: api.serviceWorkload?.length
-      ? api.serviceWorkload
-      : MOCK_DASHBOARD.serviceWorkload,
-    reservationOccupancy: api.reservationOccupancy?.length
-      ? api.reservationOccupancy
-      : MOCK_DASHBOARD.reservationOccupancy,
-    rejectionCauses: api.rejectionCauses?.length
-      ? api.rejectionCauses
-      : MOCK_DASHBOARD.rejectionCauses,
-    insights: api.insights?.length ? api.insights : MOCK_DASHBOARD.insights,
-  };
+function extractErrorMessage(err: unknown): string {
+  if (isAxiosError(err)) {
+    const message = err.response?.data?.message;
+    if (typeof message === 'string' && message.trim()) return message;
+    return err.message;
+  }
+  if (err instanceof Error) return err.message;
+  return 'Unknown error';
 }
+
+const EMPTY_PAGINATION: PaginatedDocumentRequests = {
+  items: [],
+  page: 1,
+  page_size: 15,
+  total: 0,
+  total_pages: 0,
+};
 
 export function useDocumentsDashboard() {
   const [data, setData] = useState<DocumentsDashboardData | null>(null);
@@ -68,11 +41,10 @@ export function useDocumentsDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const apiData = await adminDocumentsApi.dashboard();
-      setData(mergeDashboardWithDemo(apiData));
-    } catch {
-      setData(MOCK_DASHBOARD);
-      setError(null);
+      setData(await adminDocumentsApi.dashboard());
+    } catch (err) {
+      setData(null);
+      setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -86,21 +58,18 @@ export function useDocumentsDashboard() {
 }
 
 export function useDocumentsRequestsList(params?: DocumentListParams) {
-  const [result, setResult] = useState<PaginatedDocumentRequests>({
-    items: [],
-    page: 1,
-    page_size: 15,
-    total: 0,
-    total_pages: 0,
-  });
+  const [result, setResult] = useState<PaginatedDocumentRequests>(EMPTY_PAGINATION);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       setResult(await adminDocumentsApi.list(params));
-    } catch {
-      setResult(filterMockRequests(params));
+    } catch (err) {
+      setResult(EMPTY_PAGINATION);
+      setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -110,56 +79,58 @@ export function useDocumentsRequestsList(params?: DocumentListParams) {
     refresh();
   }, [refresh]);
 
-  return { ...result, loading, refresh };
+  return { ...result, loading, error, refresh };
 }
 
 export function useDocumentRequestDetail(id: string | undefined) {
   const [data, setData] = useState<DocumentRequestDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     if (!id) {
       setData(null);
       setLoading(false);
+      setError(null);
       return;
     }
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      try {
-        const detail = await adminDocumentsApi.detail(id);
-        if (!cancelled) setData(detail);
-      } catch {
-        if (!cancelled) setData(getMockRequestDetail(id));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    setLoading(true);
+    setError(null);
+    try {
+      setData(await adminDocumentsApi.detail(id));
+    } catch (err) {
+      setData(null);
+      setError(extractErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
-  return { data, loading };
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { data, loading, error, refresh };
 }
 
 export function useDocumentTypes() {
   const [items, setItems] = useState<DocumentTypeConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
         setItems(await adminDocumentsApi.types());
-      } catch {
-        setItems(DOCUMENT_TYPE_CONFIGS);
+      } catch (err) {
+        setError(extractErrorMessage(err));
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  return { items, loading };
+  return { items, loading, error };
 }
 
 export function useDocumentWorkflows() {
@@ -171,7 +142,7 @@ export function useDocumentWorkflows() {
       try {
         setItems(await adminDocumentsApi.workflows());
       } catch {
-        setItems(MOCK_WORKFLOWS);
+        setItems([]);
       } finally {
         setLoading(false);
       }
@@ -190,7 +161,7 @@ export function useAdministrativeResources() {
       try {
         setItems(await adminDocumentsApi.resources());
       } catch {
-        setItems(MOCK_RESOURCES);
+        setItems([]);
       } finally {
         setLoading(false);
       }
@@ -209,7 +180,7 @@ export function useDocumentTemplates() {
       try {
         setItems(await adminDocumentsApi.templates());
       } catch {
-        setItems(MOCK_TEMPLATES);
+        setItems([]);
       } finally {
         setLoading(false);
       }
@@ -228,7 +199,7 @@ export function useSlaRules() {
       try {
         setItems(await adminDocumentsApi.slaRules());
       } catch {
-        setItems(MOCK_SLA_RULES);
+        setItems([]);
       } finally {
         setLoading(false);
       }
@@ -247,7 +218,7 @@ export function useDocumentsAnalytics() {
       try {
         setData(await adminDocumentsApi.analytics());
       } catch {
-        setData(MOCK_ANALYTICS);
+        setData(null);
       } finally {
         setLoading(false);
       }
@@ -255,4 +226,59 @@ export function useDocumentsAnalytics() {
   }, []);
 
   return { data, loading };
+}
+
+export function useDocumentsWorkload() {
+  const [items, setItems] = useState<DocumentsDashboardData['serviceWorkload']>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await adminDocumentsApi.workload();
+      setItems(data.items ?? []);
+    } catch (err) {
+      setItems([]);
+      setError(extractErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { items, loading, error, refresh };
+}
+
+export function useDocumentsReservations(date?: string) {
+  const [occupancy, setOccupancy] = useState<DocumentsDashboardData['reservationOccupancy']>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await adminDocumentsApi.reservations(date ? { date } : undefined);
+      setOccupancy(data.occupancy ?? []);
+      setTotal(data.total ?? 0);
+    } catch (err) {
+      setOccupancy([]);
+      setTotal(0);
+      setError(extractErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [date]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { occupancy, total, loading, error, refresh };
 }

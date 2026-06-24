@@ -1,4 +1,10 @@
-import type { SupportInboxStats, SupportMessage, SupportQuickFilters } from '../types/supportInboxTypes';
+import type {
+  PrimaryDeskFilter,
+  PrimaryFilterCounts,
+  SupportInboxStats,
+  SupportMessage,
+  SupportQuickFilters,
+} from '../types/supportInboxTypes';
 
 export function formatSupportChatTime(language = 'fr'): string {
   const locale = language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-FR' : 'en-GB';
@@ -29,17 +35,28 @@ export function computeSupportInboxStats<
 }
 
 export function hasActiveQuickFilters(filters: SupportQuickFilters): boolean {
-  return filters.unread || filters.urgent || filters.archived;
+  return filters.unread || filters.urgent;
+}
+
+export function applyPrimaryDeskFilter<
+  T extends { archived?: boolean },
+>(conv: T, primary: PrimaryDeskFilter): boolean {
+  if (primary === 'archived') return Boolean(conv.archived);
+  return !conv.archived;
+}
+
+export function computePrimaryFilterCounts<
+  T extends { archived?: boolean },
+>(conversations: T[]): PrimaryFilterCounts {
+  return {
+    all: conversations.filter((c) => !c.archived).length,
+    archived: conversations.filter((c) => c.archived).length,
+  };
 }
 
 export function matchesQuickFilters<
-  T extends { archived?: boolean; unreadCount: number; urgent?: boolean },
+  T extends { unreadCount: number; urgent?: boolean },
 >(conv: T, filters: SupportQuickFilters): boolean {
-  if (filters.archived) {
-    if (!conv.archived) return false;
-  } else if (conv.archived) {
-    return false;
-  }
   if (filters.unread && conv.unreadCount === 0) return false;
   if (filters.urgent && !conv.urgent) return false;
   return true;

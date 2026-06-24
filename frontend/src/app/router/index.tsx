@@ -18,6 +18,7 @@ import InternshipActiveOffersListPage from '../../features/admin/pages/Internshi
 import InternshipExpiredOffersListPage from '../../features/admin/pages/InternshipExpiredOffersListPage';
 import InternshipDraftOffersListPage from '../../features/admin/pages/InternshipDraftOffersListPage';
 import InternshipClosedOffersListPage from '../../features/admin/pages/InternshipClosedOffersListPage';
+import InternshipArchivedOffersListPage from '../../features/admin/pages/InternshipArchivedOffersListPage';
 import InternshipOffersWithApplicationsListPage from '../../features/admin/pages/InternshipOffersWithApplicationsListPage';
 import InternshipOffersChatPage from '../../features/admin/pages/InternshipOffersChatPage';
 import InternshipOffersDraftsPage from '../../features/admin/pages/InternshipOffersDraftsPage';
@@ -30,11 +31,12 @@ import ViewAnnouncementPage from '../../features/admin/announcements-stage/pages
 import EditAnnouncementPage from '../../features/admin/announcements-stage/pages/EditAnnouncementPage';
 import AnnouncementsChatPage from '../../features/admin/announcements-stage/chat/pages/AnnouncementsChatPage';
 import AnnouncementsHistoryPage from '../../features/admin/announcements-stage/history/pages/AnnouncementsHistoryPage';
-import InternshipOffersAnnouncementsPage from '../../features/admin/announcements-stage/pages/InternshipOffersAnnouncementsPage';
 import AnnouncementTypesPage from '../../features/admin/announcements-stage/pages/AnnouncementTypesPage';
 import AnnouncementsAnalyticsPage from '../../features/admin/announcements-stage/pages/AnnouncementsAnalyticsPage';
 import AnnouncementsInsightsPage from '../../features/admin/announcements-stage/pages/AnnouncementsInsightsPage';
 import AnnouncementsEngagementPage from '../../features/admin/announcements-stage/pages/AnnouncementsEngagementPage';
+import ScheduledAnnouncementsPage from '../../features/admin/announcements-stage/pages/ScheduledAnnouncementsPage';
+import ArchivedAnnouncementsPage from '../../features/admin/announcements-stage/pages/ArchivedAnnouncementsPage';
 import DocumentsPage from '../../features/admin/Documents_admin/pages/DocumentsPage';
 import AllDocumentsListPage from '../../features/admin/Documents_admin/Documents_cards/all-documents/pages/AllDocumentsListPage';
 import PendingDocumentsListPage from '../../features/admin/Documents_admin/Documents_cards/pending-documents/pages/PendingDocumentsListPage';
@@ -138,6 +140,8 @@ import AdminProfilePage from '../../features/admin/account/pages/AdminProfilePag
 import AdminSettingsPage from '../../features/admin/account/pages/AdminSettingsPage';
 import AcademicStructurePage from '../../features/admin/academic-structure/pages/AcademicStructurePage';
 import EmailSystemPage from '../../features/admin/email-system/pages/EmailSystemPage';
+import NotificationCenterPage from '../../features/shared/notifications/pages/NotificationCenterPage';
+import NotificationAnalyticsPage from '../../features/admin/notifications/pages/NotificationAnalyticsPage';
 
 // Student Pages
 import StudentDashboardPage from '../../features/student/Dashboard/pages/StudentDashboardPage';
@@ -149,6 +153,7 @@ import MyApplicationsPage from '../../features/student/internship_offers/pages/M
 import ApplicationDetailPage from '../../features/student/internship_offers/pages/ApplicationDetailPage';
 import CvAnalysisPage from '../../features/student/internship_offers/pages/CvAnalysisPage';
 import { CvAnalysisToolPage } from '../../features/student/internship_offers/CV_Analyse';
+import { CvBuilderPage } from '../../features/student/internship_offers/cv_builder';
 import { AiCareerCoachPage } from '../../features/student/internship_offers/AI_Career_Coach';
 import { InterviewSimulatorPage } from '../../features/student/internship_offers/interview_Simulator';
 import { ChatPage } from '../../features/student/internship_offers/chat';
@@ -157,8 +162,10 @@ import {
   AllAnnouncementsPage,
   AnnouncementsChatPage as StudentAnnouncementsChatPage,
   AnnouncementsHistoryPage as StudentAnnouncementsHistoryPage,
+  AnnouncementsSavedPage as StudentAnnouncementsSavedPage,
   AnnouncementsPage as StudentAnnouncementsPage,
 } from '../../features/student/Annoucements';
+import ViewStudentAnnouncementPage from '../../features/student/Annoucements/pages/ViewStudentAnnouncementPage';
 import { MainHistoryPage as StudentMainHistoryPage } from '../../features/student/main_history';
 import {
   DocumentsChatPage as StudentDocumentsChatPage,
@@ -198,16 +205,21 @@ import { AuthLoadingGate } from './guards/AuthLoadingGate';
 import AdminAppProviders from '../../features/admin/providers/AdminAppProviders';
 
 const DashboardRedirect = () => {
-  const { user, isAuthReady } = useAuth();
+  const { user, isLoading, isAuthReady } = useAuth();
 
-  if (!isAuthReady || !user) {
+  if (!isAuthReady && isLoading) {
     return <AuthLoadingGate />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
   }
 
   return <Navigate to={getDefaultHomePath(normalizeRole(user.role))} replace />;
 };
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(
+[
   {
     path: '/callback',
     element: <CallbackPage />
@@ -282,6 +294,14 @@ export const router = createBrowserRouter([
         element: <StudentAnnouncementsHistoryPage />
       },
       {
+        path: '/student/announcements/saved',
+        element: <StudentAnnouncementsSavedPage />
+      },
+      {
+        path: '/student/announcements/:id',
+        element: <ViewStudentAnnouncementPage />
+      },
+      {
         path: '/student/main-history',
         element: <StudentMainHistoryPage />
       },
@@ -354,6 +374,10 @@ export const router = createBrowserRouter([
         element: <AllInternshipOffersPage />
       },
       {
+        path: '/student/internship-offers/cv-builder',
+        element: <CvBuilderPage />
+      },
+      {
         path: '/student/internship-offers/cv-analysis-tool',
         element: <CvAnalysisToolPage />
       },
@@ -418,6 +442,22 @@ export const router = createBrowserRouter([
         element: <EmailSystemPage />
       },
       {
+        path: '/admin/settings/notification-analytics',
+        element: <NotificationAnalyticsPage />
+      },
+      {
+        path: '/notifications',
+        element: <NotificationCenterPage />
+      },
+      {
+        path: '/admin/notifications',
+        element: <NotificationCenterPage />
+      },
+      {
+        path: '/student/notifications',
+        element: <NotificationCenterPage />
+      },
+      {
         path: '/admin/dashboard/students',
         element: <DashboardStudentsPage />
       },
@@ -462,6 +502,10 @@ export const router = createBrowserRouter([
         element: <InternshipClosedOffersListPage />
       },
       {
+        path: '/admin/internship-offers/archived',
+        element: <InternshipArchivedOffersListPage />
+      },
+      {
         path: '/admin/internship-offers/with-applications',
         element: <InternshipOffersWithApplicationsListPage />
       },
@@ -502,10 +546,6 @@ export const router = createBrowserRouter([
         element: <AnnouncementsHistoryPage />
       },
       {
-        path: '/admin/announcements/internships',
-        element: <InternshipOffersAnnouncementsPage />
-      },
-      {
         path: '/admin/announcements/types',
         element: <AnnouncementTypesPage />
       },
@@ -520,6 +560,14 @@ export const router = createBrowserRouter([
       {
         path: '/admin/announcements/engagement',
         element: <AnnouncementsEngagementPage />
+      },
+      {
+        path: '/admin/announcements/scheduled',
+        element: <ScheduledAnnouncementsPage />
+      },
+      {
+        path: '/admin/announcements/archived',
+        element: <ArchivedAnnouncementsPage />
       },
       {
         path: '/admin/announcements/:id/edit',
@@ -959,4 +1007,9 @@ export const router = createBrowserRouter([
       }
     ]
   }
-]);
+],
+{
+  future: {
+    v7_startTransition: true,
+  },
+});

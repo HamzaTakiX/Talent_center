@@ -15,7 +15,11 @@
       color-mix(in srgb, #8b5cf6 8%, var(--admin-bg-elevated)) 50%,
       var(--admin-bg-elevated) 100%
     );
-    --cva-gradient-accent: linear-gradient(135deg, var(--admin-brand) 0%, #8b5cf6 100%);
+    --cva-gradient-accent: linear-gradient(
+      135deg,
+      var(--admin-brand) 0%,
+      color-mix(in srgb, var(--admin-brand) 86%, #000) 100%
+    );
     --cva-shimmer: linear-gradient(
       90deg,
       color-mix(in srgb, var(--admin-border) 30%, transparent) 0%,
@@ -218,6 +222,19 @@
     font-weight: 700;
     font-size: 1rem;
     box-shadow: 0 4px 16px color-mix(in srgb, var(--admin-brand) 35%, transparent);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .sr-cva-hero__avatar--photo {
+    background: var(--admin-input-bg);
+  }
+
+  .sr-cva-hero__avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .sr-cva-hero__title {
@@ -283,6 +300,334 @@
     gap: 0.5rem;
   }
 
+  .sr-cva-btn--sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .sr-cva-outdated-banner,
+  .sr-cva-processing-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--admin-border) 70%, transparent);
+    background: color-mix(in srgb, var(--admin-surface) 92%, transparent);
+  }
+
+  .sr-cva-outdated-banner {
+    color: #b45309;
+    border-color: color-mix(in srgb, #f59e0b 35%, transparent);
+    background: color-mix(in srgb, #f59e0b 8%, transparent);
+  }
+
+  .sr-cva-processing-banner {
+    color: var(--admin-brand);
+    border-color: color-mix(in srgb, var(--admin-brand) 30%, transparent);
+    background: color-mix(in srgb, var(--admin-brand) 8%, transparent);
+  }
+
+  .sr-cva-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .sr-cva-status-badge--upToDate {
+    color: #15803d;
+    background: color-mix(in srgb, #22c55e 14%, transparent);
+  }
+
+  .sr-cva-status-badge--outdated {
+    color: #b45309;
+    background: color-mix(in srgb, #f59e0b 14%, transparent);
+  }
+
+  .sr-cva-status-badge--processing {
+    color: var(--admin-brand);
+    background: color-mix(in srgb, var(--admin-brand) 14%, transparent);
+  }
+
+  .sr-cva-status-badge--failed {
+    color: #b91c1c;
+    background: color-mix(in srgb, #ef4444 14%, transparent);
+  }
+
+  .sr-cva-status-badge--none {
+    color: var(--admin-text-muted);
+    background: color-mix(in srgb, var(--admin-text-muted) 12%, transparent);
+  }
+
+  .sr-cva-cv-preview {
+    position: relative;
+    z-index: 1;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--admin-border) 55%, transparent);
+  }
+
+  .sr-cva-cv-preview__title {
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--admin-text);
+  }
+
+  .sr-cva-cv-preview__paper {
+    overflow: visible;
+    max-width: 42rem;
+    margin-inline: auto;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--admin-border) 70%, transparent);
+    background: #ffffff;
+    box-shadow:
+      0 1px 2px rgb(15 23 42 / 6%),
+      0 8px 20px rgb(15 23 42 / 8%);
+  }
+
+  .sr-cva-cv-preview__paper--pdf {
+    overflow: visible;
+    background: #f1f5f9;
+  }
+
+  .sr-cva-cv-preview__pdf-shell {
+    position: relative;
+    min-height: 8rem;
+  }
+
+  .sr-cva-cv-preview__pdf-pages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .sr-cva-cv-preview__pdf-page-wrap {
+    overflow: hidden;
+    border-radius: 0.25rem;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgb(15 23 42 / 8%);
+  }
+
+  .sr-cva-cv-preview__pdf-page {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .sr-cva-cv-preview__pdf-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    color: var(--admin-text-muted);
+  }
+
+  .sr-cva-cv-preview__iframe {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: #ffffff;
+  }
+
+  .sr-cva-cv-preview__iframe--fallback {
+    min-height: 50rem;
+  }
+
+  .sr-cva-cv-preview__doc {
+    padding: 1.5rem 1.25rem;
+    color: #0f172a;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  .sr-cva-cv-preview__header {
+    text-align: center;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .sr-cva-cv-preview__name-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 0.5rem;
+  }
+
+  .sr-cva-cv-preview__name {
+    margin: 0;
+    font-size: clamp(1.25rem, 3vw, 1.625rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: #0f172a;
+  }
+
+  .sr-cva-cv-preview__name--accent {
+    color: var(--admin-brand, #6366f1);
+  }
+
+  .sr-cva-cv-preview__role {
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: #475569;
+  }
+
+  .sr-cva-cv-preview__contacts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem 0.75rem;
+    margin-top: 0.75rem;
+    padding-top: 0.625rem;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.75rem;
+    color: #334155;
+  }
+
+  .sr-cva-cv-preview__section {
+    padding-top: 0.875rem;
+  }
+
+  .sr-cva-cv-preview__section + .sr-cva-cv-preview__section {
+    margin-top: 0.125rem;
+  }
+
+  .sr-cva-cv-preview__section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin: 0 0 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .sr-cva-cv-preview__paragraph,
+  .sr-cva-cv-preview__muted {
+    margin: 0;
+    color: #475569;
+  }
+
+  .sr-cva-cv-preview__stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .sr-cva-cv-preview__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.625rem;
+  }
+
+  .sr-cva-cv-preview__entry-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .sr-cva-cv-preview__entry-title {
+    margin: 0;
+    color: #0f172a;
+  }
+
+  .sr-cva-cv-preview__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .sr-cva-cv-preview__list {
+    margin: 0.625rem 0 0;
+    padding-left: 1.25rem;
+    color: #475569;
+  }
+
+  .sr-cva-cv-preview__list li + li {
+    margin-top: 0.375rem;
+  }
+
+  .sr-cva-cv-preview__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .sr-cva-cv-preview__tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 0.8125rem;
+  }
+
+  .sr-cva-cv-preview__link {
+    font-size: 0.8125rem;
+    color: var(--admin-brand, #6366f1);
+    text-decoration: none;
+  }
+
+  .sr-cva-cv-preview__link:hover {
+    text-decoration: underline;
+  }
+
+  .sr-cva-cv-preview__docx :is(p, span, li, a, h1, h2, h3, h4, div, ul, ol, strong) {
+    color: #0f172a;
+    font-size: 0.8125rem;
+  }
+
+  .sr-cva-cv-preview__docx p {
+    margin: 0 0 0.5rem;
+  }
+
+  .sr-cva-cv-preview__docx ul,
+  .sr-cva-cv-preview__docx ol {
+    margin: 0 0 0.5rem;
+    padding-left: 1rem;
+  }
+
+  .sr-cva-cv-preview__paper--fallback {
+    padding: 1.25rem 1rem;
+    text-align: center;
+    background: #ffffff;
+  }
+
+  .sr-cva-cv-preview__fallback-text {
+    margin: 0;
+    color: #475569;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 640px) {
+    .sr-cva-cv-preview__doc {
+      padding: 1rem 0.875rem;
+    }
+
+    .sr-cva-cv-preview__iframe {
+      height: 24rem;
+      min-height: 18rem;
+    }
+  }
+
   .sr-cva-btn {
     display: inline-flex;
     align-items: center;
@@ -295,7 +640,18 @@
     font-weight: 600;
     cursor: pointer;
     border: none;
+    text-decoration: none;
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+
+  .sr-cva-btn:hover,
+  .sr-cva-btn:focus-visible {
+    text-decoration: none;
+  }
+
+  .sr-cva-btn--primary:visited,
+  .sr-cva-btn--ai:visited {
+    color: #fff;
   }
 
   .sr-cva-btn:active {
@@ -326,6 +682,63 @@
     background: transparent;
     color: var(--admin-text-secondary);
     border: 1px dashed var(--admin-border);
+  }
+
+  .sr-cva-btn--ai {
+    position: relative;
+    isolation: isolate;
+    padding: 0.5rem 1.125rem;
+    min-height: 2.5rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: #fff;
+    background: var(--admin-brand);
+    border: none;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--admin-brand) 28%, transparent);
+    overflow: hidden;
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .sr-cva-btn--ai::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 38%,
+      color-mix(in srgb, #fff 16%, transparent) 50%,
+      transparent 62%
+    );
+    transform: translateX(-130%);
+    transition: transform 0.55s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .sr-cva-btn--ai:hover {
+    color: #fff;
+    background: color-mix(in srgb, var(--admin-brand) 92%, #000);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--admin-brand) 36%, transparent);
+  }
+
+  .sr-cva-btn--ai:hover::before {
+    transform: translateX(130%);
+  }
+
+  .sr-cva-btn--ai svg {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.22s ease;
+  }
+
+  .sr-cva-btn--ai:hover svg {
+    transform: translateX(3px);
   }
 
   /* Score card */
@@ -425,12 +838,16 @@
   /* AI insights */
   .sr-cva-insights-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, 220px);
+    justify-content: center;
+    gap: 1rem;
   }
 
   .sr-cva-insight-group {
-    padding: 1rem;
+    padding: 1.375rem 1rem;
+    min-height: 11.5rem;
+    display: flex;
+    flex-direction: column;
   }
 
   .sr-cva-insight-group__head {
@@ -455,7 +872,8 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.625rem;
+    flex: 1;
   }
 
   .sr-cva-insight-list li {
@@ -466,7 +884,7 @@
     line-height: 1.45;
   }
 
-  /* Skills chips */
+  /* Skills chips (legacy) */
   .sr-cva-chips {
     display: flex;
     flex-wrap: wrap;
@@ -622,11 +1040,165 @@
   }
 
   /* Roadmap */
+  .sr-cva-section-card--auto {
+    min-height: 0;
+  }
+
+  .sr-cva-roadmap-card {
+    min-height: 0;
+  }
+
+  .sr-cva-roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 639px) {
+    .sr-cva-roadmap-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .sr-cva-roadmap-action {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 1rem;
+    border-radius: var(--cva-radius-md, 0.75rem);
+    border: 1px solid var(--cva-glass-border);
+    background: color-mix(in srgb, var(--admin-bg-elevated) 70%, transparent);
+  }
+
+  .sr-cva-roadmap-action--featured {
+    padding: 1.25rem;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--admin-brand) 8%, var(--cva-glass-bg)) 0%,
+      var(--cva-glass-bg) 100%
+    );
+  }
+
+  .sr-cva-roadmap-action__head {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .sr-cva-roadmap-action__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.625rem;
+    background: color-mix(in srgb, var(--admin-brand) 14%, transparent);
+    color: var(--admin-brand);
+    flex-shrink: 0;
+  }
+
+  .sr-cva-roadmap-action__body {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sr-cva-roadmap-action__step-label {
+    margin: 0 0 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--admin-text-muted);
+  }
+
+  .sr-cva-roadmap-action__title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--admin-text);
+    line-height: 1.35;
+  }
+
+  .sr-cva-roadmap-action__desc {
+    margin: 0.375rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--admin-text-secondary);
+  }
+
+  .sr-cva-roadmap-action__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.625rem;
+    margin-top: auto;
+  }
+
+  .sr-cva-roadmap-action__gain {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #059669;
+  }
+
+  .sr-cva-roadmap-action__cta {
+    padding: 0.375rem 0.875rem;
+    min-height: 2rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .sr-cva-roadmap-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.375rem;
+    padding: 1rem 0.5rem;
+  }
+
+  .sr-cva-roadmap-empty__icon {
+    color: #059669;
+  }
+
+  .sr-cva-roadmap-empty__title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--admin-text);
+  }
+
+  .sr-cva-roadmap-empty__desc {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--admin-text-secondary);
+  }
+
   .sr-cva-roadmap {
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 1rem 1rem 1rem 1.5rem;
+    padding: 0;
+  }
+
+  .sr-cva-roadmap--timeline .sr-cva-roadmap__step {
+    display: flex;
+    gap: 1rem;
+    position: relative;
+    padding-bottom: 1rem;
+  }
+
+  .sr-cva-roadmap--timeline .sr-cva-roadmap__step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 0.6875rem;
+    top: 1.75rem;
+    bottom: 0;
+    width: 2px;
+    background: var(--admin-border);
   }
 
   .sr-cva-roadmap__step {
@@ -644,6 +1216,42 @@
     bottom: 0;
     width: 2px;
     background: var(--admin-border);
+  }
+
+  .sr-cva-roadmap__content {
+    min-width: 0;
+  }
+
+  .sr-cva-roadmap__step-label {
+    margin: 0 0 0.125rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--admin-text-muted);
+  }
+
+  .sr-cva-roadmap__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--admin-text);
+  }
+
+  .sr-cva-roadmap__desc {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--admin-text-secondary);
+  }
+
+  .sr-cva-roadmap__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.625rem;
   }
 
   .sr-cva-roadmap__dot {
@@ -666,6 +1274,38 @@
     background: var(--admin-brand);
     border-color: var(--admin-brand);
     color: #fff;
+  }
+
+  .sr-cva-roadmap-collapsible {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .sr-cva-roadmap-collapsible__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    align-self: center;
+    margin-top: 0.25rem;
+    padding: 0.5rem 0.875rem;
+    border: 1px dashed var(--admin-border);
+    border-radius: 9999px;
+    background: transparent;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--admin-brand);
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .sr-cva-roadmap-collapsible__toggle:hover {
+    background: color-mix(in srgb, var(--admin-brand) 8%, transparent);
+  }
+
+  .sr-cva-roadmap-collapsible__extra {
+    overflow: hidden;
   }
 
   /* Before / After */
@@ -964,5 +1604,518 @@
   .sr-cva-section-card {
     padding: 1.5rem;
     min-height: 12rem;
+  }
+
+  /* Interview preparation */
+  .sr-cva-interview {
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--admin-brand) 6%, var(--cva-glass-bg)) 0%,
+      var(--cva-glass-bg) 45%,
+      color-mix(in srgb, #8b5cf6 5%, var(--cva-glass-bg)) 100%
+    );
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sr-cva-interview::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 70% 50% at 0% 0%,
+      color-mix(in srgb, var(--admin-brand) 10%, transparent),
+      transparent 65%
+    );
+    pointer-events: none;
+  }
+
+  .sr-cva-interview__header,
+  .sr-cva-interview-list,
+  .sr-cva-interview-cta {
+    position: relative;
+    z-index: 1;
+  }
+
+  .sr-cva-interview__subtitle {
+    margin: 0.375rem 0 0;
+    font-size: 0.875rem;
+    color: var(--admin-text-secondary);
+    line-height: 1.5;
+  }
+
+  .sr-cva-interview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin-top: 1.25rem;
+  }
+
+  .sr-cva-interview-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--admin-bg-elevated) 55%, transparent);
+    border: 1px solid var(--cva-glass-border);
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .sr-cva-interview-item:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 28%, var(--cva-glass-border));
+    background: color-mix(in srgb, var(--admin-brand) 5%, var(--admin-bg-elevated));
+  }
+
+  .sr-cva-interview-item__index {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+    border-radius: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    color: var(--admin-brand);
+    background: color-mix(in srgb, var(--admin-brand) 12%, transparent);
+  }
+
+  .sr-cva-interview-item__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    color: var(--admin-brand);
+    background: color-mix(in srgb, var(--admin-brand) 10%, transparent);
+  }
+
+  .sr-cva-interview-item__body {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sr-cva-interview-item__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    line-height: 1.4;
+  }
+
+  .sr-cva-interview-item__reason {
+    margin: 0.25rem 0 0;
+    font-size: 0.75rem;
+    color: var(--admin-text-muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sr-cva-interview-type-badge {
+    flex-shrink: 0;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    background: color-mix(in srgb, var(--admin-brand) 12%, transparent);
+    color: var(--admin-brand);
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 20%, transparent);
+  }
+
+  .sr-cva-interview-type-badge--offer_specific {
+    background: color-mix(in srgb, #8b5cf6 12%, transparent);
+    color: #a78bfa;
+    border-color: color-mix(in srgb, #8b5cf6 22%, transparent);
+  }
+
+  .sr-cva-interview-type-badge--react,
+  .sr-cva-interview-type-badge--frontend {
+    background: color-mix(in srgb, #3b82f6 12%, transparent);
+    color: #60a5fa;
+    border-color: color-mix(in srgb, #3b82f6 22%, transparent);
+  }
+
+  .sr-cva-interview-type-badge--data_analyst {
+    background: color-mix(in srgb, #10b981 12%, transparent);
+    color: #34d399;
+    border-color: color-mix(in srgb, #10b981 22%, transparent);
+  }
+
+  .sr-cva-interview-cta {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--cva-glass-border);
+    display: flex;
+    justify-content: center;
+  }
+
+  @media (max-width: 639px) {
+    .sr-cva-interview-item {
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .sr-cva-interview-type-badge {
+      margin-left: 3.25rem;
+    }
+
+    .sr-cva-interview-cta .sr-cva-btn {
+      width: 100%;
+    }
+  }
+
+  /* Skills intelligence */
+  .sr-cva-skills {
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, #10b981 5%, var(--cva-glass-bg)) 0%,
+      var(--cva-glass-bg) 50%,
+      color-mix(in srgb, var(--admin-brand) 5%, var(--cva-glass-bg)) 100%
+    );
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sr-cva-skills::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 60% 45% at 100% 0%,
+      color-mix(in srgb, #10b981 8%, transparent),
+      transparent 60%
+    );
+    pointer-events: none;
+  }
+
+  .sr-cva-skills__header,
+  .sr-cva-skills-grid {
+    position: relative;
+    z-index: 1;
+  }
+
+  .sr-cva-skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  @media (max-width: 767px) {
+    .sr-cva-skills-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .sr-cva-skills-panel {
+    padding: 1rem;
+    border-radius: 0.875rem;
+    border: 1px solid var(--cva-glass-border);
+    background: color-mix(in srgb, var(--admin-bg-elevated) 50%, transparent);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .sr-cva-skills-panel:hover {
+    border-color: color-mix(in srgb, var(--admin-brand) 22%, var(--cva-glass-border));
+    box-shadow: var(--cva-shadow-sm);
+  }
+
+  .sr-cva-skills-panel--detected {
+    border-top: 3px solid #10b981;
+  }
+
+  .sr-cva-skills-panel--missing {
+    border-top: 3px solid #f59e0b;
+  }
+
+  .sr-cva-skills-panel__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .sr-cva-skills-panel__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+  }
+
+  .sr-cva-skills-panel--detected .sr-cva-skills-panel__icon {
+    color: #10b981;
+    background: color-mix(in srgb, #10b981 12%, transparent);
+  }
+
+  .sr-cva-skills-panel--missing .sr-cva-skills-panel__icon {
+    color: #f59e0b;
+    background: color-mix(in srgb, #f59e0b 12%, transparent);
+  }
+
+  .sr-cva-skills-panel__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--admin-text);
+    line-height: 1.3;
+  }
+
+  .sr-cva-skills-panel__count {
+    margin: 0.25rem 0 0;
+    font-size: 0.75rem;
+    color: var(--admin-text-muted);
+    line-height: 1.3;
+  }
+
+  .sr-cva-skills-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .sr-cva-skills-empty {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--admin-text-muted);
+    line-height: 1.45;
+    font-style: italic;
+  }
+
+  .sr-cva-skill-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4375rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .sr-cva-skill-chip:hover {
+    transform: translateY(-1px);
+  }
+
+  .sr-cva-skill-chip--detected {
+    color: #34d399;
+    background: color-mix(in srgb, #10b981 10%, transparent);
+    border: 1px solid color-mix(in srgb, #10b981 22%, transparent);
+    box-shadow: 0 2px 8px color-mix(in srgb, #10b981 8%, transparent);
+  }
+
+  .sr-cva-skill-chip--detected:hover {
+    box-shadow: 0 4px 12px color-mix(in srgb, #10b981 14%, transparent);
+  }
+
+  .sr-cva-skill-chip--missing-high {
+    color: #f87171;
+    background: color-mix(in srgb, #ef4444 10%, transparent);
+    border: 1px solid color-mix(in srgb, #ef4444 22%, transparent);
+  }
+
+  .sr-cva-skill-chip--missing-medium {
+    color: #fbbf24;
+    background: color-mix(in srgb, #f59e0b 10%, transparent);
+    border: 1px solid color-mix(in srgb, #f59e0b 22%, transparent);
+  }
+
+  .sr-cva-skill-chip--missing-optional {
+    color: var(--admin-text-secondary);
+    background: color-mix(in srgb, var(--admin-text-muted) 8%, transparent);
+    border: 1px solid var(--admin-border);
+  }
+
+  .sr-cva-skill-chip__name {
+    font-weight: 700;
+  }
+
+  .sr-cva-skill-chip__priority {
+    padding: 0.125rem 0.4375rem;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    opacity: 0.9;
+  }
+
+  @media (max-width: 639px) {
+    .sr-cva__root {
+      gap: 1rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .sr-cva__main {
+      gap: 1rem;
+    }
+
+    .sr-cva-glass--hero {
+      padding: 1.125rem 0.875rem;
+      border-radius: 0.9rem;
+      min-height: auto;
+    }
+
+    .sr-cva-hero__inner {
+      gap: 1rem;
+    }
+
+    .sr-cva-hero__profile {
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .sr-cva-hero__avatar {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .sr-cva-hero__title {
+      font-size: 1.25rem;
+      line-height: 1.2;
+    }
+
+    .sr-cva-hero__subtitle {
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      max-width: 100%;
+    }
+
+    .sr-cva-hero__actions {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+
+    .sr-cva-hero__actions .sr-cva-btn {
+      width: 100%;
+    }
+
+    .sr-cva-outdated-banner,
+    .sr-cva-processing-banner {
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.75rem;
+    }
+
+    .sr-cva-outdated-banner .sr-cva-btn,
+    .sr-cva-processing-banner .sr-cva-btn {
+      width: 100%;
+    }
+
+    .sr-cva-section-card,
+    .sr-cva-score-card,
+    .sr-cva-compare {
+      padding: 1rem 0.875rem;
+    }
+
+    .sr-cva-breakdown-grid {
+      grid-template-columns: 1fr;
+      gap: 0.625rem;
+    }
+
+    .sr-cva-insights-grid {
+      grid-template-columns: 1fr;
+      justify-content: stretch;
+      gap: 0.75rem;
+    }
+
+    .sr-cva-insight-group {
+      min-height: 0;
+      padding: 1rem 0.875rem;
+    }
+
+    .sr-cva-match-card__head {
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .sr-cva-match-pct {
+      margin-left: 0;
+      order: 3;
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    .sr-cva-match-bar-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.35rem;
+      align-items: initial;
+    }
+
+    .sr-cva-match-bar-row span:first-child,
+    .sr-cva-match-bar-row span:last-child {
+      width: auto;
+      text-align: left;
+    }
+
+    .sr-cva-rec-card__head {
+      flex-wrap: wrap;
+    }
+
+    .sr-cva-rec-gain {
+      order: 3;
+    }
+
+    .sr-cva-cv-preview {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+    }
+
+    .sr-cva-cv-preview__title {
+      margin-bottom: 0.5rem;
+      font-size: 0.8125rem;
+    }
+
+    .sr-cva-cv-preview__paper {
+      max-width: 100%;
+      overflow: hidden;
+      border-radius: 0.625rem;
+    }
+
+    .sr-cva-cv-preview__pdf-pages {
+      padding: 0.5rem;
+      gap: 0.5rem;
+    }
+
+    .sr-cva-cv-preview__iframe {
+      height: 20rem;
+      min-height: 16rem;
+    }
+
+    .sr-cva-skills-panel {
+      padding: 0.875rem;
+    }
+
+    .sr-cva-skill-chip {
+      max-width: 100%;
+      flex-wrap: wrap;
+      word-break: break-word;
+    }
+
+    .sr-cva-interview-item {
+      padding: 0.75rem;
+      gap: 0.625rem;
+    }
+
+    .sr-cva-interview-item__title {
+      font-size: 0.8125rem;
+    }
   }
 }

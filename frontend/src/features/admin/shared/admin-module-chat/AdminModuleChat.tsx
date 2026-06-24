@@ -16,15 +16,14 @@ import {
   Filter,
   Menu,
   MoreVertical,
-  Paperclip,
   Search,
-  Send,
   Tag,
   X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../dashboard/components/AdminLayout';
 import { useAdminToast } from '../../dashboard/context/AdminToastContext';
+import SupportMessageComposer from '../admin-support-inbox/components/SupportMessageComposer';
 import type { AdminChatMessage, AdminChatParticipant } from './adminChatTypes';
 import ChatEmptyState from './components/ChatEmptyState';
 import type { ChatEmptyStateProps, ChatEmptyStateStats } from './types/chatEmptyStateTypes';
@@ -226,17 +225,8 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
   const [threadSearch, setThreadSearch] = useState('');
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const composerRef = useRef<HTMLTextAreaElement>(null);
   const sidebarSearchRef = useRef<HTMLInputElement>(null);
   const threadSearchRef = useRef<HTMLInputElement>(null);
-
-  const adjustComposerHeight = useCallback(() => {
-    const el = composerRef.current;
-    if (!el) return;
-    const lineHeight = 32;
-    el.style.height = 'auto';
-    el.style.height = `${Math.max(lineHeight, Math.min(el.scrollHeight, 96))}px`;
-  }, []);
 
   const selectedConv = conversationRows.find((c) => c.id === selectedId);
   const isMuted = selectedId ? mutedIds.has(selectedId) : false;
@@ -307,10 +297,6 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
     return undefined;
   }, [threadSearchOpen]);
 
-  useEffect(() => {
-    adjustComposerHeight();
-  }, [draft, adjustComposerHeight, selectedId, mobileView]);
-
   const markConversationRead = useCallback((id: string) => {
     setUnreadByConv((prev) => ({ ...prev, [id]: 0 }));
   }, []);
@@ -339,9 +325,6 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
       }));
     }
     setDraft('');
-    if (composerRef.current) {
-      composerRef.current.style.height = '2rem';
-    }
     const nowLbl = formatNowTime(i18n.language);
     setConversationRows((rows) =>
       rows.map((r) => (r.id === selectedId ? { ...r, lastPreview: text, timeLabel: nowLbl } : r))
@@ -707,57 +690,26 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
 
                 {smartActionsBar}
 
-                <footer className="admin-chat-composer-footer relative z-[1] box-border w-full max-w-full min-w-0 shrink-0 bg-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-2 md:px-5">
-                  <div className="admin-chat-composer-bar box-border flex min-h-[2.375rem] w-full max-w-full min-w-0 flex-nowrap items-center gap-1.5 rounded-[1.5rem] border border-solid py-1 pl-2 pr-2.5 shadow-sm">
-                    <div className="inline-flex shrink-0 items-center gap-0.5">
-                      <button
-                        type="button"
-                        aria-label={t('admin.chat.attachFile')}
-                        className="admin-chat-composer-icon inline-flex size-8 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[var(--admin-brand)]/40"
-                      >
-                        <Paperclip className="size-4" strokeWidth={1.85} aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={t('admin.chat.tagTemplate')}
-                        className="admin-chat-composer-icon inline-flex size-8 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[var(--admin-brand)]/40"
-                      >
-                        <Tag className="size-4" strokeWidth={1.85} aria-hidden />
-                      </button>
-                    </div>
-                    <textarea
-                      ref={composerRef}
-                      rows={1}
-                      value={draft}
-                      onChange={(e) => {
-                        const next = composerMaxLength
-                          ? e.target.value.slice(0, composerMaxLength)
-                          : e.target.value;
-                        setDraft(next);
-                        adjustComposerHeight();
-                      }}
-                      maxLength={composerMaxLength}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                      placeholder={composerPlaceholder}
-                      aria-label={composerPlaceholder}
-                      className="admin-chat-composer-textarea min-w-0 flex-1 resize-none"
-                    />
+                <SupportMessageComposer
+                  value={draft}
+                  onChange={setDraft}
+                  onSend={() => void handleSend()}
+                  placeholder={composerPlaceholder}
+                  inputAriaLabel={composerPlaceholder}
+                  attachAriaLabel={t('admin.chat.attachFile')}
+                  sendAriaLabel={t('admin.chat.sendMessage')}
+                  maxLength={composerMaxLength}
+                  showVoice={false}
+                  extraActions={
                     <button
                       type="button"
-                      onClick={handleSend}
-                      disabled={!draft.trim()}
-                      aria-label={t('admin.chat.sendMessage')}
-                      className="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center self-center rounded-full border-0 admin-btn-primary p-0 text-white outline-none transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[var(--admin-brand)]/50"
+                      aria-label={t('admin.chat.tagTemplate')}
+                      className="isi-composer-action"
                     >
-                      <Send className="size-3.5" strokeWidth={2} aria-hidden />
+                      <Tag className="size-[1.05rem]" strokeWidth={1.85} aria-hidden />
                     </button>
-                  </div>
-                </footer>
+                  }
+                />
               </>
             ) : chatEmptyState ? (
               <div className="admin-chat-empty relative z-[1] flex flex-1 items-center justify-center px-6 py-8">

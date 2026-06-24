@@ -1,17 +1,19 @@
 import { FunctionComponent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAdminToast } from '../../../dashboard/context/AdminToastContext';
+import StudentDetailModal from '../../../student/components/StudentDetailModal';
 import SupportInboxShell from '../../../shared/admin-support-inbox/components/SupportInboxShell';
 import { useAnnouncementSupportChat } from '../hooks/useAnnouncementSupportChat';
+import { announcementViewPath } from '../utils/announcementChatNavigation';
 import AnnouncementChatArea from './AnnouncementChatArea';
 import AnnouncementContextPanel from './AnnouncementContextPanel';
 import AnnouncementConversationList from './AnnouncementConversationList';
-import { AnnouncementDetailModals } from './AnnouncementDetailModals';
+import { InternshipChatContextPanelSkeleton } from '../../../offres-stage/chat/components/InternshipChatLoadingSkeletons';
 
 const AnnouncementSupportInbox: FunctionComponent = () => {
   const toast = useAdminToast();
-  const [announcementModal, setAnnouncementModal] = useState(false);
-  const [studentModal, setStudentModal] = useState(false);
-  const [audienceModal, setAudienceModal] = useState(false);
+  const navigate = useNavigate();
+  const [viewStudentUserId, setViewStudentUserId] = useState<number | null>(null);
 
   const {
     filtered,
@@ -23,6 +25,7 @@ const AnnouncementSupportInbox: FunctionComponent = () => {
     mobileView,
     hasActiveFilters,
     studentAcademicFilterCounts,
+    primaryFilterCounts,
     programOptions,
     classOptions,
     academicLevelOptions,
@@ -36,82 +39,125 @@ const AnnouncementSupportInbox: FunctionComponent = () => {
     sendMessage,
     markResolved,
     archiveConversation,
+    unarchiveConversation,
+    notifyTyping,
+    loading,
+    conversationLoading,
+    messagesLoading,
+    loadError,
+    peerTyping,
+    setPrimaryFilter,
   } = useAnnouncementSupportChat();
 
-  const openAnnouncement = () => setAnnouncementModal(true);
-  const openStudent = () => setStudentModal(true);
-  const openAudience = () => setAudienceModal(true);
+  const openAnnouncementView = () => {
+    const path = announcementViewPath(selected?.announcementUuid);
+    if (path) navigate(path);
+  };
+
+  const openStudentModal = () => {
+    if (!selected?.studentUserId) return;
+    setViewStudentUserId(selected.studentUserId);
+  };
+
+  const isOpeningConversation = conversationLoading && !selected;
 
   const handleResolved = () => {
     if (!selectedId) return;
-    markResolved(selectedId);
+    void markResolved(selectedId);
     toast.showToast('Conversation marquée comme résolue', 'success');
   };
 
   const handleArchive = () => {
     if (!selectedId) return;
-    archiveConversation(selectedId);
+    void archiveConversation(selectedId);
     toast.showToast('Conversation archivée', 'info');
   };
 
+  const handleUnarchive = () => {
+    if (!selectedId) return;
+    void unarchiveConversation(selectedId);
+    toast.showToast('Conversation restaurée', 'success');
+  };
+
   return (
-    <SupportInboxShell
-      hasSelection={Boolean(selected)}
-      mobileView={mobileView}
-      sidebar={
-        <AnnouncementConversationList
-          conversations={filtered}
-          selectedId={selectedId}
-          filters={filters}
-          hasActiveFilters={hasActiveFilters}
-          filterCounts={studentAcademicFilterCounts}
-          programOptions={programOptions}
-          classOptions={classOptions}
-          academicLevelOptions={academicLevelOptions}
-          search={search}
-          onToggleFilter={toggleFilter}
-          onToggleStudentAcademicFilter={toggleStudentAcademicFilter}
-          onToggleQuickFilter={toggleQuickFilter}
-          onClearFilters={clearFilters}
-          onSearchChange={setSearch}
-          onSelect={selectConversation}
-        />
-      }
-      workspace={
-        <AnnouncementChatArea
-          conversation={selected}
-          stats={stats}
-          onSend={sendMessage}
-          onBack={() => setMobileView('list')}
-          onOpenAnnouncement={openAnnouncement}
-          onOpenStudent={openStudent}
-          onOpenAudience={openAudience}
-          onMarkResolved={handleResolved}
-          onArchive={handleArchive}
-        />
-      }
-      contextPanel={
-        selected ? (
-          <AnnouncementContextPanel
-            conversation={selected}
-            onOpenAnnouncement={openAnnouncement}
-            onOpenStudent={openStudent}
-            onOpenAudience={openAudience}
+    <>
+      <StudentDetailModal
+        open={viewStudentUserId != null}
+        studentId={viewStudentUserId}
+        preview={
+          selected && viewStudentUserId === selected.studentUserId
+            ? {
+                name: selected.studentName,
+                email: selected.studentEmail,
+                avatarUrl: selected.studentAvatarUrl,
+                initials: selected.studentInitials,
+              }
+            : undefined
+        }
+        onClose={() => setViewStudentUserId(null)}
+        onEdit={(id) => {
+          setViewStudentUserId(null);
+          navigate(`/admin/students/${id}/edit`);
+        }}
+      />
+
+      <SupportInboxShell
+        hasSelection={Boolean(selected) || isOpeningConversation}
+        mobileView={mobileView}
+        sidebar={
+          <AnnouncementConversationList
+            conversations={filtered}
+            loading={loading}
+            loadError={loadError}
+            selectedId={selectedId}
+            filters={filters}
+            hasActiveFilters={hasActiveFilters}
+            filterCounts={studentAcademicFilterCounts}
+            primaryFilterCounts={primaryFilterCounts}
+            programOptions={programOptions}
+            classOptions={classOptions}
+            academicLevelOptions={academicLevelOptions}
+            search={search}
+            onSetPrimary={setPrimaryFilter}
+            onToggleFilter={toggleFilter}
+            onToggleStudentAcademicFilter={toggleStudentAcademicFilter}
+            onToggleQuickFilter={toggleQuickFilter}
+            onClearFilters={clearFilters}
+            onSearchChange={setSearch}
+            onSelect={selectConversation}
           />
-        ) : undefined
-      }
-      overlays={
-        <AnnouncementDetailModals
-          conversation={selected}
-          announcementOpen={announcementModal}
-          studentOpen={studentModal}
-          audienceOpen={audienceModal}
-          onCloseAnnouncement={() => setAnnouncementModal(false)}
-          onCloseStudent={() => setStudentModal(false)}
-          onCloseAudience={() => setAudienceModal(false)}
-        />
-      }
-    />
+        }
+        workspace={
+          <AnnouncementChatArea
+            conversation={selected}
+            stats={stats}
+            messagesLoading={messagesLoading}
+            conversationLoading={conversationLoading}
+            statsLoading={loading}
+            peerTyping={peerTyping}
+            onSend={(text) => void sendMessage(text)}
+            onTyping={notifyTyping}
+            onBack={() => setMobileView('list')}
+            onOpenAnnouncement={openAnnouncementView}
+            onOpenStudent={openStudentModal}
+            onMarkResolved={handleResolved}
+            onArchive={handleArchive}
+            onUnarchive={handleUnarchive}
+          />
+        }
+        contextPanel={
+          selected ? (
+            <AnnouncementContextPanel
+              conversation={selected}
+              onOpenAnnouncement={openAnnouncementView}
+              onOpenStudent={openStudentModal}
+            />
+          ) : isOpeningConversation ? (
+            <InternshipChatContextPanelSkeleton />
+          ) : undefined
+        }
+      />
+    </>
   );
 };
 

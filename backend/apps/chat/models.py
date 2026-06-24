@@ -250,6 +250,41 @@ class MessageAttachment(TimestampedModel):
 
 
 # ============================================================================
+# 5b. MESSAGE READ (per-user read receipts)
+# ============================================================================
+
+class MessageRead(models.Model):
+    """Tracks when a participant read a specific message."""
+
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        related_name='read_receipts',
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='message_reads',
+    )
+    read_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['message', 'user'],
+                name='uniq_message_read_per_user',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['user', '-read_at']),
+            models.Index(fields=['message', 'read_at']),
+        ]
+
+    def __str__(self) -> str:
+        return f'MessageRead<{self.message_id}:{self.user_id}>'
+
+
+# ============================================================================
 # 6. MENTION
 # ============================================================================
 
@@ -375,9 +410,26 @@ class ConversationContext(TimestampedModel):
 
     class Urgency(models.TextChoices):
         NONE = 'NONE', _('None')
+        LOW = 'LOW', _('Low')
         NORMAL = 'NORMAL', _('Normal')
         HIGH = 'HIGH', _('High')
         CRITICAL = 'CRITICAL', _('Critical')
+
+    class ConversationType(models.TextChoices):
+        OFFER_QUESTION = 'offer_question', _('Offer question')
+        APPLICATION_FOLLOWUP = 'application_followup', _('Application follow-up')
+        INTERVIEW_DISCUSSION = 'interview_discussion', _('Interview discussion')
+        DOCUMENT_REQUEST = 'document_request', _('Document request')
+        GENERAL_SUPPORT = 'general_support', _('General internship support')
+
+    class WorkflowState(models.TextChoices):
+        NEW = 'NEW', _('New')
+        ASSIGNED = 'ASSIGNED', _('Assigned')
+        WAITING_STUDENT = 'WAITING_STUDENT', _('Waiting student')
+        WAITING_ADMIN = 'WAITING_ADMIN', _('Waiting admin')
+        RESOLVED = 'RESOLVED', _('Resolved')
+        ARCHIVED = 'ARCHIVED', _('Archived')
+        ESCALATED = 'ESCALATED', _('Escalated')
 
     conversation = models.OneToOneField(
         Conversation,
@@ -395,11 +447,30 @@ class ConversationContext(TimestampedModel):
     entity_id = models.CharField(max_length=64, blank=True, default='', db_index=True)
     entity_label = models.CharField(max_length=255, blank=True, default='')
     workflow_status = models.CharField(max_length=64, blank=True, default='')
+    conversation_type = models.CharField(
+        max_length=32,
+        choices=ConversationType.choices,
+        default=ConversationType.OFFER_QUESTION,
+        db_index=True,
+    )
+    workflow_state = models.CharField(
+        max_length=32,
+        choices=WorkflowState.choices,
+        default=WorkflowState.NEW,
+        db_index=True,
+    )
     urgency = models.CharField(
         max_length=16,
         choices=Urgency.choices,
-        default=Urgency.NONE,
+        default=Urgency.NORMAL,
         db_index=True,
+    )
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_chat_conversations',
     )
     student_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

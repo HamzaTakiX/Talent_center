@@ -1,6 +1,6 @@
 import { FunctionComponent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, Pencil, Upload, UserX } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { adminStudentsApi } from '../../api/students';
 import { useAdminCopy, useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
@@ -18,9 +18,10 @@ import { programTableLabel } from '../../shared/utils/programDisplay';
 import AdminDeleteConfirmModal from '../../ui/AdminDeleteConfirmModal';
 import AdminToolbarDeleteControl from '../../ui/AdminToolbarDeleteControl';
 import StudentsImportModal from './StudentsImportModal';
+import StudentActions from './StudentActions';
+import StudentTableIdentityCell from './StudentTableIdentityCell';
 import { platformAccountStatusTableBadge } from '../../ui/adminStatusBadges';
-import { adminTableBtn } from '../../ui/adminTableButtons';
-import { SafeTitleCell, SafeText, ADMIN_TABLE_COL } from '../../../../design-system/safeContent';
+import { SafeText, ADMIN_TABLE_COL } from '../../../../design-system/safeContent';
 
 interface StudentsDashboardTableProps {
   students: AdminStudentRow[];
@@ -93,14 +94,6 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
     ],
     [filterLabel],
   );
-
-  const handleToggleAccess = async (student: AdminStudentRow) => {
-    await adminStudentsApi.updateAccess(student.id, {
-      platform_access_granted: !student.platform_access_granted,
-      account_status: !student.platform_access_granted ? 'AUTHORIZED' : 'PENDING',
-    });
-    onRefresh();
-  };
 
   const colSpan = selectionMode ? 8 : 7;
 
@@ -185,7 +178,7 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
                 <th className={ADMIN_TABLE_COL.status}>SSO</th>
                 <th className={ADMIN_TABLE_COL.text}>Onboarding</th>
                 <th className={ADMIN_TABLE_COL.status}>{tableColumn('status')}</th>
-                <th className={`text-end ${ADMIN_TABLE_COL.actions}`}>{tableColumn('actions')}</th>
+                <th className={`text-end ${ADMIN_TABLE_COL.actionsMenu}`}>{tableColumn('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -207,9 +200,8 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
                         />
                       </td>
                     ) : null}
-                    <td className="font-medium">
-                      <SafeTitleCell>{student.full_name || student.email}</SafeTitleCell>
-                      <SafeText className="text-xs text-[var(--admin-text-secondary)]">{student.email}</SafeText>
+                    <td>
+                      <StudentTableIdentityCell student={student} />
                     </td>
                     <td><SafeText>{student.current_class || '—'}</SafeText></td>
                     <td className="font-medium">
@@ -234,27 +226,13 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
                         {accountStatus(student.account_status)}
                       </span>
                     </td>
-                    <td className="text-end">
-                      <div className="flex flex-wrap items-center justify-end gap-2">
-                        <button type="button" className={adminTableBtn} onClick={() => onView(student)}>
-                          <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                          {t('admin.common.actions.view')}
-                        </button>
-                        <button type="button" className={adminTableBtn} onClick={() => onEdit(student)}>
-                          <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                          {t('admin.common.actions.edit')}
-                        </button>
-                        <button
-                          type="button"
-                          className={adminTableBtn}
-                          onClick={() => void handleToggleAccess(student)}
-                        >
-                          <UserX className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                          {student.platform_access_granted
-                            ? t('admin.common.actions.deactivate')
-                            : 'Autoriser'}
-                        </button>
-                      </div>
+                    <td className="admin-students-table__actions text-end">
+                      <StudentActions
+                        student={student}
+                        onView={() => onView(student)}
+                        onEdit={() => onEdit(student)}
+                        onRefresh={onRefresh}
+                      />
                     </td>
                   </tr>
                 ))

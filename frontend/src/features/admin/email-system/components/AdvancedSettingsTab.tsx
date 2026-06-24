@@ -26,6 +26,7 @@ const AdvancedSettingsTab: FunctionComponent<Props> = ({ draft, saving, onChange
   return (
     <EmailSystemSectionShell
       icon={SlidersHorizontal}
+      busy={saving}
       title={t(`${PREFIX}.title`, { defaultValue: 'Advanced settings' })}
       subtitle={t(`${PREFIX}.subtitle`, {
         defaultValue: 'Rate limits, retries, queue size and delivery policies.',

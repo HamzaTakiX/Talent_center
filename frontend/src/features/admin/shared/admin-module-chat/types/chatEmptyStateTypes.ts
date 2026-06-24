@@ -22,5 +22,6 @@ export interface ChatEmptyStateProps {
   description: string;
   moduleType: ChatEmptyModuleType;
   stats?: ChatEmptyStateStats;
+  statsLoading?: boolean;
   className?: string;
 }

@@ -5,34 +5,82 @@ export const sousAdminParticipants: AdminChatParticipant[] = [
     id: 'sa1',
     initials: 'ID',
     title: 'Identity & access watchdog',
+    displayName: 'Imane Drissi',
+    email: 'imane.drissi@admin.edu',
+    userId: 201,
+    roleLabel: 'Sécurité & accès',
+    entityLabel: 'Incident SSO',
+    workflowStatus: 'Critique',
+    contextKind: 'workflow_thread',
+    urgency: 'CRITICAL',
     lastPreview: 'Elevated SAML error rates on SSO bridge — paging vendor T2.',
     timeLabel: '08:51',
-    unreadCount: 2
+    unreadCount: 2,
+    urgent: true,
   },
   {
     id: 'sa2',
     initials: 'MP',
     title: 'Moderation policy guild',
+    displayName: 'Mehdi Perrin',
+    email: 'mehdi.perrin@admin.edu',
+    userId: 202,
+    roleLabel: 'Modération',
+    entityLabel: 'Thread #MOD-982',
+    workflowStatus: 'Escaladé',
+    contextKind: 'workflow_thread',
+    urgency: 'HIGH',
     lastPreview: 'Thread #MOD-982 escalated — possible PII leakage in attachment.',
     timeLabel: 'Yesterday',
-    unreadCount: 1
+    unreadCount: 1,
+    urgent: true,
   },
   {
     id: 'sa3',
     initials: 'OP',
     title: 'Operational audit',
+    displayName: 'Olivia Perez',
+    email: 'olivia.perez@admin.edu',
+    userId: 203,
+    roleLabel: 'Audit opérationnel',
+    entityLabel: 'QA build 416',
+    workflowStatus: 'En cours',
+    contextKind: 'workflow_thread',
     lastPreview: 'Dry-run impersonation banners ready for QA build 416.',
     timeLabel: '3 days ago',
-    unreadCount: 0
+    unreadCount: 0,
   },
   {
     id: 'sa4',
     initials: 'LG',
     title: 'Local campus admin FR5',
+    displayName: 'Lucas Girard',
+    email: 'lucas.girard@admin.edu',
+    userId: 204,
+    roleLabel: 'Admin campus',
+    entityLabel: 'Matrice des rôles',
+    workflowStatus: 'Résolu',
+    resolved: true,
     lastPreview: 'Thanks — regional role matrix refreshed after hire freeze lifted.',
     timeLabel: 'Apr 27',
-    unreadCount: 0
-  }
+    unreadCount: 0,
+  },
+  {
+    id: 'sa5',
+    initials: 'NB',
+    title: 'Finance compliance desk',
+    displayName: 'Nadia Berrada',
+    email: 'nadia.berrada@admin.edu',
+    userId: 205,
+    roleLabel: 'Finance',
+    entityLabel: 'Clôture Q1',
+    workflowStatus: 'Archivé',
+    archived: true,
+    resolved: true,
+    lastPreview: 'Rapport de clôture Q1 archivé — aucune action requise.',
+    timeLabel: 'Mar 8',
+    unreadCount: 0,
+  },
 ];
 
 export const sousAdminInitialMessages: Record<string, AdminChatMessage[]> = {
@@ -42,20 +90,20 @@ export const sousAdminInitialMessages: Record<string, AdminChatMessage[]> = {
       direction: 'in',
       text: 'Need quorum to flip READ_ONLY on rogue API keys surfaced in scanner diff.',
       time: '07:44',
-      separatorBefore: '2 May 2026'
+      separatorBefore: '2 May 2026',
     },
     {
       id: 'sa1m2',
       direction: 'out',
       text: 'Staging keys revoked — promote hotfix changelog #REL-884 before staff stand-up.',
-      time: '07:53'
+      time: '07:53',
     },
     {
       id: 'sa1m3',
       direction: 'in',
       text: 'Elevated SAML error rates on SSO bridge — paging vendor T2.',
-      time: '08:51'
-    }
+      time: '08:51',
+    },
   ],
   sa2: [],
   sa3: [
@@ -64,8 +112,17 @@ export const sousAdminInitialMessages: Record<string, AdminChatMessage[]> = {
       direction: 'out',
       text: 'Next smoke test covers impersonation banner + revocation heartbeat — ETA 45m.',
       time: '09:58',
-      separatorBefore: '28 Apr 2026'
-    }
+      separatorBefore: '28 Apr 2026',
+    },
   ],
-  sa4: []
+  sa4: [],
+  sa5: [
+    {
+      id: 'sa5m1',
+      direction: 'in',
+      text: 'Rapport de clôture Q1 archivé — aucune action requise.',
+      time: '11:05',
+      separatorBefore: '8 Mar 2026',
+    },
+  ],
 };

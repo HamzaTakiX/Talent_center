@@ -4,7 +4,8 @@ import StudentLayout from '../../components/StudentLayout';
 import BackToApplicationLink from '../components/cv_analysis/BackToApplicationLink';
 import CvAnalysisHeader from '../components/cv_analysis/CvAnalysisHeader';
 import { InternshipOfferPageLoadingState } from '../components/loading/InternshipOfferPageSkeleton';
-import { STUDENT_ALL_INTERNSHIP_OFFERS_PATH, getInternshipOfferApplyPath } from '../constants/routes';
+import OfferApplyButton from '../components/OfferApplyButton';
+import { STUDENT_INTERNSHIP_OFFERS_PATH } from '../constants/routes';
 import { INTERNSHIP_OFFERS_PAGE_ROOT } from '../constants/internshipOffersLayout';
 import { useStudentOfferDetail } from '../hooks/useStudentStageOffers';
 
@@ -18,7 +19,7 @@ const CvAnalysisPage: FunctionComponent = () => {
   }
 
   if (!offer) {
-    return <Navigate to={STUDENT_ALL_INTERNSHIP_OFFERS_PATH} replace />;
+    return <Navigate to={STUDENT_INTERNSHIP_OFFERS_PATH} replace />;
   }
 
   return (
@@ -38,13 +39,15 @@ const CvAnalysisPage: FunctionComponent = () => {
             >
               Ouvrir l&apos;outil d&apos;analyse
             </button>
-            <button
-              type="button"
+            <OfferApplyButton
+              offerId={offer.id}
+              externalUrl={offer.externalUrl}
+              applicationMethod={offer.applicationMethod}
+              offerTitle={offer.title}
               className="admin-btn-secondary px-4 py-2 text-sm"
-              onClick={() => navigate(getInternshipOfferApplyPath(offer.id))}
             >
               Postuler
-            </button>
+            </OfferApplyButton>
           </div>
         </div>
       </div>

@@ -229,8 +229,22 @@ def update_offer(*, offer: InternshipOffer, actor, data: dict[str, Any]) -> Inte
     ]
     old_values = {f: getattr(offer, f) for f in editable_fields if f in data}
     for field in editable_fields:
-        if field in data:
-            setattr(offer, field, data[field])
+        if field not in data:
+            continue
+        if field == 'metadata_json':
+            existing = dict(offer.metadata_json or {})
+            incoming = dict(data[field] or {})
+            merged = {**existing, **incoming}
+            desc_existing = existing.get('description_sections')
+            desc_incoming = incoming.get('description_sections')
+            if isinstance(desc_existing, dict) or isinstance(desc_incoming, dict):
+                merged['description_sections'] = {
+                    **(desc_existing if isinstance(desc_existing, dict) else {}),
+                    **(desc_incoming if isinstance(desc_incoming, dict) else {}),
+                }
+            setattr(offer, field, merged)
+            continue
+        setattr(offer, field, data[field])
     offer.save()
 
     targeting_keys = ('programs', 'classes', 'levels', 'departments', 'categories', 'internship_types')
@@ -348,6 +362,12 @@ def publish_offer(*, offer: InternshipOffer, actor, open_immediately: bool = Tru
     notify_offer_published(offer, actor)
 
     try:
+        from apps.stage.services.ai_pipeline.pipeline import process_offer_publish
+        process_offer_publish(offer)
+    except Exception:
+        pass
+
+    try:
         from apps.stage.services.matching_service import recalculate_matches_for_offer
 
         recalculate_matches_for_offer(offer, trigger='OFFER_PUBLISHED')
@@ -366,6 +386,34 @@ def archive_offer(*, offer: InternshipOffer, actor, reason: str = '') -> Interns
         action='ARCHIVE',
         event_code='internship.offer.archived',
         summary=f'Offer archived: {offer.title}',
+        offer_id=offer.pk,
+        actor=actor,
+        old_values={'status': previous},
+        new_values={'status': offer.status},
+    )
+    return offer
+
+
+@transaction.atomic
+def unarchive_offer(*, offer: InternshipOffer, actor, reason: str = '') -> InternshipOffer:
+    assert_can_manage_offers(actor)
+    if offer.status != InternshipOffer.Status.ARCHIVED:
+        raise OfferTransitionError(
+            'Only archived offers can be restored.',
+            from_status=offer.status,
+            to_status=InternshipOffer.Status.OPEN,
+        )
+    previous = offer.status
+    offer = transition_offer(
+        offer,
+        InternshipOffer.Status.OPEN,
+        actor=actor,
+        reason=reason or 'Restored from archive',
+    )
+    record_offer_event(
+        action='UPDATE',
+        event_code='internship.offer.restored',
+        summary=f'Offer restored: {offer.title}',
         offer_id=offer.pk,
         actor=actor,
         old_values={'status': previous},

@@ -26,7 +26,11 @@ from apps.stage.services.chat_service import (
     on_application_status_changed as chat_on_application_status_changed,
     on_application_submitted as chat_on_application_submitted,
 )
-from apps.stage.services.offer_lifecycle import STUDENT_APPLYABLE_STATUSES, is_offer_expired
+from apps.stage.services.offer_lifecycle import (
+    PUBLICLY_VISIBLE_STATUSES,
+    STUDENT_APPLYABLE_STATUSES,
+    is_offer_expired,
+)
 from apps.stage.services.permissions import assert_can_manage_applications
 
 
@@ -46,9 +50,17 @@ def apply_to_offer(
     student_cv_id: int | None = None,
     cv_analysis_id: int | None = None,
     documents: Optional[list[dict[str, Any]]] = None,
+    external_confirmation: bool = False,
 ) -> OfferApplication:
     student = _get_student_profile(student_user)
-    if offer.status not in STUDENT_APPLYABLE_STATUSES:
+    if external_confirmation:
+        if not (offer.external_url or '').strip():
+            raise OfferValidationError('This offer has no external application link.')
+        allowed_statuses = PUBLICLY_VISIBLE_STATUSES
+    else:
+        allowed_statuses = STUDENT_APPLYABLE_STATUSES
+
+    if offer.status not in allowed_statuses:
         raise OfferValidationError('This offer is not open for applications.')
     if is_offer_expired(offer):
         raise OfferValidationError('This offer has expired.')
@@ -77,6 +89,7 @@ def apply_to_offer(
         cover_letter=cover_letter,
         match_score_at_apply=match_score,
         status=OfferApplication.Status.SUBMITTED,
+        metadata_json={'external_confirmation': True} if external_confirmation else {},
     )
 
     for doc in documents or []:
@@ -90,7 +103,7 @@ def apply_to_offer(
         )
 
     InternshipOffer.objects.filter(pk=offer.pk).update(
-        application_count=offer.application_count + 1,
+        application_count=OfferApplication.objects.filter(offer_id=offer.pk).count(),
     )
 
     record_application_event(

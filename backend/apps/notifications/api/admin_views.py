@@ -115,6 +115,19 @@ class AdminNotificationEventsView(APIView):
         ))
 
 
+class AdminNotificationEventMatrixView(APIView):
+    permission_classes = [IsSuperAdmin]
+
+    def get(self, request):
+        from apps.notifications.events.matrix import build_event_matrix
+
+        return Response(envelope(
+            success=True,
+            message='Event matrix',
+            data={'items': build_event_matrix()},
+        ))
+
+
 class SendGridWebhookView(APIView):
     """Stub webhook for SendGrid delivery events."""
     permission_classes = []

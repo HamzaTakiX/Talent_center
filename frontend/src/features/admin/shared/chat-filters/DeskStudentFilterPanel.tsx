@@ -44,7 +44,6 @@ const DeskStudentFilterPanel: FunctionComponent<Props> = ({
           labels={{
             unread: t('admin.chat.filterUnread', { defaultValue: 'Non lus' }),
             urgent: 'Urgent',
-            archived: 'Archivées',
           }}
         />
       ) : null}

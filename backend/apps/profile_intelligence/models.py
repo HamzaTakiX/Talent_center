@@ -72,12 +72,30 @@ class StudentProfileActivityLog(models.Model):
 
 class StudentProfileIndicator(TimestampedModel):
     """
-    Rolling snapshot of the three headline scores for a student.
+    Rolling snapshot of headline intelligence scores for a student.
 
-    Exactly one row per student_profile. `profile_intelligence_engine`
+    Exactly one row per student_profile. `StudentIntelligenceService`
     writes this after aggregation; dashboards read it directly instead
     of recomputing.
     """
+
+    class RiskCategory(models.TextChoices):
+        LOW = 'LOW', _('Low Risk')
+        MEDIUM = 'MEDIUM', _('Medium Risk')
+        HIGH = 'HIGH', _('High Risk')
+        CRITICAL = 'CRITICAL', _('Critical Risk')
+
+    class EngagementCategory(models.TextChoices):
+        INACTIVE = 'INACTIVE', _('Inactive')
+        LOW = 'LOW', _('Low')
+        ACTIVE = 'ACTIVE', _('Active')
+        HIGHLY_ENGAGED = 'HIGHLY_ENGAGED', _('Highly Engaged')
+
+    class HealthIndex(models.TextChoices):
+        HEALTHY = 'HEALTHY', _('Healthy')
+        NEEDS_ATTENTION = 'NEEDS_ATTENTION', _('Needs Attention')
+        AT_RISK = 'AT_RISK', _('At Risk')
+        CRITICAL = 'CRITICAL', _('Critical')
 
     student_profile = models.OneToOneField(
         StudentProfile,
@@ -87,12 +105,40 @@ class StudentProfileIndicator(TimestampedModel):
     health_score = models.PositiveSmallIntegerField(default=0)        # 0-100
     engagement_score = models.PositiveSmallIntegerField(default=0)    # 0-100
     risk_score = models.PositiveSmallIntegerField(default=0)          # 0-100
+    employability_score = models.PositiveSmallIntegerField(default=0)
+    internship_readiness_score = models.PositiveSmallIntegerField(default=0)
+    profile_completion_score = models.PositiveSmallIntegerField(default=0)
+    interview_readiness_score = models.PositiveSmallIntegerField(default=0)
+    career_progress_score = models.PositiveSmallIntegerField(default=0)
+    placement_probability = models.PositiveSmallIntegerField(default=0)  # 0-100 %
+    risk_category = models.CharField(
+        max_length=16,
+        choices=RiskCategory.choices,
+        default=RiskCategory.LOW,
+        db_index=True,
+    )
+    engagement_category = models.CharField(
+        max_length=16,
+        choices=EngagementCategory.choices,
+        default=EngagementCategory.INACTIVE,
+        db_index=True,
+    )
+    health_index = models.CharField(
+        max_length=20,
+        choices=HealthIndex.choices,
+        default=HealthIndex.NEEDS_ATTENTION,
+        db_index=True,
+    )
+    score_breakdown_json = models.JSONField(default=dict, blank=True)
     last_activity_at = models.DateTimeField(null=True, blank=True)
+    computed_at = models.DateTimeField(null=True, blank=True)
     is_at_risk = models.BooleanField(default=False, db_index=True)
 
     class Meta(TimestampedModel.Meta):
         indexes = [
             models.Index(fields=['is_at_risk', '-updated_at']),
+            models.Index(fields=['health_index', '-computed_at']),
+            models.Index(fields=['risk_category', '-risk_score']),
         ]
 
     def __str__(self) -> str:
@@ -450,6 +496,16 @@ class StudentProfileSnapshot(models.Model):
     completion_rate = models.PositiveSmallIntegerField(default=0)   # 0-100
     engagement_score = models.PositiveSmallIntegerField(default=0)  # 0-100
     risk_score = models.PositiveSmallIntegerField(default=0)        # 0-100
+    employability_score = models.PositiveSmallIntegerField(default=0)
+    internship_readiness_score = models.PositiveSmallIntegerField(default=0)
+    interview_readiness_score = models.PositiveSmallIntegerField(default=0)
+    career_progress_score = models.PositiveSmallIntegerField(default=0)
+    placement_probability = models.PositiveSmallIntegerField(default=0)
+    health_index = models.CharField(
+        max_length=20,
+        choices=StudentProfileIndicator.HealthIndex.choices,
+        default=StudentProfileIndicator.HealthIndex.NEEDS_ATTENTION,
+    )
     snapshot_date = models.DateField(db_index=True)
 
     class Meta:

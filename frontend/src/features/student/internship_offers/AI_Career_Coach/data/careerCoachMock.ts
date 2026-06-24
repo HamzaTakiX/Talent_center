@@ -2,6 +2,8 @@ import type { CoachContextData, CoachMode, CoachModeConfig, StructuredBlock } fr
 
 export const COACH_CONTEXT_MOCK: CoachContextData = {
   cvFileName: 'Youssef_Benali_CV.pdf',
+  hasCv: true,
+  hasAnalysis: true,
   cvScore: 78,
   atsScore: 71,
   lastAnalysis: '2026-06-05',

@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useMemo, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminModulePageShell from '../../ui/AdminModulePageShell';
 import AdminModulePageSkeleton from '../../ui/AdminModulePageSkeleton';
@@ -6,50 +6,58 @@ import AnnouncementsOverviewHeader from '../components/AnnouncementsOverviewHead
 import AnnouncementsKpiStrip from '../components/AnnouncementsKpiStrip';
 import AnnouncementsAnalyticsPanel from '../components/AnnouncementsAnalyticsPanel';
 import AnnouncementsInsightsPanel from '../components/AnnouncementsInsightsPanel';
-import AnnouncementsFiltersBar, { type AnnListFilters } from '../components/AnnouncementsFiltersBar';
 import AnnouncementsFeedSection from '../components/AnnouncementsFeedSection';
 import AnnouncementsNavStrip from '../components/AnnouncementsNavStrip';
+import { annFiltersToListParams, type AnnListFilters } from '../constants/announcementListFilters';
 import { useAnnouncementsDashboard, useAnnouncementsList } from '../hooks/useAnnouncements';
 import type { AnnouncementListParams } from '../types/announcement';
 import '../styles/admin-announcements.css';
 
+const FEED_PAGE_SIZE = 8;
+
 const AnnouncementsPage: FunctionComponent = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<AnnListFilters>({});
-  const { data: dashboard, loading: dashLoading } = useAnnouncementsDashboard();
+  const [page, setPage] = useState(1);
+  const { data: dashboard, loading: dashLoading, refresh: refreshDashboard } = useAnnouncementsDashboard();
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters]);
 
   const listParams = useMemo<AnnouncementListParams>(
     () => ({
-      page: 1,
-      page_size: 12,
-      search: filters.search || undefined,
-      status: filters.status,
-      priority: filters.priority,
-      type: filters.type,
-      internship_only: filters.internship_only,
+      page,
+      page_size: FEED_PAGE_SIZE,
+      ...annFiltersToListParams(filters),
     }),
-    [filters],
+    [filters, page],
   );
 
-  const { items, total, loading: listLoading } = useAnnouncementsList(listParams);
+  const {
+    items,
+    total,
+    page: currentPage,
+    page_size,
+    total_pages,
+    loading: listLoading,
+    refresh: refreshList,
+  } = useAnnouncementsList(listParams);
 
-  const hasSearch = Boolean(
-    filters.search?.trim() ||
-      filters.status ||
-      filters.priority ||
-      filters.type ||
-      filters.internship_only,
-  );
+  const handleAnnouncementDeleted = useCallback(async () => {
+    const wasLastOnPage = items.length === 1 && page > 1;
+    await Promise.all([refreshList(), refreshDashboard()]);
+    if (wasLastOnPage) {
+      setPage((current) => Math.max(1, current - 1));
+    }
+  }, [items.length, page, refreshDashboard, refreshList]);
 
   const handleKpiNavigate = useCallback(
     (key: string) => {
-      if (key === 'internships') {
-        navigate('/admin/announcements/internships');
-        return;
-      }
-      if (key === 'drafts') setFilters((f) => ({ ...f, status: 'DRAFT' }));
-      else if (key === 'urgent') setFilters((f) => ({ ...f, priority: 'URGENT' }));
-      else if (key === 'active') setFilters((f) => ({ ...f, status: 'PUBLISHED' }));
+      if (key === 'drafts') setFilters((f) => ({ ...f, statuses: ['DRAFT'] }));
+      else if (key === 'scheduled') navigate('/admin/announcements/scheduled');
+      else if (key === 'urgent') setFilters((f) => ({ ...f, priorities: ['URGENT'] }));
+      else if (key === 'active') setFilters((f) => ({ ...f, statuses: ['PUBLISHED'] }));
       else navigate('/admin/announcements/all');
     },
     [navigate],
@@ -90,13 +98,17 @@ const AnnouncementsPage: FunctionComponent = () => {
 
         <AnnouncementsNavStrip />
 
-        <AnnouncementsFiltersBar filters={filters} onChange={setFilters} />
-
         <AnnouncementsFeedSection
           items={items}
+          filters={filters}
+          onFiltersChange={setFilters}
           loading={listLoading}
           total={total}
-          hasSearch={hasSearch}
+          page={currentPage}
+          totalPages={total_pages}
+          pageSize={page_size}
+          onPageChange={setPage}
+          onDeleted={handleAnnouncementDeleted}
         />
 
         <section className="admin-ann-ops-section" aria-label="Analytics overview">
@@ -111,7 +123,7 @@ const AnnouncementsPage: FunctionComponent = () => {
             </div>
           ) : null}
           <div className="admin-ann-ops-cell">
-            <AnnouncementsInsightsPanel insights={dashboard?.insights ?? []} />
+            <AnnouncementsInsightsPanel insights={dashboard?.insights ?? []} previewLimit={7} />
           </div>
         </div>
         </section>

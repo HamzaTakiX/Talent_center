@@ -28,6 +28,7 @@ class Category(models.TextChoices):
     SRF = 'srf', _('SRF')
     CV_ANALYSIS = 'cv_analysis', _('CV Analysis')
     INTERVIEW_SIMULATOR = 'interview_simulator', _('Interview Simulator')
+    CAREER_COACH = 'career_coach', _('Career Coach')
     SYSTEM = 'system', _('System')
     SUPERVISION = 'supervision', _('Supervision')
 
@@ -36,6 +37,15 @@ class DigestFrequency(models.TextChoices):
     DAILY = 'DAILY', _('Daily')
     WEEKLY = 'WEEKLY', _('Weekly')
     MONTHLY = 'MONTHLY', _('Monthly')
+
+
+class NotificationDisplayType(models.TextChoices):
+    INFO = 'info', _('Info')
+    SUCCESS = 'success', _('Success')
+    WARNING = 'warning', _('Warning')
+    ERROR = 'error', _('Error')
+    SYSTEM = 'system', _('System')
+    ACTION_REQUIRED = 'action_required', _('Action required')
 
 
 RETRY_DELAYS_SECONDS = [60, 300, 1800, 21600, 86400]

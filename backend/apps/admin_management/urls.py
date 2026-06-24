@@ -78,6 +78,7 @@ from .views import (
     AdminStudentDetailView,
     AdminStudentImportView,
     AdminStudentListCreateView,
+    AdminStudentProfileView,
     AdminStudentStatsView,
     AdminStudentRegeneratePasswordView,
     AdminStudentRevealCredentialView,
@@ -319,6 +320,7 @@ urlpatterns = [
     path('students/<int:student_id>', AdminStudentDetailView.as_view(), name='admin-students-detail'),
     path('students/<int:student_id>/access', AdminStudentAccessView.as_view(), name='admin-students-access'),
     path('students/<int:student_id>/assignment', AdminStudentAssignmentView.as_view(), name='admin-students-assignment'),
+    path('students/<int:student_id>/profile', AdminStudentProfileView.as_view(), name='admin-students-profile'),
     path(
         'students/<int:student_id>/regenerate-password',
         AdminStudentRegeneratePasswordView.as_view(),

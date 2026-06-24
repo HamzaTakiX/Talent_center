@@ -498,16 +498,47 @@
   }
 
   /* Smart alerts — contextual recommendation rows */
+  .student-smart-alerts-panel .admin-section-header {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--admin-brand) 6%, var(--admin-bg-elevated)) 0%,
+      var(--admin-bg-elevated) 100%
+    );
+  }
+
+  .student-smart-alerts-panel .admin-section-icon-wrap {
+    position: relative;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--admin-brand) 18%, transparent),
+      0 0 16px color-mix(in srgb, var(--admin-brand) 22%, transparent);
+  }
+
   .student-smart-alerts-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem 1rem;
+    gap: 0.625rem;
+    padding: 0.875rem 1rem 1.125rem;
   }
 
   @media (min-width: 640px) {
     .student-smart-alerts-list {
-      padding: 0.75rem 1.25rem 1.25rem;
+      padding: 0.875rem 1.25rem 1.375rem;
+    }
+  }
+
+  .student-smart-alerts-list__item {
+    animation: student-smart-alert-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--student-alert-index, 0) * 60ms);
+  }
+
+  @keyframes student-smart-alert-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
@@ -516,45 +547,86 @@
     display: flex;
     width: 100%;
     align-items: center;
-    gap: 0.75rem;
-    padding-block: 0.75rem;
-    padding-inline: 1rem 0.875rem;
+    gap: 0.875rem;
+    padding-block: 0.875rem;
+    padding-inline: 1.125rem 1rem;
     text-align: start;
     border-radius: var(--admin-radius-md);
     border: 1px solid var(--admin-border);
-    background: var(--admin-bg-elevated);
+    background: linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--admin-bg-elevated) 96%, transparent) 0%,
+      color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 8%, var(--admin-bg-elevated)) 100%
+    );
+    box-shadow: var(--admin-shadow-sm);
+    overflow: hidden;
+    cursor: pointer;
     transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease,
-      border-color 0.2s ease,
-      background-color 0.2s ease;
+      transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.22s ease,
+      border-color 0.22s ease,
+      background 0.22s ease;
   }
 
   .student-smart-alert::before {
     content: '';
     position: absolute;
     inset-inline-start: 0;
-    top: 0.5rem;
-    bottom: 0.5rem;
-    width: 3px;
-    border-radius: 0 4px 4px 0;
-    background: var(--student-alert-accent, var(--admin-brand));
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 0;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 85%, white),
+      var(--student-alert-accent, var(--admin-brand))
+    );
+    box-shadow: 0 0 12px color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 45%, transparent);
+  }
+
+  .student-smart-alert::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      90% 120% at 0% 50%,
+      color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 14%, transparent),
+      transparent 62%
+    );
+    transition: opacity 0.22s ease;
   }
 
   [dir='rtl'] .student-smart-alert::before {
-    border-radius: 4px 0 0 4px;
+    border-radius: 0;
   }
 
   .student-smart-alert:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--admin-shadow-md);
-    border-color: color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 35%, var(--admin-border));
-    background: var(--student-alert-bg, var(--admin-brand-muted));
+    transform: translateY(-2px);
+    box-shadow:
+      var(--admin-shadow-md),
+      0 0 0 1px color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 12%, transparent);
+    border-color: color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 38%, var(--admin-border));
+    background: linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--student-alert-bg, var(--admin-brand-muted)) 55%, var(--admin-bg-elevated)) 0%,
+      color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 12%, var(--admin-bg-elevated)) 100%
+    );
+  }
+
+  .student-smart-alert:hover::after {
+    opacity: 1;
+  }
+
+  .student-smart-alert:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 55%, transparent);
+    outline-offset: 2px;
   }
 
   .student-smart-alert--warning {
-    --student-alert-accent: #d97706;
-    --student-alert-bg: var(--admin-alert-medium-bg);
+    --student-alert-accent: #f59e0b;
+    --student-alert-bg: rgba(245, 158, 11, 0.1);
   }
 
   .student-smart-alert--info {
@@ -563,60 +635,92 @@
   }
 
   .student-smart-alert--success {
-    --student-alert-accent: #059669;
-    --student-alert-bg: rgba(5, 150, 105, 0.08);
+    --student-alert-accent: #10b981;
+    --student-alert-bg: rgba(16, 185, 129, 0.1);
   }
 
   [data-admin-theme='dark'] .student-smart-alert--success {
-    --student-alert-bg: rgba(5, 150, 105, 0.14);
+    --student-alert-bg: rgba(16, 185, 129, 0.14);
   }
 
   [data-admin-theme='dark'] .student-smart-alert--warning {
-    --student-alert-bg: var(--admin-alert-medium-bg);
+    --student-alert-bg: rgba(245, 158, 11, 0.12);
   }
 
   .student-smart-alert__icon {
+    position: relative;
+    z-index: 1;
     display: flex;
-    height: 2rem;
-    width: 2rem;
+    height: 2.25rem;
+    width: 2.25rem;
     shrink: 0;
     align-items: center;
     justify-content: center;
     border-radius: var(--admin-radius-sm);
-    background: var(--student-alert-bg, var(--admin-brand-muted));
+    border: 1px solid color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 22%, transparent);
+    background: color-mix(in srgb, var(--student-alert-bg, var(--admin-brand-muted)) 80%, var(--admin-bg-elevated));
     color: var(--student-alert-accent, var(--admin-brand));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 8%, transparent),
+      0 0 14px color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 18%, transparent);
+    transition:
+      box-shadow 0.22s ease,
+      transform 0.22s ease;
+  }
+
+  .student-smart-alert:hover .student-smart-alert__icon {
+    transform: scale(1.04);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+      0 0 20px color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 28%, transparent);
   }
 
   .student-smart-alert__body {
+    position: relative;
+    z-index: 1;
     display: flex;
     min-width: 0;
     flex: 1;
-    flex-wrap: wrap;
     align-items: center;
-    column-gap: 0.625rem;
-    row-gap: 0.25rem;
+    justify-content: space-between;
+    gap: 0.75rem;
   }
 
   .student-smart-alert__message {
     min-width: 0;
-    flex: 1 1 12rem;
+    flex: 1;
     font-size: 0.8125rem;
-    font-weight: 500;
-    line-height: 1.35;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
     color: var(--admin-text);
   }
 
   .student-smart-alert__cta {
+    display: inline-flex;
     flex-shrink: 0;
-    font-size: 0.75rem;
-    font-weight: 600;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 28%, var(--admin-border));
+    background: color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 10%, var(--admin-bg-elevated));
     color: var(--student-alert-accent, var(--admin-brand));
-    text-decoration: none;
-    white-space: nowrap;
+    transition:
+      transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.22s ease,
+      border-color 0.22s ease;
   }
 
-  .student-smart-alert__cta:hover {
-    text-decoration: underline;
+  .student-smart-alert:hover .student-smart-alert__cta {
+    transform: translateX(3px);
+    border-color: color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 45%, var(--admin-border));
+    background: color-mix(in srgb, var(--student-alert-accent, var(--admin-brand)) 18%, var(--admin-bg-elevated));
+  }
+
+  [dir='rtl'] .student-smart-alert:hover .student-smart-alert__cta {
+    transform: translateX(-3px);
   }
 
   /* Recommended offers — responsive grid */
@@ -658,6 +762,32 @@
     transform: translateY(-2px);
     box-shadow: var(--admin-shadow-md);
     border-color: color-mix(in srgb, var(--admin-brand) 22%, var(--admin-border));
+  }
+
+  .student-offer-card--skeleton {
+    pointer-events: none;
+    animation: student-offer-skeleton-in 0.35s ease both;
+  }
+
+  .student-offer-card--skeleton:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--admin-border);
+  }
+
+  @keyframes student-offer-skeleton-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .student-recent-offers-skeleton .admin-shimmer {
+    opacity: 0.85;
   }
 
   .student-offer-match {
@@ -728,6 +858,65 @@
     }
   }
 
+  /* Dashboard announcements — vertical list with horizontal rows */
+  #student-announcements .student-announcement-dashboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #student-announcements .student-announcement-dashboard-list > * {
+    min-width: 0;
+  }
+
+  #student-announcements .student-announcement-card--visual {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  #student-announcements .student-announcement-card--visual:hover {
+    transform: none;
+  }
+
+  #student-announcements .student-announcement-card__cover {
+    width: 6.75rem;
+    min-width: 6.75rem;
+    height: auto;
+    min-height: 6.75rem;
+    align-self: stretch;
+    border-radius: 0;
+    border-start-start-radius: 14px;
+    border-end-start-radius: 14px;
+  }
+
+  @media (min-width: 640px) {
+    #student-announcements .student-announcement-card__cover {
+      width: 8.75rem;
+      min-width: 8.75rem;
+      min-height: 7.5rem;
+    }
+  }
+
+  #student-announcements .student-announcement-card__body {
+    flex: 1;
+    padding: 0.8rem 0.95rem 0.85rem;
+  }
+
+  #student-announcements .student-announcement-card__title {
+    -webkit-line-clamp: 1;
+  }
+
+  #student-announcements .student-announcement-card__description {
+    -webkit-line-clamp: 2;
+  }
+
+  #student-announcements .student-announcement-card__engagement {
+    margin-top: auto;
+    padding-top: 0.55rem;
+  }
+
   .student-dashboard-sidebar-stack {
     display: flex;
     flex-direction: column;
@@ -737,6 +926,23 @@
   @media (min-width: 1024px) {
     .student-dashboard-sidebar-stack {
       gap: 1.5rem;
+    }
+  }
+
+  /* Profile page — widgets sous le header (#profile) */
+  .student-profile-main-widgets {
+    margin-top: 0.125rem;
+  }
+
+  @media (min-width: 640px) and (max-width: 1023.98px) {
+    .student-profile-main-widgets.student-dashboard-hero-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .student-profile-main-widgets.student-dashboard-hero-metrics {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 }

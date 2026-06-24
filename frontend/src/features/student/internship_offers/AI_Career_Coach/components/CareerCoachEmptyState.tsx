@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bot } from 'lucide-react';
+import InternshipAssistantBot from '../../components/InternshipAssistantBot';
 import type { CoachModeConfig } from '../types/careerCoach';
 
 interface CareerCoachEmptyStateProps {
@@ -13,22 +13,48 @@ const CareerCoachEmptyState: FunctionComponent<CareerCoachEmptyStateProps> = ({
   onPromptClick,
 }) => {
   const { t } = useTranslation();
+  const question = t('student.internshipOffers.careerCoach.empty.title');
 
   return (
     <div className="sr-acc-empty" key={modeConfig.introKey}>
-      <div className="sr-acc-empty__illustration" aria-hidden>
-        <div className="sr-acc-empty__orb">
-          <Bot className="h-10 w-10 text-[var(--admin-brand)]" strokeWidth={1.5} />
+      <div className="sr-acc-empty__dialogue">
+        <div className="sr-acc-empty__thought">
+          <div
+            className="sr-acc-empty__speech"
+            id="sr-acc-empty-question"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="sr-acc-empty__think" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </span>
+            <p className="sr-acc-empty__speech-text">{question}</p>
+          </div>
+          <div className="sr-acc-empty__trail" aria-hidden>
+            <span />
+            <span />
+          </div>
+        </div>
+        <div className="sr-acc-empty__bot-wrap">
+          <div className="sr-acc-empty__bot-glow" aria-hidden />
+          <InternshipAssistantBot
+            variant="full"
+            showBubble={false}
+            animated
+            className="sr-acc-bot sr-acc-bot--empty sr-acc-empty__bot"
+            ariaLabel={question}
+          />
         </div>
       </div>
-      <h2 className="sr-acc-empty__title">{t('student.internshipOffers.careerCoach.empty.title')}</h2>
-      <p className="sr-acc-empty__hint">{t(modeConfig.emptyHintKey)}</p>
-      <div className="sr-acc-empty__prompts">
+      <p className="sr-cva-state__desc">{t(modeConfig.emptyHintKey)}</p>
+      <div className="sr-cva-quick-actions sr-acc-empty__prompts">
         {modeConfig.prompts.map((prompt) => (
           <button
             key={prompt.id}
             type="button"
-            className="sr-acc-empty__prompt"
+            className="sr-cva-quick-btn"
             onClick={() => onPromptClick(prompt.labelKey)}
           >
             {t(prompt.labelKey)}

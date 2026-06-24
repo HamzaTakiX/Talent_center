@@ -1,24 +1,36 @@
 import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { RefreshCw } from 'lucide-react';
 import DocumentsSubPageLayout from '../components/DocumentsSubPageLayout';
 import DocumentsPremiumEmpty from '../components/DocumentsPremiumEmpty';
-import { MOCK_DASHBOARD } from '../data/documentsMockData';
+import DocumentsPageSkeleton from '../components/skeletons/DocumentsPageSkeleton';
+import { useDocumentsWorkload } from '../hooks/useDocumentsAdmin';
 
 const WorkloadBoardPage: FunctionComponent = () => {
   const { t } = useTranslation();
-  const workload = MOCK_DASHBOARD.serviceWorkload;
+  const { items: workload, loading, error, refresh } = useDocumentsWorkload();
 
   return (
     <DocumentsSubPageLayout
       title={t('admin.documentsModule.workload.title')}
       subtitle={t('admin.documentsModule.workload.subtitle')}
     >
-      {workload.length === 0 ? (
+      {loading ? (
+        <DocumentsPageSkeleton />
+      ) : error ? (
+        <div className="admin-doc-empty">
+          <p className="admin-doc-empty__subtitle">{error}</p>
+          <button type="button" className="admin-form-btn admin-form-btn--primary mt-4" onClick={refresh}>
+            <RefreshCw className="h-4 w-4" aria-hidden />
+            {t('admin.documentsModule.hub.retry')}
+          </button>
+        </div>
+      ) : workload.length === 0 ? (
         <DocumentsPremiumEmpty variant="workload" />
       ) : (
         <div className="admin-doc-workload-grid">
           {workload.map((w) => {
-            const pct = Math.round((w.load / w.capacity) * 100);
+            const pct = w.capacity > 0 ? Math.round((w.load / w.capacity) * 100) : 0;
             const state =
               pct >= 90
                 ? t('admin.documentsModule.workload.overloaded')

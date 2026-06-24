@@ -58,6 +58,8 @@ export type PrimaryInboxFilter =
   | 'resolved'
   | 'archived';
 
+export type InternshipMessageDeliveryStatus = 'sent' | 'delivered' | 'read';
+
 export type InternshipMessage = {
   id: string;
   direction: 'in' | 'out';
@@ -65,8 +67,13 @@ export type InternshipMessage = {
   time: string;
   separatorBefore?: string;
   read?: boolean;
+  deliveryStatus?: InternshipMessageDeliveryStatus;
+  seenAt?: string;
+  seenTime?: string;
   attachmentName?: string;
   messageType?: string;
+  smartActionCode?: string;
+  createdAt?: string;
   tags?: string[];
 };
 
@@ -90,6 +97,8 @@ export type InternshipConversation = {
   interviewDate: string;
   lastStatusChange: string;
   lastMessage: string;
+  lastMessageIsOwn?: boolean;
+  lastMessageAt?: string | null;
   timeLabel: string;
   unreadCount: number;
   priority: ConversationPriority;
@@ -102,8 +111,10 @@ export type InternshipConversation = {
   studentEmail?: string;
   studentPhone?: string;
   studentProfileId?: number;
+  studentUserId?: number;
   applicationUuid?: string;
   applicationId?: number;
+  companyLogoUrl?: string;
 };
 
 export type InboxFilters = {

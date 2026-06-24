@@ -2,14 +2,11 @@ import { FunctionComponent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminCrudRoutes } from '../../shared/navigation/adminCrudRoutes';
-import { Eye, Hexagon, Pencil } from 'lucide-react';
 import { useAdminCopy } from '../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
 import type { useTableRowSelection } from '../../shared/hooks/useTableRowSelection';
-import type { AdminAdministratorRow, PlatformAdminRoleVariant } from '../types/platformAdministrators';
+import type { AdminAdministratorRow } from '../types/platformAdministrators';
 import {
-  PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS,
-  PLATFORM_ADMIN_PRIMARY_ACTION_BTN_MAIN_TABLE_CLASS,
   platformAdminStatusBadgeClass,
   platformRoleBadgeClass,
 } from '../constants/platformAdministratorsUi';
@@ -23,10 +20,13 @@ import {
   AdminTableSkeletonRows,
 } from '../../ui';
 import AdministratorDetailModal from './AdministratorDetailModal';
+import AdministratorActions from './AdministratorActions';
+import AdministratorTableIdentityCell from './AdministratorTableIdentityCell';
 import {
   administratorRoleSlugs,
   isSuperAdminAdministrator,
 } from '../utils/platformAdministratorUtils';
+import { ADMIN_TABLE_COL } from '../../../../design-system/safeContent';
 
 interface PlatformAdministratorsMainTableProps {
   rows: AdminAdministratorRow[];
@@ -75,9 +75,8 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
 }) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { tableColumn, emptyState, action } = useAdminCopy();
+  const { tableColumn, emptyState } = useAdminCopy();
   const { adminRole, accountStatus } = useAdminTableValues();
-  const managePermissionsLabel = t('admin.common.actions.managePermissions');
   const neverLogin = t('admin.tables.administrators.neverLoggedIn');
   const dateLocale = i18n.language.startsWith('ar') ? 'ar-MA' : i18n.language.startsWith('en') ? 'en-GB' : 'fr-FR';
   const [viewRow, setViewRow] = useState<AdminAdministratorRow | null>(null);
@@ -142,36 +141,20 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
                 },
               ]}
               actions={
-                <>
-                  <button
-                    type="button"
-                    className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} w-full justify-center sm:w-auto`}
-                    onClick={() => setViewRow(row)}
-                  >
-                    <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                    {action('view')}
-                  </button>
-                  {!superAdmin ? (
-                    <>
-                      <button
-                        type="button"
-                        className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} w-full justify-center sm:w-auto`}
-                        onClick={() => navigate(adminCrudRoutes.adminEdit(String(row.id)))}
-                      >
-                        <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                        {action('edit')}
-                      </button>
-                      <button
-                        type="button"
-                        className={`${PLATFORM_ADMIN_PRIMARY_ACTION_BTN_MAIN_TABLE_CLASS} w-full justify-center sm:w-auto`}
-                        onClick={() => navigate(adminCrudRoutes.adminPermissions(String(row.id)))}
-                      >
-                        <Hexagon className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                        {managePermissionsLabel}
-                      </button>
-                    </>
-                  ) : null}
-                </>
+                <AdministratorActions
+                  administrator={row}
+                  onView={() => setViewRow(row)}
+                  onEdit={
+                    !superAdmin
+                      ? () => navigate(adminCrudRoutes.adminEdit(String(row.id)))
+                      : undefined
+                  }
+                  onManagePermissions={
+                    !superAdmin
+                      ? () => navigate(adminCrudRoutes.adminPermissions(String(row.id)))
+                      : undefined
+                  }
+                />
               }
             />
             );
@@ -206,7 +189,7 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
               <th>{tableColumn('status')}</th>
               <th>{tableColumn('lastLogin')}</th>
               <th>{tableColumn('onboarding')}</th>
-              <th>{tableColumn('actions')}</th>
+              <th className={`text-end ${ADMIN_TABLE_COL.actionsMenu}`}>{tableColumn('actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -233,8 +216,7 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
                     </td>
                   ) : null}
                   <td>
-                    <div className="font-medium">{row.full_name}</div>
-                    <div className="text-xs text-[var(--admin-text-secondary)]">{row.email}</div>
+                    <AdministratorTableIdentityCell administrator={row} />
                   </td>
                   <td>
                     <div className="flex flex-wrap gap-1">
@@ -273,37 +255,21 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
                         : t('admin.tables.administrators.onboardingPending')}
                     </span>
                   </td>
-                  <td>
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} min-w-[78.7px]`}
-                        onClick={() => setViewRow(row)}
-                      >
-                        <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                        {action('view')}
-                      </button>
-                      {!superAdmin ? (
-                        <>
-                          <button
-                            type="button"
-                            className={`${PLATFORM_ADMIN_OUTLINE_ACTION_BTN_CLASS} min-w-[72.4px]`}
-                            onClick={() => navigate(adminCrudRoutes.adminEdit(String(row.id)))}
-                          >
-                            <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                            {action('edit')}
-                          </button>
-                          <button
-                            type="button"
-                            className={`${PLATFORM_ADMIN_PRIMARY_ACTION_BTN_MAIN_TABLE_CLASS} min-w-[176px]`}
-                            onClick={() => navigate(adminCrudRoutes.adminPermissions(String(row.id)))}
-                          >
-                            <Hexagon className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                            {managePermissionsLabel}
-                          </button>
-                        </>
-                      ) : null}
-                    </div>
+                  <td className="admin-students-table__actions text-end">
+                    <AdministratorActions
+                      administrator={row}
+                      onView={() => setViewRow(row)}
+                      onEdit={
+                        !superAdmin
+                          ? () => navigate(adminCrudRoutes.adminEdit(String(row.id)))
+                          : undefined
+                      }
+                      onManagePermissions={
+                        !superAdmin
+                          ? () => navigate(adminCrudRoutes.adminPermissions(String(row.id)))
+                          : undefined
+                      }
+                    />
                   </td>
                 </tr>
                 );

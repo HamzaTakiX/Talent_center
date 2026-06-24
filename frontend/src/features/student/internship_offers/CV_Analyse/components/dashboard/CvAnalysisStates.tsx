@@ -59,6 +59,30 @@ export const CvAnalysisEmptyState: FunctionComponent<CvAnalysisEmptyStateProps> 
   );
 };
 
+interface CvAnalysisAnalyzingStateProps {
+  className?: string;
+}
+
+export const CvAnalysisAnalyzingState: FunctionComponent<CvAnalysisAnalyzingStateProps> = ({ className = '' }) => {
+  const { t } = useTranslation();
+
+  return (
+    <motion.div
+      className={`sr-cva__root sr-cva ${className}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <div className="sr-cva-glass sr-cva-state">
+        <div className="sr-cva-state__icon">
+          <Sparkles className="h-8 w-8 animate-pulse" aria-hidden />
+        </div>
+        <h2 className="sr-cva-state__title">{t('student.internshipOffers.cvDashboard.analyzing.title')}</h2>
+        <p className="sr-cva-state__desc">{t('student.internshipOffers.cvDashboard.analyzing.desc')}</p>
+      </div>
+    </motion.div>
+  );
+};
+
 interface CvAnalysisErrorStateProps {
   onRetry: () => void;
 }

@@ -5,10 +5,8 @@ import django.db.models.deletion
 
 
 def _seed_esca_academic(apps, schema_editor):
-    __import__(
-        'apps.admin_management.services.esca_academic_seed',
-        fromlist=['seed_esca_academic'],
-    ).seed_esca_academic()
+    # Deferred to 0013 — seed uses name_fr/name_en added in 0011.
+    pass
 
 
 class Migration(migrations.Migration):

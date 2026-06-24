@@ -17,10 +17,16 @@ export interface DeskConversationRecord extends SupportChatThread {
   className: string;
   archived?: boolean;
   urgent?: boolean;
+  resolved?: boolean;
   entityLabel?: string;
   workflowStatus?: string;
   urgency?: string;
   contextKind?: string;
+  displayName?: string;
+  email?: string;
+  avatarUrl?: string;
+  roleLabel?: string;
+  userId?: number;
 }
 
 export function mapAdminMessages(messages: AdminChatMessage[]): SupportMessage[] {
@@ -56,6 +62,14 @@ export function buildDeskConversations(
     workflowStatus: p.workflowStatus,
     urgency: p.urgency,
     contextKind: p.contextKind,
+    displayName: p.displayName,
+    email: p.email,
+    avatarUrl: p.avatarUrl,
+    roleLabel: p.roleLabel,
+    userId: p.userId,
+    archived: p.archived,
+    resolved: p.resolved,
+    urgent: p.urgent,
   }));
 }
 

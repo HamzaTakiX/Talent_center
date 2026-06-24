@@ -154,3 +154,33 @@ def sync_student_internship_from_academics(profile) -> ResolvedInternship:
     )
     apply_resolved_internship_to_profile(profile, resolved)
     return resolved
+
+
+def ensure_student_internship_synced(profile) -> bool:
+    """
+    Backfill internship type/duration when academics are known but denormalized
+    fields were never written (legacy imports, onboarding before auto-sync, etc.).
+    """
+    if profile is None:
+        return False
+
+    has_academic_context = bool(
+        profile.academic_level_id or profile.class_group_id or profile.filiere_id,
+    )
+    if not has_academic_context:
+        return False
+
+    needs_sync = profile.internship_type_id is None or not (profile.internship_duration or '').strip()
+    if not needs_sync:
+        return False
+
+    sync_student_internship_from_academics(profile)
+    profile.save(
+        update_fields=[
+            'internship_type',
+            'internship_duration',
+            'internship_category',
+            'updated_at',
+        ],
+    )
+    return True

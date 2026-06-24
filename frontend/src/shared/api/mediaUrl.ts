@@ -6,6 +6,9 @@ const DEFAULT_PROD_BACKEND = 'https://talentcenter-production.up.railway.app';
  * Backend origin without /api (for /media/… URLs).
  */
 export function getBackendOrigin(): string {
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    return window.location.origin;
+  }
   const fromEnv = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/+$/, '');
   if (fromEnv) {
     return fromEnv;

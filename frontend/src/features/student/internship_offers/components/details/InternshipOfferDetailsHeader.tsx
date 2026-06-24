@@ -1,359 +1,184 @@
-import { FunctionComponent, useCallback, useState } from 'react';
-
-
-
+import { FunctionComponent, useCallback, useMemo, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-
-
 import { useTranslation } from 'react-i18next';
-
-
-
-import { Building2, Star } from 'lucide-react';
-
+import { Building2, ExternalLink, MapPin, Pencil } from 'lucide-react';
 import OfferCompanyLogo from '../../../../admin/offres-stage/components/OfferCompanyLogo';
-import { stageApi } from '../../../../shared/api/stageApi';
-
-import { getInternshipOfferApplyPath } from '../../constants/routes';
-
 import { STUDENT_CHAT_PATH } from '../../chat/constants/routes';
-
-
-
+import OfferApplyButton from '../OfferApplyButton';
+import StudentMatchScoreBadge from '../../../components/StudentMatchScoreBadge';
 import type { InternshipOfferDetails } from '../../types';
-
-
-
 import {
-
-
-
   DETAILS_OUTLINE_BUTTON,
-
-
-
   DETAILS_PRIMARY_BUTTON,
-
-
-
   DETAILS_SURFACE_CARD,
-
-
-
+  DETAILS_TAG_PRIMARY,
 } from '../../constants/internshipOfferDetailsStyles';
-
-
-
-import { DETAILS_TAG_PRIMARY } from '../../constants/internshipOfferDetailsStyles';
-
-
-
-import { STUDENT_MATCH_SCORE } from '../../../design-system/studentSemanticStyles';
-
-
-
 import { SafeBadge, SafeText } from '../../../../../design-system/safeContent';
-
-
-
-
-
-
+import { filterHeaderTags } from '../../utils/filterHeaderTags';
+import { adminBadgeClass } from '../../../../admin/ui/adminStatusBadges';
 
 interface InternshipOfferDetailsHeaderProps {
-
-
-
   offer: InternshipOfferDetails;
-
-
-
+  mode?: 'student' | 'admin';
+  adminPublicationStatus?: string;
+  adminStatusBadgeVariant?: 'success' | 'warning' | 'danger' | 'neutral' | 'info';
+  adminUiStatusLabel?: string;
+  adminUiStatusBadgeVariant?: 'success' | 'warning' | 'danger' | 'neutral' | 'info';
+  onEdit?: () => void;
 }
 
-
-
-
-
-
-
 const InternshipOfferDetailsHeader: FunctionComponent<InternshipOfferDetailsHeaderProps> = ({
-
-
-
   offer,
-
-
-
+  mode = 'student',
+  adminPublicationStatus,
+  adminStatusBadgeVariant = 'neutral',
+  adminUiStatusLabel,
+  adminUiStatusBadgeVariant = 'info',
+  onEdit,
 }) => {
-
-
-
   const navigate = useNavigate();
-
-
-
   const { t } = useTranslation();
 
-  const [startingChat, setStartingChat] = useState(false);
+  const headerTags = useMemo(() => filterHeaderTags(offer), [offer]);
 
-
-
-  const handleAskQuestion = useCallback(async () => {
-
-    setStartingChat(true);
-
-    try {
-
-      const result = await stageApi.createChat(offer.id);
-
-      navigate(`${STUDENT_CHAT_PATH}?conversation=${result.conversation_id}`);
-
-    } catch {
-
-      navigate(STUDENT_CHAT_PATH);
-
-    } finally {
-
-      setStartingChat(false);
-
-    }
-
+  const handleAskQuestion = useCallback(() => {
+    navigate(`${STUDENT_CHAT_PATH}?offer=${offer.id}`);
   }, [navigate, offer.id]);
 
+  const isAdmin = mode === 'admin';
 
+  let actionRow: ReactNode;
+  if (isAdmin) {
+    actionRow = (
+      <div className="mt-5 flex w-full min-w-0 flex-col gap-2.5 border-t border-[var(--admin-border)] pt-5 sm:flex-row sm:flex-wrap sm:gap-3">
+        {offer.externalUrl ? (
+          <a
+            href={offer.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${DETAILS_OUTLINE_BUTTON} inline-flex items-center justify-center gap-2`}
+          >
+            <ExternalLink className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+            <span className="safe-button-label">{t('admin.modules.offers.detailPage.openExternal')}</span>
+          </a>
+        ) : null}
+        {onEdit ? (
+          <button type="button" className={`${DETAILS_PRIMARY_BUTTON} inline-flex items-center justify-center gap-2`} onClick={onEdit}>
+            <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+            <span className="safe-button-label">{t('admin.common.actions.edit')}</span>
+          </button>
+        ) : null}
+      </div>
+    );
+  } else {
+    actionRow = (
+      <div className="mt-5 flex w-full min-w-0 flex-col gap-2.5 border-t border-[var(--admin-border)] pt-5 sm:flex-row sm:flex-wrap sm:gap-3">
+        <OfferApplyButton
+          offerId={offer.id}
+          externalUrl={offer.externalUrl}
+          applicationMethod={offer.applicationMethod}
+          offerTitle={offer.title}
+          className={DETAILS_PRIMARY_BUTTON}
+        >
+          <span className="safe-button-label">{t('student.internshipOffers.details.applyNow')}</span>
+        </OfferApplyButton>
 
+        <button type="button" className={DETAILS_OUTLINE_BUTTON} onClick={handleAskQuestion}>
+          <span className="safe-button-label">{t('student.internshipOffers.details.askQuestion')}</span>
+        </button>
+      </div>
+    );
+  }
 
+  const hasAdminBadges = Boolean(adminPublicationStatus || adminUiStatusLabel);
 
+  const metaChipClass = isAdmin
+    ? 'offer-detail-page__meta-chip inline-flex min-w-0 items-center gap-1.5'
+    : 'inline-flex min-w-0 items-center gap-1.5';
 
+  const metaIconClass = isAdmin ? 'h-3.5 w-3.5' : 'h-4 w-4';
 
   return (
-
-
-
     <header
-
-
-
-      className={`${DETAILS_SURFACE_CARD} box-border w-full min-w-0 max-w-full overflow-hidden px-4 py-5 sm:px-6 sm:py-6`}
-
-
-
+      className={`${DETAILS_SURFACE_CARD} box-border w-full min-w-0 max-w-full overflow-hidden px-4 py-5 sm:px-6 sm:py-6${
+        isAdmin ? ' offer-detail-page__header offer-detail-page__header--admin' : ''
+      }`}
     >
-
-
-
-      <div className="flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-
-
-
-        <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
-
+      <div
+        className={
+          isAdmin
+            ? 'flex w-full min-w-0 items-start gap-3.5 sm:gap-4'
+            : 'flex w-full min-w-0 flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6'
+        }
+      >
+        <div className="flex min-w-0 flex-1 items-start gap-3.5 sm:gap-4">
           <OfferCompanyLogo
             url={offer.companyLogoUrl}
             companyName={offer.company}
             size="detail"
           />
 
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
-
-          <h1 className="safe-card-title m-0 min-w-0 text-2xl font-semibold leading-8 tracking-tight text-[var(--admin-text)] sm:text-[28px] sm:leading-9">
-
-
-
-            <SafeText as="span">{offer.title}</SafeText>
-
-
-
-          </h1>
-
-
-
-
-
-
-
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[14px] leading-5 text-[var(--admin-text-secondary)]">
-
-
-
-            <Building2 className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-
-
-
-            <SafeText className="text-[inherit]">{offer.company}</SafeText>
-
-
-
-            <span className="shrink-0 text-[var(--admin-text-muted)]">•</span>
-
-
-
-            <SafeText className="text-[inherit]">{offer.location}</SafeText>
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div className="flex w-full min-w-0 flex-wrap gap-2">
-
-
-
-            {offer.tags.map((tag) => (
-
-
-
-              <SafeBadge key={tag} className={DETAILS_TAG_PRIMARY}>
-
-
-
-                {tag}
-
-
-
-              </SafeBadge>
-
-
-
-            ))}
-
-
-
-          </div>
-
-          </div>
-
-        </div>
-
-
-
-
-
-
-
-        <div className={`${STUDENT_MATCH_SCORE} shrink-0 self-start`}>
-
-
-
-          <div className="flex items-center gap-1.5">
-
-
-
-            <Star className="h-4 w-4 shrink-0 fill-amber-500 text-amber-500" aria-hidden />
-
-
-
-            <span className="text-2xl font-bold tabular-nums leading-8 text-[var(--admin-text)]">
-
-
-
-              {offer.matchPercent}%
-
-
-
+          <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+            <div className={isAdmin ? 'offer-detail-page__title-row' : undefined}>
+              <h1
+                className={`${isAdmin ? 'offer-detail-page__title ' : ''}safe-card-title m-0 min-w-0 text-2xl font-semibold leading-tight tracking-tight text-[var(--admin-text)] sm:text-[1.75rem]`}
+              >
+                <SafeText as="span">{offer.title}</SafeText>
+              </h1>
+
+              {isAdmin && hasAdminBadges ? (
+                <div className="offer-detail-page__status-badges">
+                  {adminPublicationStatus ? (
+                    <span className={adminBadgeClass(adminStatusBadgeVariant)}>
+                      {adminPublicationStatus}
+                    </span>
+                  ) : null}
+                  {adminUiStatusLabel ? (
+                    <span className={adminBadgeClass(adminUiStatusBadgeVariant)}>{adminUiStatusLabel}</span>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+
+            <div
+              className={`${isAdmin ? 'offer-detail-page__meta ' : ''}flex min-w-0 flex-wrap items-center ${isAdmin ? 'gap-x-2' : 'gap-x-3'} gap-y-1.5 text-sm text-[var(--admin-text-secondary)]`}
+            >
+              <span className={metaChipClass}>
+                <Building2 className={`${metaIconClass} shrink-0 opacity-70`} strokeWidth={1.75} aria-hidden />
+              <SafeText className="text-[inherit]">{offer.company}</SafeText>
             </span>
-
-
-
+            <span className="hidden h-1 w-1 shrink-0 rounded-full bg-[var(--admin-text-muted)] sm:inline-block" aria-hidden />
+            <span className={metaChipClass}>
+              <MapPin className={`${metaIconClass} shrink-0 opacity-70`} strokeWidth={1.75} aria-hidden />
+              <SafeText className="text-[inherit]">{offer.location}</SafeText>
+            </span>
           </div>
 
-
-
-          <span className="student-match-score__label">{t('student.internshipOffers.details.matchScore')}</span>
-
-
-
+          {headerTags.length ? (
+            <div className="flex w-full min-w-0 flex-wrap gap-1.5 pt-0.5">
+              {headerTags.map((tag) => (
+                <SafeBadge key={tag} className={DETAILS_TAG_PRIMARY}>
+                  {tag}
+                </SafeBadge>
+              ))}
+            </div>
+          ) : null}
+          </div>
         </div>
 
-
-
+        {!isAdmin ? (
+          <StudentMatchScoreBadge
+            percent={offer.matchPercent}
+            label={t('student.internshipOffers.details.matchScore')}
+            size="detail"
+            className="shrink-0 self-start"
+          />
+        ) : null}
       </div>
 
-
-
-
-
-
-
-      <div className="mt-5 flex w-full min-w-0 flex-col gap-3 sm:mt-6 sm:flex-row sm:flex-wrap sm:gap-4">
-
-
-
-        <button
-
-
-
-          type="button"
-
-
-
-          className={DETAILS_PRIMARY_BUTTON}
-
-
-
-          onClick={() => navigate(getInternshipOfferApplyPath(offer.id))}
-
-
-
-        >
-
-
-
-          <span className="safe-button-label">{t('student.internshipOffers.details.applyNow')}</span>
-
-
-
-        </button>
-
-
-
-        <button
-
-          type="button"
-
-          className={DETAILS_OUTLINE_BUTTON}
-
-          onClick={() => void handleAskQuestion()}
-
-          disabled={startingChat}
-
-        >
-
-
-
-          <span className="safe-button-label">{t('student.internshipOffers.details.askQuestion')}</span>
-
-
-
-        </button>
-
-
-
-      </div>
-
-
-
+      {actionRow}
     </header>
-
-
-
   );
-
-
-
 };
 
-
-
-
-
-
-
 export default InternshipOfferDetailsHeader;
-

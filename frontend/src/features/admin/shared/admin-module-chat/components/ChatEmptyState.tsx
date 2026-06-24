@@ -10,23 +10,34 @@ const ChatEmptyState: FunctionComponent<ChatEmptyStateProps> = ({
   description,
   moduleType,
   stats,
+  statsLoading = false,
   className = '',
 }) => {
   const { t } = useTranslation();
 
   const statItems = useMemo(() => {
-    if (!stats) return [];
     const labels = {
-      unread: stats.labels?.unread ?? t('admin.chatEmpty.stats.unread'),
-      pending: stats.labels?.pending ?? t('admin.chatEmpty.stats.pending'),
-      resolved: stats.labels?.resolved ?? t('admin.chatEmpty.stats.resolved'),
+      unread: stats?.labels?.unread ?? t('admin.chatEmpty.stats.unread'),
+      pending: stats?.labels?.pending ?? t('admin.chatEmpty.stats.pending'),
+      resolved: stats?.labels?.resolved ?? t('admin.chatEmpty.stats.resolved'),
     };
-    const items: { key: string; value: number; label: string }[] = [];
+
+    if (statsLoading) {
+      return [
+        { key: 'unread', value: stats?.unread, label: labels.unread },
+        { key: 'pending', value: stats?.pending, label: labels.pending },
+        { key: 'resolved', value: stats?.resolved, label: labels.resolved },
+      ];
+    }
+
+    if (!stats) return [];
+
+    const items: { key: string; value?: number; label: string }[] = [];
     if (stats.unread != null) items.push({ key: 'unread', value: stats.unread, label: labels.unread });
     if (stats.pending != null) items.push({ key: 'pending', value: stats.pending, label: labels.pending });
     if (stats.resolved != null) items.push({ key: 'resolved', value: stats.resolved, label: labels.resolved });
     return items;
-  }, [stats, t]);
+  }, [stats, statsLoading, t]);
 
   return (
     <motion.div
@@ -40,10 +51,21 @@ const ChatEmptyState: FunctionComponent<ChatEmptyStateProps> = ({
       <p className="chat-empty-state__description">{description}</p>
 
       {statItems.length > 0 ? (
-        <div className="chat-empty-state__stats">
+        <div
+          className="chat-empty-state__stats"
+          aria-busy={statsLoading}
+          aria-live="polite"
+        >
           {statItems.map((item) => (
             <div key={item.key} className="chat-empty-state__stat">
-              <span className="chat-empty-state__stat-value">{item.value}</span>
+              {statsLoading ? (
+                <span
+                  className="chat-empty-state__stat-skeleton admin-shimmer"
+                  aria-hidden
+                />
+              ) : (
+                <span className="chat-empty-state__stat-value">{item.value}</span>
+              )}
               <span className="chat-empty-state__stat-label">{item.label}</span>
             </div>
           ))}

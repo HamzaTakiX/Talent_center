@@ -27,10 +27,19 @@ export async function fetchConversations(
   if (filters?.urgency) params.urgency = filters.urgency;
   if (filters?.contextKind) params.context_kind = filters.contextKind;
   if (filters?.unreadOnly) params.unread = '1';
+  if (filters?.includeArchived) params.include_archived = '1';
   if (filters?.q) params.q = filters.q;
   const { data } = await apiClient.get<ApiEnvelope<ListPayload>>(`${BASE}/conversations`, { params });
   if (!data.success || !data.data) return [];
   return data.data.items;
+}
+
+export async function fetchConversation(conversationId: number): Promise<ConversationDto | null> {
+  const { data } = await apiClient.get<ApiEnvelope<ConversationDto>>(
+    `${BASE}/conversations/${conversationId}`
+  );
+  if (!data.success || !data.data) return null;
+  return data.data;
 }
 
 export async function fetchMessages(conversationId: number): Promise<MessageDto[]> {
@@ -94,4 +103,52 @@ export async function fetchEnterpriseChannels(): Promise<
     ApiEnvelope<{ id: number; code: string; name: string; channel_type: string }[]>
   >(`${BASE}/channels`);
   return data.data ?? [];
+}
+
+export interface ChatMetricsDto {
+  open_conversations: number;
+  waiting_admin: number;
+  waiting_student: number;
+  average_response_time_seconds: number;
+  average_resolution_time_seconds: number;
+  resolved_today: number;
+  unread_messages: number;
+  most_active_offers: { label: string; count: number }[];
+  most_active_companies: { label: string; count: number }[];
+  top_students_by_activity: { label: string; count: number }[];
+}
+
+export interface ContextPanelDto {
+  conversation_id: number;
+  student?: Record<string, unknown>;
+  offer?: Record<string, unknown>;
+  application?: Record<string, unknown>;
+  current_applications?: unknown[];
+  readiness?: Record<string, unknown>;
+}
+
+export interface ChatInboxModuleSummary {
+  module: ChatModule;
+  conversation_count: number;
+  unread: number;
+}
+
+export async function fetchChatInboxSummary(): Promise<ChatInboxModuleSummary[]> {
+  const { data } = await apiClient.get<ApiEnvelope<{ modules: ChatInboxModuleSummary[] }>>(
+    `${BASE}/inbox/summary`,
+  );
+  if (!data.success || !data.data) return [];
+  return data.data.modules;
+}
+
+export async function fetchModuleChatMetrics(module: ChatModule): Promise<ChatMetricsDto | null> {
+  const { data } = await apiClient.get<ApiEnvelope<ChatMetricsDto>>(`${BASE}/modules/${module}/metrics`);
+  return data.success && data.data ? data.data : null;
+}
+
+export async function fetchContextPanel(conversationId: number): Promise<ContextPanelDto | null> {
+  const { data } = await apiClient.get<ApiEnvelope<ContextPanelDto>>(
+    `${BASE}/conversations/${conversationId}/context-panel`
+  );
+  return data.success && data.data ? data.data : null;
 }

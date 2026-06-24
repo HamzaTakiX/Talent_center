@@ -8,7 +8,7 @@ import { getDefaultHomePath, normalizeRole } from '../utils/roleAuth';
 
 export const CallbackPage = () => {
   const { error, isLoading: isAuth0Loading } = useAuth0();
-  const { user, isAuthReady, authError } = useAuth();
+  const { user, isAuthReady, authError, isLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -19,14 +19,14 @@ export const CallbackPage = () => {
       return;
     }
 
-    if (!isAuth0Loading && isAuthReady) {
+    if (!isAuth0Loading && isAuthReady && !isLoading) {
       if (user) {
         navigate(getDefaultHomePath(normalizeRole(user.role)), { replace: true });
       } else {
         navigate('/login', { replace: true, state: { authError } });
       }
     }
-  }, [error, isAuth0Loading, isAuthReady, user, authError, navigate]);
+  }, [error, isAuth0Loading, isAuthReady, isLoading, user, authError, navigate]);
 
   return (
     <AuthInitLoader

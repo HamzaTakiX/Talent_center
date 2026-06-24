@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { motion } from 'framer-motion';
 
-import { Building2, Eye, MapPin, Star, Users } from 'lucide-react';
+import { Building2, Eye, MapPin, Users } from 'lucide-react';
 
 import type { AnalyticsPreview, CreateOfferFormState } from '../../types/createOfferWorkflow';
 
@@ -29,8 +29,6 @@ interface CreateOfferPreviewPanelProps {
   audienceSize: number;
 
   hasTargeting: boolean;
-
-  canPreviewMatchScore: boolean;
 
 }
 
@@ -66,8 +64,6 @@ const CreateOfferPreviewPanel: FunctionComponent<CreateOfferPreviewPanelProps> =
 
   hasTargeting,
 
-  canPreviewMatchScore,
-
 }) => {
 
   const { t } = useTranslation();
@@ -99,14 +95,6 @@ const CreateOfferPreviewPanel: FunctionComponent<CreateOfferPreviewPanelProps> =
     form.description.responsibilities ||
 
     t(`${PREFIX}.placeholderDesc`);
-
-
-
-  const matchLabel = canPreviewMatchScore
-
-    ? t(`${PREFIX}.matchPending`)
-
-    : t(`${PREFIX}.notAvailable`);
 
 
 
@@ -177,20 +165,6 @@ const CreateOfferPreviewPanel: FunctionComponent<CreateOfferPreviewPanelProps> =
         <SafeClampText lines={4} className="offer-preview-card__desc">
           {descriptionPreview}
         </SafeClampText>
-
-        <div className="offer-preview-card__match">
-
-          <div className="flex items-center gap-1.5">
-
-            <Star className="h-4 w-4 fill-amber-500/40 text-amber-500/60" aria-hidden />
-
-            <span className="text-sm font-medium text-[var(--admin-text-secondary)]">{matchLabel}</span>
-
-          </div>
-
-          <span className="text-xs text-[var(--admin-text-secondary)]">{t(`${PREFIX}.matchLabel`)}</span>
-
-        </div>
 
       </motion.div>
 

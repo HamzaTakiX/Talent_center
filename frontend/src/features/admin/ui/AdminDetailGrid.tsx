@@ -23,10 +23,14 @@ export interface AdminDetailSection {
 
 interface AdminDetailGridProps {
   sections: AdminDetailSection[];
+  className?: string;
 }
 
-const AdminDetailGrid: FunctionComponent<AdminDetailGridProps> = ({ sections }) => (
-  <div className="admin-detail-grid">
+const AdminDetailGrid: FunctionComponent<AdminDetailGridProps> = ({
+  sections,
+  className = '',
+}) => (
+  <div className={`admin-detail-grid${className ? ` ${className}` : ''}`.trim()}>
     {sections.map((section) => {
       const SectionIcon =
         section.icon ??

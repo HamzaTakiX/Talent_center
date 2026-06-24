@@ -7,11 +7,10 @@ import DashboardPanel from '../../../admin/dashboard/ui/DashboardPanel';
 import { easePremium } from '../../../admin/dashboard/ui/animations';
 import AdminChartLegend from '../../../admin/ui/charts/AdminChartLegend';
 import { legendFromSeries } from '../../../admin/ui/charts/chartPalette';
-import { studentActivityChartData } from '../data/studentDashboardMock';
+import { useStudentDashboardContext } from '../context/StudentDashboardContext';
 
 const CHART_HEIGHT_DESKTOP = 148;
 const CHART_HEIGHT_MOBILE = 124;
-const maxValue = 14;
 
 const seriesColors = {
   applications: '#2563eb',
@@ -41,7 +40,7 @@ const useChartHeight = () => {
   return height;
 };
 
-const barHeightPx = (value: number, chartHeight: number) =>
+const barHeightPx = (value: number, chartHeight: number, maxValue: number) =>
   value <= 0 ? 0 : Math.max((Math.min(value, maxValue) / maxValue) * chartHeight, 3);
 
 const AnimatedBar: FunctionComponent<{
@@ -49,8 +48,9 @@ const AnimatedBar: FunctionComponent<{
   color: string;
   delay: number;
   chartHeight: number;
-}> = ({ value, color, delay, chartHeight }) => {
-  const target = barHeightPx(value, chartHeight);
+  maxValue: number;
+}> = ({ value, color, delay, chartHeight, maxValue }) => {
+  const target = barHeightPx(value, chartHeight, maxValue);
   const [height, setHeight] = useState(0);
 
   useEffect(() => {
@@ -73,6 +73,18 @@ const AnimatedBar: FunctionComponent<{
 const StudentDashboardAnalytics: FunctionComponent = () => {
   const { t, i18n } = useTranslation();
   const chartHeight = useChartHeight();
+  const { data } = useStudentDashboardContext();
+  const chartData = data.chart;
+
+  const maxValue = useMemo(() => {
+    const peak = Math.max(
+      ...chartData.applications,
+      ...chartData.profileViews,
+      ...chartData.messages,
+      1,
+    );
+    return Math.max(14, Math.ceil(peak / 2) * 2);
+  }, [chartData]);
 
   const chartLabels = useMemo(() => {
     const locale = localeMap[i18n.language] ?? 'fr-FR';
@@ -118,7 +130,7 @@ const StudentDashboardAnalytics: FunctionComponent = () => {
                 className="flex w-6 shrink-0 flex-col justify-between pb-5 text-[9px] tabular-nums text-[var(--admin-text-muted)] sm:w-7 sm:text-[10px]"
                 style={{ height: chartHeight }}
               >
-                {[14, 10, 7, 3, 0].map((v) => (
+                {[maxValue, Math.round(maxValue * 0.7), Math.round(maxValue * 0.5), Math.round(maxValue * 0.2), 0].map((v) => (
                   <span key={v}>{v}</span>
                 ))}
               </motion.div>
@@ -138,10 +150,11 @@ const StudentDashboardAnalytics: FunctionComponent = () => {
                           {keys.map((k, ki) => (
                             <AnimatedBar
                               key={k}
-                              value={studentActivityChartData[k][index] ?? 0}
+                              value={chartData[k][index] ?? 0}
                               color={seriesColors[k]}
                               delay={index * 35 + ki * 15}
                               chartHeight={chartHeight}
+                              maxValue={maxValue}
                             />
                           ))}
                         </motion.div>

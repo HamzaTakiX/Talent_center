@@ -7,6 +7,8 @@ export const documentsModuleFr = {
     title: 'Documents administratifs',
     subtitle: 'Gérer les demandes documentaires, workflows et réservations',
     quickLinks: 'Sections du module',
+    loadError: 'Impossible de charger le tableau de bord documents',
+    retry: 'Réessayer',
   },
   feed: {
     recent: 'Demandes récentes',
@@ -129,6 +131,9 @@ export const documentsModuleFr = {
     noReservation: 'Aucune réservation planifiée',
     noAttachments: 'Aucune pièce jointe',
     noOutputs: 'Aucun document généré',
+    noInsights: 'Aucune observation pour le moment',
+    actionError: 'Impossible d\'exécuter l\'action',
+    rejectReasonPrompt: 'Motif du rejet (obligatoire)',
   },
   reservations: {
     title: 'Centre de réservation',
@@ -136,6 +141,7 @@ export const documentsModuleFr = {
     calendar: 'Calendrier des réservations',
     occupancy: 'Occupation aujourd\'hui',
     smartAssign: 'Attribuer les créneaux',
+    countToday: '{{count}} réservation(s) aujourd\'hui',
   },
   resources: {
     title: 'Gestion des ressources',
@@ -183,6 +189,9 @@ export const documentsModuleFr = {
     reservationPeak: 'Pic de réservations : 10h00–11h30.',
     srfClear: 'L\'étudiant dispose d\'une attestation SRF valide.',
     srfBlocked: 'Paiement SRF requis avant validation.',
+    slaAtRisk: 'Des demandes approchent de la limite SLA.',
+    highPending: 'Volume élevé de demandes en attente de validation.',
+    slaUrgent: 'Le délai SLA est presque atteint pour cette demande.',
   },
   rejectionCauses: {
     missing_attachment: 'Pièce manquante',
@@ -218,6 +227,20 @@ export const documentsModuleFr = {
     analytics: {
       title: 'Pas encore d\'analytique',
       subtitle: 'Les insights apparaîtront après traitement des demandes.',
+    },
+    charts: {
+      statusMix: {
+        title: 'Pas encore de répartition par statut',
+        subtitle: 'La distribution des demandes apparaîtra dès les premières soumissions.',
+      },
+      rejectionCauses: {
+        title: 'Aucun rejet enregistré',
+        subtitle: 'Les causes de rejet seront affichées lorsque des demandes seront refusées.',
+      },
+      reservationOccupancy: {
+        title: 'Aucune activité de réservation',
+        subtitle: 'L\'occupation horaire des guichets s\'affichera après les premiers créneaux réservés.',
+      },
     },
   },
   chart: {

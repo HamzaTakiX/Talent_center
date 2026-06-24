@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect } from 'react';
+import { FunctionComponent, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import InternshipConversationList from '../../../../admin/offres-stage/chat/components/InternshipConversationList';
@@ -6,14 +6,18 @@ import { useInternshipSupportChat } from '../../../../admin/offres-stage/chat/ho
 import SupportInboxShell from '../../../../admin/shared/admin-support-inbox/components/SupportInboxShell';
 import StudentLayout from '../../../components/StudentLayout';
 import { getInternshipOfferDetailsPath } from '../../constants/routes';
+import { STUDENT_CHAT_PATH } from '../constants/routes';
 import StudentInternshipChatArea from './StudentInternshipChatArea';
 import StudentInternshipContextPanel from './StudentInternshipContextPanel';
+import { InternshipChatContextPanelSkeleton } from '../../../../admin/offres-stage/chat/components/InternshipChatLoadingSkeletons';
 
 const StudentInternshipSupportInbox: FunctionComponent = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const conversationFromUrl = searchParams.get('conversation') ?? '';
+  const offerFromUrl = searchParams.get('offer') ?? '';
+  const deepLinkHandled = useRef(false);
 
   const {
     filtered,
@@ -22,6 +26,7 @@ const StudentInternshipSupportInbox: FunctionComponent = () => {
     filters,
     search,
     stats,
+    emptyStateStats,
     filterCounts,
     primaryFilterCounts,
     programOptions,
@@ -30,22 +35,35 @@ const StudentInternshipSupportInbox: FunctionComponent = () => {
     internshipTypeOptions,
     mobileView,
     loading,
+    conversationLoading,
+    messagesLoading,
     hasActiveFilters,
     setSearch,
     setMobileView,
     setPrimaryFilter,
     selectConversation,
+    openConversationById,
+    openConversationForOffer,
     toggleFilter,
     clearFilters,
     sendMessage,
-  } = useInternshipSupportChat();
+    peerTyping,
+    notifyTyping,
+  } = useInternshipSupportChat('student');
 
   useEffect(() => {
-    if (!conversationFromUrl || loading) return;
-    if (filtered.some((c) => c.id === conversationFromUrl)) {
-      void selectConversation(conversationFromUrl);
+    if (deepLinkHandled.current) return;
+    if (offerFromUrl) {
+      deepLinkHandled.current = true;
+      void openConversationForOffer(offerFromUrl);
+      navigate(STUDENT_CHAT_PATH, { replace: true });
+      return;
     }
-  }, [conversationFromUrl, filtered, loading, selectConversation]);
+    if (conversationFromUrl) {
+      deepLinkHandled.current = true;
+      void openConversationById(conversationFromUrl);
+    }
+  }, [conversationFromUrl, offerFromUrl, openConversationById, openConversationForOffer, navigate]);
 
   const goOffer = () => {
     if (selected?.offerUuid) {
@@ -53,10 +71,12 @@ const StudentInternshipSupportInbox: FunctionComponent = () => {
     }
   };
 
+  const isOpeningConversation = conversationLoading && !selected;
+
   return (
     <SupportInboxShell
       Layout={StudentLayout}
-      hasSelection={Boolean(selected)}
+      hasSelection={Boolean(selected) || isOpeningConversation}
       mobileView={mobileView}
       sidebar={
         <InternshipConversationList
@@ -86,12 +106,24 @@ const StudentInternshipSupportInbox: FunctionComponent = () => {
         <StudentInternshipChatArea
           conversation={selected}
           stats={stats}
+          emptyStateStats={emptyStateStats}
+          messagesLoading={messagesLoading}
+          conversationLoading={conversationLoading}
+          statsLoading={loading}
           onSend={(text) => void sendMessage(text)}
           onBack={() => setMobileView('list')}
           onViewOffer={goOffer}
+          peerTyping={peerTyping}
+          onTyping={notifyTyping}
         />
       }
-      contextPanel={selected ? <StudentInternshipContextPanel conversation={selected} /> : undefined}
+      contextPanel={
+        selected ? (
+          <StudentInternshipContextPanel conversation={selected} />
+        ) : isOpeningConversation ? (
+          <InternshipChatContextPanelSkeleton />
+        ) : undefined
+      }
     />
   );
 };

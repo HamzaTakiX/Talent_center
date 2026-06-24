@@ -100,44 +100,11 @@ def _health_score(*, completion: int, engagement: int, risk: int) -> int:
 @transaction.atomic
 def aggregate_profile_data(student_profile: StudentProfile) -> StudentProfileIndicator:
     """
-    Single-student full recompute. Writes StudentProfileIndicator and
-    returns it. Everything else (metrics, risks, suggestions, state
-    transitions) is refreshed as a side-effect.
+    Single-student full recompute. Delegates to StudentIntelligenceService
+    as the single source of truth for all scores.
     """
-    # Metrics -> risks -> suggestions -> state. Order matters, since
-    # each step consumes what the previous one produced.
-    behavior_analysis_service.compute_activity_metrics(student_profile)
-    engagement = behavior_analysis_service.compute_engagement_score(student_profile)
-    risk_detection_service.detect_risk(student_profile)
-    suggestion_engine.generate_suggestions(student_profile)
-    state_machine_service.update_profile_state(student_profile)
-
-    completion = _completion_rate(student_profile)
-    risk = _risk_score(student_profile)
-    health = _health_score(completion=completion, engagement=engagement, risk=risk)
-
-    indicator, _ = StudentProfileIndicator.objects.update_or_create(
-        student_profile=student_profile,
-        defaults={
-            'health_score': health,
-            'engagement_score': engagement,
-            'risk_score': risk,
-            'last_activity_at': _last_activity_at(student_profile),
-            'is_at_risk': risk >= 50,
-        },
-    )
-
-    # Daily snapshot is idempotent thanks to the unique constraint.
-    StudentProfileSnapshot.objects.update_or_create(
-        student_profile=student_profile,
-        snapshot_date=timezone.now().date(),
-        defaults={
-            'completion_rate': completion,
-            'engagement_score': engagement,
-            'risk_score': risk,
-        },
-    )
-    return indicator
+    from .student_intelligence_service import recompute_student_intelligence
+    return recompute_student_intelligence(student_profile)
 
 
 def compute_global_profile_view(student_profile: StudentProfile) -> dict[str, Any]:
@@ -167,6 +134,7 @@ def compute_global_profile_view(student_profile: StudentProfile) -> dict[str, An
     return {
         'student_profile_id': student_profile.pk,
         'indicator': indicator,
+        'intelligence': indicator,
         'completion_rate': _completion_rate(student_profile),
         'contexts': list(contexts),
         'modules': [

@@ -32,6 +32,7 @@ const GeneralSettingsTab: FunctionComponent<Props> = ({ draft, saving, onChange,
   return (
     <EmailSystemSectionShell
       icon={Settings2}
+      busy={saving}
       title={t(`${PREFIX}.title`, { defaultValue: 'General settings' })}
       subtitle={t(`${PREFIX}.subtitle`, {
         defaultValue: 'Default sender identity and platform-wide email preferences.',

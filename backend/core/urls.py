@@ -8,6 +8,8 @@ urlpatterns = [
     path('api/auth/', include('apps.authentication.urls')),
     path('api/', include('apps.accounts_et_roles.urls')),
     path('api/cv/', include('apps.cv_builder.urls')),
+    path('api/cv-intelligence/', include('apps.cv_intelligence.urls')),
+    path('api/career-coach/', include('apps.career_coach.urls')),
     path('api/profile-intelligence/', include('apps.profile_intelligence.urls')),
     path('api/admin/', include('apps.admin_management.urls')),
     path('api/encadrant/', include('apps.encadrant.urls')),

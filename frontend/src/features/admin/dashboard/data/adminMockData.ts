@@ -10,6 +10,25 @@ export type DashboardStatId =
 
 export type AlertPriority = 'High' | 'Medium';
 
+/** When true, dashboard widgets use mock data instead of live API responses. */
+export const USE_ADMIN_DASHBOARD_MOCK = true;
+
+export const adminPlatformHealthMock = {
+  health_score: 87,
+  critical_alerts: 8,
+  students_at_risk: 42,
+  active_users: 892,
+  risk_trend: [3, 5, 4, 6, 4],
+  activity_trend: [65, 72, 68, 80, 75],
+};
+
+export const adminAlertMetricCounts = {
+  unpaidSrf: 23,
+  documentsPending: 45,
+  noInternship: 156,
+  offersExpiring: 12,
+} as const;
+
 export const STAT_ROUTES: Record<DashboardStatId, string> = {
   totalStudents: '/admin/dashboard/students',
   totalEncadrants: '/admin/dashboard/encadrants',

@@ -4,7 +4,10 @@ import type { AnnouncementTag, FullAnnouncementItem } from '../types';
 export type AnnouncementItemSeed = Omit<
   FullAnnouncementItem,
   'title' | 'company' | 'postedDate' | 'deadlineLabel' | 'description'
->;
+> & {
+  /** @deprecated mock-only */
+  tag?: AnnouncementTag;
+};
 
 export function resolveAnnouncementItem(
   item: AnnouncementItemSeed,
@@ -13,6 +16,8 @@ export function resolveAnnouncementItem(
   const base = `student.announcements.mocks.items.${item.id}`;
   return {
     ...item,
+    typeCode: item.typeCode ?? 'other',
+    typeName: item.typeName ?? (item.tag ?? 'Announcement'),
     title: t(`${base}.title`),
     company: t(`${base}.company`),
     postedDate: t(`${base}.postedDate`),
@@ -30,7 +35,7 @@ export function announcementSearchHaystack(item: FullAnnouncementItem, t: TFunct
     item.title,
     item.company,
     item.description,
-    announcementTagLabel(item.tag, t),
+    item.typeName,
     t(`student.announcements.priority.${item.priority === 'Urgent' ? 'urgent' : item.priority === 'Important' ? 'important' : 'normal'}`),
   ]
     .join(' ')

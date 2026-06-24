@@ -1,11 +1,12 @@
+import type { User } from '../../../../auth/types';
 import type {
   AnalysisLocale,
   BuilderAnalysisSlice,
   MultilingualBuilderAnalysis,
 } from '../../../../cv/types/cvAiAnalysis';
-import { CV_ANALYSIS_DASHBOARD_MOCK } from '../data/cvAnalysisDashboardMock';
 import type { CvAnalysisDashboardData, CvAnalysisInsightsGroup, AnalysisInsightCategory } from '../types/cvAnalysisDashboard';
 import {
+  buildCvAnalysisStudentProfileFromUser,
   computeProfileCompletion,
   extractDetectedSkills,
   getAvatarInitials,
@@ -13,6 +14,89 @@ import {
   getCvFileLabel,
   type CvBuilderSnapshot,
 } from './cvDraftReader';
+
+const EMPTY_DASHBOARD_BASE: Omit<CvAnalysisDashboardData, 'profile' | 'meta' | 'cvFileName'> = {
+  breakdown: [],
+  insights: [],
+  detectedSkills: [],
+  missingSkills: [],
+  internshipMatches: [],
+  recommendations: [],
+  roadmap: [],
+  interviewSuggestions: [],
+  careerMetrics: [],
+  activityTimeline: [],
+  profileIntelligence: {
+    engagementScore: 0,
+    riskScore: 0,
+    activityLevel: 'low',
+    status: 'pending',
+    riskLabel: 'unknown',
+  },
+};
+
+function resolveDashboardProfile(
+  cv: CvBuilderSnapshot,
+  user?: User | null,
+): CvAnalysisDashboardData['profile'] {
+  const userProfile = buildCvAnalysisStudentProfileFromUser(user);
+  if (userProfile) return userProfile;
+
+  const role = typeof cv.details.role === 'string' ? cv.details.role.trim() : '';
+  return {
+    name: getCvDisplayName(cv),
+    program: role || '—',
+    avatarInitials: getAvatarInitials(cv),
+    profileCompletion: computeProfileCompletion(cv),
+  };
+}
+
+export function applyUserProfileToDashboard(
+  dashboard: CvAnalysisDashboardData,
+  user?: User | null,
+): CvAnalysisDashboardData {
+  const userProfile = buildCvAnalysisStudentProfileFromUser(user);
+  if (!userProfile) return dashboard;
+  return { ...dashboard, profile: userProfile };
+}
+
+export function mergeDashboardWithCvMeta(
+  dashboard: CvAnalysisDashboardData,
+  cv: CvBuilderSnapshot,
+  options?: { cvFileName?: string; cvSource?: 'builder' | 'imported'; user?: User | null },
+): CvAnalysisDashboardData {
+  const userProfile = buildCvAnalysisStudentProfileFromUser(options?.user);
+  return {
+    ...dashboard,
+    profile: userProfile ?? dashboard.profile ?? resolveDashboardProfile(cv, options?.user),
+    cvFileName: options?.cvFileName ?? dashboard.cvFileName ?? getCvFileLabel(cv),
+    cvSource: options?.cvSource ?? dashboard.cvSource ?? 'builder',
+    isDefaultCv: options?.cvSource !== 'imported',
+    detectedSkills: dashboard.detectedSkills?.length
+      ? dashboard.detectedSkills
+      : extractDetectedSkills(cv),
+  };
+}
+
+export function buildEmptyDashboard(
+  cv: CvBuilderSnapshot,
+  options?: { cvFileName?: string; cvSource?: 'builder' | 'imported'; user?: User | null },
+): CvAnalysisDashboardData {
+  return {
+    ...EMPTY_DASHBOARD_BASE,
+    profile: resolveDashboardProfile(cv, options?.user),
+    meta: {
+      overallScore: 0,
+      potentialScore: 0,
+      lastAnalyzed: new Date().toLocaleString(),
+      analysisVersion: 'pending',
+    },
+    detectedSkills: extractDetectedSkills(cv).map((s, i) => ({ id: `s-${i}`, name: s.name })),
+    cvFileName: options?.cvFileName ?? getCvFileLabel(cv),
+    cvSource: options?.cvSource ?? 'builder',
+    isDefaultCv: options?.cvSource !== 'imported',
+  };
+}
 
 function resolveLocale(lang: string): AnalysisLocale {
   if (lang.startsWith('ar')) return 'ar';
@@ -64,11 +148,12 @@ function buildInsights(overview: BuilderAnalysisSlice['overview']): CvAnalysisIn
   ].filter((g) => g.items.length > 0);
 }
 
+/** Legacy mapper for builder analysis API — no mock data, real API fields only. */
 export function mapBuilderAnalysisToDashboard(
   cv: CvBuilderSnapshot,
   analysis: MultilingualBuilderAnalysis,
   language: string,
-  options?: { cvFileName?: string; cvSource?: 'builder' | 'imported' },
+  options?: { cvFileName?: string; cvSource?: 'builder' | 'imported'; user?: User | null },
 ): CvAnalysisDashboardData {
   const locale = resolveLocale(language);
   const slice =
@@ -78,29 +163,22 @@ export function mapBuilderAnalysisToDashboard(
     Object.values(analysis.localized)[0];
 
   const { overview } = slice;
-  const overall = parseScore(overview.overall_score, 75);
-  const ats = parseScore(overview.ats_score, 70);
-  const readiness = parseScore(overview.internship_readiness, 75);
+  const overall = parseScore(overview.overall_score, 0);
+  const ats = parseScore(overview.ats_score, 0);
+  const readiness = parseScore(overview.internship_readiness, 0);
   const skillsScore = sectionScore(slice, 'skills', overall);
   const experienceScore = sectionScore(slice, 'experience', overall);
   const educationScore = sectionScore(slice, 'education', overall);
-  const formattingScore = sectionScore(slice, 'profile_summary', overall - 5);
-
-  const role = typeof cv.details.role === 'string' ? cv.details.role.trim() : '';
+  const formattingScore = sectionScore(slice, 'profile_summary', overall);
 
   return {
-    ...CV_ANALYSIS_DASHBOARD_MOCK,
-    profile: {
-      name: getCvDisplayName(cv),
-      program: role || CV_ANALYSIS_DASHBOARD_MOCK.profile.program,
-      avatarInitials: getAvatarInitials(cv),
-      profileCompletion: computeProfileCompletion(cv),
-    },
+    ...EMPTY_DASHBOARD_BASE,
+    profile: resolveDashboardProfile(cv, options?.user),
     meta: {
       overallScore: overall,
       potentialScore: Math.min(100, overall + Math.max(4, Math.round((100 - overall) * 0.45))),
       lastAnalyzed: formatAnalysisDate(),
-      analysisVersion: analysis.provider || 'v2',
+      analysisVersion: analysis.provider || 'legacy',
     },
     breakdown: [
       { id: 'skills', labelKey: 'student.internshipOffers.cvDashboard.breakdown.skills', score: skillsScore },
@@ -111,9 +189,7 @@ export function mapBuilderAnalysisToDashboard(
       { id: 'readiness', labelKey: 'student.internshipOffers.cvDashboard.breakdown.readiness', score: readiness },
     ],
     insights: buildInsights(overview),
-    detectedSkills: extractDetectedSkills(cv).length
-      ? extractDetectedSkills(cv)
-      : CV_ANALYSIS_DASHBOARD_MOCK.detectedSkills,
+    detectedSkills: extractDetectedSkills(cv).map((s, i) => ({ id: `s-${i}`, name: s.name })),
     cvFileName: options?.cvFileName ?? getCvFileLabel(cv),
     cvSource: options?.cvSource ?? 'builder',
     isDefaultCv: options?.cvSource !== 'imported',
@@ -122,27 +198,7 @@ export function mapBuilderAnalysisToDashboard(
 
 export function buildFallbackDashboard(
   cv: CvBuilderSnapshot,
-  options?: { cvFileName?: string; cvSource?: 'builder' | 'imported' },
+  options?: { cvFileName?: string; cvSource?: 'builder' | 'imported'; user?: User | null },
 ): CvAnalysisDashboardData {
-  const role = typeof cv.details.role === 'string' ? cv.details.role.trim() : '';
-
-  return {
-    ...CV_ANALYSIS_DASHBOARD_MOCK,
-    profile: {
-      name: getCvDisplayName(cv),
-      program: role || CV_ANALYSIS_DASHBOARD_MOCK.profile.program,
-      avatarInitials: getAvatarInitials(cv),
-      profileCompletion: computeProfileCompletion(cv),
-    },
-    meta: {
-      ...CV_ANALYSIS_DASHBOARD_MOCK.meta,
-      lastAnalyzed: formatAnalysisDate(),
-    },
-    detectedSkills: extractDetectedSkills(cv).length
-      ? extractDetectedSkills(cv)
-      : CV_ANALYSIS_DASHBOARD_MOCK.detectedSkills,
-    cvFileName: options?.cvFileName ?? getCvFileLabel(cv),
-    cvSource: options?.cvSource ?? 'builder',
-    isDefaultCv: options?.cvSource !== 'imported',
-  };
+  return buildEmptyDashboard(cv, options);
 }

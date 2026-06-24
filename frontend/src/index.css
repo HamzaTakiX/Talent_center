@@ -5,6 +5,7 @@
 @import './features/admin/dashboard/styles/admin-alerts-analytics.css';
 @import './features/admin/encadrant/smart-assignment/styles/admin-smart-assignment-analytics.css';
 @import './features/admin/ui/styles/admin-section-states.css';
+@import './features/admin/ui/styles/admin-charts.css';
 @import './features/student/Dashboard/styles/student-dashboard.css';
 @import './features/student/styles/student-platform.css';
 @import './features/student/styles/student-agenda-platform.css';

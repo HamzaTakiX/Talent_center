@@ -14,12 +14,11 @@ import {
   CheckCheck,
   DollarSign,
   MoreVertical,
-  Paperclip,
   Search,
-  Send,
   X,
 } from 'lucide-react';
 import { useAdminToast } from '../../../../admin/dashboard/context/AdminToastContext';
+import SupportMessageComposer from '../../../../admin/shared/admin-support-inbox/components/SupportMessageComposer';
 import { studentSrfChatMessages } from '../data/studentSrfChatMock';
 import type { SrfChatMessage } from '../types';
 
@@ -115,7 +114,6 @@ const SrfChatThread: FunctionComponent = () => {
   const [threadSearch, setThreadSearch] = useState('');
   const [isMuted, setIsMuted] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const composerRef = useRef<HTMLTextAreaElement>(null);
   const threadSearchRef = useRef<HTMLInputElement>(null);
 
   const filteredMessages = useMemo(() => {
@@ -138,18 +136,7 @@ const SrfChatThread: FunctionComponent = () => {
     return () => window.clearTimeout(timer);
   }, [threadSearchOpen]);
 
-  const adjustComposerHeight = useCallback(() => {
-    const el = composerRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.max(32, Math.min(el.scrollHeight, 96))}px`;
-  }, []);
-
-  useEffect(() => {
-    adjustComposerHeight();
-  }, [draft, adjustComposerHeight]);
-
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     const text = draft.trim();
     if (!text) return;
     setMessages((prev) => [
@@ -162,8 +149,7 @@ const SrfChatThread: FunctionComponent = () => {
       },
     ]);
     setDraft('');
-    if (composerRef.current) composerRef.current.style.height = '2rem';
-  };
+  }, [draft, i18n.language]);
 
   const openThreadSearch = () => {
     setThreadSearchOpen(true);
@@ -380,41 +366,16 @@ const SrfChatThread: FunctionComponent = () => {
         )}
       </div>
 
-      <footer className="admin-chat-composer-footer shrink-0 border-t border-solid border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-4 py-3 sm:px-5">
-        <div className="admin-chat-composer-bar flex items-end gap-2 rounded-2xl border border-solid px-2 py-2">
-          <button
-            type="button"
-            className="admin-chat-composer-icon inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-[var(--admin-text-secondary)]"
-            aria-label={t('student.srf.chat.attach')}
-          >
-            <Paperclip className="size-4" strokeWidth={2} aria-hidden />
-          </button>
-          <textarea
-            ref={composerRef}
-            rows={1}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder={t('student.srf.chat.composer')}
-            aria-label={t('student.srf.chat.composer')}
-            className="admin-chat-composer-textarea min-h-8 flex-1 resize-none border-0 bg-transparent py-1.5 text-sm text-[var(--admin-text)] outline-none"
-          />
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={!draft.trim()}
-            className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-[var(--admin-brand)] text-white transition-opacity disabled:opacity-40"
-            aria-label={t('student.srf.chat.send')}
-          >
-            <Send className="size-4" strokeWidth={2} aria-hidden />
-          </button>
-        </div>
-      </footer>
+      <SupportMessageComposer
+        value={draft}
+        onChange={setDraft}
+        onSend={handleSend}
+        placeholder={t('student.srf.chat.composer')}
+        inputAriaLabel={t('student.srf.chat.composer')}
+        attachAriaLabel={t('student.srf.chat.attach')}
+        sendAriaLabel={t('student.srf.chat.send')}
+        showVoice={false}
+      />
     </section>
   );
 };

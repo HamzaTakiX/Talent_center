@@ -22,12 +22,22 @@ def _active_offers_qs():
     )
 
 
+_ONGOING_APPLICATION_STATUSES = (
+    OfferApplication.Status.SUBMITTED,
+    OfferApplication.Status.UNDER_REVIEW,
+    OfferApplication.Status.SHORTLISTED,
+    OfferApplication.Status.INTERVIEW,
+)
+
+
 def dashboard_summary() -> dict:
     offers = _active_offers_qs()
     applications = OfferApplication.objects.all()
     accepted = applications.filter(status=OfferApplication.Status.ACCEPTED)
     total_apps = applications.count()
     accepted_count = accepted.count()
+    now = timezone.now()
+    week_end = now + timedelta(days=7)
     return {
         'total_offers': offers.count(),
         'open_offers': offers.filter(status=InternshipOffer.Status.OPEN).count(),
@@ -35,6 +45,12 @@ def dashboard_summary() -> dict:
             status__in=[InternshipOffer.Status.PUBLISHED, InternshipOffer.Status.OPEN],
         ).count(),
         'total_applications': total_apps,
+        'ongoing_applications': applications.filter(status__in=_ONGOING_APPLICATION_STATUSES).count(),
+        'expiring_offers_this_week': offers.filter(
+            status__in=[InternshipOffer.Status.OPEN, InternshipOffer.Status.PUBLISHED],
+            application_deadline__gte=now,
+            application_deadline__lte=week_end,
+        ).count(),
         'acceptance_rate': round(accepted_count / total_apps * 100, 2) if total_apps else 0,
         'total_views': offers.aggregate(total=Sum('view_count'))['total'] or 0,
     }
@@ -73,9 +89,28 @@ def conversion_rate(*, days: int = 30) -> dict:
     return {'views': total_views, 'applications': apps, 'conversion_rate_pct': rate}
 
 
-def most_active_offers(limit: int = 10) -> list[dict]:
+def _offer_company_logo_url(offer: InternshipOffer, request=None) -> str | None:
+    if offer.company_logo:
+        url = offer.company_logo.url
+        if request:
+            return request.build_absolute_uri(url)
+        return url
+    meta_logo = (offer.metadata_json or {}).get('company_logo')
+    if meta_logo:
+        return str(meta_logo)
+    company = getattr(offer, 'company', None)
+    if company and getattr(company, 'logo', None):
+        url = company.logo.url
+        if request:
+            return request.build_absolute_uri(url)
+        return url
+    return None
+
+
+def most_active_offers(limit: int = 10, *, request=None) -> list[dict]:
     offers = (
         _active_offers_qs()
+        .select_related('company')
         .annotate(app_count=Count('applications'))
         .order_by('-application_count', '-view_count')[:limit]
     )
@@ -85,6 +120,12 @@ def most_active_offers(limit: int = 10) -> list[dict]:
             'uuid': str(o.uuid),
             'title': o.title,
             'company_name': o.company_name,
+            'company_logo_url': _offer_company_logo_url(o, request),
+            'location_city': o.location_city or None,
+            'application_deadline': (
+                o.application_deadline.isoformat() if o.application_deadline else None
+            ),
+            'status': o.status,
             'view_count': o.view_count,
             'application_count': o.application_count,
             'app_count_computed': o.app_count,
@@ -155,7 +196,7 @@ def generate_analytics_snapshot(*, period: str = 'daily') -> OfferAnalyticsSnaps
         'views': offer_views_stats(),
         'applications': application_stats(),
         'conversion': conversion_rate(),
-        'most_active_offers': most_active_offers(5),
+        'most_active_offers': most_active_offers(5, request=None),
         'most_active_companies': most_active_companies(5),
         'top_matching': top_matching_offers(5),
         'engagement': student_engagement(),
@@ -169,13 +210,13 @@ def generate_analytics_snapshot(*, period: str = 'daily') -> OfferAnalyticsSnaps
     return snapshot
 
 
-def full_analytics_dashboard() -> dict:
+def full_analytics_dashboard(*, request=None) -> dict:
     return {
         'summary': dashboard_summary(),
         'views': offer_views_stats(),
         'applications': application_stats(),
         'conversion': conversion_rate(),
-        'mostActiveOffers': most_active_offers(),
+        'mostActiveOffers': most_active_offers(request=request),
         'mostActiveCompanies': most_active_companies(),
         'topMatchingOffers': top_matching_offers(),
         'studentEngagement': student_engagement(),

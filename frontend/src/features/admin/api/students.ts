@@ -1,6 +1,7 @@
 import apiClient from '../../../shared/api/client';
 import type {
   AdminStudentRow,
+  AdminStudentDetail,
   ApiEnvelope,
   CreateStudentPayload,
   PaginatedListResponse,
@@ -30,8 +31,8 @@ export const adminStudentsApi = {
     return response.data.data;
   },
 
-  get: async (id: number): Promise<AdminStudentRow> => {
-    const response = await apiClient.get<ApiEnvelope<AdminStudentRow>>(`/admin/students/${id}`);
+  get: async (id: number): Promise<AdminStudentDetail> => {
+    const response = await apiClient.get<ApiEnvelope<AdminStudentDetail>>(`/admin/students/${id}`);
     return response.data.data;
   },
 
@@ -51,10 +52,19 @@ export const adminStudentsApi = {
   updateAssignment: async (
     id: number,
     payload: UpdateStudentAssignmentPayload,
-  ): Promise<AdminStudentRow> => {
-    const response = await apiClient.patch<ApiEnvelope<AdminStudentRow>>(
+  ): Promise<AdminStudentDetail> => {
+    const response = await apiClient.patch<ApiEnvelope<AdminStudentDetail>>(
       `/admin/students/${id}/assignment`,
       payload,
+    );
+    return response.data.data;
+  },
+
+  updateProfile: async (id: number, payload: FormData): Promise<AdminStudentDetail> => {
+    const response = await apiClient.patch<ApiEnvelope<AdminStudentDetail>>(
+      `/admin/students/${id}/profile`,
+      payload,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
     );
     return response.data.data;
   },

@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from apps.accounts_et_roles.models import User
 from apps.authentication.utils import envelope
@@ -26,7 +27,16 @@ from .services.conversation_service import (
     get_or_create_contextual_conversation,
     list_module_conversations,
 )
-from .services.message_service import list_messages, mark_read, send_message, toggle_reaction
+from .services.context_panel_service import build_context_panel
+from .services.message_service import (
+    batch_unread_counts_for_user,
+    list_messages,
+    mark_read,
+    send_message,
+    toggle_reaction,
+)
+from .services.metrics_service import compute_module_metrics
+from .services.presence import get_presence
 from .services.realtime import publish_typing
 
 
@@ -65,8 +75,14 @@ class ChatConversationListView(APIView):
             urgency=request.query_params.get('urgency') or None,
             unread_only=request.query_params.get('unread') == '1',
             search=request.query_params.get('q', ''),
+            include_archived=request.query_params.get('include_archived') == '1',
         )
-        ser = ConversationListSerializer(convs, many=True, context={'request': request})
+        unread_map = batch_unread_counts_for_user(request.user, [conv.pk for conv in convs])
+        ser = ConversationListSerializer(
+            convs,
+            many=True,
+            context={'request': request, 'unread_map': unread_map},
+        )
         payload = {'items': ser.data, 'total': len(ser.data)}
         return Response(envelope(True, 'Conversations loaded', data=payload))
 
@@ -100,10 +116,10 @@ class ChatConversationDetailView(APIView):
 
     def get(self, request, conversation_id: int):
         conv = (
-            conversations_for_user(request.user)
+            conversations_for_user(request.user, include_archived=True)
             .filter(pk=conversation_id)
             .select_related('context', 'context__student_user')
-            .prefetch_related('participants__user')
+            .prefetch_related('participants__user__profile')
             .first()
         )
         if not conv:
@@ -188,7 +204,7 @@ class ChatSmartActionView(APIView):
         if not ser.is_valid():
             return Response(envelope(False, 'Invalid action', errors=ser.errors), status=400)
         conv = (
-            conversations_for_user(request.user)
+            conversations_for_user(request.user, include_archived=True)
             .filter(pk=conversation_id)
             .select_related('context')
             .first()
@@ -203,7 +219,8 @@ class ChatSmartActionView(APIView):
                 payload=ser.validated_data.get('payload'),
             )
         except ValueError as exc:
-            return Response(envelope(False, str(exc)), status=400)
+            status = 403 if 'permission' in str(exc).lower() else 400
+            return Response(envelope(False, str(exc)), status=status)
         return Response(envelope(True, 'Action applied', data=result))
 
 
@@ -213,13 +230,82 @@ class ChatInboxSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        from .services.message_service import unread_count_for_user
+        from .services.message_service import batch_unread_counts_for_user
 
         modules = [c[0] for c in ConversationContext.Module.choices]
         summary = []
         for mod in modules:
-            convs = list_module_conversations(request.user, module=mod)[:50]
-            total_unread = sum(unread_count_for_user(request.user, c.pk) for c in convs)
+            convs = list_module_conversations(request.user, module=mod)
+            conv_ids = [conv.pk for conv in convs]
+            unread_map = batch_unread_counts_for_user(request.user, conv_ids)
+            total_unread = sum(unread_map.values())
             if convs or total_unread:
                 summary.append({'module': mod, 'conversation_count': len(convs), 'unread': total_unread})
         return Response(envelope(True, 'Inbox summary', data={'modules': summary}))
+
+
+class ChatModuleMetricsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, module: str):
+        if not module:
+            return Response(envelope(False, 'module required'), status=400)
+        data = compute_module_metrics(request.user, module=module)
+        return Response(envelope(True, 'Chat metrics loaded', data=data))
+
+
+class ChatContextPanelView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, conversation_id: int):
+        conv = (
+            conversations_for_user(request.user, include_archived=True)
+            .filter(pk=conversation_id)
+            .select_related('context', 'context__student_user', 'context__assigned_to')
+            .first()
+        )
+        if not conv:
+            return Response(envelope(False, 'Conversation not found'), status=404)
+        panel = build_context_panel(request.user, conv)
+        if not panel:
+            return Response(envelope(False, 'Forbidden'), status=403)
+        return Response(envelope(True, 'Context panel loaded', data=panel))
+
+
+class ChatPresenceView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id: int):
+        if request.user.pk != user_id and request.user.role not in ('ADMIN',) and not request.user.is_superuser:
+            return Response(envelope(False, 'Forbidden'), status=403)
+        return Response(envelope(True, 'Presence loaded', data=get_presence(user_id)))
+
+
+class ChatConversationExportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, conversation_id: int):
+        conv = (
+            conversations_for_user(request.user, include_archived=True)
+            .filter(pk=conversation_id)
+            .select_related('context')
+            .first()
+        )
+        if not conv:
+            return Response(envelope(False, 'Conversation not found'), status=404)
+        if request.user.role == 'STUDENT':
+            return Response(envelope(False, 'Export not allowed'), status=403)
+        msgs = list_messages(request.user, conversation_id, limit=500)
+        ser = MessageSerializer(msgs, many=True, context={'request': request})
+        return Response(
+            envelope(
+                True,
+                'Conversation export',
+                data={
+                    'conversation_id': conversation_id,
+                    'title': conv.title,
+                    'exported_at': timezone.now().isoformat(),
+                    'messages': ser.data,
+                },
+            )
+        )

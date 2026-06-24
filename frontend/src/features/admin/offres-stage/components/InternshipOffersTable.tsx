@@ -1,18 +1,23 @@
 import { FunctionComponent, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Users } from 'lucide-react';
+import {
+  Briefcase,
+  Building2,
+  Calendar,
+  CircleDot,
+  Image as ImageIcon,
+  MoreHorizontal,
+  Users,
+} from 'lucide-react';
 import { useAdminCopy } from '../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
 import InternshipOfferActions from './InternshipOfferActions';
-import InternshipOfferDetailModal from './InternshipOfferDetailModal';
 import OfferCompanyLogo from './OfferCompanyLogo';
-import type { InternshipOffer } from '../types';
-import { adminCrudRoutes } from '../../shared/navigation/adminCrudRoutes';
 import InternshipOffersToolbar, { type InternshipOfferStatusFilter } from './InternshipOffersToolbar';
+import InternshipOffersTableHeadCell from './InternshipOffersTableHeadCell';
 import AdminMobileRowCard from '../../shared/AdminMobileRowCard';
 import AdminBadge from '../../ui/AdminBadge';
-import AdminModuleHeader from '../../ui/AdminModuleHeader';
+import InternshipOffersSectionHeader from './InternshipOffersSectionHeader';
 import AdminModulePanel from '../../ui/AdminModulePanel';
 import {
   AdminMobileTableSkeleton,
@@ -22,6 +27,8 @@ import {
   AdminTableSkeletonRows,
 } from '../../ui';
 import { useStageOffersByStatus } from '../hooks/useStageOffers';
+import { applyOfferListFilters } from '../utils/filterOfferList';
+import type { OfferApplicantsFilter, OfferDeadlineFilter } from '../hooks/useOfferListFilterLabels';
 import { SafeTitleCell, SafeCompanyCell, SafeText, ADMIN_TABLE_COL } from '../../../../design-system/safeContent';
 
 const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
@@ -29,61 +36,45 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'
   Draft: 'warning',
   Expired: 'danger',
   Closed: 'neutral',
+  Archived: 'neutral',
 };
 
 const InternshipOffersTable: FunctionComponent = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
-  const { tableColumn, emptyState, filterLabel } = useAdminCopy();
+  const { tableColumn, emptyState } = useAdminCopy();
   const { offerStatus } = useAdminTableValues();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<InternshipOfferStatusFilter>('all');
-  const [companyFilter, setCompanyFilter] = useState('all');
-  const [viewOffer, setViewOffer] = useState<InternshipOffer | null>(null);
+  const [deadlineFilter, setDeadlineFilter] = useState<OfferDeadlineFilter>('all');
+  const [applicantsFilter, setApplicantsFilter] = useState<OfferApplicantsFilter>('all');
 
-  const { items: allOffers, loading, error, refresh } = useStageOffersByStatus(statusFilter, search);
+  const { items: rawOffers, loading, error, refresh } = useStageOffersByStatus(statusFilter, search);
 
-  const companyOptions = useMemo(() => {
-    const companies = [...new Set(allOffers.map((o) => o.company))].sort();
-    return [
-      { value: 'all', label: filterLabel('allCompanies') },
-      ...companies.map((c) => ({ value: c, label: c })),
-    ];
-  }, [allOffers, filterLabel]);
-
-  const filteredOffers = useMemo(() => {
-    return allOffers.filter((offer) => {
-      const matchCompany = companyFilter === 'all' || offer.company === companyFilter;
-      return matchCompany;
-    });
-  }, [allOffers, companyFilter]);
+  const offers = useMemo(
+    () => applyOfferListFilters(rawOffers, { deadline: deadlineFilter, applicants: applicantsFilter }),
+    [rawOffers, deadlineFilter, applicantsFilter],
+  );
 
   return (
-    <>
-      <InternshipOfferDetailModal
-        open={viewOffer != null}
-        offer={viewOffer}
-        onClose={() => setViewOffer(null)}
-        onEdit={(id) => {
-          setViewOffer(null);
-          navigate(adminCrudRoutes.internshipOfferEdit(id));
-        }}
-      />
     <AdminModulePanel
+      className="admin-offers-module-panel admin-offers-module-panel--offers"
       header={
-        <AdminModuleHeader
+        <InternshipOffersSectionHeader
+          variant="offers"
           title={t('admin.modules.offers.title')}
           subtitle={t('admin.modules.offers.subtitle')}
-          layout="toolbar"
+          itemCount={offers.length}
+          loading={loading}
           actions={
             <InternshipOffersToolbar
               search={search}
               onSearchChange={setSearch}
               statusFilter={statusFilter}
               onStatusFilterChange={setStatusFilter}
-              companyFilter={companyFilter}
-              onCompanyFilterChange={setCompanyFilter}
-              companyOptions={companyOptions}
+              deadlineFilter={deadlineFilter}
+              onDeadlineFilterChange={setDeadlineFilter}
+              applicantsFilter={applicantsFilter}
+              onApplicantsFilterChange={setApplicantsFilter}
             />
           }
         />
@@ -97,10 +88,10 @@ const InternshipOffersTable: FunctionComponent = () => {
       <div className="space-y-3 px-4 pb-6 sm:px-6 lg:hidden">
         {loading ? (
           <AdminMobileTableSkeleton count={4} />
-        ) : filteredOffers.length === 0 ? (
+        ) : offers.length === 0 ? (
           <AdminSearchEmptyState title={emptyState('offersFilters')} />
         ) : (
-          filteredOffers.map((offer) => (
+          offers.map((offer) => (
             <AdminMobileRowCard
               key={offer.id}
               title={
@@ -126,8 +117,8 @@ const InternshipOffersTable: FunctionComponent = () => {
                 { label: tableColumn('deadline'), value: offer.deadline },
               ]}
               actions={
-                <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end [&_button]:w-full sm:[&_button]:w-auto">
-                  <InternshipOfferActions offer={offer} onView={setViewOffer} onRefresh={refresh} />
+                <div className="flex justify-end">
+                  <InternshipOfferActions offer={offer} />
                 </div>
               }
             />
@@ -136,25 +127,53 @@ const InternshipOffersTable: FunctionComponent = () => {
       </div>
 
       <div className="admin-module-table-wrap admin-offers-table-wrap hidden px-4 pb-6 lg:block lg:px-6">
-        <AdminTableScroll minWidth="800px" className="admin-table-scroll--panel">
-          <thead>
+        <AdminTableScroll className="admin-table-scroll--panel admin-table-scroll--fit">
+          <thead className="admin-offers-table__head">
             <tr>
-              <th className={ADMIN_TABLE_COL.image}>{tableColumn('image')}</th>
-              <th className={ADMIN_TABLE_COL.title}>{tableColumn('title')}</th>
-              <th className={ADMIN_TABLE_COL.company}>{tableColumn('company')}</th>
-              <th className={ADMIN_TABLE_COL.status}>{tableColumn('status')}</th>
-              <th className={ADMIN_TABLE_COL.applicants}>{tableColumn('applicants')}</th>
-              <th className={ADMIN_TABLE_COL.deadline}>{tableColumn('deadline')}</th>
-              <th className={`text-end ${ADMIN_TABLE_COL.actions}`}>{tableColumn('actions')}</th>
+              <InternshipOffersTableHeadCell
+                icon={ImageIcon}
+                label={tableColumn('image')}
+                className={ADMIN_TABLE_COL.image}
+              />
+              <InternshipOffersTableHeadCell
+                icon={Briefcase}
+                label={tableColumn('title')}
+                className={ADMIN_TABLE_COL.title}
+              />
+              <InternshipOffersTableHeadCell
+                icon={Building2}
+                label={tableColumn('company')}
+                className={ADMIN_TABLE_COL.company}
+              />
+              <InternshipOffersTableHeadCell
+                icon={CircleDot}
+                label={tableColumn('status')}
+                className={ADMIN_TABLE_COL.status}
+              />
+              <InternshipOffersTableHeadCell
+                icon={Users}
+                label={tableColumn('applicants')}
+                className={ADMIN_TABLE_COL.applicants}
+              />
+              <InternshipOffersTableHeadCell
+                icon={Calendar}
+                label={tableColumn('deadline')}
+                className={ADMIN_TABLE_COL.deadline}
+              />
+              <InternshipOffersTableHeadCell
+                icon={MoreHorizontal}
+                label={tableColumn('actions')}
+                className={`text-end ${ADMIN_TABLE_COL.actionsMenu}`}
+              />
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <AdminTableSkeletonRows colSpan={7} rows={8} />
-            ) : filteredOffers.length === 0 ? (
+            ) : offers.length === 0 ? (
               <AdminTableEmptyState colSpan={7} title={emptyState('offersFilters')} />
             ) : (
-              filteredOffers.map((offer) => (
+              offers.map((offer) => (
                 <tr key={offer.id}>
                   <td>
                     <OfferCompanyLogo url={offer.companyLogoUrl} companyName={offer.company} />
@@ -173,8 +192,8 @@ const InternshipOffersTable: FunctionComponent = () => {
                     </div>
                   </td>
                   <td>{offer.deadline}</td>
-                  <td className="text-right">
-                    <InternshipOfferActions offer={offer} onView={setViewOffer} onRefresh={refresh} />
+                  <td className="admin-offers-table__actions">
+                    <InternshipOfferActions offer={offer} />
                   </td>
                 </tr>
               ))
@@ -183,7 +202,6 @@ const InternshipOffersTable: FunctionComponent = () => {
         </AdminTableScroll>
       </div>
     </AdminModulePanel>
-    </>
   );
 };
 

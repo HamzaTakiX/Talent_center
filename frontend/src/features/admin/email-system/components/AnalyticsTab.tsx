@@ -6,6 +6,7 @@ import type { AnalyticsOverview } from '../types/emailSystemTypes';
 import {
   EmailSystemMetricCard,
   EmailSystemSectionShell,
+  EmailSystemTabLoading,
   EmailSystemTablePanel,
   emailSystemTableTdClass,
   emailSystemTableThClass,
@@ -28,14 +29,22 @@ const AnalyticsTab: FunctionComponent<Props> = ({ load }) => {
   const { t } = useTranslation();
   const [days, setDays] = useState(30);
   const [data, setData] = useState<AnalyticsOverview | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(() => {
-    void load(days).then(setData);
+    setLoading(true);
+    void load(days)
+      .then(setData)
+      .finally(() => setLoading(false));
   }, [days, load]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  if (loading) {
+    return <EmailSystemTabLoading variant="metrics" />;
+  }
 
   return (
     <div className="email-system-tab-stack">

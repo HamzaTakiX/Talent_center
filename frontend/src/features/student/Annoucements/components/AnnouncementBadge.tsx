@@ -1,38 +1,43 @@
 import { FunctionComponent } from 'react';
-import { useTranslation } from 'react-i18next';
-import type { AnnouncementTag } from '../types';
-import { announcementTagClassMap } from '../data/announcementsMock';
+import { typeIcon } from '../../../admin/announcements-stage/utils/announcementMeta';
 import { ANNOUNCEMENT_TAG_BADGE_BASE } from '../constants/announcementsStyles';
-import { announcementTagLabel } from '../utils/resolveAnnouncementItem';
-import { announcementCategoryIconMap } from '../utils/announcementCategoryIcon';
 
 interface AnnouncementBadgeProps {
-  tag: AnnouncementTag;
-  /** Active un léger hover/focus (badge cliquable). */
+  typeCode: string;
+  typeName: string;
+  iconKey?: string;
+  typeColor?: string;
   interactive?: boolean;
   onClick?: () => void;
 }
 
 const AnnouncementBadge: FunctionComponent<AnnouncementBadgeProps> = ({
-  tag,
+  typeCode,
+  typeName,
+  iconKey,
+  typeColor,
   interactive = false,
   onClick,
 }) => {
-  const { t } = useTranslation();
-  const CategoryIcon = announcementCategoryIconMap[tag];
-  const className = `${ANNOUNCEMENT_TAG_BADGE_BASE} ${announcementTagClassMap[tag]} gap-1 ${
+  const CategoryIcon = typeIcon({ code: typeCode, icon: iconKey });
+  const className = `${ANNOUNCEMENT_TAG_BADGE_BASE} admin-badge admin-badge--info gap-1 ${
     interactive ? 'cursor-pointer active:translate-y-0 active:shadow-none' : 'cursor-default'
   }`;
-  const label = announcementTagLabel(tag, t);
-  const aria = t('student.announcements.mocks.tagAria', { tag: label });
+  const style = typeColor
+    ? {
+        backgroundColor: `color-mix(in srgb, ${typeColor} 14%, var(--admin-bg-elevated))`,
+        color: typeColor,
+        borderColor: `color-mix(in srgb, ${typeColor} 28%, var(--admin-border))`,
+      }
+    : undefined;
   const icon = (
     <CategoryIcon className="size-3 shrink-0 opacity-90" strokeWidth={2} aria-hidden />
   );
-  const labelNode = <span className="truncate">{label}</span>;
+  const labelNode = <span className="truncate">{typeName}</span>;
 
   if (interactive) {
     return (
-      <button type="button" onClick={onClick} className={className} aria-label={aria}>
+      <button type="button" onClick={onClick} className={className} style={style} aria-label={typeName}>
         {icon}
         {labelNode}
       </button>
@@ -40,7 +45,7 @@ const AnnouncementBadge: FunctionComponent<AnnouncementBadgeProps> = ({
   }
 
   return (
-    <span className={className} aria-label={aria}>
+    <span className={className} style={style} aria-label={typeName}>
       {icon}
       {labelNode}
     </span>

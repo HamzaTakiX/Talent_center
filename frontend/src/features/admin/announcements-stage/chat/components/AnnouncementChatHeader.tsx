@@ -1,24 +1,32 @@
 import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import {
   Archive,
+  ArchiveRestore,
   ArrowLeft,
   CheckCircle2,
-  ExternalLink,
   Megaphone,
   MoreHorizontal,
   User,
-  Users,
 } from 'lucide-react';
+import { useInternshipInboxCopy } from '../../../offres-stage/hooks/useOffersListLabels';
+import InternshipStudentAvatar from '../../../offres-stage/chat/components/InternshipStudentAvatar';
 import type { AnnouncementConversation } from '../types/announcementChatTypes';
+
+const STATUS_LABEL: Record<AnnouncementConversation['publishStatus'], string> = {
+  Published: 'Publiée',
+  Scheduled: 'Planifiée',
+  Draft: 'Brouillon',
+  Expired: 'Expirée',
+};
 
 type Props = {
   conversation: AnnouncementConversation;
   onBack?: () => void;
   onOpenAnnouncement: () => void;
   onOpenStudent: () => void;
-  onOpenAudience: () => void;
   onMarkResolved: () => void;
   onArchive: () => void;
+  onUnarchive: () => void;
 };
 
 const AnnouncementChatHeader: FunctionComponent<Props> = ({
@@ -26,12 +34,13 @@ const AnnouncementChatHeader: FunctionComponent<Props> = ({
   onBack,
   onOpenAnnouncement,
   onOpenStudent,
-  onOpenAudience,
   onMarkResolved,
   onArchive,
+  onUnarchive,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { t } = useInternshipInboxCopy();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -46,17 +55,42 @@ const AnnouncementChatHeader: FunctionComponent<Props> = ({
     <header className="isi-chat-header">
       <div className="isi-chat-header-left">
         {onBack ? (
-          <button type="button" onClick={onBack} className="isi-icon-btn lg:hidden" aria-label="Retour">
+          <button type="button" onClick={onBack} className="isi-icon-btn lg:hidden" aria-label={t('back')}>
             <ArrowLeft className="size-5" />
           </button>
         ) : null}
-        <div className="isi-avatar isi-avatar--header">{conversation.studentInitials}</div>
-        <div className="min-w-0">
-          <h2 className="isi-chat-name truncate">{conversation.studentName}</h2>
+        <div className="isi-chat-header-main min-w-0">
+          <div className="isi-chat-header-identity">
+            <InternshipStudentAvatar
+              url={conversation.studentAvatarUrl}
+              name={conversation.studentName}
+              email={conversation.studentEmail}
+              initials={conversation.studentInitials}
+              size="header"
+            />
+            <h2 className="isi-chat-name truncate">{conversation.studentName}</h2>
+          </div>
+          {conversation.studentEmail ? (
+            <p className="isi-chat-email truncate">{conversation.studentEmail}</p>
+          ) : null}
           <p className="isi-chat-meta truncate">
-            {conversation.announcementTitle}
+            {conversation.program !== '—' ? conversation.program : null}
+            {conversation.className !== '—' ? (
+              <>
+                {conversation.program !== '—' ? (
+                  <span className="isi-chat-meta-sep" aria-hidden> · </span>
+                ) : null}
+                {conversation.className}
+              </>
+            ) : null}
+            {conversation.announcementTitle ? (
+              <>
+                <span className="isi-chat-meta-sep" aria-hidden> · </span>
+                {conversation.announcementTitle}
+              </>
+            ) : null}
             <span className="isi-chat-meta-sep" aria-hidden> · </span>
-            {conversation.publishStatus}
+            {STATUS_LABEL[conversation.publishStatus]}
           </p>
         </div>
       </div>
@@ -65,40 +99,55 @@ const AnnouncementChatHeader: FunctionComponent<Props> = ({
         {!conversation.resolved ? (
           <button type="button" onClick={onMarkResolved} className="isi-header-btn">
             <CheckCircle2 className="size-4" />
-            <span>Résoudre</span>
+            <span>{t('resolve')}</span>
           </button>
         ) : null}
-        <button type="button" onClick={onArchive} className="isi-header-btn">
-          <Archive className="size-4" />
-          <span>Archiver</span>
-        </button>
+        {conversation.archived ? (
+          <button type="button" onClick={onUnarchive} className="isi-header-btn">
+            <ArchiveRestore className="size-4" />
+            <span>{t('unarchive')}</span>
+          </button>
+        ) : (
+          <button type="button" onClick={onArchive} className="isi-header-btn">
+            <Archive className="size-4" />
+            <span>{t('archive')}</span>
+          </button>
+        )}
         <div ref={menuRef} className="relative">
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             className="isi-icon-btn"
-            aria-label="Plus d'actions"
+            aria-label={t('moreActions')}
             aria-expanded={menuOpen}
           >
             <MoreHorizontal className="size-4" />
           </button>
           {menuOpen ? (
             <div className="isi-header-menu" role="menu">
-              <button type="button" role="menuitem" onClick={() => { onOpenAnnouncement(); setMenuOpen(false); }}>
-                <Megaphone className="size-4" />
-                Voir l'annonce
-              </button>
-              <button type="button" role="menuitem" onClick={() => { onOpenAudience(); setMenuOpen(false); }}>
-                <Users className="size-4" />
-                Audience ciblée
-              </button>
-              <button type="button" role="menuitem" onClick={() => { onOpenStudent(); setMenuOpen(false); }}>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  onOpenStudent();
+                  setMenuOpen(false);
+                }}
+                disabled={!conversation.studentUserId}
+              >
                 <User className="size-4" />
-                Profil étudiant
+                {t('viewStudent')}
               </button>
-              <button type="button" role="menuitem" onClick={() => { onOpenAnnouncement(); setMenuOpen(false); }}>
-                <ExternalLink className="size-4" />
-                Ouvrir dans le module
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  onOpenAnnouncement();
+                  setMenuOpen(false);
+                }}
+                disabled={!conversation.announcementUuid}
+              >
+                <Megaphone className="size-4" />
+                Voir l&apos;annonce
               </button>
             </div>
           ) : null}

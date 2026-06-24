@@ -98,14 +98,13 @@ const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
         title={title ?? t('admin.modules.history.title')}
         subtitle={subtitle ?? t('admin.modules.history.subtitle')}
         actions={
-          <div className="flex w-full flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <AdminListToolbar
-              controlsLayout="grouped"
-              searchValue={search}
-              onSearchChange={onSearchChange}
-              searchPlaceholder={searchPh}
-              searchLoading={searchLoading || isRefreshing}
-              toolbarAriaLabel={t(`${MAIN_PREFIX}.toolbarAria`)}
+          <AdminListToolbar
+            controlsLayout="grouped"
+            searchValue={search}
+            onSearchChange={onSearchChange}
+            searchPlaceholder={searchPh}
+            searchLoading={searchLoading || isRefreshing}
+            toolbarAriaLabel={t(`${MAIN_PREFIX}.toolbarAria`)}
             filter1={
               showModuleFilter
                 ? {
@@ -122,29 +121,30 @@ const HistoryFiltersBar: FunctionComponent<HistoryFiltersBarProps> = ({
               options: actionOptions,
               ariaLabel: t(`${MAIN_PREFIX}.actionFilterAria`),
             }}
+            actionExtra={
+              <>
+                {onCriticalityChange ? (
+                  <AdminSelectField
+                    value={criticalityFilter}
+                    onChange={onCriticalityChange}
+                    options={criticalityOptions}
+                    aria-label={t(`${AUDIT_PREFIX}.filters.criticality`)}
+                    wrapperClassName="admin-history-filters__select"
+                  />
+                ) : null}
+                {onAutomatedChange ? (
+                  <AdminSelectField
+                    value={automatedFilter}
+                    onChange={onAutomatedChange}
+                    options={automatedOptions}
+                    aria-label={t(`${AUDIT_PREFIX}.filters.automated`)}
+                    wrapperClassName="admin-history-filters__select"
+                  />
+                ) : null}
+                {trailingActions}
+              </>
+            }
           />
-          <div className="admin-history-filters__extra flex flex-wrap items-center gap-2">
-            {onCriticalityChange ? (
-              <AdminSelectField
-                value={criticalityFilter}
-                onChange={onCriticalityChange}
-                options={criticalityOptions}
-                aria-label={t(`${AUDIT_PREFIX}.filters.criticality`)}
-                wrapperClassName="admin-history-filters__select"
-              />
-            ) : null}
-            {onAutomatedChange ? (
-              <AdminSelectField
-                value={automatedFilter}
-                onChange={onAutomatedChange}
-                options={automatedOptions}
-                aria-label={t(`${AUDIT_PREFIX}.filters.automated`)}
-                wrapperClassName="admin-history-filters__select"
-              />
-            ) : null}
-            {trailingActions}
-          </div>
-          </div>
         }
       />
       <HistoryFilterRefreshBar active={isRefreshing} label={refreshLabel} />

@@ -66,8 +66,12 @@ const AdminListToolbar: FunctionComponent<AdminListToolbarProps> = ({
   const actionContent = (
     <div className="admin-list-toolbar__actions">
       {controlsLayout === 'grouped' ? searchInput : null}
-      {filter1 ? <AdminSelectField {...selectFieldProps(filter1)} /> : null}
-      {filter2 ? <AdminSelectField {...selectFieldProps(filter2)} /> : null}
+      {controlsLayout === 'grouped' && filter1 ? (
+        <AdminSelectField {...selectFieldProps(filter1)} />
+      ) : null}
+      {controlsLayout === 'grouped' && filter2 ? (
+        <AdminSelectField {...selectFieldProps(filter2)} />
+      ) : null}
       {actionExtra}
       {beforeCreate}
       {hasCreate && (

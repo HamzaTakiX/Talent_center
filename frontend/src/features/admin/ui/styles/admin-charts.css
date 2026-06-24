@@ -1,0 +1,53 @@
+/* Shared admin chart primitives (AdminDonutChart, AdminChartPanel) */
+
+.admin-donut-chart {
+  overflow: visible;
+}
+
+.admin-donut-chart__track {
+  stroke: color-mix(in srgb, var(--admin-border) 85%, var(--admin-text-secondary));
+  opacity: 0.35;
+}
+
+.admin-donut-chart__segment {
+  transition: opacity 0.2s ease;
+}
+
+.admin-donut-chart__hub {
+  fill: var(--admin-surface);
+  stroke: color-mix(in srgb, var(--admin-border) 70%, transparent);
+  stroke-width: 1;
+}
+
+[data-admin-theme='dark'] .admin-donut-chart__hub {
+  fill: var(--admin-bg-elevated);
+}
+
+.admin-donut-chart__total {
+  fill: var(--admin-text);
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.admin-donut-chart__total--refined {
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.admin-donut-chart__caption {
+  fill: var(--admin-text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: lowercase;
+}
+
+.admin-donut-chart--refined .admin-donut-chart__caption {
+  font-size: 10.5px;
+}
+
+.admin-donut-chart-wrap:hover .admin-donut-chart__segment {
+  opacity: 0.92;
+}

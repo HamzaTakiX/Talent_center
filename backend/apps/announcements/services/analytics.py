@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import datetime, time
 
 from django.db.models import Avg, Count, F, Q, Sum
 from django.db.models.functions import ExtractHour, ExtractWeekDay, TruncDate
@@ -14,6 +15,50 @@ from apps.announcements.models import (
     RecommendationScore,
     StudentAnnouncementAction,
 )
+
+
+def _scheduled_queryset():
+    return Announcement.objects.filter(status=Announcement.Status.SCHEDULED)
+
+
+def _publishing_today_count() -> int:
+    now = timezone.now()
+    start = timezone.make_aware(datetime.combine(now.date(), time.min))
+    end = timezone.make_aware(datetime.combine(now.date(), time.max))
+    return _scheduled_queryset().filter(publish_start_at__gte=start, publish_start_at__lte=end).count()
+
+
+def _publishing_this_week_count() -> int:
+    now = timezone.now()
+    week_start = now.date() - timezone.timedelta(days=now.weekday())
+    start = timezone.make_aware(datetime.combine(week_start, time.min))
+    end = start + timezone.timedelta(days=7)
+    return _scheduled_queryset().filter(publish_start_at__gte=start, publish_start_at__lt=end).count()
+
+
+def scheduled_dashboard_summary() -> dict:
+    now = timezone.now()
+    next_item = (
+        _scheduled_queryset()
+        .filter(publish_start_at__gt=now)
+        .order_by('publish_start_at')
+        .select_related('announcement_type', 'created_by')
+        .first()
+    )
+    next_publication = None
+    if next_item:
+        next_publication = {
+            'id': str(next_item.uuid),
+            'title': next_item.title,
+            'publish_start_at': next_item.publish_start_at.isoformat() if next_item.publish_start_at else None,
+            'typeCode': next_item.announcement_type.code,
+        }
+    return {
+        'scheduledCount': _scheduled_queryset().count(),
+        'publishingTodayCount': _publishing_today_count(),
+        'publishingThisWeekCount': _publishing_this_week_count(),
+        'nextPublication': next_publication,
+    }
 
 
 def dashboard_summary() -> dict:
@@ -37,6 +82,8 @@ def dashboard_summary() -> dict:
         ).count(),
         'draftCount': Announcement.objects.filter(status=Announcement.Status.DRAFT).count(),
         'scheduledCount': Announcement.objects.filter(status=Announcement.Status.SCHEDULED).count(),
+        'publishingTodayCount': _publishing_today_count(),
+        'publishingThisWeekCount': _publishing_this_week_count(),
         'totalViews': published.aggregate(t=Sum('view_count'))['t'] or 0,
         'totalClicks': published.aggregate(t=Sum('click_count'))['t'] or 0,
         'totalSaves': published.aggregate(t=Sum('save_count'))['t'] or 0,

@@ -1,5 +1,5 @@
 import apiClient from '../../../shared/api/client';
-import { getAuthLoginUrl, logAuthLoginUrlInProduction } from '../../../shared/api/config';
+import { AUTH_LOGIN_PATH, logAuthLoginUrlInProduction } from '../../../shared/api/config';
 import { AuthResponse, LoginSession, User } from '../types';
 
 // Backend API response envelope
@@ -12,14 +12,13 @@ interface ApiResponse<T> {
 export const authApi = {
   // Real backend authentication
   login: async (email: string, password: string): Promise<AuthResponse> => {
-    const loginUrl = getAuthLoginUrl();
     logAuthLoginUrlInProduction();
     const response = await apiClient.post<ApiResponse<{
       access: string;
       refresh: string;
       user: User;
       session: { id: number; expires_at: string };
-    }>>(loginUrl, { email, password });
+    }>>(AUTH_LOGIN_PATH, { email, password });
     
     return {
       access: response.data.data.access,
@@ -124,5 +123,16 @@ export const authApi = {
       },
     });
     return authApi.me();
+  },
+
+  updateInternshipStatus: async (data: {
+    has_internship: boolean;
+    internship_company_name?: string;
+    internship_specialization?: string;
+    internship_company_city?: string;
+    internship_stage_duration?: string;
+  }): Promise<User> => {
+    const response = await apiClient.patch<ApiResponse<User>>('/accounts/internship-status', data);
+    return response.data.data;
   },
 };

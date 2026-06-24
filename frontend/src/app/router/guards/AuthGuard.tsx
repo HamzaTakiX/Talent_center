@@ -1,6 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
-import { hasPersistedAccessToken } from '../../../features/auth/utils/authSessionCache';
 import {
   isOnboardingCvPending,
   ONBOARDING_CV_EDITOR_PATH,
@@ -18,9 +17,7 @@ export const AuthGuard = () => {
     return <Outlet />;
   }
 
-  const hasToken = hasPersistedAccessToken();
-
-  if (!isAuthReady && (isLoading || hasToken)) {
+  if (!isAuthReady && isLoading) {
     return <AuthLoadingGate />;
   }
 

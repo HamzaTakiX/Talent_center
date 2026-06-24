@@ -15,14 +15,14 @@ const CareerCoachModeSwitcher: FunctionComponent<CareerCoachModeSwitcherProps> =
   const { t } = useTranslation();
 
   return (
-    <div className="sr-acc-modes" role="tablist" aria-label={t('student.internshipOffers.careerCoach.modes.aria')}>
+    <div className="sr-acc-modes sr-cva__nav-scroll" role="tablist" aria-label={t('student.internshipOffers.careerCoach.modes.aria')}>
       {COACH_MODES.map((m) => (
         <button
           key={m}
           type="button"
           role="tab"
           aria-selected={mode === m}
-          className={`sr-acc-modes__chip${mode === m ? ' sr-acc-modes__chip--active' : ''}`}
+          className={`sr-cva__nav-item sr-acc-modes__chip${mode === m ? ' sr-cva__nav-item--active' : ''}`}
           onClick={() => onModeChange(m)}
         >
           {t(`student.internshipOffers.careerCoach.modes.${m}`)}

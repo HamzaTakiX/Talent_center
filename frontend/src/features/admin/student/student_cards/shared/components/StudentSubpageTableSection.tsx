@@ -1,7 +1,7 @@
 import { FunctionComponent, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useAdminSearchPlaceholder } from '../../../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../../../i18n/useAdminTableValues';
 import type { AdminStudentRow } from '../../../../api/types';
@@ -17,8 +17,9 @@ import {
   internshipStatusTableBadge,
   platformAccountStatusTableBadge,
 } from '../../../../ui/adminStatusBadges';
-import { adminTableBtn } from '../../../../ui/adminTableButtons';
 import { SafeText, ADMIN_TABLE_COL } from '../../../../../../design-system/safeContent';
+import StudentActions from '../../../components/StudentActions';
+import StudentTableIdentityCell from '../../../components/StudentTableIdentityCell';
 import { InternshipStatusLabel } from '../../../../ui/adminTableLabels';
 import { engagementBand, studentInternshipDisplayStatus } from '../utils/studentListFilters';
 
@@ -109,7 +110,7 @@ const StudentSubpageTableSection: FunctionComponent<StudentSubpageTableSectionPr
                   <th className={`box-border px-4 py-[8.75px] text-left font-medium leading-num-20 ${ADMIN_TABLE_COL.text}`}>Engagement</th>
                 ) : null}
                 <th className={`box-border px-4 py-[8.75px] text-left font-medium leading-num-20 ${ADMIN_TABLE_COL.status}`}>Status</th>
-                <th className={`box-border py-[8.75px] pl-4 pr-2 text-right font-medium leading-num-20 ${ADMIN_TABLE_COL.actions}`}>Actions</th>
+                <th className={`box-border py-[8.75px] pl-4 pr-2 text-right font-medium leading-num-20 ${ADMIN_TABLE_COL.actionsMenu}`}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -127,8 +128,8 @@ const StudentSubpageTableSection: FunctionComponent<StudentSubpageTableSectionPr
                       key={student.id}
                       className="min-h-[49px] border-b border-solid border-[var(--admin-border)] last:border-b-0"
                     >
-                      <td className="box-border min-h-[49px] py-[13.5px] pl-2 pr-4 align-middle font-medium leading-num-20">
-                        <SafeText>{student.full_name || student.email}</SafeText>
+                      <td className="box-border min-h-[49px] py-[13.5px] pl-2 pr-4 align-middle leading-num-20">
+                        <StudentTableIdentityCell student={student} />
                       </td>
                       <td className="box-border min-h-[49px] px-4 py-[13.5px] align-middle leading-num-20">
                         <SafeText>{student.current_class || '—'}</SafeText>
@@ -153,27 +154,14 @@ const StudentSubpageTableSection: FunctionComponent<StudentSubpageTableSectionPr
                           {accountStatus(student.account_status)}
                         </span>
                       </td>
-                      <td className="box-border min-h-[49px] py-[8.5px] pl-4 pr-2 text-right align-middle">
-                        <div className="flex flex-wrap items-start justify-end gap-2 text-center">
-                          <button
-                            type="button"
-                            className={`${adminTableBtn} min-w-[123.5px]`}
-                            onClick={() =>
-                              onView ? onView(student) : navigate(`/admin/students/${student.id}/edit`)
-                            }
-                          >
-                            <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                            View Profile
-                          </button>
-                          <button
-                            type="button"
-                            className={`${adminTableBtn} min-w-[72.4px]`}
-                            onClick={() => navigate(`/admin/students/${student.id}/edit`)}
-                          >
-                            <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                            Edit
-                          </button>
-                        </div>
+                      <td className="box-border min-h-[49px] py-[8.5px] pl-4 pr-2 text-right align-middle admin-students-table__actions">
+                        <StudentActions
+                          student={student}
+                          onView={() =>
+                            onView ? onView(student) : navigate(`/admin/students/${student.id}/edit`)
+                          }
+                          onEdit={() => navigate(`/admin/students/${student.id}/edit`)}
+                        />
                       </td>
                     </tr>
                   );

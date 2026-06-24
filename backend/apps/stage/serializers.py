@@ -22,6 +22,7 @@ class InternshipOfferListSerializer(serializers.ModelSerializer):
     company_logo_url = serializers.SerializerMethodField()
     publish_readiness_score = serializers.SerializerMethodField()
     publish_ready = serializers.SerializerMethodField()
+    application_count = serializers.SerializerMethodField()
 
     class Meta:
         model = InternshipOffer
@@ -31,6 +32,12 @@ class InternshipOfferListSerializer(serializers.ModelSerializer):
             'published_at', 'view_count', 'application_count', 'created_at',
             'publish_readiness_score', 'publish_ready',
         ]
+
+    def get_application_count(self, obj) -> int:
+        annotated = getattr(obj, 'live_application_count', None)
+        if annotated is not None:
+            return annotated
+        return obj.application_count
 
     def get_publish_readiness_score(self, obj) -> int | None:
         if obj.status not in (
@@ -89,7 +96,14 @@ class InternshipOfferDetailSerializer(InternshipOfferListSerializer):
             'is_hybrid',
             'required_skills',
             'preferred_skills',
+            'required_languages',
+            'min_education_level',
+            'duration_months',
+            'start_date',
+            'end_date',
             'compensation_amount',
+            'compensation_currency',
+            'compensation_period',
             'external_url',
             'updated_at',
             'metadata_json',
@@ -112,6 +126,14 @@ class InternshipOfferWriteSerializer(serializers.Serializer):
     compensation_amount = serializers.DecimalField(
         max_digits=12, decimal_places=2, required=False, allow_null=True,
     )
+    compensation_currency = serializers.CharField(required=False, allow_blank=True, default='MAD')
+    compensation_period = serializers.CharField(required=False, allow_blank=True, default='NOT_SPECIFIED')
+    duration_months = serializers.IntegerField(required=False, allow_null=True)
+    start_date = serializers.DateField(required=False, allow_null=True)
+    end_date = serializers.DateField(required=False, allow_null=True)
+    required_languages = serializers.ListField(required=False, default=list)
+    min_education_level = serializers.CharField(required=False, allow_blank=True, default='')
+    metadata_json = serializers.JSONField(required=False, default=dict)
     external_url = serializers.URLField(required=False, allow_blank=True, default='')
     targeting_rules = serializers.ListField(required=False, default=list)
     programs = serializers.ListField(child=serializers.CharField(), required=False, default=list)
@@ -134,19 +156,51 @@ class OfferTargetingSelectionSerializer(serializers.Serializer):
 
 class OfferApplicationSerializer(serializers.ModelSerializer):
     student_email = serializers.EmailField(source='student_profile.user.email', read_only=True)
+    student_name = serializers.SerializerMethodField()
+    student_class = serializers.SerializerMethodField()
+    student_field = serializers.SerializerMethodField()
+    student_avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = OfferApplication
         fields = [
             'uuid', 'status', 'cover_letter', 'match_score_at_apply',
             'applied_at', 'last_status_change_at', 'student_email',
+            'student_name', 'student_class', 'student_field', 'student_avatar_url',
             'reviewer_notes', 'metadata_json',
         ]
+
+    def get_student_name(self, obj) -> str:
+        user = obj.student_profile.user
+        full_name = user.get_full_name().strip()
+        if full_name:
+            return full_name
+        return user.email.split('@')[0]
+
+    def get_student_class(self, obj) -> str:
+        student = obj.student_profile
+        class_group = getattr(student, 'class_group', None)
+        if class_group and getattr(class_group, 'name', None):
+            return class_group.name
+        return student.current_class or ''
+
+    def get_student_field(self, obj) -> str:
+        student = obj.student_profile
+        filiere = getattr(student, 'filiere', None)
+        if filiere and getattr(filiere, 'name', None):
+            return filiere.name
+        return student.program_major or ''
+
+    def get_student_avatar_url(self, obj) -> str | None:
+        from apps.stage.services.chat_service import _student_avatar_url
+
+        return _student_avatar_url(obj.student_profile, self.context.get('request'))
 
 
 class ApplySerializer(serializers.Serializer):
     cover_letter = serializers.CharField(required=False, allow_blank=True, default='')
     student_cv_id = serializers.IntegerField(required=False, allow_null=True)
+    external_confirmation = serializers.BooleanField(required=False, default=False)
 
 
 class ApplicationActionSerializer(serializers.Serializer):

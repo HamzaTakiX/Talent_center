@@ -842,8 +842,6 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
 
             hasTargeting={workflow.hasTargeting}
 
-            canPreviewMatchScore={workflow.canPreviewMatchScore}
-
           />
 
         </div>

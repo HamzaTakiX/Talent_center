@@ -3,7 +3,7 @@ import type { CvAnalysisDashboardData } from '../../types/cvAnalysisDashboard';
 import { useCvAnalysisDashboard } from '../../hooks/useCvAnalysisDashboard';
 import CvAnalysisNavSidebar from './CvAnalysisNavSidebar';
 import CvAnalysisMainContent from './CvAnalysisMainContent';
-import { CvAnalysisEmptyState, CvAnalysisErrorState, CvAnalysisSkeleton } from './CvAnalysisStates';
+import { CvAnalysisEmptyState, CvAnalysisErrorState, CvAnalysisAnalyzingState, CvAnalysisSkeleton } from './CvAnalysisStates';
 
 interface CvAnalysisDashboardProps {
   initialState?: 'loading' | 'empty' | 'success' | 'error';
@@ -15,6 +15,7 @@ const CvAnalysisDashboard: FunctionComponent<CvAnalysisDashboardProps> = ({
   const {
     viewState,
     data,
+    analysisStatus,
     activeSection,
     expandedMatchId,
     setExpandedMatchId,
@@ -57,10 +58,23 @@ const CvAnalysisDashboard: FunctionComponent<CvAnalysisDashboardProps> = ({
 
   if (viewState === 'empty') {
     return (
-      <div className="sr-cva__root sr-cva">
-        <CvAnalysisEmptyState onUpload={() => retry()} />
+      <div className="sr-cva__root sr-cva" id="student-cv-analysis-dashboard">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden
+          onChange={handleImportFileChange}
+        />
+        <CvAnalysisEmptyState onUpload={openImportDialog} />
       </div>
     );
+  }
+
+  if (viewState === 'analyzing' && !data) {
+    return <CvAnalysisAnalyzingState />;
   }
 
   if (viewState === 'error') {
@@ -80,6 +94,8 @@ const CvAnalysisDashboard: FunctionComponent<CvAnalysisDashboardProps> = ({
 
         <CvAnalysisMainContent
           data={data as CvAnalysisDashboardData}
+          analysisStatus={analysisStatus}
+          isAnalyzing={viewState === 'analyzing'}
           expandedMatchId={expandedMatchId}
           onToggleMatch={handleToggleMatch}
           expandedRecId={expandedRecId}

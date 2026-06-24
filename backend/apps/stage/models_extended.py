@@ -4,6 +4,7 @@ Extended domain models — Company, Interview, Versioning, Webhooks, SLA, Pipeli
 Imported by models.py so Django discovers all tables.
 """
 
+import hashlib
 import uuid
 
 from django.conf import settings
@@ -485,6 +486,39 @@ class SlaViolation(TimestampedModel):
 # ============================================================================
 # MATCHING CONFIG & RECOMMENDATIONS
 # ============================================================================
+
+class SemanticEmbedding(TimestampedModel):
+    """Vector embedding for semantic matching (student profile or offer)."""
+
+    class EntityType(models.TextChoices):
+        STUDENT = 'STUDENT', _('Student profile')
+        OFFER = 'OFFER', _('Internship offer')
+
+    entity_type = models.CharField(max_length=16, choices=EntityType.choices, db_index=True)
+    entity_id = models.PositiveIntegerField(db_index=True)
+    embedding_model = models.CharField(max_length=64, default='text-embedding-3-small')
+    source_text_hash = models.CharField(max_length=64, blank=True, default='')
+    vector_json = models.JSONField(default=list)
+    dimensions = models.PositiveSmallIntegerField(default=0)
+
+    class Meta(TimestampedModel.Meta):
+        constraints = [
+            UniqueConstraint(
+                fields=['entity_type', 'entity_id'],
+                name='uniq_semantic_embedding_entity',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['entity_type', 'entity_id']),
+        ]
+
+    @staticmethod
+    def hash_text(text: str) -> str:
+        return hashlib.sha256((text or '').encode('utf-8')).hexdigest()
+
+    def __str__(self) -> str:
+        return f'SemanticEmbedding<{self.entity_type}:{self.entity_id}>'
+
 
 class MatchingWeightConfig(TimestampedModel):
     name = models.CharField(max_length=128, default='default')

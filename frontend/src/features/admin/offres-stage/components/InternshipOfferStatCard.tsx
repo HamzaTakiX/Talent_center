@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import {
+  Archive,
   Briefcase,
   CheckCircle,
   XCircle,
@@ -30,6 +31,7 @@ const iconMap: Record<string, LucideIcon> = {
   XCircle,
   FileText,
   Clock,
+  Archive,
   Users,
   TrendingUp,
   Award,
@@ -41,6 +43,7 @@ const iconBgClass: Record<string, string> = {
   XCircle: 'bg-[#fb2c36]',
   FileText: 'bg-[#eab308]',
   Clock: 'bg-[#6b7280]',
+  Archive: 'bg-[#6b7280]',
   Users: 'bg-[#8b5cf6]',
   TrendingUp: 'bg-[#6366f1]',
   Award: 'bg-[#06b6d4]',

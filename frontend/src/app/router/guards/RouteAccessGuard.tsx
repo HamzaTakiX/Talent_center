@@ -13,14 +13,14 @@ import { AuthLoadingGate } from './AuthLoadingGate';
  * Must sit inside AuthGuard after the user is authenticated.
  */
 export const RouteAccessGuard = () => {
-  const { user, isAuthReady } = useAuth();
+  const { user, isLoading, isAuthReady } = useAuth();
   const location = useLocation();
 
   if (import.meta.env.VITE_FRONTEND_ONLY_ADMIN === 'true') {
     return <Outlet />;
   }
 
-  if (!isAuthReady) {
+  if (!isAuthReady && isLoading) {
     return <AuthLoadingGate />;
   }
 

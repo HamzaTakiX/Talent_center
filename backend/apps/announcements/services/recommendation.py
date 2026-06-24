@@ -16,27 +16,28 @@ from apps.announcements.models import (
 )
 from apps.announcements.services.targeting import announcement_visible_to_student
 
-WEIGHT_PROFILE = Decimal('0.35')
+WEIGHT_VISIBILITY = Decimal('0.15')
+WEIGHT_COMPETENCE = Decimal('0.35')
 WEIGHT_PREFERENCE = Decimal('0.20')
 WEIGHT_ENGAGEMENT = Decimal('0.20')
 WEIGHT_URGENCY = Decimal('0.15')
 WEIGHT_INSTITUTIONAL = Decimal('0.10')
 
 
-def _profile_score(student: StudentProfile, announcement: Announcement) -> Decimal:
+def _visibility_score(student: StudentProfile, announcement: Announcement) -> Decimal:
+    """Baseline score when the announcement is visible to the student (no program/class boost)."""
     if not announcement_visible_to_student(announcement, student):
         return Decimal('0')
-    score = Decimal('50')
-    if student.filiere_id and announcement.targets.filter(filiere_id=student.filiere_id).exists():
-        score += Decimal('20')
-    if student.internship_type_id and announcement.targets.filter(
-        internship_type_id=student.internship_type_id,
-    ).exists():
-        score += Decimal('15')
-    if hasattr(announcement, 'internship_details') and announcement.internship_details:
-        if student.internship_type_id == announcement.internship_details.internship_type_id:
-            score += Decimal('25')
-    return min(score, Decimal('100'))
+    return Decimal('50')
+
+
+def _competence_interests_score(student: StudentProfile, announcement: Announcement) -> Decimal:
+    """Match student skills/interests with announcement requirements.
+
+    Program and class targeting are intentionally excluded from recommendations.
+    TODO: compare student.skills / research_interests with announcement required_skills, etc.
+    """
+    return Decimal('0')
 
 
 def _preference_score(student: StudentProfile, announcement: Announcement) -> Decimal:
@@ -103,14 +104,16 @@ def compute_recommendation_score(
     student: StudentProfile,
     announcement: Announcement,
 ) -> tuple[Decimal, dict]:
-    profile = _profile_score(student, announcement)
+    visibility = _visibility_score(student, announcement)
+    competence = _competence_interests_score(student, announcement)
     pref = _preference_score(student, announcement)
     engagement = _engagement_score(student, announcement)
     urgency = _urgency_score(announcement)
     institutional = _institutional_score(announcement)
 
     total = (
-        profile * WEIGHT_PROFILE
+        visibility * WEIGHT_VISIBILITY
+        + competence * WEIGHT_COMPETENCE
         + pref * WEIGHT_PREFERENCE
         + engagement * WEIGHT_ENGAGEMENT
         + urgency * WEIGHT_URGENCY
@@ -118,7 +121,8 @@ def compute_recommendation_score(
     )
     total = min(total, Decimal('100'))
     breakdown = {
-        'profile': float(profile),
+        'visibility': float(visibility),
+        'competence_interests': float(competence),
         'preference': float(pref),
         'engagement': float(engagement),
         'urgency': float(urgency),
@@ -132,13 +136,15 @@ def upsert_recommendation_score(
     announcement: Announcement,
 ) -> RecommendationScore:
     score, breakdown = compute_recommendation_score(student, announcement)
+    competence = Decimal(str(breakdown.get('competence_interests', 0)))
+    is_recommended = competence > Decimal('0') and score >= Decimal('55')
     obj, _ = RecommendationScore.objects.update_or_create(
         student_profile=student,
         announcement=announcement,
         defaults={
             'score': score,
             'score_breakdown': breakdown,
-            'is_recommended': score >= Decimal('55'),
+            'is_recommended': is_recommended,
         },
     )
     return obj

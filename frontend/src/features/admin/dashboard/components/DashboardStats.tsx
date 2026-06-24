@@ -25,7 +25,7 @@ const DashboardStats: FunctionComponent = () => {
           <DashboardStatCard
             key={stat.id}
             label={stat.label}
-            value={statsLoading && ['totalStudents', 'totalEncadrants', 'totalAdmins', 'studentsWithoutInternship'].includes(stat.id) ? '…' : stat.value}
+            value={statsLoading ? '…' : stat.value}
             icon={stat.icon}
             index={index}
             onClick={() => navigate(stat.route)}

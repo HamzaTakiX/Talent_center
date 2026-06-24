@@ -9,9 +9,9 @@ export function isActiveStudent(row: AdminStudentRow): boolean {
 }
 
 export function engagementBand(row: AdminStudentRow): EngagementBand {
-  const percent = row.onboarding_percent ?? 0;
-  if (percent >= 80) return 'High';
-  if (percent >= 40) return 'Medium';
+  const percent = row.intelligence?.engagement_score ?? row.onboarding_percent ?? 0;
+  if (percent >= 66) return 'High';
+  if (percent >= 36) return 'Medium';
   return 'Low';
 }
 

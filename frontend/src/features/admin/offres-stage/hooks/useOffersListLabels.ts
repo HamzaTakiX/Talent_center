@@ -8,6 +8,7 @@ export type OffersListToolbarKey =
   | 'filterAllOffers'
   | 'filterActiveOffers'
   | 'filterClosedOffers'
+  | 'filterArchivedOffers'
   | 'filterDraftOffers'
   | 'filterExpiredOffers'
   | 'filterOffersWithApplications';
@@ -27,6 +28,7 @@ export function useOffersListLabels() {
         { value: 'Draft' as const, label: offerStatus('Draft') },
         { value: 'Expired' as const, label: offerStatus('Expired') },
         { value: 'Closed' as const, label: offerStatus('Closed') },
+        { value: 'Archived' as const, label: offerStatus('Archived') },
       ] satisfies { value: 'all' | InternshipOffer['status']; label: string }[],
     [filterLabel, offerStatus]
   );

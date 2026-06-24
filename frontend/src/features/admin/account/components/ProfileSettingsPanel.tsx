@@ -1,5 +1,16 @@
 import { FunctionComponent } from 'react';
-import { Check, Moon, Palette, SlidersHorizontal, Sun, GraduationCap, ChevronRight, Mail } from 'lucide-react';
+import {
+  BarChart3,
+  Check,
+  ChevronRight,
+  GraduationCap,
+  Mail,
+  Moon,
+  Palette,
+  Settings,
+  SlidersHorizontal,
+  Sun,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../auth/hooks/useAuth';
@@ -7,6 +18,7 @@ import AccountSection from './AccountSection';
 import AdminToggle from './AdminToggle';
 import DashboardSectionOrderControls from './DashboardSectionOrderControls';
 import LanguageSelect from './LanguageSelect';
+import NotificationPreferencesSection from '../../../shared/notifications/components/NotificationPreferencesSection';
 import type { AdminPreferences } from '../types';
 import type { DashboardSectionId } from '../hooks/useDashboardLayout';
 
@@ -37,13 +49,6 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
     user?.is_super_admin === true ||
     (user as { admin_level?: string })?.admin_level === 'SUPER';
 
-  const setNotification = (key: keyof AdminPreferences['notifications'], value: boolean) => {
-    onDraftChange({
-      ...draft,
-      notifications: { ...draft.notifications, [key]: value },
-    });
-  };
-
   return (
     <div className="space-y-6">
       <AccountSection
@@ -65,40 +70,12 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
         title={t('admin.settings.notifications.title')}
         description={t('admin.settings.notifications.description')}
       >
-        <div className="flex flex-col gap-1">
-          <AdminToggle
-            id="notif-email"
-            label={t('admin.settings.notifications.email')}
-            description={t('admin.settings.notifications.emailDesc')}
-            checked={draft.notifications.email}
-            onChange={(v) => setNotification('email', v)}
-          />
-          <AdminToggle
-            id="notif-push"
-            label={t('admin.settings.notifications.push')}
-            description={t('admin.settings.notifications.pushDesc')}
-            checked={draft.notifications.push}
-            onChange={(v) => setNotification('push', v)}
-          />
-          <AdminToggle
-            id="notif-system"
-            label={t('admin.settings.notifications.system')}
-            description={t('admin.settings.notifications.systemDesc')}
-            checked={draft.notifications.system}
-            onChange={(v) => setNotification('system', v)}
-          />
-          <AdminToggle
-            id="notif-marketing"
-            label={t('admin.settings.notifications.marketing')}
-            description={t('admin.settings.notifications.marketingDesc')}
-            checked={draft.notifications.marketing}
-            onChange={(v) => setNotification('marketing', v)}
-          />
-        </div>
+        <NotificationPreferencesSection />
       </AccountSection>
 
       <AccountSection
         sectionId="settings-appearance"
+        icon={Palette}
         title={t('admin.settings.appearance.title')}
         description={t('admin.settings.appearance.description')}
       >
@@ -157,6 +134,7 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
       {isSuperAdmin ? (
         <AccountSection
           sectionId="settings-email-system"
+          icon={Mail}
           title={t('admin.settings.emailSystem.title')}
           description={t('admin.settings.emailSystem.description')}
         >
@@ -184,7 +162,32 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
 
       {isSuperAdmin ? (
         <AccountSection
+          sectionId="settings-notification-analytics"
+          icon={BarChart3}
+          title={t('notifications.analytics.title')}
+          description={t('notifications.analytics.subtitle')}
+        >
+          <Link
+            to="/admin/settings/notification-analytics"
+            className="group flex items-center justify-between rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-muted)]/50 p-4 no-underline transition hover:border-[var(--admin-brand)]/40 hover:bg-[var(--admin-brand-muted)]/30 hover:no-underline"
+          >
+            <span className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--admin-brand-muted)] text-[var(--admin-brand)]">
+                <SlidersHorizontal className="h-5 w-5" strokeWidth={1.75} />
+              </span>
+              <span className="block text-sm font-semibold text-[var(--admin-text)]">
+                {t('notifications.analytics.title')}
+              </span>
+            </span>
+            <ChevronRight className="h-5 w-5 text-[var(--admin-text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--admin-brand)]" />
+          </Link>
+        </AccountSection>
+      ) : null}
+
+      {isSuperAdmin ? (
+        <AccountSection
           sectionId="settings-academic-structure"
+          icon={GraduationCap}
           title={t('admin.settings.academicStructure.title')}
           description={t('admin.settings.academicStructure.description')}
         >
@@ -212,6 +215,7 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
 
       <AccountSection
         sectionId="settings-preferences"
+        icon={Settings}
         title={t('admin.settings.preferences.title')}
         description={t('admin.settings.preferences.description')}
       >

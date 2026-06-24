@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts_et_roles.services import update_account_profile
+from apps.accounts_et_roles.models import User, StudentProfile
 
 from .exceptions import ProviderNotImplemented
 from .providers.registry import get_provider, list_all, list_enabled
@@ -32,6 +33,27 @@ from .utils import envelope
 
 
 def _user_payload(user, request=None) -> dict:
+    if getattr(user, 'role', None) == User.RoleChoices.STUDENT:
+        try:
+            from apps.admin_management.services.internship_resolver import ensure_student_internship_synced
+
+            profile = (
+                StudentProfile.objects.select_related(
+                    'filiere',
+                    'academic_level',
+                    'academic_sector',
+                    'class_group',
+                    'internship_type',
+                )
+                .filter(user_id=user.pk)
+                .first()
+            )
+            if profile and ensure_student_internship_synced(profile):
+                profile.refresh_from_db()
+                user.student_profile = profile
+        except Exception:
+            pass
+
     return MeSerializer(user, context={'request': request}).data
 
 

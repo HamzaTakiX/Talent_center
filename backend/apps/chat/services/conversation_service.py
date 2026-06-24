@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.utils import timezone
 
 from apps.accounts_et_roles.models import User
@@ -18,6 +18,7 @@ from ..models import (
     Message,
 )
 from .audit_hooks import record_chat_action
+from .realtime import publish_conversation_updated, publish_message_created
 
 
 def get_or_create_contextual_conversation(
@@ -101,10 +102,17 @@ def list_module_conversations(
     urgency: str | None = None,
     unread_only: bool = False,
     search: str = '',
+    include_archived: bool = False,
 ) -> list[Conversation]:
     from ..permissions import conversations_for_user
 
-    qs = conversations_for_user(user).filter(context__module=module)
+    qs = conversations_for_user(user, include_archived=include_archived).filter(context__module=module)
+    if (
+        not include_archived
+        and module == ConversationContext.Module.OFFERS
+        and user.role == User.RoleChoices.ADMIN
+    ):
+        qs = qs.exclude(metadata_json__contains={'admin_inbox_archived': True})
     if context_kind:
         qs = qs.filter(context__context_kind=context_kind)
     if entity_type:
@@ -118,20 +126,29 @@ def list_module_conversations(
             | Q(context__entity_label__icontains=q)
             | Q(messages__body__icontains=q)
         ).distinct()
-    qs = qs.prefetch_related(
-        'participants__user',
+    latest_message_prefetch = Prefetch(
         'messages',
+        queryset=Message.objects.filter(
+            deleted_at__isnull=True,
+            message_type__in=[
+                Message.MessageType.TEXT,
+                Message.MessageType.FILE,
+                Message.MessageType.IMAGE,
+            ],
+        ).order_by('-created_at')[:1],
+        to_attr='_latest_messages',
+    )
+    qs = qs.prefetch_related(
+        'participants__user__profile',
+        latest_message_prefetch,
     )
     convs = list(qs.order_by('-last_message_at', '-updated_at')[:200])
     if not unread_only:
         return convs
-    result = []
-    for conv in convs:
-        part = ConversationParticipant.objects.filter(conversation=conv, user=user).first()
-        last_msg = Message.objects.filter(conversation=conv, deleted_at__isnull=True).order_by('-id').first()
-        if last_msg and (not part or (part.last_read_message_id or 0) < last_msg.pk):
-            result.append(conv)
-    return result
+    from .message_service import batch_unread_counts_for_user
+
+    unread_map = batch_unread_counts_for_user(user, [conv.pk for conv in convs])
+    return [conv for conv in convs if unread_map.get(conv.pk, 0) > 0]
 
 
 def apply_smart_action(
@@ -146,20 +163,90 @@ def apply_smart_action(
     if action_code not in SMART_ACTION_CODES:
         raise ValueError(f'Unknown action: {action_code}')
 
+    from ..permissions import user_can_apply_smart_action
+
+    if not user_can_apply_smart_action(actor, conversation, action_code):
+        raise ValueError('You do not have permission to perform this action.')
+
     ctx = getattr(conversation, 'context', None)
     meta = payload or {}
 
     if action_code == 'mark_urgent' and ctx:
         ctx.urgency = ConversationContext.Urgency.CRITICAL
-        ctx.save(update_fields=['urgency', 'updated_at'])
+        ctx.workflow_state = ConversationContext.WorkflowState.ESCALATED
+        ctx.save(update_fields=['urgency', 'workflow_state', 'updated_at'])
+
+    if action_code == 'escalate' and ctx:
+        ctx.urgency = ConversationContext.Urgency.CRITICAL
+        ctx.workflow_state = ConversationContext.WorkflowState.ESCALATED
+        ctx.save(update_fields=['urgency', 'workflow_state', 'updated_at'])
+
+    if action_code == 'set_priority' and ctx:
+        priority = (meta.get('priority') or 'NORMAL').upper()
+        if priority in ConversationContext.Urgency.values:
+            ctx.urgency = priority
+            ctx.save(update_fields=['urgency', 'updated_at'])
+
+    if action_code == 'assign_admin' and ctx:
+        assignee_id = meta.get('assignee_user_id') or meta.get('user_id')
+        if assignee_id:
+            assignee = User.objects.filter(pk=int(assignee_id)).first()
+            if assignee:
+                ctx.assigned_to = assignee
+                ctx.workflow_state = ConversationContext.WorkflowState.ASSIGNED
+                ctx.save(update_fields=['assigned_to', 'workflow_state', 'updated_at'])
+                ConversationParticipant.objects.update_or_create(
+                    conversation=conversation,
+                    user=assignee,
+                    defaults={'role': ConversationParticipant.Role.ADMIN},
+                )
+                if ctx.module == ConversationContext.Module.OFFERS:
+                    from apps.stage.services import chat_service as offer_chat
+
+                    offer_chat.assign_offer_conversation(conversation, assignee, actor)
+
+    if action_code == 'add_internal_note':
+        note = (meta.get('note') or meta.get('body') or '').strip()
+        if note:
+            Message.objects.create(
+                conversation=conversation,
+                sender=actor,
+                body=note,
+                message_type=Message.MessageType.TEXT,
+                metadata_json={'is_internal_note': True},
+            )
+            conversation.last_message_at = timezone.now()
+            conversation.save(update_fields=['last_message_at', 'updated_at'])
 
     if ctx and ctx.module == ConversationContext.Module.OFFERS:
         from apps.stage.services import chat_service as offer_chat
 
         if action_code == 'mark_resolved':
+            ctx.workflow_state = ConversationContext.WorkflowState.RESOLVED
+            ctx.save(update_fields=['workflow_state', 'updated_at'])
             offer_chat.resolve_offer_conversation(conversation, actor, meta.get('note', ''))
         elif action_code == 'archive_conversation':
             offer_chat.archive_offer_conversation(conversation, actor)
+        elif action_code == 'unarchive_conversation':
+            offer_chat.unarchive_offer_conversation(conversation, actor)
+
+    if ctx and ctx.module == ConversationContext.Module.ANNOUNCEMENTS:
+        from apps.announcements.services import chat_service as announcement_chat
+
+        if action_code == 'mark_resolved':
+            announcement_chat.resolve_announcement_conversation(
+                conversation, actor, meta.get('note', ''),
+            )
+        elif action_code == 'archive_conversation':
+            if actor.role == User.RoleChoices.STUDENT:
+                announcement_chat.archive_student_announcement_conversation(conversation, actor)
+            else:
+                announcement_chat.archive_announcement_conversation(conversation, actor)
+        elif action_code == 'unarchive_conversation':
+            if actor.role == User.RoleChoices.STUDENT:
+                announcement_chat.unarchive_student_announcement_conversation(conversation, actor)
+            else:
+                announcement_chat.unarchive_announcement_conversation(conversation, actor)
 
     record_chat_action(
         action_code=action_code,
@@ -169,7 +256,7 @@ def apply_smart_action(
         metadata=meta,
     )
 
-    Message.objects.create(
+    event_msg = Message.objects.create(
         conversation=conversation,
         sender=actor,
         body=f'[Action: {action_code}]',
@@ -178,5 +265,17 @@ def apply_smart_action(
     )
     conversation.last_message_at = timezone.now()
     conversation.save(update_fields=['last_message_at', 'updated_at'])
+
+    publish_message_created(
+        conversation.pk,
+        {
+            'message_id': event_msg.pk,
+            'sender_id': actor.pk,
+            'body': f'[Action: {action_code}]',
+            'message_type': 'EVENT',
+        },
+    )
+
+    publish_conversation_updated(conversation.pk, {'action_code': action_code})
 
     return {'action_code': action_code, 'conversation_id': conversation.pk, 'status': 'applied'}

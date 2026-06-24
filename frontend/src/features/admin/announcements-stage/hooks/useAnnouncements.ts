@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { adminAnnouncementsApi } from '../../api/announcements';
 import type {
   AnnouncementDashboardData,
@@ -7,6 +7,7 @@ import type {
   AnnouncementListParams,
   AnnouncementTypeItem,
   PaginatedAnnouncements,
+  ScheduledDashboardData,
 } from '../types/announcement';
 
 export function useAnnouncementsDashboard() {
@@ -31,6 +32,28 @@ export function useAnnouncementsDashboard() {
   }, [refresh]);
 
   return { data, loading, error, refresh };
+}
+
+export function useScheduledAnnouncementsDashboard() {
+  const [data, setData] = useState<ScheduledDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      setData(await adminAnnouncementsApi.scheduledDashboard());
+    } catch {
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { data, loading, refresh };
 }
 
 export function useAnnouncementsList(params?: AnnouncementListParams) {
@@ -64,33 +87,64 @@ export function useAnnouncementsList(params?: AnnouncementListParams) {
 export function useAnnouncementDetail(id: string | undefined) {
   const [data, setData] = useState<AnnouncementDetailResponse | null>(null);
   const [loading, setLoading] = useState(Boolean(id));
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     if (!id) return;
     setLoading(true);
-    adminAnnouncementsApi
-      .detail(id)
-      .then(setData)
-      .catch(() => setData(null))
-      .finally(() => setLoading(false));
+    setError(null);
+    try {
+      setData(await adminAnnouncementsApi.detail(id));
+    } catch {
+      setData(null);
+      setError('load_failed');
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
-  return { data, loading };
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  return { data, loading, error, refresh };
 }
 
 export function useAnnouncementTypes() {
   const [types, setTypes] = useState<AnnouncementTypeItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    adminAnnouncementsApi
-      .types()
-      .then(setTypes)
-      .catch(() => setTypes([]))
-      .finally(() => setLoading(false));
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await adminAnnouncementsApi.types(true);
+      setTypes(data);
+    } catch {
+      setTypes([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { types, loading };
+  useEffect(() => {
+    void refresh();
+    const onChanged = () => void refresh();
+    window.addEventListener('announcement-types-changed', onChanged);
+    return () => window.removeEventListener('announcement-types-changed', onChanged);
+  }, [refresh]);
+
+  const activeTypes = useMemo(
+    () => types.filter((tp) => tp.is_active),
+    [types],
+  );
+
+  const typesByCode = useMemo(() => {
+    const map = new Map<string, AnnouncementTypeItem>();
+    for (const tp of types) map.set(tp.code, tp);
+    return map;
+  }, [types]);
+
+  return { types, activeTypes, typesByCode, loading, refresh };
 }
 
 export function mapListItemToRow(item: AnnouncementListItem) {

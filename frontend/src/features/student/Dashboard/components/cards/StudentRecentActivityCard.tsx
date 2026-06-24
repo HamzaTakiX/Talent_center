@@ -1,13 +1,13 @@
-import { FunctionComponent, MouseEvent } from 'react';
+import { FunctionComponent } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Activity, Bell, FileText, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import DashboardPanel from '../../../../admin/dashboard/ui/DashboardPanel';
 import AdminSectionEmptyState from '../../../../admin/ui/AdminSectionEmptyState';
-import {
-  studentRecentActivity,
-  type StudentActivityIconKey,
-} from '../../data/studentDashboardMock';
+import { STUDENT_MAIN_HISTORY_PATH } from '../../../main_history/constants/routes';
+import type { StudentActivityIconKey } from '../../types/studentDashboardData';
+import { useStudentDashboardContext } from '../../context/StudentDashboardContext';
 import StudentSectionHeader from '../StudentSectionHeader';
 import { STUDENT_SECONDARY_BUTTON } from '../../constants/studentDashboardStyles';
 
@@ -18,32 +18,29 @@ const activityIconMap: Record<StudentActivityIconKey, LucideIcon> = {
 };
 
 const ActivityRow: FunctionComponent<{
-  id: string;
   iconKey: StudentActivityIconKey;
-  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
-}> = ({ id, iconKey, onClick }) => {
-  const { t } = useTranslation();
+  action: string;
+  time: string;
+}> = ({ iconKey, action, time }) => {
   const Icon = activityIconMap[iconKey];
 
   return (
-    <button type="button" onClick={onClick} className="student-activity-row">
+    <div className="student-activity-row">
       <span className="student-activity-row__icon" aria-hidden>
         <Icon className="h-4 w-4" strokeWidth={1.75} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
-        <span className="text-[13px] font-medium text-[var(--admin-text)]">
-          {t(`student.dashboard.mocks.activity.${id}.action`)}
-        </span>
-        <span className="text-[12px] text-[var(--admin-text-muted)]">
-          {t(`student.dashboard.mocks.activity.${id}.time`)}
-        </span>
+        <span className="text-[13px] font-medium text-[var(--admin-text)]">{action}</span>
+        <span className="text-[12px] text-[var(--admin-text-muted)]">{time}</span>
       </span>
-    </button>
+    </div>
   );
 };
 
 const StudentRecentActivityCard: FunctionComponent = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { data } = useStudentDashboardContext();
 
   return (
     <DashboardPanel id="student-activity" className="admin-section-panel w-full">
@@ -54,7 +51,7 @@ const StudentRecentActivityCard: FunctionComponent = () => {
       />
 
       <div className="flex flex-col gap-3 px-3 pb-4 pt-1 sm:px-4 sm:pb-5">
-        {studentRecentActivity.length === 0 ? (
+        {data.recentActivity.length === 0 ? (
           <AdminSectionEmptyState
             variant="inline"
             iconPreset="inbox"
@@ -63,21 +60,19 @@ const StudentRecentActivityCard: FunctionComponent = () => {
           />
         ) : (
           <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-            {studentRecentActivity.map((row) => (
+            {data.recentActivity.map((row) => (
               <li key={row.id}>
-                <ActivityRow
-                  id={row.id}
-                  iconKey={row.iconKey}
-                  onClick={() => {
-                    console.log('activity', row.id);
-                  }}
-                />
+                <ActivityRow iconKey={row.iconKey} action={row.action} time={row.time} />
               </li>
             ))}
           </ul>
         )}
 
-        <button type="button" className={`${STUDENT_SECONDARY_BUTTON} w-full`}>
+        <button
+          type="button"
+          className={`${STUDENT_SECONDARY_BUTTON} w-full`}
+          onClick={() => navigate(STUDENT_MAIN_HISTORY_PATH)}
+        >
           {t('student.dashboard.actions.viewAllActivity')}
         </button>
       </div>

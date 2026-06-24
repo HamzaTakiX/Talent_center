@@ -90,7 +90,7 @@ class EmailCategoryConfigSerializer(serializers.ModelSerializer):
             'digest_enabled',
             'sort_order',
         )
-        read_only_fields = ('id', 'category', 'label', 'sort_order')
+        read_only_fields = ('id', 'category', 'sort_order')
 
 
 class EmailTemplateListSerializer(serializers.ModelSerializer):

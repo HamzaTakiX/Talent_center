@@ -90,7 +90,9 @@ def confirm_identity(user: User, data: dict) -> UserProfile:
                 student_profile.program_major = filiere.name
         if 'class_group_id' in data and data['class_group_id']:
             from apps.admin_management.models import ClassGroup
-            cg = ClassGroup.objects.filter(pk=data['class_group_id']).select_related('filiere').first()
+            cg = ClassGroup.objects.filter(pk=data['class_group_id']).select_related(
+                'filiere', 'academic_level', 'academic_sector', 'academic_year_ref',
+            ).first()
             if cg:
                 student_profile.class_group = cg
                 student_profile.current_class = cg.name
@@ -106,7 +108,17 @@ def confirm_identity(user: User, data: dict) -> UserProfile:
                 if cg.academic_sector_id:
                     student_profile.academic_sector = cg.academic_sector
 
-        student_profile.save()
+        from apps.admin_management.services.internship_resolver import sync_student_internship_from_academics
+
+        sync_student_internship_from_academics(student_profile)
+        student_profile.save(
+            update_fields=[
+                'internship_type',
+                'internship_duration',
+                'internship_category',
+                'updated_at',
+            ],
+        )
 
     return profile
 
@@ -156,6 +168,39 @@ def complete_student_profile(user: User, data: dict, cv_file=None) -> StudentPro
         profile.cv_file = cv_file
 
     profile.profile_completed = True
+    profile.save()
+
+    if cv_file:
+        try:
+            cv_file.seek(0)
+            from apps.stage.services.ai_pipeline.pipeline import process_cv_upload
+            process_cv_upload(profile, cv_file.read(), cv_file.name)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception('CV AI pipeline skipped after profile save')
+
+    return profile
+
+
+def update_internship_status(user: User, data: dict) -> StudentProfile:
+    """Student declares internship status (searching vs. already placed)."""
+    profile, _ = StudentProfile.objects.get_or_create(user=user)
+
+    has_internship = data['has_internship']
+    profile.has_internship = has_internship
+    profile.internship_status_acknowledged = True
+
+    if has_internship:
+        profile.internship_company_name = data.get('internship_company_name', '').strip()
+        profile.internship_specialization = data.get('internship_specialization', '').strip()
+        profile.internship_company_city = data.get('internship_company_city', '').strip()
+        profile.internship_stage_duration = data.get('internship_stage_duration', '').strip()
+    else:
+        profile.internship_company_name = ''
+        profile.internship_specialization = ''
+        profile.internship_company_city = ''
+        profile.internship_stage_duration = ''
+
     profile.save()
     return profile
 

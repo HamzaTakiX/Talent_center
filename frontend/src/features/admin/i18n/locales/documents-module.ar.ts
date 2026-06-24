@@ -7,6 +7,8 @@ export const documentsModuleAr = {
     title: 'الوثائق الإدارية',
     subtitle: 'تنسيق ذكي للخدمات وسير العمل والحجوزات',
     quickLinks: 'أقسام الوحدة',
+    loadError: 'تعذّر تحميل لوحة الوثائق',
+    retry: 'إعادة المحاولة',
   },
   feed: {
     recent: 'الطلبات الأخيرة',
@@ -129,6 +131,9 @@ export const documentsModuleAr = {
     noReservation: 'لا يوجد حجز مجدول',
     noAttachments: 'لا توجد مرفقات',
     noOutputs: 'لا توجد وثائق مُولّدة بعد',
+    noInsights: 'لا توجد ملاحظات حالياً',
+    actionError: 'تعذّر تنفيذ الإجراء',
+    rejectReasonPrompt: 'سبب الرفض (مطلوب)',
   },
   reservations: {
     title: 'مركز الحجز',
@@ -136,6 +141,7 @@ export const documentsModuleAr = {
     calendar: 'تقويم الحجوزات',
     occupancy: 'الإشغال اليوم',
     smartAssign: 'تعيين المواعيد',
+    countToday: '{{count}} حجز(ات) اليوم',
   },
   resources: {
     title: 'إدارة الموارد',
@@ -183,6 +189,9 @@ export const documentsModuleAr = {
     reservationPeak: 'ذروة الحجز: 10:00–11:30.',
     srfClear: 'لدى الطالب شهادة SRF سارية.',
     srfBlocked: 'مطلوب دفع SRF قبل الاعتماد.',
+    slaAtRisk: 'بعض الطلبات تقترب من حد SLA.',
+    highPending: 'حجم مرتفع من الطلبات بانتظار الاعتماد.',
+    slaUrgent: 'موعد SLA على وشك الانتهاء لهذا الطلب.',
   },
   rejectionCauses: {
     missing_attachment: 'مرفق ناقص',
@@ -218,6 +227,20 @@ export const documentsModuleAr = {
     analytics: {
       title: 'لا توجد تحليلات بعد',
       subtitle: 'ستظهر الرؤى بعد معالجة الطلبات.',
+    },
+    charts: {
+      statusMix: {
+        title: 'لا توجد توزيعة حسب الحالة بعد',
+        subtitle: 'سيظهر توزيع الطلبات حسب الحالة مع بدء التقديمات.',
+      },
+      rejectionCauses: {
+        title: 'لا توجد رفضات مسجّلة',
+        subtitle: 'ستُعرض أسباب الرفض عند تسجيل الطلبات المرفوضة.',
+      },
+      reservationOccupancy: {
+        title: 'لا نشاط حجز',
+        subtitle: 'سيظهر معدل إشغال النوافذ بالساعة بعد حجز المواعيد.',
+      },
     },
   },
   chart: {

@@ -43,6 +43,9 @@ export const adminFormDateWrapClass = 'admin-form-date relative';
 export const adminFormActionsClass =
   'admin-form-actions grid min-w-0 shrink-0 grid-cols-1 gap-4 px-4 py-6 sm:px-10 md:grid-cols-2 lg:px-12';
 
+/** Pied d’actions — en bas du contenu, sans position fixe. */
+export const adminFormActionsInlineClass = `${adminFormActionsClass} admin-form-actions--inline`;
+
 /** Pied d’actions — sticky en bas du viewport sur formulaires longs. */
 export const adminFormActionsFooterClass = `${adminFormActionsClass} admin-form-actions--sticky`;
 

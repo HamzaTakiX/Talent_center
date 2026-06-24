@@ -85,11 +85,15 @@ const CareerCoachComposer: FunctionComponent<CareerCoachComposerProps> = ({
           onChange={(e) => onChange(e.target.value)}
           aria-label={t('student.internshipOffers.careerCoach.composer.placeholder')}
         />
-        <button type="submit" className="sr-acc-composer__send" disabled={!value.trim() && !pendingAttachment}>
+        <button
+          type="submit"
+          className="sr-acc-composer__send"
+          disabled={!value.trim() && !pendingAttachment}
+          aria-label={t('student.internshipOffers.careerCoach.composer.placeholder')}
+        >
           <Send className="h-4 w-4" aria-hidden />
         </button>
       </form>
-      <p className="sr-acc-composer__hint">{t('student.internshipOffers.careerCoach.composer.hint')}</p>
     </div>
   );
 };

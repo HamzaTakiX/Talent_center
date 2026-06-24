@@ -1,4 +1,4 @@
-import { CSSProperties, FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { CSSProperties, FunctionComponent, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -7,12 +7,13 @@ import DashboardSectionHeader from './DashboardSectionHeader';
 import DashboardPanel from '../ui/DashboardPanel';
 import CriticalAlertsSkeleton from './CriticalAlertsSkeleton';
 import { easePremium } from '../ui/animations';
-import { ALERT_METRICS, computeSeverityVolumes } from '../data/alertAnalyticsMock';
+import { computeSeverityVolumes } from '../data/alertAnalyticsMock';
+import { useAdminDashboardData } from '../hooks/useAdminDashboardData';
+import { useAdminDashboardContext } from '../context/AdminDashboardContext';
 
 const DONUT_SIZE = 128;
 const DONUT_R = 46;
 const DONUT_STROKE = 14;
-const LOAD_MS = 420;
 
 function polar(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -37,25 +38,22 @@ const SEVERITY_COLORS = {
 const CriticalAlerts: FunctionComponent = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+  const { loading } = useAdminDashboardContext();
+  const { alertMetrics } = useAdminDashboardData();
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => setIsLoading(false), LOAD_MS);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  const metrics = useMemo(
-    () =>
-      ALERT_METRICS.map((item) => ({
-        ...item,
-        message: t(`admin.dashboard.alerts.messages.${item.messageKey}`),
-        priorityLabel: t(`admin.dashboard.alerts.priority.${item.priority.toLowerCase()}`),
-      })),
-    [t]
+  const activeMetrics = useMemo(
+    () => alertMetrics.filter((item) => item.count > 0),
+    [alertMetrics],
   );
 
-  const { high, medium, low, total } = useMemo(() => computeSeverityVolumes(ALERT_METRICS), []);
-  const maxMetric = useMemo(() => Math.max(...metrics.map((m) => m.count), 1), [metrics]);
+  const { high, medium, low, total } = useMemo(
+    () => computeSeverityVolumes(alertMetrics),
+    [alertMetrics],
+  );
+  const maxMetric = useMemo(
+    () => Math.max(...alertMetrics.map((m) => m.count), 1),
+    [alertMetrics],
+  );
 
   const donutSegments = useMemo(() => {
     const slices = [
@@ -82,7 +80,7 @@ const CriticalAlerts: FunctionComponent = () => {
 
   return (
     <DashboardPanel data-admin-search-id="dashboard-alerts" className="admin-section-panel admin-alerts-analytics-panel">
-      {isLoading ? (
+      {loading ? (
         <CriticalAlertsSkeleton />
       ) : (
         <motion.div
@@ -97,7 +95,7 @@ const CriticalAlerts: FunctionComponent = () => {
             subtitle={t('admin.dashboard.alerts.subtitle')}
             action={
               <span className="admin-alerts-total-badge" aria-label={t('admin.dashboard.alerts.analytics.totalActive')}>
-                <span className="admin-alerts-total-badge__value">{metrics.length}</span>
+                <span className="admin-alerts-total-badge__value">{activeMetrics.length}</span>
                 <span className="admin-alerts-total-badge__label">{t('admin.dashboard.alerts.analytics.active')}</span>
               </span>
             }
@@ -171,7 +169,7 @@ const CriticalAlerts: FunctionComponent = () => {
             </div>
 
             <ul className="admin-alerts-metric-grid">
-              {metrics.map((item) => {
+              {alertMetrics.map((item) => {
                 const Icon = item.Icon;
                 const toneStyle = {
                   '--alert-accent': item.accent,

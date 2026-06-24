@@ -1,5 +1,6 @@
 """REST API views for internship offers module."""
 
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -64,6 +65,7 @@ from .services.offer_service import (
     publish_offer,
     soft_delete_offer,
     submit_for_review,
+    unarchive_offer,
     update_offer,
 )
 from .services.permissions import user_can_manage_offers
@@ -88,7 +90,7 @@ class OfferDashboardView(APIView):
     required_permission = STAGE_MANAGE_PERMISSION
 
     def get(self, request):
-        return Response(envelope(True, 'Analytics loaded', data=full_analytics_dashboard()))
+        return Response(envelope(True, 'Analytics loaded', data=full_analytics_dashboard(request=request)))
 
 
 class OfferListCreateView(APIView):
@@ -97,7 +99,9 @@ class OfferListCreateView(APIView):
     def get(self, request):
         qs = InternshipOffer.objects.exclude(status=InternshipOffer.Status.DELETED).select_related(
             'company',
-        ).prefetch_related('targeting_rules')
+        ).prefetch_related('targeting_rules').annotate(
+            live_application_count=Count('applications'),
+        )
         if not user_can_manage_offers(request.user):
             qs = qs.filter(status__in=list(PUBLICLY_VISIBLE_STATUSES | STUDENT_APPLYABLE_STATUSES))
         status_filter = request.query_params.get('status')
@@ -184,6 +188,8 @@ class OfferActionView(APIView):
                 offer = close_offer(offer=offer, actor=request.user)
             elif action == 'archive':
                 offer = archive_offer(offer=offer, actor=request.user)
+            elif action in ('unarchive', 'restore'):
+                offer = unarchive_offer(offer=offer, actor=request.user)
             elif action == 'delete':
                 offer = soft_delete_offer(offer=offer, actor=request.user)
             elif action == 'targeting-preview':
@@ -218,8 +224,13 @@ class OfferApplicationListView(APIView):
         offer = get_object_or_404(InternshipOffer, uuid=uuid)
         if not user_can_manage_offers(request.user):
             return Response(envelope(False, 'Permission denied'), status=403)
-        apps = offer.applications.select_related('student_profile__user').order_by('-applied_at')
-        ser = OfferApplicationSerializer(apps, many=True)
+        apps = offer.applications.select_related(
+            'student_profile__user',
+            'student_profile__user__profile',
+            'student_profile__class_group',
+            'student_profile__filiere',
+        ).order_by('-applied_at')
+        ser = OfferApplicationSerializer(apps, many=True, context={'request': request})
         return Response(envelope(True, 'Applications loaded', data=ser.data))
 
     def post(self, request, uuid):

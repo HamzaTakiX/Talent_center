@@ -37,14 +37,19 @@ export interface SupportInboxStats {
 
 export type SupportMobileView = 'list' | 'chat';
 
+export type PrimaryDeskFilter = 'all' | 'archived';
+
+export interface PrimaryFilterCounts {
+  all: number;
+  archived: number;
+}
+
 export interface SupportQuickFilters {
   unread: boolean;
   urgent: boolean;
-  archived: boolean;
 }
 
 export const EMPTY_SUPPORT_QUICK_FILTERS: SupportQuickFilters = {
   unread: false,
   urgent: false,
-  archived: false,
 };

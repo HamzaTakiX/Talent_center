@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import DocumentsStatusBadge from './DocumentsStatusBadge';
 import DocumentsSlaBar from './DocumentsSlaBar';
-import DocumentsPremiumEmpty from './DocumentsPremiumEmpty';
+import DocumentsSectionEmpty from './DocumentsSectionEmpty';
 import type { DocumentRequestListItem } from '../types';
 import { sanitizeTableCellText } from '../../../../design-system/safeContent';
 
@@ -29,7 +29,7 @@ const DocumentsRequestsModernTable: FunctionComponent<Props> = ({ rows, loading 
   }
 
   if (rows.length === 0) {
-    return <DocumentsPremiumEmpty variant="requests" />;
+    return <DocumentsSectionEmpty section="requests" variant="panel" />;
   }
 
   return (

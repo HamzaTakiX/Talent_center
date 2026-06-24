@@ -296,5 +296,4 @@ class OfferChatView(APIView):
             send_offer_message(conversation=conv, sender=request.user, body=message_body)
         return Response(envelope(True, 'Conversation ready', data={
             'conversation_id': conv.pk,
-            'unread_total': total_unread_for_user(request.user),
         }))

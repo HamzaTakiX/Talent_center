@@ -20,16 +20,33 @@ export type AnnouncementMessage = {
   time: string;
   separatorBefore?: string;
   read?: boolean;
+  deliveryStatus?: 'sent' | 'delivered' | 'read';
+  seenAt?: string;
+  seenTime?: string;
   attachmentName?: string;
 };
 
 import type { StudentAcademicFields } from '../../../shared/chat-filters/studentAcademicChatFilterTypes';
 
+export type PrimaryAnnouncementFilter = 'all' | 'archived';
+
+export type PrimaryFilterCounts = {
+  all: number;
+  archived: number;
+};
+
 export type AnnouncementConversation = StudentAcademicFields & {
   id: string;
+  conversationId?: number;
+  studentUserId?: number | null;
   studentName: string;
   studentInitials: string;
+  studentAvatarUrl?: string;
   announcementTitle: string;
+  announcementUuid?: string;
+  announcementTypeName?: string;
+  coverImageUrl?: string;
+  companyName?: string;
   category: AnnouncementCategory;
   publishStatus: AnnouncementPublishStatus;
   priority: AnnouncementPriority;
@@ -38,6 +55,7 @@ export type AnnouncementConversation = StudentAcademicFields & {
   audience: string;
   lastMessage: string;
   timeLabel: string;
+  lastMessageAt?: string | null;
   unreadCount: number;
   urgent: boolean;
   resolved: boolean;
@@ -54,22 +72,22 @@ import {
 } from '../../../shared/chat-filters/studentAcademicChatFilterTypes';
 
 export type AnnouncementInboxFilters = StudentAcademicChatFilters & {
+  primary: PrimaryAnnouncementFilter;
   categories: AnnouncementCategory[];
   statuses: AnnouncementPublishStatus[];
   priorities: AnnouncementPriority[];
   unread: boolean;
   urgent: boolean;
-  archived: boolean;
 };
 
 export const EMPTY_ANNOUNCEMENT_FILTERS: AnnouncementInboxFilters = {
   ...EMPTY_STUDENT_ACADEMIC_CHAT_FILTERS,
+  primary: 'all',
   categories: [],
   statuses: [],
   priorities: [],
   unread: false,
   urgent: false,
-  archived: false,
 };
 
 export type InboxStats = {

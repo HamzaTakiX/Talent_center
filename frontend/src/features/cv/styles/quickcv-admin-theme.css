@@ -455,3 +455,29 @@
   font-size: 0.8125rem !important;
 }
 
+@media (max-width: 768px) {
+  [data-admin-theme] .quickcv-split {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+
+  [data-admin-theme] .quickcv-editor-scroll {
+    height: auto;
+    max-height: 52vh;
+    border-right: none;
+    border-bottom: 1px solid var(--admin-border);
+    padding: 0.75rem 0.75rem 1.5rem;
+  }
+
+  [data-admin-theme] .quickcv-form-card {
+    padding: 1rem 0.875rem 0.875rem;
+  }
+
+  [data-admin-theme] .quickcv-preview-scroll,
+  [data-admin-theme] .quickcv-paper-surface {
+    min-height: 45vh;
+  }
+}
+

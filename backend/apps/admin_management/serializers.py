@@ -74,6 +74,9 @@ class AdminStudentListSerializer(serializers.ModelSerializer):
         source='student_profile.internship_category', read_only=True, default='',
     )
     academic_year = serializers.CharField(source='student_profile.academic_year', read_only=True, default='')
+    academic_year_id = serializers.IntegerField(
+        source='student_profile.academic_year_ref_id', read_only=True, allow_null=True,
+    )
     student_number = serializers.CharField(source='student_profile.student_number', read_only=True, default='')
     identity_confirmed = serializers.BooleanField(source='student_profile.identity_confirmed', read_only=True, default=False)
     profile_completed = serializers.BooleanField(source='student_profile.profile_completed', read_only=True, default=False)
@@ -82,6 +85,8 @@ class AdminStudentListSerializer(serializers.ModelSerializer):
     risk_flags = serializers.SerializerMethodField()
     onboarding_percent = serializers.SerializerMethodField()
     has_internship_assignment = serializers.SerializerMethodField()
+    intelligence = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -92,11 +97,11 @@ class AdminStudentListSerializer(serializers.ModelSerializer):
             'program_major', 'filiere_code', 'current_class', 'filiere_id', 'class_group_id',
             'academic_level_id', 'academic_sector_id', 'internship_type_id',
             'internship_type_name', 'internship_duration', 'internship_category',
-            'academic_year', 'student_number',
+            'academic_year', 'academic_year_id', 'student_number',
             'identity_confirmed', 'profile_completed',
             'last_login_at', 'created_at',
             'has_credential', 'risk_flags', 'onboarding_percent',
-            'has_internship_assignment',
+            'has_internship_assignment', 'intelligence', 'avatar_url',
         ]
 
     def get_filiere_code(self, obj) -> str:
@@ -131,8 +136,36 @@ class AdminStudentListSerializer(serializers.ModelSerializer):
             sp = obj.student_profile
         except Exception:
             return 0
+        indicator = getattr(sp, 'indicator', None)
+        if indicator and indicator.profile_completion_score:
+            return indicator.profile_completion_score
         steps = [sp.identity_confirmed, sp.profile_completed]
         return int(sum(1 for s in steps if s) / len(steps) * 100)
+
+    def get_intelligence(self, obj) -> dict | None:
+        try:
+            sp = obj.student_profile
+            indicator = getattr(sp, 'indicator', None)
+        except Exception:
+            return None
+        if indicator is None:
+            return None
+        return {
+            'risk_score': indicator.risk_score,
+            'risk_category': indicator.risk_category,
+            'engagement_score': indicator.engagement_score,
+            'engagement_category': indicator.engagement_category,
+            'employability_score': indicator.employability_score,
+            'internship_readiness_score': indicator.internship_readiness_score,
+            'profile_completion_score': indicator.profile_completion_score,
+            'interview_readiness_score': indicator.interview_readiness_score,
+            'career_progress_score': indicator.career_progress_score,
+            'placement_probability': indicator.placement_probability,
+            'health_score': indicator.health_score,
+            'health_index': indicator.health_index,
+            'is_at_risk': indicator.is_at_risk,
+            'computed_at': indicator.computed_at.isoformat() if indicator.computed_at else None,
+        }
 
     def get_has_internship_assignment(self, obj) -> bool:
         if hasattr(obj, 'has_internship_assignment'):
@@ -148,6 +181,16 @@ class AdminStudentListSerializer(serializers.ModelSerializer):
             is_active=True,
             encadrant_profile__isnull=False,
         ).exists()
+
+    def get_avatar_url(self, obj) -> str | None:
+        profile = getattr(obj, 'profile', None)
+        if not profile or not profile.avatar:
+            return None
+        url = profile.avatar.url
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(url)
+        return url
 
 
 class AdminStudentDetailSerializer(AdminStudentListSerializer):
@@ -190,6 +233,11 @@ class UpdateStudentAssignmentSerializer(serializers.Serializer):
     class_group_id = serializers.IntegerField(required=False, allow_null=True)
     academic_year = serializers.CharField(max_length=16, required=False, allow_blank=True)
     academic_year_id = serializers.IntegerField(required=False, allow_null=True)
+
+
+class UpdateStudentProfileSerializer(serializers.Serializer):
+    avatar = serializers.ImageField(required=False, allow_null=True)
+    remove_avatar = serializers.BooleanField(required=False, default=False)
 
 
 class RoleOptionSerializer(serializers.ModelSerializer):
@@ -237,6 +285,7 @@ class AdminAdministratorListSerializer(serializers.ModelSerializer):
     scopes = serializers.SerializerMethodField()
     last_login_at = serializers.DateTimeField(source='last_login', read_only=True, allow_null=True)
     onboarding_complete = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -246,7 +295,7 @@ class AdminAdministratorListSerializer(serializers.ModelSerializer):
             'sso_enabled', 'first_login_completed', 'is_active',
             'admin_level', 'is_admin_active',
             'role_slugs', 'is_super_admin', 'permission_keys', 'scopes',
-            'last_login_at', 'onboarding_complete', 'created_at',
+            'last_login_at', 'onboarding_complete', 'created_at', 'avatar_url',
         ]
 
     def get_is_super_admin(self, obj) -> bool:
@@ -298,6 +347,16 @@ class AdminAdministratorListSerializer(serializers.ModelSerializer):
             ],
         ).exists()
         return not pending
+
+    def get_avatar_url(self, obj) -> str | None:
+        profile = getattr(obj, 'profile', None)
+        if not profile or not profile.avatar:
+            return None
+        url = profile.avatar.url
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(url)
+        return url
 
 
 class AdminAdministratorDetailSerializer(AdminAdministratorListSerializer):

@@ -3,7 +3,13 @@ import { motion } from 'framer-motion';
 import { ArrowUpRight, Check, Circle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { easePremium } from '../../../../admin/dashboard/ui/animations';
-import { studentHeroWidgetData } from '../../data/studentDashboardMock';
+import { useStudentDashboardContext } from '../../context/StudentDashboardContext';
+import type {
+  StudentHeroApplicationsWidget,
+  StudentHeroCvWidget,
+  StudentHeroProfileWidget,
+  StudentHeroReadinessWidget,
+} from '../../types/studentDashboardData';
 
 const useCountUp = (target: number, duration = 900) => {
   const [value, setValue] = useState(0);
@@ -135,10 +141,9 @@ const TrendBadge: FunctionComponent<{ value: number }> = ({ value }) => (
   </span>
 );
 
-const ProfileCompletionWidget: FunctionComponent = () => {
+const ProfileCompletionWidget: FunctionComponent<{ d: StudentHeroProfileWidget }> = ({ d }) => {
   const { t } = useTranslation();
   const uid = useId();
-  const d = studentHeroWidgetData.profile;
 
   return (
     <HeroWidgetShell accent="brand" delay={0.05}>
@@ -173,10 +178,9 @@ const ProfileCompletionWidget: FunctionComponent = () => {
   );
 };
 
-const CvScoreWidget: FunctionComponent = () => {
+const CvScoreWidget: FunctionComponent<{ d: StudentHeroCvWidget }> = ({ d }) => {
   const { t } = useTranslation();
   const uid = useId();
-  const d = studentHeroWidgetData.cv;
 
   return (
     <HeroWidgetShell accent="cyan" delay={0.1}>
@@ -219,9 +223,8 @@ const CvScoreWidget: FunctionComponent = () => {
   );
 };
 
-const InternshipReadyWidget: FunctionComponent = () => {
+const InternshipReadyWidget: FunctionComponent<{ d: StudentHeroReadinessWidget }> = ({ d }) => {
   const { t } = useTranslation();
-  const d = studentHeroWidgetData.readiness;
 
   return (
     <HeroWidgetShell accent="violet" delay={0.15}>
@@ -269,9 +272,8 @@ const InternshipReadyWidget: FunctionComponent = () => {
   );
 };
 
-const ApplicationsWidget: FunctionComponent = () => {
+const ApplicationsWidget: FunctionComponent<{ d: StudentHeroApplicationsWidget }> = ({ d }) => {
   const { t } = useTranslation();
-  const d = studentHeroWidgetData.applications;
   const animatedTotal = useCountUp(d.weekTotal);
   const ratioSum = d.ratio.accepted + d.ratio.pending + d.ratio.rejected;
   const pct = (n: number) => (ratioSum > 0 ? (n / ratioSum) * 100 : 0);
@@ -330,13 +332,17 @@ const ApplicationsWidget: FunctionComponent = () => {
   );
 };
 
-const StudentHeroAnalyticsWidgets: FunctionComponent = () => (
-  <div className="student-dashboard-hero-metrics w-full">
-    <ProfileCompletionWidget />
-    <CvScoreWidget />
-    <InternshipReadyWidget />
-    <ApplicationsWidget />
-  </div>
-);
+const StudentHeroAnalyticsWidgets: FunctionComponent = () => {
+  const { data } = useStudentDashboardContext();
+
+  return (
+    <div className="student-dashboard-hero-metrics w-full">
+      <ProfileCompletionWidget d={data.hero.profile} />
+      <CvScoreWidget d={data.hero.cv} />
+      <InternshipReadyWidget d={data.hero.readiness} />
+      <ApplicationsWidget d={data.hero.applications} />
+    </div>
+  );
+};
 
 export default StudentHeroAnalyticsWidgets;

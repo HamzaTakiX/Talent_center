@@ -3,14 +3,16 @@ export interface InternshipOffer {
   title: string;
   company: string;
   companyLogoUrl?: string | null;
-  status: 'Active' | 'Draft' | 'Expired' | 'Closed';
+  status: 'Active' | 'Draft' | 'Expired' | 'Closed' | 'Archived';
   applicants: number;
   deadline: string;
+  applicationDeadline?: string | null;
   publishReadinessScore?: number | null;
   publishReady?: boolean | null;
+  draftWorkflowStatus?: 'draft' | 'pending_review';
 }
 
-export type OfferApplicationStatus = 'Pending' | 'Accepted';
+export type OfferApplicationStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Interview';
 
 export interface OfferApplicantRow {
   id: string;
@@ -29,6 +31,17 @@ export interface InternshipOfferDetail extends InternshipOffer {
   studentApplications: OfferApplicantRow[];
 }
 
+export interface PopularOfferBrief {
+  uuid: string;
+  title: string;
+  companyName: string;
+  companyLogoUrl?: string | null;
+  locationCity?: string | null;
+  applicationDeadline?: string | null;
+  viewCount: number;
+  applicationCount: number;
+}
+
 export interface InternshipOfferStat {
   label: string;
   labelKey?: string;
@@ -36,4 +49,5 @@ export interface InternshipOfferStat {
   statKey?: string;
   value: string;
   icon: string;
+  popularOffer?: PopularOfferBrief;
 }

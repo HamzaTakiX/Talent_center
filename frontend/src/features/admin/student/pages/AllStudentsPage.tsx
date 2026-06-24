@@ -7,8 +7,7 @@ import StudentDetailModal from '../components/StudentDetailModal';
 import { adminStudentsApi } from '../../api/students';
 import type { AdminStudentRow, StudentDashboardStats } from '../../api/types';
 import { DEFAULT_SERVER_PAGE_SIZE } from '../../shared/hooks/useAdminPagination';
-import { AdminModulePageSkeleton, AdminStatChartSection } from '../../ui';
-import StudentsInternshipSplitChart from '../components/StudentsInternshipSplitChart';
+import { AdminModulePageSkeleton } from '../../ui';
 
 const AllStudentsPage: FunctionComponent = () => {
   const navigate = useNavigate();
@@ -101,9 +100,6 @@ const AllStudentsPage: FunctionComponent = () => {
       <div data-admin-search-id="students-stats">
         <StudentsStatGrid stats={statsLoading ? null : stats} />
       </div>
-      <AdminStatChartSection chartId="students-internship-split" loading={statsLoading}>
-        <StudentsInternshipSplitChart stats={statsLoading ? null : stats} loading={statsLoading} />
-      </AdminStatChartSection>
       <div className="mt-6" data-admin-search-id="students-table">
         <StudentsDashboardTable
           students={students}

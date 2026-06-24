@@ -804,3 +804,43 @@ html[data-admin-theme='dark'] .cv-ai-cockpit__close:hover {
   border-color: color-mix(in srgb, #991b1b 40%, var(--admin-border));
   color: #fecaca;
 }
+
+@media (max-width: 640px) {
+  [data-admin-theme] .cv-ai-cockpit--expanded {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+  }
+
+  [data-admin-theme] .cv-ai-cockpit__surface {
+    max-height: 74vh;
+  }
+
+  [data-admin-theme] .cv-ai-cockpit__header {
+    padding: 0.9rem 0.9rem 0.7rem;
+  }
+
+  [data-admin-theme] .cv-ai-cockpit__scores {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0 0.9rem 0.8rem;
+  }
+
+  [data-admin-theme] .cv-ai-cockpit__readiness {
+    width: 100%;
+  }
+
+  [data-admin-theme] .cv-ai-cockpit__block {
+    padding: 0.7rem 0.9rem 0.45rem;
+  }
+
+  [data-admin-theme] .cv-ai-cockpit__footer {
+    padding: 0.65rem 0.9rem 0.85rem;
+  }
+
+  [data-admin-theme] .cv-ai-validation {
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.75rem;
+    max-width: none;
+  }
+}

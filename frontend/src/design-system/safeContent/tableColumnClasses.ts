@@ -8,6 +8,8 @@ export const ADMIN_TABLE_COL = {
   applicants: 'admin-table-col admin-table-col--applicants',
   deadline: 'admin-table-col admin-table-col--deadline',
   actions: 'admin-table-col admin-table-col--actions',
+  actionsMenu: 'admin-table-col admin-table-col--actions-menu',
+  actionsDraft: 'admin-table-col admin-table-col--actions-draft',
   image: 'admin-table-col admin-table-col--image',
   name: 'admin-table-col admin-table-col--name',
   email: 'admin-table-col admin-table-col--email',

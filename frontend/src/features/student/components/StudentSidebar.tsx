@@ -7,11 +7,13 @@ import {
   Compass,
   MessageSquare,
   Clock,
+  Heart,
   FileText,
   CalendarDays,
   CheckSquare,
   Users,
   FilePenLine,
+  PenLine,
   LucideIcon,
 } from 'lucide-react';
 import escaLogoLight from '../../auth/assets/images/common/Logo_ESCA.png';
@@ -30,13 +32,18 @@ import {
   type StudentNavChildId,
   type StudentNavSectionId,
 } from '../config/studentNavConfig';
+import { STUDENT_NAV_CHAT_MODULES } from '../../shared/contextual-chat/config/chatNavModuleMap';
+import { useChatUnread } from '../../shared/contextual-chat/context/ChatUnreadContext';
+import NavChatUnreadBadge from '../../shared/contextual-chat/components/NavChatUnreadBadge';
 
 const subIconMap: Record<StudentNavChildId, LucideIcon> = {
+  cvBuilder: PenLine,
   cvAnalysis: FileText,
   aiCareerCoach: Compass,
   interviewSimulator: Users,
   chat: MessageSquare,
   history: Clock,
+  favorites: Heart,
   agenda: CalendarDays,
   task: CheckSquare,
   workspace: Users,
@@ -82,6 +89,7 @@ interface SidebarSubButtonProps {
   active?: boolean;
   onClick?: () => void;
   childId: StudentNavChildId;
+  unreadCount?: number;
 }
 
 const SidebarSubButton: FunctionComponent<SidebarSubButtonProps> = ({
@@ -89,6 +97,7 @@ const SidebarSubButton: FunctionComponent<SidebarSubButtonProps> = ({
   active,
   onClick,
   childId,
+  unreadCount = 0,
 }) => {
   const SubIcon = subIconMap[childId] ?? MessageSquare;
   return (
@@ -101,7 +110,8 @@ const SidebarSubButton: FunctionComponent<SidebarSubButtonProps> = ({
         className={`relative h-3.5 w-3.5 shrink-0 ${active ? 'text-[var(--admin-brand)]' : 'text-[var(--admin-text-muted)]'}`}
         strokeWidth={1.75}
       />
-      <span className="truncate leading-5 text-inherit">{label}</span>
+      <span className="min-w-0 flex-1 truncate leading-5 text-inherit">{label}</span>
+      {childId === 'chat' && unreadCount > 0 ? <NavChatUnreadBadge count={unreadCount} /> : null}
     </button>
   );
 };
@@ -137,6 +147,7 @@ const StudentSidebar: FunctionComponent<StudentSidebarProps> = ({ mobileOpen, on
   const { theme } = useAdminTheme();
   const pathname = location.pathname;
   const escaLogo = theme === 'dark' ? escaLogoDark : escaLogoLight;
+  const { getModuleUnread } = useChatUnread();
 
   const [manuallyExpanded, setManuallyExpanded] = useState<StudentNavSectionId[]>([]);
   const [manuallyCollapsed, setManuallyCollapsed] = useState<StudentNavSectionId[]>([]);
@@ -255,12 +266,15 @@ const StudentSidebar: FunctionComponent<StudentSidebarProps> = ({ mobileOpen, on
                     {item.children.map((child) => {
                       const subPath = getChildPath(item.id, child);
                       const isSubActive = isChildNavActive(item.id, child, pathname);
+                      const chatModule = child === 'chat' ? STUDENT_NAV_CHAT_MODULES[item.id] : undefined;
+                      const unreadCount = chatModule ? getModuleUnread(chatModule) : 0;
                       return (
                         <SidebarSubButton
                           key={child}
                           childId={child}
                           label={navLabel(child)}
                           active={isSubActive}
+                          unreadCount={unreadCount}
                           onClick={
                             subPath
                               ? () => {

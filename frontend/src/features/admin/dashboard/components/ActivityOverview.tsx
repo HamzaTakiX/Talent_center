@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,6 @@ import { legendFromSeries } from '../../ui/charts/chartPalette';
 
 const CHART_HEIGHT_DESKTOP = 148;
 const CHART_HEIGHT_MOBILE = 124;
-const maxValue = 120;
 
 const useChartHeight = () => {
   const [height, setHeight] = useState(CHART_HEIGHT_DESKTOP);
@@ -36,16 +35,15 @@ const seriesColors = {
 
 const keys = ['applications', 'documents', 'announcements', 'studentActivity'] as const;
 
-const barHeightPx = (value: number, chartHeight: number) =>
-  value <= 0 ? 0 : Math.max((Math.min(value, maxValue) / maxValue) * chartHeight, 3);
-
 const AnimatedBar: FunctionComponent<{
   value: number;
   color: string;
   delay: number;
   chartHeight: number;
-}> = ({ value, color, delay, chartHeight }) => {
-  const target = barHeightPx(value, chartHeight);
+  maxValue: number;
+}> = ({ value, color, delay, chartHeight, maxValue }) => {
+  const target =
+    value <= 0 ? 0 : Math.max((Math.min(value, maxValue) / maxValue) * chartHeight, 3);
   const [height, setHeight] = useState(0);
 
   useEffect(() => {
@@ -67,8 +65,14 @@ const AnimatedBar: FunctionComponent<{
 
 const ActivityOverview: FunctionComponent = () => {
   const { t } = useTranslation();
-  const { chartLabels, chartData, legend } = useAdminDashboardData();
+  const { chartLabels, chartData, legend, chartMaxValue } = useAdminDashboardData();
   const chartHeight = useChartHeight();
+  const maxValue = Math.max(10, Math.ceil(chartMaxValue * 1.15));
+  const yTicks = useMemo(() => {
+    const step = Math.max(1, Math.ceil(maxValue / 4));
+    const top = step * 4;
+    return [top, step * 3, step * 2, step, 0];
+  }, [maxValue]);
 
   return (
     <DashboardPanel data-admin-search-id="dashboard-chart" className="admin-section-panel w-full">
@@ -88,7 +92,7 @@ const ActivityOverview: FunctionComponent = () => {
                 className="flex w-6 shrink-0 flex-col justify-between pb-5 text-[9px] tabular-nums text-[var(--admin-text-muted)] sm:w-7 sm:text-[10px]"
                 style={{ height: chartHeight }}
               >
-                {[120, 90, 60, 30, 0].map((v) => (
+                {yTicks.map((v) => (
                   <span key={v}>{v}</span>
                 ))}
               </motion.div>
@@ -112,6 +116,7 @@ const ActivityOverview: FunctionComponent = () => {
                               color={seriesColors[k]}
                               delay={index * 35 + ki * 15}
                               chartHeight={chartHeight}
+                              maxValue={maxValue}
                             />
                           ))}
                         </motion.div>

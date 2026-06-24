@@ -5,6 +5,7 @@ import { User } from '../types';
 import { authApi } from '../api';
 import { getAuth0EnvConfig } from '../config/auth0Env';
 import {
+  canRestoreSessionFromCache,
   hasPersistedAccessToken,
   readCachedAuthUser,
   writeCachedAuthUser,
@@ -86,17 +87,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     getIdTokenClaims,
   } = useAuth0();
 
+  const hasCachedSession = canRestoreSessionFromCache();
+
   const [user, setUserState] = useState<User | null>(() =>
     isFrontendOnlyAdmin ? fakeAdminUser : readCachedAuthUser(),
   );
   const [isBackendLoading, setIsBackendLoading] = useState(
     () => !isFrontendOnlyAdmin && hasPersistedAccessToken(),
   );
+  /** Ready for routing: optimistic when token + cached user exist; blocking only on cold bootstrap. */
   const [isAuthReady, setIsAuthReady] = useState(
-    () => isFrontendOnlyAdmin || !hasPersistedAccessToken(),
+    () => isFrontendOnlyAdmin || !hasPersistedAccessToken() || hasCachedSession,
   );
   const [authError, setAuthError] = useState<string | null>(null);
-  const sessionRestoredRef = useRef(false);
+  const hydrationRef = useRef<'idle' | 'backend' | 'auth0' | 'done'>('idle');
 
   const setUser = useCallback((next: User | null) => {
     setUserState(next);
@@ -107,7 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearPersistedAuthTokens();
     clearRoleScopedStorage();
     setUser(null);
-    sessionRestoredRef.current = false;
+    hydrationRef.current = 'idle';
     setIsAuthReady(true);
   }, [setUser]);
 
@@ -121,7 +125,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const restored = await restoreSessionWithRefresh();
     if (restored) {
       setUser(restored);
-      sessionRestoredRef.current = true;
     } else {
       clearLocalAuth();
     }
@@ -132,6 +135,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchBackendUser = useCallback(async () => {
     try {
       setAuthError(null);
+      setIsBackendLoading(true);
+      if (!canRestoreSessionFromCache()) {
+        setIsAuthReady(false);
+      }
       const auth0Token = await resolveAuth0ExchangeToken(
         getAccessTokenSilently,
         getIdTokenClaims,
@@ -142,7 +149,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('refresh_token', session.refresh);
       }
       setUser(session.user);
-      sessionRestoredRef.current = true;
     } catch (error) {
       console.error('Failed to exchange Auth0 token or load user', error);
       const message = isAxiosError(error)
@@ -154,7 +160,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (fallback) {
         setUser(fallback);
         setAuthError(null);
-        sessionRestoredRef.current = true;
       } else {
         clearLocalAuth();
       }
@@ -172,21 +177,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    const runBackendHydration = () => {
+      if (hydrationRef.current === 'backend' || hydrationRef.current === 'done') {
+        return;
+      }
+      hydrationRef.current = 'backend';
+      void hydrateFromBackendToken().finally(() => {
+        if (hydrationRef.current === 'backend') {
+          hydrationRef.current = 'done';
+        }
+      });
+    };
+
+    const runAuth0Exchange = () => {
+      if (hydrationRef.current === 'auth0' || hydrationRef.current === 'done') {
+        return;
+      }
+      hydrationRef.current = 'auth0';
+      void fetchBackendUser().finally(() => {
+        if (hydrationRef.current === 'auth0') {
+          hydrationRef.current = 'done';
+        }
+      });
+    };
+
     if (isAuth0Loading) {
-      if (hasPersistedAccessToken()) {
-        void hydrateFromBackendToken();
-      } else {
+      if (!hasPersistedAccessToken()) {
         setIsBackendLoading(false);
         setIsAuthReady(true);
       }
+      // Wait for Auth0 SDK before backend hydrate/exchange to avoid duplicate /me + exchange.
+      return;
+    }
+
+    if (hydrationRef.current === 'done') {
       return;
     }
 
     if (isAuth0Authenticated) {
-      void fetchBackendUser();
-    } else {
-      void hydrateFromBackendToken();
+      runAuth0Exchange();
+      return;
     }
+
+    if (hasPersistedAccessToken()) {
+      runBackendHydration();
+      return;
+    }
+
+    setIsBackendLoading(false);
+    setIsAuthReady(true);
   }, [
     isAuth0Authenticated,
     isAuth0Loading,
@@ -228,7 +267,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('refresh_token', refreshToken);
     }
     setUser(userData);
-    sessionRestoredRef.current = true;
+    hydrationRef.current = 'done';
     setIsAuthReady(true);
     setIsBackendLoading(false);
     setAuthError(null);

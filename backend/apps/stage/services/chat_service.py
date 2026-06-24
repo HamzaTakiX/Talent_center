@@ -8,19 +8,27 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from apps.accounts_et_roles.models import StudentProfile
-from apps.chat.models import Conversation, ConversationContext, ConversationParticipant, Message
+from apps.chat.models import Channel, Conversation, ConversationContext, ConversationParticipant, Message
 from apps.chat.services.conversation_service import get_or_create_contextual_conversation
 from apps.chat.services.message_service import send_message as chat_send_message
 from apps.chat.services.message_service import unread_count_for_user as chat_unread_count
+from apps.chat.services.realtime import publish_message_created
 from apps.chat.services.seed import seed_chat_infrastructure
 from apps.stage.models import InternshipOffer, OfferApplication
-from apps.stage.services.notifications import _internship_admin_users, notify_conversation_reply
+from apps.stage.services.notifications import _internship_admin_users
 from apps.stage.services.permissions import user_can_access_chat
 
 User = get_user_model()
 MODULE = ConversationContext.Module.OFFERS
 CHANNEL_CODE = 'support-stage'
 ENTITY_TYPE = 'internship_offer'
+
+
+def _ensure_chat_infrastructure() -> None:
+    """Seed channels/tags once; skip the full seed on every chat open."""
+    if Channel.objects.filter(code=CHANNEL_CODE, is_archived=False).exists():
+        return
+    seed_chat_infrastructure()
 
 
 def offer_thread_entity_id(offer: InternshipOffer, student: StudentProfile) -> str:
@@ -102,6 +110,87 @@ def _next_interview_at(application: OfferApplication | None) -> str | None:
     return None
 
 
+def _student_display_name(student: StudentProfile) -> str:
+    user = student.user
+    profile = getattr(user, 'profile', None)
+    candidates = (
+        (user.first_name, user.last_name),
+        (
+            getattr(profile, 'first_name', '') if profile else '',
+            getattr(profile, 'last_name', '') if profile else '',
+        ),
+    )
+    for first, last in candidates:
+        name = f'{first} {last}'.strip()
+        if name:
+            return name
+    return ''
+
+
+def resolve_student_for_context(
+    *,
+    student_user_id: int | None,
+    snapshot: dict[str, Any] | None = None,
+) -> StudentProfile | None:
+    snap = snapshot or {}
+    student_profile_id = snap.get('student_profile_id')
+    resolved_user_id = student_user_id or snap.get('student_user_id')
+    if not student_profile_id and not resolved_user_id:
+        return None
+
+    queryset = StudentProfile.objects.select_related('user', 'user__profile')
+    if student_profile_id:
+        student = queryset.filter(pk=student_profile_id).first()
+        if student:
+            return student
+    if resolved_user_id:
+        return queryset.filter(user_id=resolved_user_id).first()
+    return None
+
+
+def resolve_student_display_name_for_context(
+    *,
+    student_user_id: int | None,
+    snapshot: dict[str, Any] | None = None,
+) -> str:
+    snap = snapshot or {}
+    cached = str(snap.get('student_name') or '').strip()
+    if cached:
+        return cached
+    student = resolve_student_for_context(student_user_id=student_user_id, snapshot=snap)
+    if not student:
+        return ''
+    return _student_display_name(student)
+
+
+def _student_avatar_url(student: StudentProfile, request=None) -> str | None:
+    profile = getattr(student.user, 'profile', None)
+    if not profile or not profile.avatar:
+        return None
+    url = profile.avatar.url
+    if request:
+        return request.build_absolute_uri(url)
+    return url
+
+
+def _offer_company_logo_url(offer: InternshipOffer, request=None) -> str | None:
+    if offer.company_logo:
+        url = offer.company_logo.url
+        if request:
+            return request.build_absolute_uri(url)
+        return url
+    meta_logo = (offer.metadata_json or {}).get('company_logo')
+    if meta_logo:
+        return str(meta_logo)
+    company = getattr(offer, 'company', None)
+    if company and getattr(company, 'logo', None):
+        url = company.logo.url
+        if request:
+            return request.build_absolute_uri(url)
+        return url
+    return None
+
+
 def _build_context_snapshot(
     *,
     offer: InternshipOffer,
@@ -109,7 +198,7 @@ def _build_context_snapshot(
     application: OfferApplication | None,
 ) -> dict[str, Any]:
     user = student.user
-    student_name = f'{user.first_name} {user.last_name}'.strip() if user else ''
+    student_name = _student_display_name(student)
     filiere = getattr(student, 'filiere', None)
     class_group = getattr(student, 'class_group', None)
     academic_level = getattr(student, 'academic_level', None)
@@ -121,6 +210,7 @@ def _build_context_snapshot(
         'offer_title': offer.title,
         'offer_type': offer.offer_type,
         'company_name': offer.company_name,
+        'company_logo_url': _offer_company_logo_url(offer),
         'application_deadline': (
             offer.application_deadline.isoformat() if offer.application_deadline else None
         ),
@@ -128,6 +218,7 @@ def _build_context_snapshot(
         'student_user_id': user.pk if user else None,
         'student_name': student_name,
         'student_email': user.email if user else '',
+        'student_avatar_url': _student_avatar_url(student),
         'student_phone': _student_phone(student),
         'filiere_id': student.filiere_id,
         'filiere_name': filiere.name if filiere else (student.program_major or ''),
@@ -167,7 +258,22 @@ def get_or_create_offer_conversation(
     admin_users: list[User] | None = None,
     created_by: User | None = None,
 ) -> Conversation:
-    seed_chat_infrastructure()
+    _ensure_chat_infrastructure()
+    entity_id = offer_thread_entity_id(offer, student)
+    existing = (
+        Conversation.objects.filter(
+            context__module=MODULE,
+            context__entity_type=ENTITY_TYPE,
+            context__entity_id=entity_id,
+            is_archived=False,
+        )
+        .select_related('context')
+        .first()
+    )
+    if existing:
+        ensure_conversation_participants(existing, [student.user])
+        return existing
+
     student = (
         StudentProfile.objects.select_related(
             'user',
@@ -183,8 +289,7 @@ def get_or_create_offer_conversation(
     )
     application = get_application_for_chat(offer, student)
     workflow_status = application.status if application else 'INQUIRY'
-    entity_id = offer_thread_entity_id(offer, student)
-    student_name = f'{student.user.first_name} {student.user.last_name}'.strip()
+    student_name = _student_display_name(student)
     display_name = student_name or student.user.email
 
     admins = list(admin_users or [])
@@ -254,6 +359,15 @@ def post_offer_thread_event(
     )
     conv.last_message_at = timezone.now()
     conv.save(update_fields=['last_message_at', 'updated_at'])
+    publish_message_created(
+        conv.pk,
+        {
+            'message_id': msg.pk,
+            'sender_id': actor.pk if actor else None,
+            'body': body.strip()[:200],
+            'message_type': message_type,
+        },
+    )
     return msg
 
 
@@ -320,21 +434,6 @@ def send_offer_message(
     )
     if not message:
         return None
-    context = getattr(conversation, 'context', None)
-    if context and context.student_user_id and sender.pk != context.student_user_id:
-        try:
-            student = StudentProfile.objects.select_related('user').get(user_id=context.student_user_id)
-            offer_uuid = offer_uuid_from_context(context)
-            if offer_uuid:
-                offer = InternshipOffer.objects.get(uuid=offer_uuid)
-                notify_conversation_reply(
-                    student=student,
-                    offer=offer,
-                    actor=sender,
-                    preview=body,
-                )
-        except (StudentProfile.DoesNotExist, InternshipOffer.DoesNotExist):
-            pass
     return message
 
 
@@ -369,10 +468,29 @@ def resolve_offer_conversation(conversation: Conversation, actor: User, resoluti
 
 
 def archive_offer_conversation(conversation: Conversation, actor: User) -> Conversation:
-    conversation.is_archived = True
+    """Hide a thread from the admin inbox only; students keep full access."""
     meta = conversation.metadata_json or {}
+    meta['admin_inbox_archived'] = True
     meta['archived_by'] = actor.pk
+    meta['admin_inbox_archived_at'] = timezone.now().isoformat()
+    meta.pop('unarchived_by', None)
+    meta.pop('admin_inbox_unarchived_at', None)
     conversation.metadata_json = meta
+    conversation.is_archived = False
+    conversation.save(update_fields=['is_archived', 'metadata_json', 'updated_at'])
+    return conversation
+
+
+def unarchive_offer_conversation(conversation: Conversation, actor: User) -> Conversation:
+    """Restore a thread to the active admin inbox."""
+    meta = conversation.metadata_json or {}
+    meta['admin_inbox_archived'] = False
+    meta.pop('archived_by', None)
+    meta.pop('admin_inbox_archived_at', None)
+    meta['unarchived_by'] = actor.pk
+    meta['admin_inbox_unarchived_at'] = timezone.now().isoformat()
+    conversation.metadata_json = meta
+    conversation.is_archived = False
     conversation.save(update_fields=['is_archived', 'metadata_json', 'updated_at'])
     return conversation
 

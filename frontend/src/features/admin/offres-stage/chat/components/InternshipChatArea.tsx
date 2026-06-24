@@ -1,44 +1,63 @@
 import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
-import { CheckCheck, Paperclip, Send } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Paperclip } from 'lucide-react';
 import ChatEmptyState from '../../../shared/admin-module-chat/components/ChatEmptyState';
+import SupportMessageComposer from '../../../shared/admin-support-inbox/components/SupportMessageComposer';
 import type { InboxStats, InternshipConversation } from '../types/internshipChatTypes';
+import { InternshipChatMessagesSkeleton, InternshipChatWorkspaceSkeleton } from './InternshipChatLoadingSkeletons';
 import InternshipChatHeader from './InternshipChatHeader';
+import InternshipMessageReadStatus from './InternshipMessageReadStatus';
 import { useInternshipInboxCopy } from '../../hooks/useOffersListLabels';
+import { formatInternshipSystemMessage } from '../utils/internshipChatSystemMessageUtils';
 
 type Props = {
   conversation: InternshipConversation | null;
   stats: InboxStats;
+  emptyStateStats?: {
+    unread: number;
+    waitingAdmin: number;
+    waitingStudent: number;
+    resolved: number;
+  };
+  messagesLoading?: boolean;
+  conversationLoading?: boolean;
+  statsLoading?: boolean;
   onSend: (text: string) => void;
   onBack?: () => void;
   onViewStudent: () => void;
   onViewApplication: () => void;
   onViewOffer: () => void;
+  onOpenOfferInModule?: () => void;
   onMarkResolved: () => void;
   onArchive: () => void;
+  onUnarchive: () => void;
+  peerTyping?: boolean;
+  onTyping?: (isTyping: boolean) => void;
 };
 
 const InternshipChatArea: FunctionComponent<Props> = ({
   conversation,
   stats,
+  emptyStateStats,
+  messagesLoading = false,
+  conversationLoading = false,
+  statsLoading = false,
   onSend,
   onBack,
   onViewStudent,
   onViewApplication,
   onViewOffer,
+  onOpenOfferInModule,
   onMarkResolved,
   onArchive,
+  onUnarchive,
+  peerTyping = false,
+  onTyping,
 }) => {
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const composerRef = useRef<HTMLTextAreaElement>(null);
   const { t, emptyState } = useInternshipInboxCopy();
-
-  const adjustComposer = useCallback(() => {
-    const el = composerRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 24), 120)}px`;
-  }, []);
+  const { t: tRoot } = useTranslation();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -46,32 +65,37 @@ const InternshipChatArea: FunctionComponent<Props> = ({
 
   useEffect(() => {
     setDraft('');
-    if (composerRef.current) composerRef.current.style.height = '24px';
   }, [conversation?.id]);
-
-  useEffect(() => {
-    adjustComposer();
-  }, [draft, adjustComposer]);
 
   const handleSend = useCallback(() => {
     const text = draft.trim();
     if (!text) return;
     onSend(text);
     setDraft('');
-    if (composerRef.current) composerRef.current.style.height = '24px';
   }, [draft, onSend]);
 
+  if ((conversationLoading || messagesLoading) && !conversation) {
+    return <InternshipChatWorkspaceSkeleton />;
+  }
+
   if (!conversation) {
+    const displayStats = emptyStateStats ?? {
+      unread: stats.unread,
+      waitingAdmin: stats.waitingAdmin,
+      waitingStudent: stats.waitingStudent,
+      resolved: stats.resolved,
+    };
     return (
       <section className="isi-chat isi-chat--empty">
         <ChatEmptyState
           title={emptyState.title}
           description={emptyState.description}
           moduleType="internship"
+          statsLoading={statsLoading}
           stats={{
-            unread: stats.unread,
-            pending: stats.waitingAdmin,
-            resolved: stats.resolved,
+            unread: displayStats.unread,
+            pending: displayStats.waitingAdmin,
+            resolved: displayStats.resolved,
             labels: {
               pending: t('stats.waitingAdmin'),
             },
@@ -89,25 +113,35 @@ const InternshipChatArea: FunctionComponent<Props> = ({
         onViewStudent={onViewStudent}
         onViewApplication={onViewApplication}
         onViewOffer={onViewOffer}
+        onOpenOfferInModule={onOpenOfferInModule}
         onMarkResolved={onMarkResolved}
         onArchive={onArchive}
+        onUnarchive={onUnarchive}
       />
 
       <div ref={scrollRef} className="isi-messages">
-        {conversation.messages.length === 0 ? (
+        {messagesLoading && conversation.messages.length === 0 ? (
+          <InternshipChatMessagesSkeleton embedded />
+        ) : conversation.messages.length === 0 ? (
           <div className="isi-messages-empty">
             <p className="text-sm text-[var(--admin-text-muted)]">{t('noMessages')}</p>
           </div>
         ) : (
-          conversation.messages.map((msg) => (
+          conversation.messages.map((msg) => {
+            const systemLabel =
+              msg.messageType === 'EVENT' || msg.messageType === 'SYSTEM'
+                ? formatInternshipSystemMessage(msg, 'admin', tRoot)
+                : null;
+
+            return (
             <div key={msg.id} className="isi-msg-block">
               {msg.separatorBefore ? (
                 <div className="isi-date-sep">
                   <span>{msg.separatorBefore}</span>
                 </div>
               ) : null}
-              {msg.messageType === 'EVENT' || msg.messageType === 'SYSTEM' ? (
-                <div className="isi-system-msg">{msg.text}</div>
+              {systemLabel ? (
+                <div className="isi-system-msg">{systemLabel}</div>
               ) : msg.direction === 'in' ? (
                 <div className="isi-msg isi-msg--in">
                   <div className="isi-bubble isi-bubble--in">{msg.text}</div>
@@ -122,48 +156,36 @@ const InternshipChatArea: FunctionComponent<Props> = ({
               ) : (
                 <div className="isi-msg isi-msg--out">
                   <div className="isi-bubble isi-bubble--out">{msg.text}</div>
-                  <div className="isi-msg-meta">
-                    <time className="isi-msg-time">{msg.time}</time>
-                    <CheckCheck className="size-3.5 opacity-60" strokeWidth={2.25} />
-                  </div>
+                  <InternshipMessageReadStatus
+                    message={msg}
+                    seenLabel={
+                      msg.seenTime ? t('seenAt', { time: msg.seenTime }) : undefined
+                    }
+                  />
                 </div>
               )}
             </div>
-          ))
+            );
+          })
         )}
+        {peerTyping ? (
+          <div className="isi-typing-indicator text-xs text-[var(--admin-text-muted)] px-4 pb-2">
+            {t('typingIndicator', { defaultValue: "L'étudiant écrit…" })}
+          </div>
+        ) : null}
       </div>
 
-      <footer className="isi-composer-wrap">
-        <div className="isi-composer">
-          <button type="button" className="isi-composer-action" aria-label={t('attachFile')}>
-            <Paperclip className="size-4" strokeWidth={1.85} />
-          </button>
-          <textarea
-            ref={composerRef}
-            rows={1}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder={t('composerPlaceholder')}
-            className="isi-composer-input"
-            aria-label={t('composerPlaceholder')}
-          />
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={!draft.trim()}
-            className="isi-composer-send"
-            aria-label={t('sendMessage')}
-          >
-            <Send className="size-4" strokeWidth={2} />
-          </button>
-        </div>
-      </footer>
+      <SupportMessageComposer
+        value={draft}
+        onChange={setDraft}
+        onSend={handleSend}
+        onTyping={onTyping}
+        placeholder={t('composerPlaceholder')}
+        inputAriaLabel={t('composerPlaceholder')}
+        attachAriaLabel={t('attachFile')}
+        sendAriaLabel={t('sendMessage')}
+        showVoice={false}
+      />
     </section>
   );
 };

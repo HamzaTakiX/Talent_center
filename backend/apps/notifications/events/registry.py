@@ -121,8 +121,9 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
         'application_parties',
     ),
     'internship.chat.reply': EventConfig(
-        Category.CHAT, Priority.HIGH, 'chat_reminder',
-        (NotificationRecipient.Channel.IN_APP,), 'student_only',
+        Category.CHAT, Priority.HIGH, 'chat_admin_reply',
+        (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
+        'student_only',
     ),
     # Documents
     'documents.uploaded': EventConfig(
@@ -151,8 +152,9 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
     ),
     # Chat
     'chat.message.received': EventConfig(
-        Category.CHAT, Priority.HIGH, 'chat_reminder',
-        (NotificationRecipient.Channel.IN_APP,), 'chat_participants',
+        Category.CHAT, Priority.HIGH, 'chat_new_message',
+        (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
+        'chat_participants',
     ),
     'chat.unread.reminder': EventConfig(
         Category.CHAT, Priority.NORMAL, 'chat_reminder',
@@ -171,6 +173,18 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
     'cv.score.updated': EventConfig(
         Category.CV_ANALYSIS, Priority.LOW, 'welcome',
         (NotificationRecipient.Channel.IN_APP,), 'student_only', digestible=True,
+    ),
+    'cv.match.found': EventConfig(
+        Category.CV_ANALYSIS, Priority.NORMAL, 'welcome',
+        (NotificationRecipient.Channel.IN_APP,), 'student_only', digestible=True,
+    ),
+    'cv.missing_skill.detected': EventConfig(
+        Category.CV_ANALYSIS, Priority.NORMAL, 'welcome',
+        (NotificationRecipient.Channel.IN_APP,), 'student_only', digestible=True,
+    ),
+    'cv.interview.recommendation': EventConfig(
+        Category.INTERVIEW_SIMULATOR, Priority.NORMAL, 'interview_scheduled',
+        (NotificationRecipient.Channel.IN_APP,), 'student_only',
     ),
     # Interview simulator
     'interview.simulation.completed': EventConfig(
@@ -221,6 +235,24 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
         Category.SYSTEM, Priority.URGENT, 'password_reset',
         (NotificationRecipient.Channel.EMAIL,), 'user_from_payload', urgent=True,
     ),
+    # Student intelligence alerts
+    'student.intelligence.critical_risk': EventConfig(
+        Category.SYSTEM, Priority.URGENT, 'welcome',
+        (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
+        'internship_admins', urgent=True,
+    ),
+    'student.intelligence.engagement_drop': EventConfig(
+        Category.SYSTEM, Priority.HIGH, 'welcome',
+        (NotificationRecipient.Channel.IN_APP,), 'internship_admins',
+    ),
+    'student.intelligence.readiness_drop': EventConfig(
+        Category.SYSTEM, Priority.HIGH, 'welcome',
+        (NotificationRecipient.Channel.IN_APP,), 'internship_admins',
+    ),
+    'student.intelligence.low_placement': EventConfig(
+        Category.SYSTEM, Priority.HIGH, 'welcome',
+        (NotificationRecipient.Channel.IN_APP,), 'internship_admins',
+    ),
     # Supervision
     'supervisor.assigned': EventConfig(
         Category.SUPERVISION, Priority.HIGH, 'welcome',
@@ -256,6 +288,23 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
     'notification.digest.monthly': EventConfig(
         Category.SYSTEM, Priority.LOW, 'monthly_summary',
         (NotificationRecipient.Channel.EMAIL,), 'user_from_payload',
+    ),
+    # AI Career Coach
+    'career_coach.recommendation.available': EventConfig(
+        Category.CAREER_COACH, Priority.NORMAL, 'welcome',
+        (NotificationRecipient.Channel.IN_APP,), 'user_from_payload', digestible=True,
+    ),
+    'career_coach.matching_offer.found': EventConfig(
+        Category.CAREER_COACH, Priority.HIGH, 'offer_published',
+        (NotificationRecipient.Channel.IN_APP,), 'user_from_payload', digestible=True,
+    ),
+    'career_coach.cv_analysis.improved': EventConfig(
+        Category.CAREER_COACH, Priority.NORMAL, 'welcome',
+        (NotificationRecipient.Channel.IN_APP,), 'user_from_payload',
+    ),
+    'career_coach.interview.recommendation': EventConfig(
+        Category.CAREER_COACH, Priority.NORMAL, 'welcome',
+        (NotificationRecipient.Channel.IN_APP,), 'user_from_payload', digestible=True,
     ),
 }
 

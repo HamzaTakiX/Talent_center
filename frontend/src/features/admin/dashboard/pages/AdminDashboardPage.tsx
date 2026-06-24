@@ -6,14 +6,14 @@ import CriticalAlerts from '../components/CriticalAlerts';
 import RecentActivity from '../components/RecentActivity';
 import ActivityOverview from '../components/ActivityOverview';
 import DashboardPageHero from '../components/DashboardPageHero';
+import { AdminDashboardProvider, useAdminDashboardContext } from '../context/AdminDashboardContext';
 import { useAdminPreferences } from '../../account/context/AdminPreferencesContext';
 import { useDashboardLayout, type DashboardSectionId } from '../../account/hooks/useDashboardLayout';
-import { useDashboardHydration } from '../hooks/useDashboardHydration';
 import { DashboardPageSkeleton } from '../ui/DashboardSkeleton';
 import { staggerContainer } from '../ui/animations';
 
-const AdminDashboardPage: FunctionComponent = () => {
-  const isHydrating = useDashboardHydration();
+const AdminDashboardContent: FunctionComponent = () => {
+  const { loading } = useAdminDashboardContext();
   const { preferences } = useAdminPreferences();
   const { sectionOrder } = useDashboardLayout();
 
@@ -36,7 +36,7 @@ const AdminDashboardPage: FunctionComponent = () => {
 
   return (
     <AdminLayout>
-      {isHydrating ? (
+      {loading ? (
         <DashboardPageSkeleton />
       ) : (
         <motion.div
@@ -54,5 +54,11 @@ const AdminDashboardPage: FunctionComponent = () => {
     </AdminLayout>
   );
 };
+
+const AdminDashboardPage: FunctionComponent = () => (
+  <AdminDashboardProvider>
+    <AdminDashboardContent />
+  </AdminDashboardProvider>
+);
 
 export default AdminDashboardPage;

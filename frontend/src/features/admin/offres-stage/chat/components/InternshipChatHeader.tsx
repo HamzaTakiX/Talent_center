@@ -1,6 +1,7 @@
 import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import {
   Archive,
+  ArchiveRestore,
   ArrowLeft,
   Briefcase,
   CheckCircle2,
@@ -11,6 +12,8 @@ import {
 } from 'lucide-react';
 import type { InternshipConversation } from '../types/internshipChatTypes';
 import { useInternshipInboxCopy } from '../../hooks/useOffersListLabels';
+import InternshipStudentAvatar from './InternshipStudentAvatar';
+import { conversationHasApplication } from '../utils/internshipChatDisplayUtils';
 
 type Props = {
   conversation: InternshipConversation;
@@ -18,8 +21,10 @@ type Props = {
   onViewStudent: () => void;
   onViewApplication: () => void;
   onViewOffer: () => void;
+  onOpenOfferInModule?: () => void;
   onMarkResolved: () => void;
   onArchive: () => void;
+  onUnarchive: () => void;
 };
 
 const InternshipChatHeader: FunctionComponent<Props> = ({
@@ -28,12 +33,15 @@ const InternshipChatHeader: FunctionComponent<Props> = ({
   onViewStudent,
   onViewApplication,
   onViewOffer,
+  onOpenOfferInModule,
   onMarkResolved,
   onArchive,
+  onUnarchive,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { t } = useInternshipInboxCopy();
+  const hasApplication = conversationHasApplication(conversation);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -52,9 +60,20 @@ const InternshipChatHeader: FunctionComponent<Props> = ({
             <ArrowLeft className="size-5" />
           </button>
         ) : null}
-        <div className="isi-avatar isi-avatar--header">{conversation.studentInitials}</div>
-        <div className="min-w-0">
-          <h2 className="isi-chat-name truncate">{conversation.studentName}</h2>
+        <div className="isi-chat-header-main min-w-0">
+          <div className="isi-chat-header-identity">
+            <InternshipStudentAvatar
+              url={conversation.studentAvatarUrl}
+              name={conversation.studentName}
+              email={conversation.studentEmail}
+              initials={conversation.studentInitials}
+              size="header"
+            />
+            <h2 className="isi-chat-name truncate">{conversation.studentName}</h2>
+          </div>
+          {conversation.studentEmail ? (
+            <p className="isi-chat-email truncate">{conversation.studentEmail}</p>
+          ) : null}
           <p className="isi-chat-meta truncate">
             {conversation.program}
             {conversation.className !== '—' ? ` · ${conversation.className}` : ''}
@@ -62,8 +81,12 @@ const InternshipChatHeader: FunctionComponent<Props> = ({
             {conversation.offerTitle}
             <span className="isi-chat-meta-sep" aria-hidden> · </span>
             {conversation.company}
-            <span className="isi-chat-meta-sep" aria-hidden> · </span>
-            {conversation.applicationStatus}
+            {hasApplication ? (
+              <>
+                <span className="isi-chat-meta-sep" aria-hidden> · </span>
+                {conversation.applicationStatus}
+              </>
+            ) : null}
           </p>
         </div>
       </div>
@@ -75,10 +98,17 @@ const InternshipChatHeader: FunctionComponent<Props> = ({
             <span>{t('resolve')}</span>
           </button>
         ) : null}
-        <button type="button" onClick={onArchive} className="isi-header-btn">
-          <Archive className="size-4" />
-          <span>{t('archive')}</span>
-        </button>
+        {conversation.archived ? (
+          <button type="button" onClick={onUnarchive} className="isi-header-btn">
+            <ArchiveRestore className="size-4" />
+            <span>{t('unarchive')}</span>
+          </button>
+        ) : (
+          <button type="button" onClick={onArchive} className="isi-header-btn">
+            <Archive className="size-4" />
+            <span>{t('archive')}</span>
+          </button>
+        )}
         <div ref={menuRef} className="relative">
           <button
             type="button"
@@ -91,19 +121,51 @@ const InternshipChatHeader: FunctionComponent<Props> = ({
           </button>
           {menuOpen ? (
             <div className="isi-header-menu" role="menu">
-              <button type="button" role="menuitem" onClick={() => { onViewStudent(); setMenuOpen(false); }}>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  onViewStudent();
+                  setMenuOpen(false);
+                }}
+                disabled={!conversation.studentUserId}
+              >
                 <User className="size-4" />
                 {t('viewStudent')}
               </button>
-              <button type="button" role="menuitem" onClick={() => { onViewApplication(); setMenuOpen(false); }}>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  onViewApplication();
+                  setMenuOpen(false);
+                }}
+                disabled={!hasApplication || !conversation.offerUuid}
+              >
                 <FileText className="size-4" />
                 {t('viewApplication')}
               </button>
-              <button type="button" role="menuitem" onClick={() => { onViewOffer(); setMenuOpen(false); }}>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  onViewOffer();
+                  setMenuOpen(false);
+                }}
+                disabled={!conversation.offerUuid}
+              >
                 <Briefcase className="size-4" />
                 {t('viewOffer')}
               </button>
-              <button type="button" role="menuitem" onClick={() => { onViewOffer(); setMenuOpen(false); }}>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  (onOpenOfferInModule ?? onViewOffer)();
+                  setMenuOpen(false);
+                }}
+                disabled={!conversation.offerUuid}
+              >
                 <ExternalLink className="size-4" />
                 {t('openInModule')}
               </button>

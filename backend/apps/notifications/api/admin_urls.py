@@ -10,4 +10,5 @@ urlpatterns = [
     path('analytics/templates/', admin_views.AdminNotificationAnalyticsTemplatesView.as_view()),
     path('providers/health/', admin_views.AdminNotificationProviderHealthView.as_view()),
     path('events/', admin_views.AdminNotificationEventsView.as_view()),
+    path('matrix/', admin_views.AdminNotificationEventMatrixView.as_view()),
 ]

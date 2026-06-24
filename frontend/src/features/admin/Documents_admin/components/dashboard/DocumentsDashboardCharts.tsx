@@ -2,6 +2,7 @@ import { FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import AdminDonutChart from '../../../ui/charts/AdminDonutChart';
+import DocumentsSectionEmpty from '../DocumentsSectionEmpty';
 import {
   getRejectionChartColor,
   getStatusChartColor,
@@ -34,42 +35,70 @@ const DocumentsDashboardCharts: FunctionComponent<Props> = ({ data, loading }) =
     return <div className="admin-doc-charts-grid admin-doc-charts-grid--loading" />;
   }
 
+  const hasStatus = statusSegments.some((s) => s.value > 0);
+  const hasRejections = rejectionSegments.some((s) => s.value > 0);
+  const hasOccupancy = data.reservationOccupancy.some((s) => s.percent > 0);
+
   return (
     <div className="admin-doc-charts-grid">
       <section className="admin-doc-chart-card admin-doc-chart-card--premium">
         <h3>{t('admin.documentsModule.chart.statusMix')}</h3>
-        <AdminDonutChart
-          segments={statusSegments}
-          ariaLabel={t('admin.documentsModule.chart.statusMix')}
-          premiumGradients
-        />
+        {hasStatus ? (
+          <AdminDonutChart
+            segments={statusSegments}
+            ariaLabel={t('admin.documentsModule.chart.statusMix')}
+            premiumGradients
+          />
+        ) : (
+          <DocumentsSectionEmpty
+            section="statusMix"
+            variant="inline"
+            className="admin-doc-chart-card__empty"
+          />
+        )}
       </section>
       <section className="admin-doc-chart-card admin-doc-chart-card--premium">
         <h3>{t('admin.documentsModule.chart.rejectionCauses')}</h3>
-        <AdminDonutChart
-          segments={rejectionSegments}
-          ariaLabel={t('admin.documentsModule.chart.rejectionCauses')}
-          premiumGradients
-        />
+        {hasRejections ? (
+          <AdminDonutChart
+            segments={rejectionSegments}
+            ariaLabel={t('admin.documentsModule.chart.rejectionCauses')}
+            premiumGradients
+          />
+        ) : (
+          <DocumentsSectionEmpty
+            section="rejectionCauses"
+            variant="inline"
+            className="admin-doc-chart-card__empty"
+          />
+        )}
       </section>
       <section className="admin-doc-chart-card admin-doc-chart-card--wide">
         <h3>{t('admin.documentsModule.chart.reservationOccupancy')}</h3>
-        <motion.div className="admin-doc-occupancy-bars">
-          {data.reservationOccupancy.map((slot) => (
-            <div key={slot.hour} className="admin-doc-occupancy-bar">
-              <span className="admin-doc-occupancy-bar__label">{slot.hour}</span>
-              <div className="admin-doc-occupancy-bar__track">
-                <motion.div
-                  className="admin-doc-occupancy-bar__fill"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${slot.percent}%` }}
-                  transition={{ duration: 0.4 }}
-                />
+        {hasOccupancy ? (
+          <motion.div className="admin-doc-occupancy-bars">
+            {data.reservationOccupancy.map((slot) => (
+              <div key={slot.hour} className="admin-doc-occupancy-bar">
+                <span className="admin-doc-occupancy-bar__label">{slot.hour}</span>
+                <div className="admin-doc-occupancy-bar__track">
+                  <motion.div
+                    className="admin-doc-occupancy-bar__fill"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${slot.percent}%` }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </div>
+                <span className="admin-doc-occupancy-bar__pct">{slot.percent}%</span>
               </div>
-              <span className="admin-doc-occupancy-bar__pct">{slot.percent}%</span>
-            </div>
-          ))}
-        </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <DocumentsSectionEmpty
+            section="reservationOccupancy"
+            variant="inline"
+            className="admin-doc-chart-card__empty admin-doc-chart-card__empty--wide"
+          />
+        )}
       </section>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { STUDENT_INTERNSHIP_OFFERS_PATH } from '../internship_offers/constants/routes';
+import { STUDENT_CV_BUILDER_PATH } from '../internship_offers/cv_builder/constants/routes';
 import { STUDENT_CV_ANALYSIS_TOOL_PATH } from '../internship_offers/CV_Analyse/constants/routes';
 import { STUDENT_AI_CAREER_COACH_PATH } from '../internship_offers/AI_Career_Coach/constants/routes';
 import { STUDENT_INTERVIEW_SIMULATOR_PATH } from '../internship_offers/interview_Simulator/constants/routes';
@@ -17,6 +18,7 @@ import { STUDENT_HISTORY_PATH } from '../internship_offers/history/constants/rou
 import { STUDENT_ANNOUNCEMENTS_PATH } from '../Annoucements/constants/routes';
 import { STUDENT_ANNOUNCEMENTS_CHAT_PATH } from '../Annoucements/chat/constants/routes';
 import { STUDENT_ANNOUNCEMENTS_HISTORY_PATH } from '../Annoucements/history/constants/routes';
+import { STUDENT_ANNOUNCEMENTS_SAVED_PATH } from '../Annoucements/saved/constants/routes';
 import { STUDENT_MAIN_HISTORY_PATH } from '../main_history/constants/routes';
 import {
   STUDENT_DOCUMENTS_CHAT_PATH,
@@ -44,11 +46,13 @@ export type StudentNavSectionId =
   | 'encadrant';
 
 export type StudentNavChildId =
+  | 'cvBuilder'
   | 'cvAnalysis'
   | 'aiCareerCoach'
   | 'interviewSimulator'
   | 'chat'
   | 'history'
+  | 'favorites'
   | 'agenda'
   | 'task'
   | 'workspace'
@@ -69,9 +73,9 @@ export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
     id: 'internshipOffers',
     icon: Briefcase,
     expandable: true,
-    children: ['cvAnalysis', 'aiCareerCoach', 'interviewSimulator', 'chat', 'history'],
+    children: ['cvBuilder', 'cvAnalysis', 'aiCareerCoach', 'interviewSimulator', 'chat', 'history'],
   },
-  { id: 'announcements', icon: Bell, expandable: true, children: ['chat', 'history'] },
+  { id: 'announcements', icon: Bell, expandable: true, children: ['chat', 'history', 'favorites'] },
   { id: 'history', icon: History },
   { id: 'documents', icon: FileText, expandable: true, children: ['chat'], showResourcesLabelBefore: true },
   { id: 'srf', icon: DollarSign, expandable: true, children: ['chat'] },
@@ -157,6 +161,7 @@ export const getChildPath = (
   child: StudentNavChildId,
 ): string | undefined => {
   if (section === 'internshipOffers') {
+    if (child === 'cvBuilder') return STUDENT_CV_BUILDER_PATH;
     if (child === 'cvAnalysis') return STUDENT_CV_ANALYSIS_TOOL_PATH;
     if (child === 'aiCareerCoach') return STUDENT_AI_CAREER_COACH_PATH;
     if (child === 'interviewSimulator') return STUDENT_INTERVIEW_SIMULATOR_PATH;
@@ -166,6 +171,7 @@ export const getChildPath = (
   if (section === 'announcements') {
     if (child === 'chat') return STUDENT_ANNOUNCEMENTS_CHAT_PATH;
     if (child === 'history') return STUDENT_ANNOUNCEMENTS_HISTORY_PATH;
+    if (child === 'favorites') return STUDENT_ANNOUNCEMENTS_SAVED_PATH;
   }
   if (section === 'documents' && child === 'chat') return STUDENT_DOCUMENTS_CHAT_PATH;
   if (section === 'srf' && child === 'chat') return STUDENT_SRF_CHAT_PATH;

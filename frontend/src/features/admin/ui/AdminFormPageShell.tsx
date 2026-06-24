@@ -1,5 +1,6 @@
 import { FunctionComponent, ReactNode } from 'react';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import AdminLayout from '../dashboard/components/AdminLayout';
 import { staggerContainer } from '../dashboard/ui/animations';
 import AdminPageHero from './AdminPageHero';
@@ -18,7 +19,10 @@ interface AdminFormPageShellProps {
   heroTitle?: string;
   heroSubtitle?: string;
   heroBadge?: ReactNode;
+  heroIcon?: LucideIcon;
   heroAction?: ReactNode;
+  /** Remplace le hero titre/sous-titre par un bloc personnalisé. */
+  heroContent?: ReactNode;
   children: ReactNode;
   /** Aligné sur AdminModulePageShell « wide » (défaut 1600px). */
   width?: 'default' | 'wide' | 'narrow';
@@ -37,7 +41,9 @@ const AdminFormPageShell: FunctionComponent<AdminFormPageShellProps> = ({
   heroTitle,
   heroSubtitle,
   heroBadge,
+  heroIcon,
   heroAction,
+  heroContent,
   children,
   width = 'wide',
 }) => (
@@ -83,14 +89,16 @@ const AdminFormPageShell: FunctionComponent<AdminFormPageShellProps> = ({
         <span className="leading-5">{backLabel}</span>
       </button>
 
-      {heroTitle ? (
-        <AdminPageHero
-          title={heroTitle}
-          subtitle={heroSubtitle}
-          badge={heroBadge}
-          action={heroAction}
-        />
-      ) : null}
+      {heroContent ??
+        (heroTitle ? (
+          <AdminPageHero
+            title={heroTitle}
+            subtitle={heroSubtitle}
+            badge={heroBadge}
+            icon={heroIcon}
+            action={heroAction}
+          />
+        ) : null)}
 
       <div className="min-w-0">{children}</div>
     </motion.div>

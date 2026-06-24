@@ -28,4 +28,10 @@ def deliver_in_app(
     recipient.status = NotificationRecipient.Status.SENT
     recipient.sent_at = timezone.now()
     recipient.save(update_fields=['status', 'sent_at', 'updated_at'])
+
+    from apps.notifications.services.history_bridge import record_notification_created
+    from apps.notifications.services.realtime import push_notification_created
+
+    record_notification_created(notification)
+    push_notification_created(notification)
     return notification

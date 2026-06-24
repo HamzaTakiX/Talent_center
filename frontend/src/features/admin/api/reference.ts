@@ -19,6 +19,9 @@ const levelIdsParam = (ids?: number[]) =>
 
 const withLang = (lang?: string) => (lang ? { lang } : {});
 
+const classGroupsResultCache = new Map<string, ClassGroupOption[]>();
+const classGroupsInflight = new Map<string, Promise<ClassGroupOption[]>>();
+
 function buildQuery(entries: Record<string, string | undefined>): Record<string, string> {
   const query: Record<string, string> = {};
   for (const [key, value] of Object.entries(entries)) {
@@ -30,6 +33,7 @@ function buildQuery(entries: Record<string, string | undefined>): Record<string,
 }
 
 export const academicReferenceApi = {
+  /** Catalogue lecture seule — données gérées dans Paramètres → Structure académique. */
   listFilieres: async (params?: {
     program_family?: string;
     lang?: string;
@@ -125,10 +129,26 @@ export const academicReferenceApi = {
       level_ids: params?.level_ids?.length ? params.level_ids.join(',') : undefined,
       sector_id: params?.sector_id != null ? String(params.sector_id) : undefined,
     });
-    const response = await apiClient.get<ApiEnvelope<ClassGroupOption[]>>('/admin/class-groups', {
-      params: query,
-    });
-    return response.data.data;
+    const cacheKey = JSON.stringify(query);
+    const cached = classGroupsResultCache.get(cacheKey);
+    if (cached) return cached;
+
+    const inflight = classGroupsInflight.get(cacheKey);
+    if (inflight) return inflight;
+
+    const promise = apiClient
+      .get<ApiEnvelope<ClassGroupOption[]>>('/admin/class-groups', { params: query })
+      .then((response) => {
+        const data = response.data.data;
+        classGroupsResultCache.set(cacheKey, data);
+        return data;
+      })
+      .finally(() => {
+        classGroupsInflight.delete(cacheKey);
+      });
+
+    classGroupsInflight.set(cacheKey, promise);
+    return promise;
   },
 
   listWorkModes: async (params?: { lang?: string }): Promise<WorkModeOption[]> => {
@@ -164,6 +184,7 @@ export const academicReferenceApi = {
     return response.data.data;
   },
 
+  /** @deprecated Préférer listAcademicYears({ structured: true }) — source Structure académique. */
   listAcademicYearsByFiliere: async (filiereIds?: number[]): Promise<string[]> => {
     const response = await apiClient.get<ApiEnvelope<string[]>>('/admin/academic-years', {
       params: filiereIdsParam(filiereIds),

@@ -1,5 +1,6 @@
 import {
   Activity,
+  Archive,
   BarChart3,
   Bell,
   Brain,
@@ -503,6 +504,15 @@ export const ADMIN_SEARCH_SUPPLEMENT: AdminSearchRegistryEntry[] = [
     category: 'page',
     path: '/admin/internship-offers/history',
     icon: History,
+    priority: 66,
+  }),
+  s({
+    id: 'page-announcements-archived',
+    titleKey: 'admin.nav.archived',
+    subtitleKey: 'admin.nav.announcements',
+    category: 'page',
+    path: '/admin/announcements/archived',
+    icon: Archive,
     priority: 66,
   }),
   s({

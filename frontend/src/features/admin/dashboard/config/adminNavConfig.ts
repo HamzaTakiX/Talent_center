@@ -27,6 +27,7 @@ export type AdminNavChildId =
   | 'chat'
   | 'drafts'
   | 'history'
+  | 'archived'
   | 'reports'
   | 'meetings'
   | 'smartAssignment'
@@ -43,7 +44,7 @@ export interface AdminNavItem {
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { id: 'dashboard', icon: LayoutDashboard },
   { id: 'internshipOffers', icon: Briefcase, expandable: true, children: ['drafts', 'chat', 'history'] },
-  { id: 'announcements', icon: Bell, expandable: true, children: ['chat', 'history'] },
+  { id: 'announcements', icon: Bell, expandable: true, children: ['archived', 'chat', 'history'] },
   { id: 'history', icon: History },
   { id: 'documents', icon: FileText, expandable: true, children: ['catalog', 'chat', 'history'] },
   { id: 'srf', icon: DollarSign, expandable: true, children: ['config', 'imports', 'chat', 'history'] },
@@ -117,6 +118,7 @@ export const getChildPath = (
     if (child === 'history') return '/admin/internship-offers/history';
   }
   if (section === 'announcements') {
+    if (child === 'archived') return '/admin/announcements/archived';
     if (child === 'chat') return '/admin/announcements/chat';
     if (child === 'history') return '/admin/announcements/history';
   }

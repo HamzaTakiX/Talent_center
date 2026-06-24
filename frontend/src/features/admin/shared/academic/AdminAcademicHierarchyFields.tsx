@@ -15,6 +15,34 @@ import { adminFormGridClass } from '../forms/adminFormClasses';
 
 const PREFIX = 'admin.forms.academicHierarchy';
 
+export interface AcademicHierarchyPinnedSelection {
+  id: number;
+  label: string;
+}
+
+export interface AcademicHierarchyPinnedSelections {
+  filiere?: AcademicHierarchyPinnedSelection;
+  level?: AcademicHierarchyPinnedSelection;
+  sector?: AcademicHierarchyPinnedSelection;
+  academicYear?: AcademicHierarchyPinnedSelection;
+  classGroup?: AcademicHierarchyPinnedSelection;
+}
+
+function pinSelectOption(
+  options: { value: string; label: string }[],
+  id: string,
+  label: string | undefined,
+  emptyLabel: string,
+): { value: string; label: string }[] {
+  if (!id) return options;
+  if (options.some((option) => option.value === id)) return options;
+  const withEmpty =
+    options.length && options[0].value === ''
+      ? options
+      : [{ value: '', label: emptyLabel }, ...options];
+  return [...withEmpty.filter((option) => option.value !== id), { value: id, label: label || id }];
+}
+
 export const emptyAcademicHierarchy = (): AcademicHierarchyValue => ({
   filiereId: '',
   levelId: '',
@@ -31,6 +59,10 @@ interface AdminAcademicHierarchyFieldsProps {
   showClassGroup?: boolean;
   /** When true, internship type is derived server-side from program + level (read-only preview). */
   autoResolveInternship?: boolean;
+  /** Pré-sélectionner l’année courante si vide (création uniquement). */
+  autoSelectCurrentYear?: boolean;
+  /** Valeurs actuelles à garder visibles même si absentes du catalogue actif. */
+  pinnedSelections?: AcademicHierarchyPinnedSelections;
   idPrefix?: string;
 }
 
@@ -39,6 +71,8 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
   onChange,
   showClassGroup = true,
   autoResolveInternship = false,
+  autoSelectCurrentYear = true,
+  pinnedSelections,
   idPrefix = 'academic',
 }) => {
   const { t, i18n } = useTranslation();
@@ -75,20 +109,8 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
   useEffect(() => {
     academicReferenceApi
       .listAcademicYears({ structured: true, lang })
-      .then((data) => {
-        const list = data as AcademicYearOption[];
-        setYears(list);
-        if (!value.academicYearId && list.length) {
-          const current = list.find((y) => y.is_current) ?? list[0];
-          onChange({
-            ...value,
-            academicYearId: String(current.id),
-            academicYearCode: current.code,
-          });
-        }
-      })
+      .then((data) => setYears(data as AcademicYearOption[]))
       .catch(() => setYears([]));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- init default year once
   }, [lang]);
 
   useEffect(() => {
@@ -172,6 +194,34 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
     [onChange, value],
   );
 
+  useEffect(() => {
+    if (!years.length) return;
+    if (value.academicYearId) {
+      const selected = years.find((year) => String(year.id) === value.academicYearId);
+      if (selected && value.academicYearCode !== selected.code) {
+        patch({ academicYearCode: selected.code });
+      }
+      return;
+    }
+    if (value.academicYearCode) {
+      const matched = years.find((year) => year.code === value.academicYearCode);
+      if (matched) {
+        patch({ academicYearId: String(matched.id), academicYearCode: matched.code });
+      }
+      return;
+    }
+    if (autoSelectCurrentYear) {
+      const current = years.find((year) => year.is_current) ?? years[0];
+      patch({ academicYearId: String(current.id), academicYearCode: current.code });
+    }
+  }, [
+    years,
+    value.academicYearId,
+    value.academicYearCode,
+    autoSelectCurrentYear,
+    patch,
+  ]);
+
   const onFiliereChange = (filiereId: string) => {
     onChange({
       ...emptyAcademicHierarchy(),
@@ -201,32 +251,47 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
     });
   };
 
-  const filiereOptions = useMemo(
-    () => [
+  const filiereOptions = useMemo(() => {
+    const base = [
       { value: '', label: t(`${PREFIX}.selectProgram`) },
       ...filieres.map((f) => ({ value: String(f.id), label: f.name })),
-    ],
-    [filieres, t],
-  );
+    ];
+    return pinSelectOption(
+      base,
+      value.filiereId,
+      pinnedSelections?.filiere?.label,
+      t(`${PREFIX}.selectProgram`),
+    );
+  }, [filieres, pinnedSelections?.filiere?.label, t, value.filiereId]);
 
-  const levelOptions = useMemo(
-    () => [
+  const levelOptions = useMemo(() => {
+    const base = [
       {
         value: '',
         label: value.filiereId ? t(`${PREFIX}.selectLevel`) : t(`${PREFIX}.levelNeedsProgram`),
       },
       ...levels.map((l) => ({ value: String(l.id), label: l.name })),
-    ],
-    [levels, value.filiereId, t],
-  );
+    ];
+    return pinSelectOption(
+      base,
+      value.levelId,
+      pinnedSelections?.level?.label,
+      t(`${PREFIX}.selectLevel`),
+    );
+  }, [levels, pinnedSelections?.level?.label, t, value.filiereId, value.levelId]);
 
-  const sectorOptions = useMemo(
-    () => [
+  const sectorOptions = useMemo(() => {
+    const base = [
       { value: '', label: t(`${PREFIX}.selectSector`) },
       ...sectors.map((s) => ({ value: String(s.id), label: s.name })),
-    ],
-    [sectors, t],
-  );
+    ];
+    return pinSelectOption(
+      base,
+      value.sectorId,
+      pinnedSelections?.sector?.label,
+      t(`${PREFIX}.selectSector`),
+    );
+  }, [pinnedSelections?.sector?.label, sectors, t, value.sectorId]);
 
   const internshipOptions = useMemo(
     () => [
@@ -242,16 +307,21 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
     [internshipTypes, value.levelId, t],
   );
 
-  const yearOptions = useMemo(
-    () => [
+  const yearOptions = useMemo(() => {
+    const base = [
       { value: '', label: t(`${PREFIX}.selectYear`) },
       ...years.map((y) => ({ value: String(y.id), label: y.label || y.code })),
-    ],
-    [years, t],
-  );
+    ];
+    return pinSelectOption(
+      base,
+      value.academicYearId,
+      pinnedSelections?.academicYear?.label,
+      t(`${PREFIX}.selectYear`),
+    );
+  }, [pinnedSelections?.academicYear?.label, t, value.academicYearId, years]);
 
-  const classOptions = useMemo(
-    () => [
+  const classOptions = useMemo(() => {
+    const base = [
       {
         value: '',
         label: value.filiereId ? t(`${PREFIX}.selectClass`) : t(`${PREFIX}.classNeedsProgram`),
@@ -260,9 +330,14 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
         value: String(c.id),
         label: c.code ? `${c.code} — ${c.name}` : c.name,
       })),
-    ],
-    [classGroups, value.filiereId, t],
-  );
+    ];
+    return pinSelectOption(
+      base,
+      value.classGroupId,
+      pinnedSelections?.classGroup?.label,
+      t(`${PREFIX}.selectClass`),
+    );
+  }, [classGroups, pinnedSelections?.classGroup?.label, t, value.classGroupId, value.filiereId]);
 
   const showSector = Boolean(selectedLevel?.has_sectors);
 

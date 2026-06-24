@@ -15,6 +15,12 @@ def _user_can_manage_internship_offers(user: User) -> bool:
     return user_can_manage_offers(user)
 
 
+def _user_can_manage_announcements(user: User) -> bool:
+    from apps.announcements.services.chat_service import _user_can_manage_announcements
+
+    return _user_can_manage_announcements(user)
+
+
 def ensure_conversation_participant(
     conversation: Conversation,
     user: User,
@@ -99,13 +105,22 @@ def _admin_can_access(user: User, conversation: Conversation) -> bool:
             role=ConversationParticipant.Role.ADMIN,
         )
         return True
+    if ctx and ctx.module == ConversationContext.Module.ANNOUNCEMENTS and _user_can_manage_announcements(user):
+        ensure_conversation_participant(
+            conversation,
+            user,
+            role=ConversationParticipant.Role.ADMIN,
+        )
+        return True
     return False
 
 
-def conversations_for_user(user: User) -> QuerySet[Conversation]:
-    qs = Conversation.objects.filter(is_archived=False).select_related(
+def conversations_for_user(user: User, *, include_archived: bool = False) -> QuerySet[Conversation]:
+    qs = Conversation.objects.select_related(
         'channel', 'context', 'context__student_user'
     )
+    if not include_archived:
+        qs = qs.filter(is_archived=False)
     if user.is_superuser:
         return qs
 
@@ -128,8 +143,60 @@ def conversations_for_user(user: User) -> QuerySet[Conversation]:
             )
         ).distinct()
 
-    if user.role == User.RoleChoices.ADMIN and _user_can_manage_internship_offers(user):
-        offer_threads = qs.filter(context__module=ConversationContext.Module.OFFERS)
-        return (base | offer_threads).distinct()
+    if user.role == User.RoleChoices.ADMIN:
+        module_filters: list[str] = []
+        if _user_can_manage_internship_offers(user):
+            module_filters.append(ConversationContext.Module.OFFERS)
+        if _user_can_manage_announcements(user):
+            module_filters.append(ConversationContext.Module.ANNOUNCEMENTS)
+        if module_filters:
+            extra = qs.filter(context__module__in=module_filters)
+            return (base | extra).distinct()
 
     return base.distinct()
+
+
+def user_can_apply_smart_action(user: User, conversation: Conversation, action_code: str) -> bool:
+    """Role-aware guard for POST /conversations/{id}/actions."""
+    from .constants import ADMIN_ONLY_SMART_ACTIONS, SMART_ACTION_CODES
+
+    if action_code not in SMART_ACTION_CODES:
+        return False
+    if not user_can_access_conversation(user, conversation):
+        return False
+    if user.is_superuser:
+        return True
+    if user.role == User.RoleChoices.STUDENT:
+        ctx = getattr(conversation, 'context', None)
+        if (
+            action_code in ('archive_conversation', 'unarchive_conversation')
+            and ctx
+            and ctx.module == ConversationContext.Module.ANNOUNCEMENTS
+        ):
+            return True
+        return False
+
+    ctx = getattr(conversation, 'context', None)
+
+    if action_code in ADMIN_ONLY_SMART_ACTIONS:
+        if user.role != User.RoleChoices.ADMIN:
+            return False
+        if ctx and ctx.module == ConversationContext.Module.OFFERS:
+            return _user_can_manage_internship_offers(user)
+        if ctx and ctx.module == ConversationContext.Module.ANNOUNCEMENTS:
+            return _user_can_manage_announcements(user)
+        return ConversationParticipant.objects.filter(
+            conversation=conversation,
+            user=user,
+            left_at__isnull=True,
+            role__in=(
+                ConversationParticipant.Role.ADMIN,
+                ConversationParticipant.Role.OWNER,
+            ),
+        ).exists()
+
+    return ConversationParticipant.objects.filter(
+        conversation=conversation,
+        user=user,
+        left_at__isnull=True,
+    ).exists()

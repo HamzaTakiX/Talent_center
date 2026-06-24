@@ -41,6 +41,9 @@ import {
 import type { AdminPreferences } from '../types';
 import { useApplyAdminSettings } from '../hooks/useApplyAdminSettings';
 import { useScrollToSection } from '../hooks/useScrollToSection';
+import StudentOnboardingInfoSection from '../../../student/account/components/StudentOnboardingInfoSection';
+import StudentProfileMainWidgets from '../../../student/account/components/StudentProfileMainWidgets';
+import { STUDENT_PROFILE_PAGE_ROOT } from '../../../student/account/constants/studentProfileLayout';
 import type { ProfileFormState } from '../types';
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -309,13 +312,18 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
     );
   }
 
+  const pageRootClass = isStudentPortal
+    ? STUDENT_PROFILE_PAGE_ROOT
+    : 'admin-page mx-auto max-w-5xl space-y-6 pb-8';
+
   return (
     <Layout>
       <motion.div
+        id={isStudentPortal ? 'student-profile-root' : undefined}
         variants={staggerContainer}
         initial="initial"
         animate="animate"
-        className="mx-auto max-w-5xl space-y-6 pb-8"
+        className={pageRootClass}
       >
         <AccountSectionNav active={activeSection} onSelect={scrollToSection} />
 
@@ -355,6 +363,8 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
           </motion.div>
         </motion.div>
 
+        {isStudentPortal ? <StudentProfileMainWidgets /> : null}
+
         <AccountSection
           sectionKey="activity"
           title={t('admin.account.activity.title')}
@@ -362,6 +372,8 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
         >
           <AccountActivityGrid />
         </AccountSection>
+
+        {isStudentPortal ? <StudentOnboardingInfoSection /> : null}
 
         <form id="admin-profile-form" onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-6">

@@ -2,18 +2,14 @@ import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
-  BarChart3,
-  Briefcase,
+  CalendarClock,
   Layers,
-  Lightbulb,
   LineChart,
 } from 'lucide-react';
 
 const NAV = [
-  { path: '/admin/announcements/internships', icon: Briefcase, key: 'internships' },
+  { path: '/admin/announcements/scheduled', icon: CalendarClock, key: 'scheduled' },
   { path: '/admin/announcements/types', icon: Layers, key: 'types' },
-  { path: '/admin/announcements/analytics', icon: BarChart3, key: 'analytics' },
-  { path: '/admin/announcements/insights', icon: Lightbulb, key: 'insights' },
   { path: '/admin/announcements/engagement', icon: LineChart, key: 'engagement' },
 ] as const;
 

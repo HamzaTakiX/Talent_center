@@ -9,10 +9,8 @@ import { AdminModulePageSkeleton } from '../../ui';
 import AdminModulePanel from '../../ui/AdminModulePanel';
 import AdminDeleteConfirmModal from '../../ui/AdminDeleteConfirmModal';
 import AdminToolbarDeleteControl from '../../ui/AdminToolbarDeleteControl';
-import AdministratorsRoleDistributionChart from '../components/AdministratorsRoleDistributionChart';
 import PlatformAdministratorsKpiSection from '../components/PlatformAdministratorsKpiSection';
 import PlatformAdministratorsToolbar from '../components/PlatformAdministratorsToolbar';
-import { AdminStatChartSection } from '../../ui';
 import PlatformAdministratorsMainTable from '../components/PlatformAdministratorsMainTable';
 import { DEFAULT_SERVER_PAGE_SIZE } from '../../shared/hooks/useAdminPagination';
 const KPI_FETCH_PAGE_SIZE = 500;
@@ -128,9 +126,6 @@ const PlatformAdministratorsPage: FunctionComponent = () => {
       <div data-admin-search-id="admins-stats">
         <PlatformAdministratorsKpiSection rows={kpiRows} loading={kpiLoading} />
       </div>
-      <AdminStatChartSection chartId="admins-role-distribution" loading={kpiLoading}>
-        <AdministratorsRoleDistributionChart rows={kpiRows} loading={kpiLoading} />
-      </AdminStatChartSection>
       <div data-admin-search-id="admins-table">
         <AdminModulePanel>
           <PlatformAdministratorsToolbar

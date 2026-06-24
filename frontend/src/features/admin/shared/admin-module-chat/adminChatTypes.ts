@@ -32,4 +32,12 @@ export interface AdminChatParticipant {
   urgency?: ChatUrgency;
   workflowStatus?: string;
   entityLabel?: string;
+  displayName?: string;
+  email?: string;
+  avatarUrl?: string;
+  roleLabel?: string;
+  userId?: number;
+  archived?: boolean;
+  resolved?: boolean;
+  urgent?: boolean;
 }

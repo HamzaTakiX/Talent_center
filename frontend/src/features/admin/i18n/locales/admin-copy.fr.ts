@@ -111,6 +111,10 @@ export const adminCopyFr = {
         "title": "Offres fermées ({{count}})",
         "subtitle": "Liste filtrée des offres de stage"
       },
+      "archived": {
+        "title": "Offres archivées ({{count}})",
+        "subtitle": "Liste filtrée des offres de stage"
+      },
       "draft": {
         "title": "Brouillons ({{count}})",
         "subtitle": "Liste filtrée des offres de stage"
@@ -501,16 +505,25 @@ export const adminCopyFr = {
         "type": "Type",
         "audience": "Public cible",
         "eventDate": "Date événement / échéance",
+        "expirationDate": "Date d'expiration",
         "priority": "Priorité",
         "visibility": "Visibilité",
         "message": "Contenu du message",
-        "attachments": "Pièces jointes (optionnel)"
+        "attachments": "Pièces jointes (optionnel)",
+        "attachmentFiles": "Fichiers",
+        "attachmentLinks": "Liens externes",
+        "coverImage": "Image de couverture (optionnel)"
       },
       "placeholders": {
         "title": "ex. Forum emploi 2026",
-        "message": "Rédigez le message qui sera affiché au public cible..."
+        "message": "Rédigez le message qui sera affiché au public cible...",
+        "attachmentLink": "https://exemple.com/document"
       },
-      "attachmentsHint": "Téléversez les fichiers utiles (PDF, images, documents)",
+      "coverImageHint": "Affichée sur la carte de l'annonce à la place de l'icône par défaut.",
+      "coverImageDropHint": "JPG, PNG ou WebP — recommandé 1200×630 px",
+      "coverImagePreviewAlt": "Aperçu de l'image de couverture",
+      "coverImageRemove": "Supprimer l'image",
+      "attachmentsHint": "Téléversez les fichiers utiles (PDF, images, documents) ou ajoutez des liens externes.",
       "types": {
         "select": "Choisir le type",
         "event": "Événement",
@@ -525,30 +538,88 @@ export const adminCopyFr = {
       },
       "priorities": {
         "select": "Choisir la priorité",
-        "low": "Basse",
         "normal": "Normale",
-        "high": "Haute"
+        "important": "Importante",
+        "urgent": "Urgente"
       },
       "visibilities": {
         "select": "Choisir la visibilité",
-        "facultyStudents": "Étudiants et enseignants",
-        "studentsOnly": "Étudiants uniquement",
-        "internal": "Admins internes"
+        "allStudents": "Tous les étudiants",
+        "targeted": "Audience ciblée",
+        "custom": "Règles personnalisées"
       },
       "actions": {
         "create": "Créer",
         "draft": "Enregistrer comme brouillon",
         "publish": "Publier maintenant",
+        "schedule": "Programmer la publication",
+        "scheduling": "Planification en cours…",
+        "savingDraft": "Enregistrement du brouillon…",
+        "publishing": "Publication en cours…",
         "cancel": "Annuler",
-        "save": "Enregistrer"
+        "save": "Enregistrer",
+        "saving": "Enregistrement…",
+        "addAttachmentLink": "Ajouter le lien"
+      },
+      "draftSuccess": "Brouillon enregistré",
+      "publishSuccess": "Annonce publiée avec succès",
+      "scheduleSuccess": "Annonce planifiée avec succès",
+      "updateSuccess": "Modifications enregistrées.",
+      "coverUploadError": "L'annonce est créée mais l'image de couverture n'a pas pu être envoyée.",
+      "attachmentsUploadError": "L'annonce est créée mais les pièces jointes n'ont pas pu être envoyées.",
+      "attachmentLinksUploadError": "L'annonce est créée mais les liens n'ont pas pu être enregistrés.",
+      "attachmentRemove": "Retirer {{name}}",
+      "attachmentLinkRemove": "Retirer le lien {{url}}",
+      "validation": {
+        "summary": "Veuillez corriger {{count}} champ(s) obligatoire(s) marqué(s) en rouge.",
+        "requiredTitle": "Le titre de l'annonce est obligatoire.",
+        "requiredType": "Choisissez un type d'annonce.",
+        "requiredAudience": "Choisissez un public cible.",
+        "requiredPriority": "Choisissez une priorité.",
+        "requiredVisibility": "Choisissez une visibilité.",
+        "requiredMessage": "Le contenu du message est obligatoire.",
+        "requiredExpirationDate": "La date d'expiration est obligatoire.",
+        "requiredPublishDate": "La date de publication est obligatoire.",
+        "requiredPublishTime": "L'heure de publication est obligatoire.",
+        "requiredTimezone": "Le fuseau horaire est obligatoire.",
+        "publishDateFuture": "La date et l'heure de publication doivent être dans le futur.",
+        "invalidAttachmentUrl": "Entrez une URL valide (http:// ou https://).",
+        "duplicateAttachmentUrl": "Ce lien a déjà été ajouté.",
+        "generic": "Vérifiez les champs du formulaire."
       },
       "editTitle": "Modifier l'annonce",
       "editSubtitle": "Mettez à jour le contenu et la diffusion de l'annonce.",
       "sections": {
         "general": "Informations générales",
         "generalHint": "Titre, type, audience et paramètres de diffusion.",
-        "messageHint": "Contenu principal visible par les étudiants."
-      }
+        "messageHint": "Contenu principal visible par les étudiants.",
+        "attachmentsTitle": "Pièces jointes"
+      },
+      "publication": {
+        "title": "Paramètres de publication",
+        "hint": "Choisissez de publier immédiatement ou de programmer une diffusion future.",
+        "modeLabel": "Mode de publication",
+        "immediate": "Publier immédiatement",
+        "schedule": "Programmer la publication",
+        "publishDate": "Date de publication",
+        "publishTime": "Heure de publication",
+        "timezone": "Fuseau horaire",
+        "preview": "L'annonce sera publiée automatiquement le {{datetime}}",
+        "datePicker": {
+          "title": "Sélectionner une date",
+          "prevMonth": "Mois précédent",
+          "nextMonth": "Mois suivant",
+          "cancel": "Annuler",
+          "confirm": "OK"
+        },
+        "timePicker": {
+          "title": "Sélectionner une heure",
+          "hours": "Heures",
+          "minutes": "Minutes",
+          "cancel": "Annuler",
+          "confirm": "OK"
+        }
+      },
     },
     "createOffer": {
       "title": "Créer une offre de stage",
@@ -1058,6 +1129,8 @@ export const adminCopyFr = {
       "sections": {
         "personal": "Informations personnelles",
         "personalHint": "Coordonnées et identifiant de l'étudiant.",
+        "photo": "Photo de profil",
+        "photoHint": "Image visible dans le chat, le profil et les espaces étudiants.",
         "academic": "Affectation académique",
         "academicHint": "Programme, niveau, spécialisation, type de stage, année et classe — données ESCA.",
         "access": "Accès & statut",
@@ -1089,7 +1162,8 @@ export const adminCopyFr = {
       "actions": {
         "cancel": "Annuler",
         "create": "Créer l'étudiant",
-        "save": "Enregistrer"
+        "save": "Enregistrer",
+        "removePhoto": "Supprimer la photo"
       },
       "messages": {
         "loadFilieresError": "Impossible de charger les filières.",
@@ -1162,6 +1236,10 @@ export const adminCopyFr = {
           "rowError": "Ligne {{row}} ({{email}}) : {{message}}",
           "moreErrors": "… et {{count}} autre(s) erreur(s)."
         }
+      },
+      "actions": {
+        "menuAria": "Actions pour {{name}}",
+        "authorize": "Autoriser"
       }
     },
     "academicStructure": {
@@ -1405,9 +1483,37 @@ export const adminCopyFr = {
     "offers": {
       "title": "Offres de stage",
       "subtitle": "Gérer toutes les opportunités de stage",
+      "section": {
+        "countAria": "{{count}} offres dans la liste"
+      },
+      "listFilters": {
+        "deadline": {
+          "aria": "Filtrer par date limite",
+          "all": "Toutes les dates",
+          "no_deadline": "Sans date limite",
+          "overdue": "Date dépassée",
+          "this_week": "Cette semaine",
+          "this_month": "Ce mois-ci"
+        },
+        "applicants": {
+          "aria": "Filtrer par candidatures",
+          "all": "Toutes",
+          "none": "Aucune candidature",
+          "has_applicants": "Avec candidatures",
+          "high": "5 candidatures ou plus"
+        }
+      },
       "draftsPage": {
         "title": "Brouillons",
         "subtitle": "Consulter et publier les offres non publiées",
+        "filters": {
+          "aria": "Filtrer les brouillons",
+          "all": "Tous les brouillons",
+          "ready": "Prêtes à publier",
+          "incomplete": "À compléter",
+          "pending_review": "En attente de validation",
+          "no_deadline": "Sans date limite"
+        },
         "readiness": {
           "column": "Complétion",
           "ready": "Prête à publier",
@@ -1430,6 +1536,7 @@ export const adminCopyFr = {
         }
       },
       "actions": {
+        "menuAria": "Actions pour {{title}}",
         "delete": {
           "title": "Supprimer l'offre de stage",
           "description": "Êtes-vous sûr de vouloir supprimer cette offre ? Cette action peut affecter les candidatures, les résultats de matching et les analyses.",
@@ -1437,6 +1544,18 @@ export const adminCopyFr = {
           "success": "Offre supprimée avec succès.",
           "errors": {
             "failed": "Impossible de supprimer cette offre."
+          }
+        },
+        "archive": {
+          "success": "Offre archivée avec succès.",
+          "errors": {
+            "failed": "Impossible d'archiver cette offre."
+          }
+        },
+        "restore": {
+          "success": "Offre restaurée avec succès.",
+          "errors": {
+            "failed": "Impossible de restaurer cette offre."
           }
         },
         "errors": {
@@ -1554,6 +1673,85 @@ export const adminCopyFr = {
         "accept": "Accepter",
         "reject": "Refuser"
       },
+      "detailPage": {
+        "backToOffers": "Retour aux offres",
+        "adminMeta": "Fiche admin",
+        "adminData": "Données admin",
+        "adminDataSubtitle": "Ciblage, publication, audit et statistiques candidatures",
+        "openExternal": "Ouvrir le lien externe",
+        "analytics": {
+          "title": "Analytique de l'offre",
+          "views": "Vues",
+          "applications": "Candidatures",
+          "conversion": "Conversion",
+          "pending": "En attente",
+          "accepted": "Acceptées",
+          "interviewing": "Entretiens"
+        },
+        "emailPreview": {
+          "title": "Aperçu e-mail",
+          "subtitle": "Prévisualisez l'e-mail reçu par les étudiants pour cette offre",
+          "subject": "Nouvelle offre de stage : {{title}} — {{company}}",
+          "intro": "Une nouvelle opportunité de stage correspondant à votre profil est disponible chez {{company}}.",
+          "ctaHint": "Ouvrez Talent Center pour voir l'offre complète et postuler.",
+          "cta": "Voir l'offre",
+          "footer": "Vous recevez cet e-mail car vous êtes inscrit sur Talent Center.",
+          "senderName": "Talent Center",
+          "senderEmail": "noreply@talentcenter.ma",
+          "from": "De",
+          "to": "À",
+          "subjectLabel": "Objet",
+          "fields": {
+            "internshipType": "Type de stage",
+            "workMode": "Mode de travail",
+            "duration": "Durée",
+            "compensation": "Rémunération",
+            "deadline": "Date limite de candidature",
+            "startDate": "Date de début",
+            "endDate": "Date de fin",
+            "minEducation": "Niveau d'études minimum",
+            "yearsExperience": "Expérience",
+            "externalUrl": "Lien de candidature externe",
+            "offerUrl": "Page de l'offre sur Talent Center"
+          },
+          "sections": {
+            "overview": "À propos du poste",
+            "responsibilities": "Responsabilités",
+            "requirements": "Exigences",
+            "benefits": "Avantages",
+            "additionalNotes": "Informations complémentaires",
+            "requiredSkills": "Compétences requises",
+            "preferredSkills": "Compétences souhaitées",
+            "languages": "Langues",
+            "softSkills": "Soft skills",
+            "certifications": "Certifications"
+          }
+        },
+        "applicantsTable": {
+          "title": "Candidats ({{count}})",
+          "subtitle": "Étudiants ayant postulé à cette offre de stage",
+          "filterAria": "Filtrer les candidats par statut",
+          "filters": {
+            "all": "Tous"
+          },
+          "columns": {
+            "student": "Étudiant",
+            "class": "Classe",
+            "field": "Filière",
+            "match": "Match",
+            "status": "Statut",
+            "appliedAt": "Postulé le"
+          },
+          "status": {
+            "Pending": "En attente",
+            "Interview": "Entretien",
+            "Accepted": "Accepté",
+            "Rejected": "Refusé"
+          },
+          "empty": "Aucun étudiant n'a encore postulé à cette offre.",
+          "searchEmpty": "Aucun candidat ne correspond à votre recherche ou aux filtres."
+        }
+      },
       "inbox": {
         "sidebarTitle": "Centre de recrutement",
         "filters": "Filtres",
@@ -1568,15 +1766,37 @@ export const adminCopyFr = {
         "noConversations": "Aucune conversation",
         "noConversationsDesc": "Les conversations liées aux candidatures apparaîtront ici.",
         "noConversationsFilterHint": "Ajustez vos filtres ou votre recherche",
+        "viewArchivedAria": "Voir les conversations archivées",
+        "backToActiveConversations": "Retour aux conversations actives",
+        "archivedBanner": "Conversations archivées",
+        "noArchivedConversations": "Aucune conversation archivée",
+        "noArchivedConversationsDesc": "Les conversations que vous archivez apparaîtront ici.",
         "noMessages": "Aucun message pour le moment. Démarrez la conversation avec l'étudiant.",
+        "seenAt": "Vu à {{time}}",
         "composerPlaceholder": "Rédiger un message…",
         "attachFile": "Joindre un fichier",
         "sendMessage": "Envoyer",
         "loadError": "Erreur de chargement",
+        "systemEvents": {
+          "archive_conversation": "Conversation archivée dans votre boîte de réception",
+          "unarchive_conversation": "Conversation restaurée dans votre boîte de réception",
+          "mark_resolved": "Conversation marquée comme résolue",
+          "mark_urgent": "Conversation marquée comme urgente",
+          "assign_admin": "Conversation assignée à un administrateur",
+          "add_internal_note": "Note interne ajoutée",
+          "set_priority": "Priorité mise à jour",
+          "notify_admin": "Administrateurs notifiés",
+          "escalate": "Conversation escaladée",
+          "validate": "Élément validé",
+          "request_correction": "Correction demandée",
+          "create_task": "Tâche créée",
+          "create_meeting": "Réunion planifiée"
+        },
         "back": "Retour",
         "moreActions": "Plus d'actions",
         "resolve": "Résoudre",
         "archive": "Archiver",
+        "unarchive": "Désarchiver",
         "viewStudent": "Voir l'étudiant",
         "viewApplication": "Voir la candidature",
         "viewOffer": "Voir l'offre",
@@ -1604,11 +1824,18 @@ export const adminCopyFr = {
           "lastChange": "Dernier changement"
         },
         "quickActions": {
-          "sendReminder": "Envoyer un rappel",
-          "requestDocuments": "Demander des documents",
-          "scheduleInterview": "Planifier un entretien",
-          "updateApplication": "Mise à jour candidature",
           "assignAdmin": "Assigner à un admin stage"
+        },
+        "assignAdminModal": {
+          "title": "Assigner à un admin stage",
+          "description": "Choisissez l'administrateur qui prendra en charge cette conversation.",
+          "searchPlaceholder": "Rechercher par nom ou e-mail…",
+          "empty": "Aucun administrateur trouvé.",
+          "loading": "Chargement des administrateurs…",
+          "confirm": "Assigner",
+          "cancel": "Annuler",
+          "success": "Conversation assignée",
+          "error": "Impossible d'assigner la conversation"
         },
         "filterSections": {
           "program": "Programme",
@@ -2030,6 +2257,9 @@ export const adminCopyFr = {
           "rowError": "Ligne {{row}} ({{email}}) : {{message}}",
           "moreErrors": "… et {{count}} autre(s) erreur(s)."
         }
+      },
+      "actions": {
+        "menuAria": "Actions pour {{name}}"
       }
     },
     "administratorsFiltered": {
@@ -2234,13 +2464,16 @@ export const adminCopyFr = {
       "download": "Télécharger",
       "approve": "Approuver",
       "reject": "Rejeter",
+      "menuAria": "Actions de la ligne",
       "viewProfile": "Voir le profil",
       "deactivate": "Désactiver",
       "viewDetails": "Voir les détails",
       "manageStudents": "Gérer les étudiants",
       "managePermissions": "Gérer les permissions",
       "importExcel": "Importer Excel",
-      "validate": "Valider"
+      "validate": "Valider",
+      "archive": "Archiver",
+      "restore": "Restaurer"
     },
     "delete": {
       "confirm": "Supprimer définitivement",
@@ -2274,7 +2507,11 @@ export const adminCopyFr = {
         "academicScope": "Périmètre académique",
         "access": "Contrôle d'accès",
         "overview": "Aperçu",
-        "assignment": "Affectation académique"
+        "assignment": "Affectation académique",
+        "profile": "Profil & parcours",
+        "engagement": "Engagement étudiant",
+        "riskScores": "Scores de risque & santé",
+        "careerInsights": "Indicateurs carrière"
       },
       "fields": {
         "sso": "SSO activé",
@@ -2283,8 +2520,73 @@ export const adminCopyFr = {
         "lastLogin": "Dernière connexion",
         "createdAt": "Créé le",
         "onboardingPercent": "Progression onboarding",
-        "applicants": "Candidatures"
+        "applicants": "Candidatures",
+        "phone": "Téléphone",
+        "dateOfBirth": "Date de naissance",
+        "gender": "Genre",
+        "city": "Ville",
+        "academicLevel": "Niveau académique",
+        "academicSector": "Spécialisation",
+        "internshipType": "Type de stage",
+        "internshipDuration": "Durée du stage",
+        "internshipCategory": "Catégorie de stage",
+        "hasInternshipAssignment": "Stage assigné",
+        "bio": "Bio / résumé",
+        "careerObjective": "Objectif professionnel",
+        "linkedin": "LinkedIn",
+        "availability": "Disponibilité",
+        "mobility": "Mobilité",
+        "identityConfirmed": "Identité confirmée",
+        "profileCompleted": "Profil complété",
+        "riskFlags": "Alertes de risque",
+        "language": "Langue",
+        "timezone": "Fuseau horaire",
+        "engagementScore": "Score d'engagement",
+        "engagementBand": "Niveau d'activité",
+        "profileCompletion": "Complétion du profil",
+        "riskScore": "Score de risque",
+        "healthIndex": "Indice de santé",
+        "healthScore": "Score de santé",
+        "atRisk": "Statut à risque",
+        "computedAt": "Scores calculés le",
+        "intelligencePending": "Pas encore calculé",
+        "noRiskFlags": "Aucune alerte active",
+        "employability": "Employabilité",
+        "internshipReadiness": "Préparation au stage",
+        "careerProgress": "Progression carrière",
+        "placementProbability": "Probabilité de placement",
+        "interviewReadiness": "Préparation entretien"
       },
+      "engagementCategories": {
+        "HIGHLY_ENGAGED": "Très engagé",
+        "ACTIVE": "Actif",
+        "LOW": "Faible",
+        "INACTIVE": "Inactif"
+      },
+      "riskCategories": {
+        "LOW": "Faible",
+        "MEDIUM": "Modéré",
+        "HIGH": "Élevé",
+        "CRITICAL": "Critique"
+      },
+      "healthIndex": {
+        "HEALTHY": "Sain",
+        "NEEDS_ATTENTION": "À surveiller",
+        "AT_RISK": "À risque",
+        "CRITICAL": "Critique"
+      },
+      "riskFlags": {
+        "NO_PLATFORM_ACCESS": "Pas d'accès plateforme",
+        "PENDING_AUTHORIZATION": "Autorisation en attente",
+        "IDENTITY_NOT_CONFIRMED": "Identité non confirmée",
+        "PROFILE_INCOMPLETE": "Profil incomplet",
+        "MISSING_STUDENT_PROFILE": "Profil étudiant manquant",
+        "NEVER_LOGGED_IN": "Jamais connecté",
+        "INACTIVE_30D": "Inactif depuis 30+ jours",
+        "NO_CREDENTIAL_ON_FILE": "Aucun identifiant enregistré"
+      },
+      "loading": "Chargement des informations…",
+      "loadError": "Certaines informations n'ont pas pu être chargées.",
       "administrator": {
         "title": "Détails administrateur"
       },
@@ -2367,6 +2669,7 @@ export const adminCopyFr = {
       "filterAllOffers": "Filtrer toutes les offres",
       "filterActiveOffers": "Filtrer les offres actives",
       "filterClosedOffers": "Filtrer les offres fermées",
+      "filterArchivedOffers": "Filtrer les offres archivées",
       "filterDraftOffers": "Filtrer les brouillons",
       "filterExpiredOffers": "Filtrer les offres expirées",
       "filterOffersWithApplications": "Filtrer les offres avec candidatures",
@@ -2523,6 +2826,7 @@ export const adminCopyFr = {
       "draft": "Brouillon",
       "expired": "Expirée",
       "closed": "Fermée",
+      "archived": "Archivée",
       "pending": "En attente",
       "accepted": "Acceptée",
       "rejected": "Refusée"
@@ -3611,10 +3915,14 @@ export const adminCopyFr = {
       "expiredOffers": "Offres expirées",
       "draftOffers": "Brouillons",
       "closedOffers": "Offres fermées",
+      "archivedOffers": "Offres archivées",
       "totalApplications": "Total candidatures",
       "acceptanceRate": "Taux d'acceptation",
       "mostPopular": "Plus populaire",
       "notDetectedYet": "Non détecté pour le moment",
+      "popularOffer": {
+        "views": "vues"
+      },
       "draftsPage": {
         "totalDrafts": "Total brouillons",
         "pendingReview": "En attente de validation",

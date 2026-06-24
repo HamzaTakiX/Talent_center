@@ -92,16 +92,16 @@ const CvEditorToolbar: FunctionComponent = () => {
   const showPortalLink = !onboardingCv;
 
   return (
-    <div className="quickcv-toolbar-admin flex shrink-0 flex-wrap items-center gap-3 border-b border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-4 py-2.5 sm:px-6">
+    <div className="quickcv-toolbar-admin flex shrink-0 flex-wrap items-center gap-3 border-b border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-4 py-2.5 max-sm:grid max-sm:grid-cols-1 max-sm:gap-2 max-sm:px-3 max-sm:py-2 sm:px-6">
       {showPortalLink && (
         <Link
           to={STUDENT_DASHBOARD_PATH}
-          className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-3 py-2 text-xs font-semibold ${STUDENT_TEXT_SECONDARY} transition-colors hover:border-[var(--admin-brand)] hover:bg-[var(--admin-brand-muted)] hover:text-[var(--admin-brand)]`}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-3 py-2 text-xs font-semibold ${STUDENT_TEXT_SECONDARY} transition-colors hover:border-[var(--admin-brand)] hover:bg-[var(--admin-brand-muted)] hover:text-[var(--admin-brand)] max-sm:w-full max-sm:justify-center`}
         >
           {t('cv.editor.back')}
         </Link>
       )}
-      <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-inset)] px-3 py-1.5">
+      <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-inset)] px-3 py-1.5 max-sm:w-full">
         <ZoomIn className="h-4 w-4 shrink-0 text-[var(--admin-text-secondary)]" aria-hidden />
         <input
           type="range"
@@ -118,7 +118,7 @@ const CvEditorToolbar: FunctionComponent = () => {
       </div>
 
       <label
-        className="admin-toggle-row flex cursor-pointer items-center gap-3 rounded-xl border border-transparent px-3 py-2 transition-colors hover:border-[var(--admin-border)] hover:bg-[var(--admin-brand-muted)]"
+        className="admin-toggle-row flex cursor-pointer items-center gap-3 rounded-xl border border-transparent px-3 py-2 transition-colors hover:border-[var(--admin-border)] hover:bg-[var(--admin-brand-muted)] max-sm:w-full max-sm:justify-between"
       >
         <span className={`text-sm font-medium ${STUDENT_TEXT_SECONDARY}`}>
           {t('cv.toolbar.demo')}
@@ -146,7 +146,7 @@ const CvEditorToolbar: FunctionComponent = () => {
         transition={{ delay: 0.02, duration: 0.2 }}
         role="group"
         aria-label={t('cv.toolbar.viewMode')}
-        className="admin-lang-switch inline-flex shrink-0 items-center rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] p-0.5 shadow-sm"
+        className="admin-lang-switch inline-flex shrink-0 items-center rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] p-0.5 shadow-sm max-sm:w-full"
       >
         {VIEW_MODES.map(({ id, labelKey }) => {
           const active = mode === id;
@@ -156,7 +156,7 @@ const CvEditorToolbar: FunctionComponent = () => {
               type="button"
               onClick={() => setViewMode(id)}
               aria-pressed={active}
-              className="relative z-0 min-w-[3.25rem] rounded-lg px-2.5 py-1.5 text-[11px] font-semibold leading-none tracking-wide transition-colors sm:min-w-[3.75rem] sm:px-3 sm:text-xs"
+              className="relative z-0 min-w-[3.25rem] rounded-lg px-2.5 py-1.5 text-[11px] font-semibold leading-none tracking-wide transition-colors max-sm:flex-1 max-sm:min-w-0 sm:min-w-[3.75rem] sm:px-3 sm:text-xs"
             >
               {active && (
                 <motion.span
@@ -180,7 +180,7 @@ const CvEditorToolbar: FunctionComponent = () => {
         })}
       </motion.div>
 
-      <span className="min-w-2 flex-1" />
+      <span className="hidden min-w-2 flex-1 sm:block" />
 
       <button
         type="button"
@@ -189,7 +189,7 @@ const CvEditorToolbar: FunctionComponent = () => {
           setSaveSucceeded(false);
           requestCvSave();
         }}
-        className={`inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold shadow-sm transition-colors ${
+        className={`inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold shadow-sm transition-colors max-sm:w-full max-sm:justify-center ${
           saveError
             ? 'border-red-300 bg-red-50 text-red-700'
             : saveSucceeded
@@ -215,7 +215,7 @@ const CvEditorToolbar: FunctionComponent = () => {
             exit={{ opacity: 0, x: 8 }}
             transition={{ duration: 0.22 }}
             onClick={goToDashboard}
-            className={`${STUDENT_PRIMARY_BUTTON} inline-flex shrink-0 items-center gap-2`}
+            className={`${STUDENT_PRIMARY_BUTTON} inline-flex shrink-0 items-center gap-2 max-sm:w-full max-sm:justify-center`}
           >
             <span>{t('cv.editor.actions.continueDashboard')}</span>
             <ArrowRight className="h-4 w-4" />
@@ -227,7 +227,7 @@ const CvEditorToolbar: FunctionComponent = () => {
         type="button"
         onClick={() => requestCvAiAnalysis()}
         disabled={aiBusy}
-        className="cv-ai-analyze-btn inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold shadow-sm transition-all disabled:opacity-60"
+        className="cv-ai-analyze-btn inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold shadow-sm transition-all disabled:opacity-60 max-sm:w-full max-sm:justify-center"
       >
         {aiBusy ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -240,7 +240,7 @@ const CvEditorToolbar: FunctionComponent = () => {
       <button
         type="button"
         onClick={() => quickCvDownloadPdf()}
-        className={`${STUDENT_PRIMARY_BUTTON} inline-flex shrink-0 items-center gap-2`}
+        className={`${STUDENT_PRIMARY_BUTTON} inline-flex shrink-0 items-center gap-2 max-sm:w-full max-sm:justify-center`}
       >
         <Download className="h-4 w-4" />
         {t('cv.toolbar.download')}

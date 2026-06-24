@@ -1,52 +1,50 @@
-import { FunctionComponent, useCallback, useState } from 'react';
+import { FunctionComponent, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminCrudRoutes } from '../../shared/navigation/adminCrudRoutes';
-import { stageApi } from '../../../shared/api/stageApi';
-import { useAdminToast } from '../../dashboard/context/AdminToastContext';
 import AdminDeleteConfirmModal from '../../ui/AdminDeleteConfirmModal';
-import AdminRowActions from '../../ui/AdminRowActions';
+import AdminRowActionsMenu from '../../ui/AdminRowActionsMenu';
 import { InternshipOffer } from '../types';
-import { parseStageActionError } from '../utils/parseStageActionError';
-import InternshipOfferDetailModal from './InternshipOfferDetailModal';
+import { useStageOfferMutation } from '../hooks/useStageOfferMutation';
 
 interface InternshipOfferActionsProps {
   offer: InternshipOffer;
-  variant?: 'mobile' | 'desktop';
   onView?: (offer: InternshipOffer) => void;
-  onRefresh?: () => void | Promise<void>;
 }
+
+const ARCHIVABLE_STATUSES: InternshipOffer['status'][] = ['Active', 'Expired', 'Closed'];
 
 const InternshipOfferActions: FunctionComponent<InternshipOfferActionsProps> = ({
   offer,
-  variant = 'desktop',
   onView,
-  onRefresh,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const toast = useAdminToast();
+  const { archiveOffer, restoreOffer, deleteOffer } = useStageOfferMutation();
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [viewOpen, setViewOpen] = useState(false);
 
-  const notifyError = useCallback(
-    (message: string) => {
-      const resolved = message.startsWith('admin.') ? t(message) : message;
-      toast.showToast(resolved, 'error');
-    },
-    [t, toast],
-  );
+  const canArchive = useMemo(() => ARCHIVABLE_STATUSES.includes(offer.status), [offer.status]);
+  const canRestore = offer.status === 'Archived';
+
+  const handleArchive = useCallback(async () => {
+    await archiveOffer(offer);
+  }, [archiveOffer, offer]);
+
+  const handleRestore = useCallback(async () => {
+    await restoreOffer(offer);
+  }, [offer, restoreOffer]);
 
   const handleDelete = useCallback(async () => {
-    try {
-      await stageApi.action(offer.id, 'delete');
-      toast.showToast(t('admin.modules.offers.actions.delete.success'), 'success');
-      await onRefresh?.();
-    } catch (err) {
-      notifyError(parseStageActionError(err, 'admin.modules.offers.actions.delete.errors.failed'));
-      throw err;
+    await deleteOffer(offer);
+  }, [deleteOffer, offer]);
+
+  const handleView = useCallback(() => {
+    if (onView) {
+      onView(offer);
+      return;
     }
-  }, [offer.id, notifyError, onRefresh, t, toast]);
+    navigate(adminCrudRoutes.internshipOfferView(offer.id));
+  }, [navigate, offer, onView]);
 
   return (
     <>
@@ -58,19 +56,12 @@ const InternshipOfferActions: FunctionComponent<InternshipOfferActionsProps> = (
         description={t('admin.modules.offers.actions.delete.description')}
         confirmLabel={t('admin.modules.offers.actions.delete.confirm')}
       />
-      <InternshipOfferDetailModal
-        open={viewOpen}
-        offer={viewOpen ? offer : null}
-        onClose={() => setViewOpen(false)}
-        onEdit={(id) => {
-          setViewOpen(false);
-          navigate(adminCrudRoutes.internshipOfferEdit(id));
-        }}
-      />
-      <AdminRowActions
-        variant={variant}
-        onView={() => (onView ? onView(offer) : setViewOpen(true))}
+      <AdminRowActionsMenu
+        ariaLabel={t('admin.modules.offers.actions.menuAria', { title: offer.title })}
+        onView={handleView}
         onEdit={() => navigate(adminCrudRoutes.internshipOfferEdit(offer.id))}
+        onArchive={canArchive ? handleArchive : undefined}
+        onRestore={canRestore ? handleRestore : undefined}
         onDelete={() => setDeleteOpen(true)}
       />
     </>

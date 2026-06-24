@@ -81,7 +81,10 @@ export const stageApi = {
     return res.data.data ?? [];
   },
 
-  apply: async (uuid: string, payload: { cover_letter?: string; student_cv_id?: number }) => {
+  apply: async (
+    uuid: string,
+    payload: { cover_letter?: string; student_cv_id?: number; external_confirmation?: boolean },
+  ) => {
     const res = await apiClient.post<ApiEnvelope<StageApplication>>(`${BASE}/${uuid}/applications`, payload);
     return res.data.data!;
   },
@@ -174,7 +177,7 @@ export const stageApi = {
   },
 
   createChat: async (uuid: string, payload?: { student_profile_id?: number; message?: string }) => {
-    const res = await apiClient.post<ApiEnvelope<{ conversation_id: number; unread_total: number }>>(
+    const res = await apiClient.post<ApiEnvelope<{ conversation_id: number }>>(
       `${BASE}/${uuid}/chat`,
       payload ?? {},
     );

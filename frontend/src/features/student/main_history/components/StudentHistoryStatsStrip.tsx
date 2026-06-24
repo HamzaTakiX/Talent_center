@@ -1,6 +1,7 @@
 import { FunctionComponent, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import PlatformKpiStrip from '../../../../design-system/PlatformKpiStrip';
+import AdminKpiGridSkeleton from '../../../admin/ui/AdminKpiGridSkeleton';
 import {
   BriefcaseBusiness,
   Clock3,
@@ -54,10 +55,8 @@ const StudentHistoryStatsStrip: FunctionComponent<StudentHistoryStatsStripProps>
 
   if (loading && items.length === 0) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-busy>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="admin-skeleton h-16 rounded-xl" />
-        ))}
+      <div className="w-full min-w-0 max-w-full student-audit-strip">
+        <AdminKpiGridSkeleton count={6} columns={3} />
       </div>
     );
   }

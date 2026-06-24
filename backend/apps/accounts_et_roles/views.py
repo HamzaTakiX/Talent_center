@@ -9,12 +9,14 @@ from .serializers import (
     CompleteStudentProfileSerializer,
     ConfirmIdentitySerializer,
     StudentProfileSerializer,
+    UpdateInternshipStatusSerializer,
     UserProfileSerializer,
     UserSerializer,
 )
 from .services import (
     confirm_identity,
     complete_student_profile,
+    update_internship_status,
 )
 from .models import User
 
@@ -169,6 +171,61 @@ class CompleteProfileApiView(APIView):
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f'Error in CompleteProfileApiView: {str(e)}', exc_info=True)
+            return Response(
+                envelope(
+                    success=False,
+                    message='An error occurred while processing your request. Please try again later.',
+                ),
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class UpdateInternshipStatusApiView(APIView):
+    """Student declares whether they already have an internship."""
+
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        try:
+            if request.user.role != User.RoleChoices.STUDENT:
+                return Response(
+                    envelope(
+                        success=False,
+                        message='Only students can update internship status.',
+                        errors={'role': ['This endpoint is only for students.']},
+                    ),
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            serializer = UpdateInternshipStatusSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            update_internship_status(user=request.user, data=serializer.validated_data)
+
+            request.user.refresh_from_db()
+            if hasattr(request.user, 'student_profile'):
+                request.user.student_profile.refresh_from_db()
+
+            return Response(
+                envelope(
+                    success=True,
+                    message='Internship status updated successfully.',
+                    data=UserSerializer(request.user).data,
+                ),
+                status=status.HTTP_200_OK,
+            )
+        except ValidationError as e:
+            return Response(
+                envelope(
+                    success=False,
+                    message='Validation failed. Please check your input.',
+                    errors=e.detail,
+                ),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error in UpdateInternshipStatusApiView: {str(e)}', exc_info=True)
             return Response(
                 envelope(
                     success=False,

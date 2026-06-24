@@ -7,6 +7,8 @@ export const documentsModuleEn = {
     title: 'Administrative documents',
     subtitle: 'Manage document requests, workflows, and reservations',
     quickLinks: 'Module sections',
+    loadError: 'Unable to load the documents dashboard',
+    retry: 'Retry',
   },
   feed: {
     recent: 'Recent requests',
@@ -129,6 +131,9 @@ export const documentsModuleEn = {
     noReservation: 'No reservation scheduled',
     noAttachments: 'No attachments uploaded',
     noOutputs: 'No documents produced yet',
+    noInsights: 'No observations yet',
+    actionError: 'Unable to perform this action',
+    rejectReasonPrompt: 'Rejection reason (required)',
   },
   reservations: {
     title: 'Reservation center',
@@ -136,6 +141,7 @@ export const documentsModuleEn = {
     calendar: 'Reservation calendar',
     occupancy: 'Occupancy today',
     smartAssign: 'Assign slots',
+    countToday: '{{count}} reservation(s) today',
   },
   resources: {
     title: 'Resources management',
@@ -183,6 +189,9 @@ export const documentsModuleEn = {
     reservationPeak: 'Peak reservation window: 10:00–11:30.',
     srfClear: 'Student has valid SRF clearance.',
     srfBlocked: 'SRF payment required before validation.',
+    slaAtRisk: 'Some requests are approaching the SLA limit.',
+    highPending: 'High volume of requests awaiting validation.',
+    slaUrgent: 'The SLA deadline is almost reached for this request.',
   },
   rejectionCauses: {
     missing_attachment: 'Missing attachment',
@@ -218,6 +227,20 @@ export const documentsModuleEn = {
     analytics: {
       title: 'No analytics yet',
       subtitle: 'Insights will appear once document requests are processed.',
+    },
+    charts: {
+      statusMix: {
+        title: 'No status breakdown yet',
+        subtitle: 'Request distribution by status will appear once submissions start flowing in.',
+      },
+      rejectionCauses: {
+        title: 'No rejections recorded',
+        subtitle: 'Rejection causes will be charted when declined requests are logged.',
+      },
+      reservationOccupancy: {
+        title: 'No reservation activity',
+        subtitle: 'Hourly guichet occupancy will show up after slots are booked.',
+      },
     },
   },
   chart: {

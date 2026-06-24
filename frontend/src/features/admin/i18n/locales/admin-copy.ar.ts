@@ -499,16 +499,25 @@ export const adminCopyAr = {
         "type": "النوع",
         "audience": "الجمهور المستهدف",
         "eventDate": "تاريخ الحدث / الموعد النهائي",
+        "expirationDate": "تاريخ انتهاء الصلاحية",
         "priority": "الأولوية",
         "visibility": "الظهور",
         "message": "محتوى الرسالة",
-        "attachments": "المرفقات (اختياري)"
+        "attachments": "المرفقات (اختياري)",
+        "attachmentFiles": "ملفات",
+        "attachmentLinks": "روابط خارجية",
+        "coverImage": "صورة الغلاف (اختياري)"
       },
       "placeholders": {
         "title": "مثال: معرض التوظيف 2026",
-        "message": "اكتب رسالة الإعلان التي ستُعرض للجمهور المستهدف..."
+        "message": "اكتب رسالة الإعلان التي ستُعرض للجمهور المستهدف...",
+        "attachmentLink": "https://example.com/document"
       },
-      "attachmentsHint": "ارفع الملفات ذات الصلة (PDF، صور، مستندات)",
+      "coverImageHint": "تُعرض على بطاقة الإعلان بدلاً من أيقونة النوع الافتراضية.",
+      "coverImageDropHint": "JPG أو PNG أو WebP — يُنصح بـ 1200×630 بكسل",
+      "coverImagePreviewAlt": "معاينة صورة الغلاف",
+      "coverImageRemove": "إزالة الصورة",
+      "attachmentsHint": "ارفع الملفات ذات الصلة (PDF، صور، مستندات) أو أضف روابط خارجية.",
       "types": {
         "select": "اختر النوع",
         "event": "حدث",
@@ -523,29 +532,55 @@ export const adminCopyAr = {
       },
       "priorities": {
         "select": "اختر الأولوية",
-        "low": "منخفضة",
         "normal": "عادية",
-        "high": "عالية"
+        "important": "مهمة",
+        "urgent": "عاجلة"
       },
       "visibilities": {
         "select": "اختر الظهور",
-        "facultyStudents": "الطلاب والأساتذة",
-        "studentsOnly": "الطلاب فقط",
-        "internal": "المسؤولون الداخليون"
+        "allStudents": "كل الطلاب",
+        "targeted": "جمهور مستهدف",
+        "custom": "قواعد مخصصة"
       },
       "actions": {
         "create": "إنشاء",
         "draft": "حفظ كمسودة",
         "publish": "نشر الآن",
+        "savingDraft": "جاري حفظ المسودة…",
+        "publishing": "جاري النشر…",
         "cancel": "إلغاء",
-        "save": "حفظ"
+        "save": "حفظ",
+        "saving": "جاري الحفظ…",
+        "addAttachmentLink": "إضافة الرابط"
+      },
+      "draftSuccess": "تم حفظ المسودة",
+      "publishSuccess": "تم نشر الإعلان بنجاح",
+      "updateSuccess": "تم حفظ التعديلات.",
+      "coverUploadError": "تم إنشاء الإعلان لكن تعذّر رفع صورة الغلاف.",
+      "attachmentsUploadError": "تم إنشاء الإعلان لكن تعذّر رفع المرفقات.",
+      "attachmentLinksUploadError": "تم إنشاء الإعلان لكن تعذّر حفظ الروابط.",
+      "attachmentRemove": "إزالة {{name}}",
+      "attachmentLinkRemove": "إزالة الرابط {{url}}",
+      "validation": {
+        "summary": "يرجى تصحيح {{count}} حقل/حقول إلزامية مميزة باللون الأحمر.",
+        "requiredTitle": "عنوان الإعلان مطلوب.",
+        "requiredType": "اختر نوع الإعلان.",
+        "requiredAudience": "اختر الجمهور المستهدف.",
+        "requiredPriority": "اختر الأولوية.",
+        "requiredVisibility": "اختر خيار الظهور.",
+        "requiredMessage": "محتوى الرسالة مطلوب.",
+        "requiredExpirationDate": "تاريخ انتهاء الصلاحية مطلوب.",
+        "invalidAttachmentUrl": "أدخل رابطاً صالحاً (http:// أو https://).",
+        "duplicateAttachmentUrl": "تمت إضافة هذا الرابط مسبقاً.",
+        "generic": "يرجى التحقق من حقول النموذج."
       },
       "editTitle": "تعديل الإعلان",
       "editSubtitle": "تحديث محتوى الإعلان وطريقة نشره.",
       "sections": {
         "general": "معلومات عامة",
         "generalHint": "العنوان والنوع والجمهور وإعدادات النشر.",
-        "messageHint": "المحتوى الرئيسي الظاهر للطلاب."
+        "messageHint": "المحتوى الرئيسي الظاهر للطلاب.",
+        "attachmentsTitle": "المرفقات"
       }
     },
     "createOffer": {
@@ -1050,6 +1085,8 @@ export const adminCopyAr = {
       "sections": {
         "personal": "المعلومات الشخصية",
         "personalHint": "بيانات الاتصال ومعرّف الطالب.",
+        "photo": "صورة الملف الشخصي",
+        "photoHint": "تظهر في الدردشة والملف الشخصي ومساحات الطالب.",
         "academic": "التعيين الأكاديمي",
         "academicHint": "الشعبة والفصل والسنة الحالية.",
         "access": "الوصول والحالة",
@@ -1081,7 +1118,8 @@ export const adminCopyAr = {
       "actions": {
         "cancel": "إلغاء",
         "create": "إنشاء الطالب",
-        "save": "حفظ"
+        "save": "حفظ",
+        "removePhoto": "حذف الصورة"
       },
       "messages": {
         "loadFilieresError": "تعذر تحميل الشعب.",
@@ -1154,6 +1192,10 @@ export const adminCopyAr = {
           "rowError": "السطر {{row}} ({{email}}): {{message}}",
           "moreErrors": "… و{{count}} خطأ إضافي."
         }
+      },
+      "actions": {
+        "menuAria": "إجراءات {{name}}",
+        "authorize": "تفويض"
       }
     },
     "academicStructure": {
@@ -1397,11 +1439,40 @@ export const adminCopyAr = {
     "offers": {
       "title": "عروض التدريب",
       "subtitle": "إدارة جميع فرص التدريب",
+      "section": {
+        "countAria": "{{count}} عروض في القائمة"
+      },
+      "listFilters": {
+        "deadline": {
+          "aria": "تصفية حسب الموعد النهائي",
+          "all": "جميع التواريخ",
+          "no_deadline": "بدون موعد نهائي",
+          "overdue": "منتهي الصلاحية",
+          "this_week": "هذا الأسبوع",
+          "this_month": "هذا الشهر"
+        },
+        "applicants": {
+          "aria": "تصفية حسب الطلبات",
+          "all": "الكل",
+          "none": "بدون طلبات",
+          "has_applicants": "مع طلبات",
+          "high": "5 طلبات أو أكثر"
+        }
+      },
       "draftsPage": {
         "title": "المسودات",
-        "subtitle": "مراجعة ونشر عروض التدريب غير المنشورة"
+        "subtitle": "مراجعة ونشر عروض التدريب غير المنشورة",
+        "filters": {
+          "aria": "تصفية المسودات",
+          "all": "جميع المسودات",
+          "ready": "جاهزة للنشر",
+          "incomplete": "تحتاج إكمالاً",
+          "pending_review": "في انتظار المراجعة",
+          "no_deadline": "بدون موعد نهائي"
+        }
       },
       "actions": {
+        "menuAria": "إجراءات {{title}}",
         "delete": {
           "title": "حذف عرض التدريب",
           "description": "هل أنت متأكد من حذف هذا العرض؟ قد يؤثر هذا على الطلبات ونتائج المطابقة والتحليلات.",
@@ -1546,6 +1617,85 @@ export const adminCopyAr = {
         "accept": "قبول",
         "reject": "رفض"
       },
+      "detailPage": {
+        "backToOffers": "العودة إلى العروض",
+        "adminMeta": "سجل المسؤول",
+        "adminData": "بيانات المسؤول",
+        "adminDataSubtitle": "الاستهداف، النشر، التدقيق وإحصائيات التقديمات",
+        "openExternal": "فتح الرابط الخارجي",
+        "analytics": {
+          "title": "تحليلات العرض",
+          "views": "المشاهدات",
+          "applications": "التقديمات",
+          "conversion": "التحويل",
+          "pending": "قيد الانتظار",
+          "accepted": "مقبولة",
+          "interviewing": "مقابلات"
+        },
+        "emailPreview": {
+          "title": "معاينة البريد الإلكتروني",
+          "subtitle": "معاينة البريد الذي يستلمه الطلاب لهذا العرض",
+          "subject": "عرض تدريب جديد: {{title}} — {{company}}",
+          "intro": "فرصة تدريب جديدة تتوافق مع ملفك متاحة لدى {{company}}.",
+          "ctaHint": "افتح Talent Center لعرض التفاصيل الكاملة والتقديم.",
+          "cta": "عرض التفاصيل",
+          "footer": "تلقيت هذا البريد لأنك مسجل في Talent Center.",
+          "senderName": "Talent Center",
+          "senderEmail": "noreply@talentcenter.ma",
+          "from": "من",
+          "to": "إلى",
+          "subjectLabel": "الموضوع",
+          "fields": {
+            "internshipType": "نوع التدريب",
+            "workMode": "نمط العمل",
+            "duration": "المدة",
+            "compensation": "التعويض",
+            "deadline": "آخر موعد للتقديم",
+            "startDate": "تاريخ البدء",
+            "endDate": "تاريخ الانتهاء",
+            "minEducation": "الحد الأدنى للتعليم",
+            "yearsExperience": "الخبرة",
+            "externalUrl": "رابط التقديم الخارجي",
+            "offerUrl": "صفحة العرض على Talent Center"
+          },
+          "sections": {
+            "overview": "عن الدور",
+            "responsibilities": "المسؤوليات",
+            "requirements": "المتطلبات",
+            "benefits": "المزايا",
+            "additionalNotes": "معلومات إضافية",
+            "requiredSkills": "المهارات المطلوبة",
+            "preferredSkills": "المهارات المفضلة",
+            "languages": "اللغات",
+            "softSkills": "المهارات الشخصية",
+            "certifications": "الشهادات"
+          }
+        },
+        "applicantsTable": {
+          "title": "المتقدمون ({{count}})",
+          "subtitle": "الطلاب الذين تقدموا لهذا العرض",
+          "filterAria": "تصفية المتقدمين حسب الحالة",
+          "filters": {
+            "all": "الكل"
+          },
+          "columns": {
+            "student": "الطالب",
+            "class": "الصف",
+            "field": "التخصص",
+            "match": "التطابق",
+            "status": "الحالة",
+            "appliedAt": "تاريخ التقديم"
+          },
+          "status": {
+            "Pending": "قيد الانتظار",
+            "Interview": "مقابلة",
+            "Accepted": "مقبول",
+            "Rejected": "مرفوض"
+          },
+          "empty": "لم يتقدم أي طالب لهذا العرض بعد.",
+          "searchEmpty": "لا يوجد متقدمون يطابقون البحث أو الفلاتر."
+        }
+      },
       "inbox": {
         "sidebarTitle": "مركز التوظيف",
         "filters": "الفلاتر",
@@ -1565,10 +1715,26 @@ export const adminCopyAr = {
         "attachFile": "إرفاق ملف",
         "sendMessage": "إرسال",
         "loadError": "خطأ في التحميل",
+        "systemEvents": {
+          "archive_conversation": "تم أرشفة المحادثة في صندوق الوارد",
+          "unarchive_conversation": "تمت استعادة المحادثة في صندوق الوارد",
+          "mark_resolved": "تم وضع علامة «محلولة» على المحادثة",
+          "mark_urgent": "تم وضع علامة «عاجلة» على المحادثة",
+          "assign_admin": "تم تعيين المحادثة لمسؤول",
+          "add_internal_note": "تمت إضافة ملاحظة داخلية",
+          "set_priority": "تم تحديث الأولوية",
+          "notify_admin": "تم إشعار المسؤولين",
+          "escalate": "تم تصعيد المحادثة",
+          "validate": "تم التحقق",
+          "request_correction": "تم طلب تصحيح",
+          "create_task": "تم إنشاء مهمة",
+          "create_meeting": "تم جدولة اجتماع"
+        },
         "back": "رجوع",
         "moreActions": "المزيد من الإجراءات",
         "resolve": "حل",
         "archive": "أرشفة",
+        "unarchive": "إلغاء الأرشفة",
         "viewStudent": "عرض الطالب",
         "viewApplication": "عرض الطلب",
         "viewOffer": "عرض العرض",
@@ -1596,11 +1762,18 @@ export const adminCopyAr = {
           "lastChange": "آخر تغيير"
         },
         "quickActions": {
-          "sendReminder": "إرسال تذكير",
-          "requestDocuments": "طلب مستندات",
-          "scheduleInterview": "جدولة مقابلة",
-          "updateApplication": "تحديث الطلب",
           "assignAdmin": "تعيين لمسؤول التدريب"
+        },
+        "assignAdminModal": {
+          "title": "تعيين لمسؤول التدريب",
+          "description": "اختر المسؤول الذي سيتولى هذه المحادثة.",
+          "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني…",
+          "empty": "لم يتم العثور على مسؤولين.",
+          "loading": "جارٍ تحميل المسؤولين…",
+          "confirm": "تعيين",
+          "cancel": "إلغاء",
+          "success": "تم تعيين المحادثة",
+          "error": "تعذر تعيين المحادثة"
         },
         "filterSections": {
           "program": "البرنامج",
@@ -2022,6 +2195,9 @@ export const adminCopyAr = {
           "rowError": "الصف {{row}} ({{email}}): {{message}}",
           "moreErrors": "… و{{count}} خطأ(أخطاء) أخرى."
         }
+      },
+      "actions": {
+        "menuAria": "إجراءات {{name}}"
       }
     },
     "administratorsFiltered": {
@@ -2226,6 +2402,7 @@ export const adminCopyAr = {
       "download": "تحميل",
       "approve": "موافقة",
       "reject": "رفض",
+      "menuAria": "إجراءات الصف",
       "viewProfile": "عرض الملف",
       "deactivate": "تعطيل",
       "viewDetails": "عرض التفاصيل",
@@ -2266,7 +2443,11 @@ export const adminCopyAr = {
         "academicScope": "النطاق الأكاديمي",
         "access": "التحكم في الوصول",
         "overview": "نظرة عامة",
-        "assignment": "التعيين الأكاديمي"
+        "assignment": "التعيين الأكاديمي",
+        "profile": "الملف والمسار",
+        "engagement": "مشاركة الطالب",
+        "riskScores": "درجات المخاطر والصحة",
+        "careerInsights": "مؤشرات المسار المهني"
       },
       "fields": {
         "sso": "تسجيل SSO",
@@ -2275,8 +2456,73 @@ export const adminCopyAr = {
         "lastLogin": "آخر تسجيل دخول",
         "createdAt": "تاريخ الإنشاء",
         "onboardingPercent": "تقدم الإعداد",
-        "applicants": "المتقدمون"
+        "applicants": "المتقدمون",
+        "phone": "الهاتف",
+        "dateOfBirth": "تاريخ الميلاد",
+        "gender": "الجنس",
+        "city": "المدينة",
+        "academicLevel": "المستوى الأكاديمي",
+        "academicSector": "التخصص",
+        "internshipType": "نوع التدريب",
+        "internshipDuration": "مدة التدريب",
+        "internshipCategory": "فئة التدريب",
+        "hasInternshipAssignment": "تدريب معيّن",
+        "bio": "السيرة / الملخص",
+        "careerObjective": "الهدف المهني",
+        "linkedin": "لينكدإن",
+        "availability": "التوفر",
+        "mobility": "التنقل",
+        "identityConfirmed": "الهوية مؤكدة",
+        "profileCompleted": "الملف مكتمل",
+        "riskFlags": "تنبيهات المخاطر",
+        "language": "اللغة",
+        "timezone": "المنطقة الزمنية",
+        "engagementScore": "درجة المشاركة",
+        "engagementBand": "مستوى النشاط",
+        "profileCompletion": "اكتمال الملف",
+        "riskScore": "درجة المخاطر",
+        "healthIndex": "مؤشر الصحة",
+        "healthScore": "درجة الصحة",
+        "atRisk": "حالة الخطر",
+        "computedAt": "تاريخ حساب الدرجات",
+        "intelligencePending": "لم تُحسب بعد",
+        "noRiskFlags": "لا توجد تنبيهات نشطة",
+        "employability": "القابلية للتوظيف",
+        "internshipReadiness": "الاستعداد للتدريب",
+        "careerProgress": "تقدم المسار المهني",
+        "placementProbability": "احتمال التوظيف",
+        "interviewReadiness": "الاستعداد للمقابلة"
       },
+      "engagementCategories": {
+        "HIGHLY_ENGAGED": "مشاركة عالية",
+        "ACTIVE": "نشط",
+        "LOW": "منخفض",
+        "INACTIVE": "غير نشط"
+      },
+      "riskCategories": {
+        "LOW": "منخفض",
+        "MEDIUM": "متوسط",
+        "HIGH": "مرتفع",
+        "CRITICAL": "حرج"
+      },
+      "healthIndex": {
+        "HEALTHY": "سليم",
+        "NEEDS_ATTENTION": "يحتاج متابعة",
+        "AT_RISK": "معرّض للخطر",
+        "CRITICAL": "حرج"
+      },
+      "riskFlags": {
+        "NO_PLATFORM_ACCESS": "لا يوجد وصول للمنصة",
+        "PENDING_AUTHORIZATION": "في انتظار التفويض",
+        "IDENTITY_NOT_CONFIRMED": "الهوية غير مؤكدة",
+        "PROFILE_INCOMPLETE": "الملف غير مكتمل",
+        "MISSING_STUDENT_PROFILE": "ملف الطالب مفقود",
+        "NEVER_LOGGED_IN": "لم يسجل الدخول أبداً",
+        "INACTIVE_30D": "غير نشط لأكثر من 30 يوماً",
+        "NO_CREDENTIAL_ON_FILE": "لا توجد بيانات اعتماد مسجلة"
+      },
+      "loading": "جارٍ تحميل المعلومات…",
+      "loadError": "تعذر تحميل بعض المعلومات.",
       "administrator": {
         "title": "تفاصيل المسؤول"
       },
@@ -3623,6 +3869,9 @@ export const adminCopyAr = {
       "acceptanceRate": "معدل القبول",
       "mostPopular": "الأكثر شعبية",
       "notDetectedYet": "غير متاح بعد",
+      "popularOffer": {
+        "views": "مشاهدات"
+      },
       "draftsPage": {
         "totalDrafts": "إجمالي المسودات",
         "pendingReview": "في انتظار المراجعة",

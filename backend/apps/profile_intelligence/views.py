@@ -26,6 +26,7 @@ from .serializers import (
     StudentProfileIndicatorSerializer,
 )
 from .services import profile_intelligence_engine
+from .services.program_analytics_service import platform_overview, program_analytics
 from .services.suggestion_engine import mark_suggestion_completed
 
 
@@ -112,3 +113,41 @@ def complete_suggestion(request, suggestion_id: int):
         'is_completed': suggestion.is_completed,
         'completed_at': suggestion.completed_at,
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsPlatformAdmin])
+def overview(request):
+    """
+    GET /api/profile-intelligence/overview/
+
+    Platform-wide intelligence summary for admin dashboard health widget.
+  Reads persisted scores — never recalculates on this path.
+    """
+    return Response(platform_overview())
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsPlatformAdmin])
+def program_analytics_view(request):
+    """
+    GET /api/profile-intelligence/program-analytics/
+
+    Aggregate intelligence scores by program, class, and academic level.
+    """
+    def _int_param(key: str) -> int | None:
+        raw = request.query_params.get(key)
+        if raw is None or raw == '':
+            return None
+        try:
+            return int(raw)
+        except ValueError:
+            return None
+
+    data = program_analytics(
+        filiere_id=_int_param('filiere_id'),
+        class_group_id=_int_param('class_group_id'),
+        academic_level_id=_int_param('academic_level_id'),
+        academic_sector_id=_int_param('academic_sector_id'),
+    )
+    return Response(data)

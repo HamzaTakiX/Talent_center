@@ -290,11 +290,6 @@ export function useCreateOfferWorkflow(
   const insights = useMemo(() => buildInsights(form), [form]);
   const suggestedStudents = useMemo(() => [], []);
 
-  const canPreviewMatchScore = useMemo(
-    () => Boolean(form.title.trim() && form.company.trim() && form.requiredSkills.length > 0),
-    [form.title, form.company, form.requiredSkills.length],
-  );
-
   const wizardStepIndex = useMemo(() => {
     const steps: WizardStep[] = ['basic', 'description', 'skills', 'targeting', 'recruitment', 'review'];
     return steps.indexOf(currentStep);
@@ -424,7 +419,6 @@ export function useCreateOfferWorkflow(
     analytics,
     insights,
     suggestedStudents,
-    canPreviewMatchScore,
     wizardStepIndex,
     goNext,
     goPrev,

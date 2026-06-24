@@ -3,6 +3,8 @@ import type { AdminChartLegendItem } from './types';
 /** Tones alignés sur les cartes KPI (accent + fond teinté). */
 const COLOR_META: Record<string, { accent: string; accentBg: string }> = {
   '#2563eb': { accent: 'var(--admin-brand)', accentBg: 'var(--admin-brand-muted)' },
+  '#3b82f6': { accent: '#3b82f6', accentBg: 'color-mix(in srgb, #3b82f6 14%, var(--admin-bg-elevated))' },
+  '#1d4ed8': { accent: '#1d4ed8', accentBg: 'color-mix(in srgb, #1d4ed8 14%, var(--admin-bg-elevated))' },
   '#60a5fa': { accent: '#3b82f6', accentBg: 'color-mix(in srgb, #3b82f6 14%, var(--admin-bg-elevated))' },
   '#16a34a': { accent: '#16a34a', accentBg: 'color-mix(in srgb, #16a34a 14%, var(--admin-bg-elevated))' },
   '#d97706': { accent: '#d97706', accentBg: 'color-mix(in srgb, #d97706 14%, var(--admin-bg-elevated))' },

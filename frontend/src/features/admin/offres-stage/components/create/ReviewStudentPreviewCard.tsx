@@ -1,12 +1,11 @@
 import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, Star } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import { SafeBadge, SafeClampText, SafeText } from '../../../../../design-system/safeContent';
 import type { CreateOfferFormState } from '../../types/createOfferWorkflow';
 import { buildOfferTags } from './reviewOfferHelpers';
 
 const STUDIO_PREFIX = 'admin.forms.createOfferStudio';
-const PREFIX = `${STUDIO_PREFIX}.review`;
 
 interface ReviewStudentPreviewCardProps {
   form: CreateOfferFormState;
@@ -59,20 +58,10 @@ const ReviewStudentPreviewCard: FunctionComponent<ReviewStudentPreviewCardProps>
             </div>
           )}
         </div>
-        <div className="offer-review-student-card__match">
-          <div className="offer-review-student-card__match-value">
-            <Star className="offer-review-student-card__match-star h-4 w-4" aria-hidden />
-            <span>—</span>
-          </div>
-          <span className="offer-review-student-card__match-label">
-            {t(`${STUDIO_PREFIX}.preview.matchLabel`)}
-          </span>
-        </div>
       </div>
       <SafeClampText lines={3} className="offer-review-student-card__desc">
         {descriptionPreview}
       </SafeClampText>
-      <p className="offer-review-student-card__hint">{t(`${PREFIX}.studentPreview.hint`)}</p>
     </article>
   );
 };

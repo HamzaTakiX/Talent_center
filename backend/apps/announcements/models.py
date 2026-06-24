@@ -455,9 +455,13 @@ class AnnouncementPublicationLog(models.Model):
         CREATED = 'CREATED', _('Created')
         UPDATED = 'UPDATED', _('Updated')
         SCHEDULED = 'SCHEDULED', _('Scheduled')
+        SCHEDULE_MODIFIED = 'SCHEDULE_MODIFIED', _('Schedule modified')
+        SCHEDULE_CANCELLED = 'SCHEDULE_CANCELLED', _('Schedule cancelled')
         PUBLISHED = 'PUBLISHED', _('Published')
+        AUTO_PUBLISHED = 'AUTO_PUBLISHED', _('Auto published')
         UNPUBLISHED = 'UNPUBLISHED', _('Unpublished')
         ARCHIVED = 'ARCHIVED', _('Archived')
+        UNARCHIVED = 'UNARCHIVED', _('Unarchived')
         EXPIRED = 'EXPIRED', _('Expired')
         HIDDEN = 'HIDDEN', _('Hidden')
         DUPLICATED = 'DUPLICATED', _('Duplicated')
@@ -467,7 +471,7 @@ class AnnouncementPublicationLog(models.Model):
         on_delete=models.CASCADE,
         related_name='publication_logs',
     )
-    action = models.CharField(max_length=16, choices=Action.choices, db_index=True)
+    action = models.CharField(max_length=20, choices=Action.choices, db_index=True)
     performed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -535,6 +539,7 @@ class StudentAnnouncementAction(models.Model):
 class StudentAnnouncementBookmark(TimestampedModel):
     class BookmarkType(models.TextChoices):
         SAVE = 'SAVE', _('Saved')
+        FAVORITE = 'FAVORITE', _('Favorite')
         FOLLOW = 'FOLLOW', _('Following')
 
     student_profile = models.ForeignKey(

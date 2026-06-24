@@ -4,6 +4,7 @@ import { academicReferenceApi } from '../../api/reference';
 import type {
   AcademicLevelOption,
   AcademicSectorOption,
+  AcademicYearOption,
   ClassGroupOption,
   FiliereOption,
 } from '../../api/types';
@@ -54,21 +55,18 @@ const AdminAcademicScopeFields: FunctionComponent<AdminAcademicScopeFieldsProps>
   useEffect(() => {
     setLoadingFilieres(true);
     academicReferenceApi
-      .listFilieres()
+      .listFilieres({ lang: i18n.language })
       .then(setFilieres)
       .catch(() => setFilieres([]))
       .finally(() => setLoadingFilieres(false));
-  }, []);
+  }, [i18n.language]);
 
   useEffect(() => {
-    if (value.filiereIds.length === 0) {
-      setYearOptions([]);
-      return;
-    }
     setLoadingYears(true);
     academicReferenceApi
-      .listAcademicYearsByFiliere(value.filiereIds)
-      .then((years) => {
+      .listAcademicYears({ structured: true, lang: i18n.language })
+      .then((data) => {
+        const years = (data as AcademicYearOption[]).map((year) => year.code);
         setYearOptions(years);
         if (value.yearFilter && !years.includes(value.yearFilter)) {
           onChange({ ...value, yearFilter: '', classGroupIds: [], levels: [] });
@@ -80,8 +78,8 @@ const AdminAcademicScopeFields: FunctionComponent<AdminAcademicScopeFieldsProps>
       })
       .catch(() => setYearOptions([]))
       .finally(() => setLoadingYears(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- filiereIdsKey drives refetch
-  }, [filiereIdsKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync scope years when catalog loads
+  }, [i18n.language]);
 
   const levelIdsKey = value.levelIds.join(',');
   const sectorIdsKey = value.sectorIds.join(',');

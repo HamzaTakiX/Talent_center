@@ -7,6 +7,7 @@ export const getStudentHeaderTitleKey = (pathname: string): string => {
   if (pathname === '/cv-editor' || pathname.startsWith('/cv/')) {
     return 'student.header.titles.cvEditor';
   }
+  if (pathname.includes('/cv-builder')) return 'student.header.titles.cvBuilder';
   if (pathname.includes('/cv-analysis-tool')) return 'student.header.titles.cvAnalysis';
   if (pathname.includes('/ai-career-coach')) return 'student.header.titles.aiCareerCoach';
   if (pathname.includes('/interview-simulator')) return 'student.header.titles.interviewSimulator';
@@ -21,6 +22,9 @@ export const getStudentHeaderTitleKey = (pathname: string): string => {
   }
   if (pathname.startsWith('/student/internship-offers')) {
     return 'student.header.titles.internshipOffers';
+  }
+  if (pathname === '/student/announcements/saved') {
+    return 'student.header.titles.announcementsSaved';
   }
   if (pathname.startsWith('/student/announcements')) return 'student.header.titles.announcements';
   if (pathname.startsWith('/student/documents')) return 'student.header.titles.documents';

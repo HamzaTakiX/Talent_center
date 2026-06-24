@@ -64,6 +64,7 @@ const ProviderTab: FunctionComponent<Props> = ({
   return (
     <EmailSystemSectionShell
       icon={Server}
+      busy={saving}
       title={t(`${PREFIX}.title`, { defaultValue: 'Email provider' })}
       subtitle={t(`${PREFIX}.subtitle`, {
         defaultValue: 'Connect and validate your transactional email provider.',

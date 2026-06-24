@@ -18,7 +18,7 @@ from apps.stage.models import (
 )
 from apps.stage.models_extended import Interview
 from apps.stage.services.matching_service import compute_match_score, top_matches_for_student
-from apps.stage.services.offer_lifecycle import PUBLICLY_VISIBLE_STATUSES, STUDENT_APPLYABLE_STATUSES
+from apps.stage.services.offer_lifecycle import PUBLICLY_VISIBLE_STATUSES, STUDENT_APPLYABLE_STATUSES, is_offer_expired
 from apps.stage.services.recommendation_service import get_student_recommendation_feed
 from apps.stage.services.targeting_service import student_passes_targeting
 
@@ -166,6 +166,13 @@ def get_application_readiness(student: StudentProfile, offer: InternshipOffer) -
         missing_skills = sorted(required - matched)
 
     can_apply = has_cv and profile['is_complete'] and eligible and score > 0
+    offer_applyable = offer.status in STUDENT_APPLYABLE_STATUSES and not is_offer_expired(offer)
+    has_external_url = bool((offer.external_url or '').strip())
+    external_tracking_available = (
+        has_external_url
+        and offer.status in PUBLICLY_VISIBLE_STATUSES
+        and not is_offer_expired(offer)
+    )
 
     existing = OfferApplication.objects.filter(
         offer=offer,
@@ -174,8 +181,11 @@ def get_application_readiness(student: StudentProfile, offer: InternshipOffer) -
     ).first()
 
     return {
-        'can_apply': can_apply and not existing,
+        'can_apply': can_apply and offer_applyable and not existing,
         'already_applied': bool(existing),
+        'offer_applyable': offer_applyable,
+        'external_tracking_available': external_tracking_available and not existing,
+        'offer_status': offer.status,
         'application_status': existing.status if existing else None,
         'checklist': checklist,
         'match_score': float(score),

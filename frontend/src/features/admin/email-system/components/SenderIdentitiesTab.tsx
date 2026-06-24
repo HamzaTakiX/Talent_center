@@ -76,6 +76,7 @@ const SenderIdentitiesTab: FunctionComponent<Props> = ({
     <div className="email-system-tab-stack">
       <EmailSystemSectionShell
         icon={UserPlus}
+        busy={saving}
         title={editing ? t(`${PREFIX}.edit`) : t(`${PREFIX}.add`)}
         subtitle={t(`${PREFIX}.formHint`, {
           defaultValue: 'Assign sender addresses to platform modules.',

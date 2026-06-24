@@ -14,6 +14,7 @@ from . import (
     profile_intelligence_engine,
     risk_detection_service,
     state_machine_service,
+    student_intelligence_service,
     suggestion_engine,
 )
 
@@ -23,5 +24,6 @@ __all__ = [
     'profile_intelligence_engine',
     'risk_detection_service',
     'state_machine_service',
+    'student_intelligence_service',
     'suggestion_engine',
 ]

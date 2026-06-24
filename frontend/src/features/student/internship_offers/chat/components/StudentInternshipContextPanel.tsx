@@ -1,35 +1,27 @@
-import { FunctionComponent, type ReactNode } from 'react';
+import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, ChevronRight, CircleDot, Clock, ExternalLink, FileText } from 'lucide-react';
+import {
+  Briefcase,
+  Building2,
+  Calendar,
+  CalendarClock,
+  ChevronRight,
+  ClipboardCheck,
+  ExternalLink,
+  FileText,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import InternshipInspectorRow from '../../../../admin/offres-stage/chat/components/InternshipInspectorRow';
+import InternshipOfferAvatar from '../../../../admin/offres-stage/chat/components/InternshipOfferAvatar';
 import type { InternshipConversation } from '../../../../admin/offres-stage/chat/types/internshipChatTypes';
+import { applicationStatusPillClass } from '../../../../admin/offres-stage/chat/utils/internshipChatStatusStyles';
 import { getInternshipOfferDetailsPath } from '../../constants/routes';
 
 type Props = {
   conversation: InternshipConversation | null;
 };
 
-function InspectorRow({
-  icon,
-  label,
-  children,
-}: {
-  icon: ReactNode;
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="isi-inspector-row">
-      <div className="isi-inspector-row-icon" aria-hidden>
-        {icon}
-      </div>
-      <div className="isi-inspector-row-content">
-        <span className="isi-inspector-row-label">{label}</span>
-        <div className="isi-inspector-row-value">{children}</div>
-      </div>
-    </div>
-  );
-}
+const ICON = { className: 'size-4', strokeWidth: 2.25 };
 
 const StudentInternshipContextPanel: FunctionComponent<Props> = ({ conversation }) => {
   const { t } = useTranslation();
@@ -44,7 +36,7 @@ const StudentInternshipContextPanel: FunctionComponent<Props> = ({ conversation 
   };
 
   return (
-    <aside className="isi-inspector">
+    <aside className="isi-inspector isi-inspector--student">
       <header className="isi-inspector-head">
         <span className="isi-inspector-head-title">
           {t('student.internshipOffers.chat.contextTitle')}
@@ -52,22 +44,47 @@ const StudentInternshipContextPanel: FunctionComponent<Props> = ({ conversation 
         <span className="isi-inspector-head-badge">{conversation.internshipType}</span>
       </header>
 
+      <div className="isi-inspector-offer-card">
+        <InternshipOfferAvatar
+          url={conversation.companyLogoUrl}
+          companyName={conversation.company}
+          offerTitle={conversation.offerTitle}
+          size="header"
+        />
+        <div className="isi-inspector-offer-card-copy min-w-0">
+          <p className="isi-inspector-offer-card-company">{conversation.company}</p>
+          <p className="isi-inspector-offer-card-title">{conversation.offerTitle}</p>
+        </div>
+      </div>
+
       <div className="isi-inspector-section-title">
         {t('student.internshipOffers.chat.sections.offer')}
       </div>
-      <div className="isi-inspector-fields">
-        <InspectorRow icon={<FileText className="size-3.5" />} label={t('student.internshipOffers.chat.fields.title')}>
+      <div className="isi-inspector-fields isi-inspector-fields--card">
+        <InternshipInspectorRow
+          icon={<FileText {...ICON} />}
+          label={t('student.internshipOffers.chat.fields.title')}
+        >
           <span>{conversation.offerTitle}</span>
-        </InspectorRow>
-        <InspectorRow icon={<CircleDot className="size-3.5" />} label={t('student.internshipOffers.chat.fields.company')}>
+        </InternshipInspectorRow>
+        <InternshipInspectorRow
+          icon={<Building2 {...ICON} />}
+          label={t('student.internshipOffers.chat.fields.company')}
+        >
           <span>{conversation.company}</span>
-        </InspectorRow>
-        <InspectorRow icon={<CircleDot className="size-3.5" />} label={t('student.internshipOffers.chat.fields.internshipType')}>
+        </InternshipInspectorRow>
+        <InternshipInspectorRow
+          icon={<Briefcase {...ICON} />}
+          label={t('student.internshipOffers.chat.fields.internshipType')}
+        >
           <span>{conversation.internshipType}</span>
-        </InspectorRow>
-        <InspectorRow icon={<Clock className="size-3.5" />} label={t('student.internshipOffers.chat.fields.deadline')}>
+        </InternshipInspectorRow>
+        <InternshipInspectorRow
+          icon={<CalendarClock {...ICON} />}
+          label={t('student.internshipOffers.chat.fields.deadline')}
+        >
           <span>{conversation.deadline}</span>
-        </InspectorRow>
+        </InternshipInspectorRow>
       </div>
 
       <div className="isi-inspector-divider" />
@@ -75,16 +92,31 @@ const StudentInternshipContextPanel: FunctionComponent<Props> = ({ conversation 
       <div className="isi-inspector-section-title">
         {t('student.internshipOffers.chat.sections.application')}
       </div>
-      <div className="isi-inspector-fields">
-        <InspectorRow icon={<CircleDot className="size-3.5" />} label={t('student.internshipOffers.chat.fields.status')}>
-          <span>{conversation.applicationStatus}</span>
-        </InspectorRow>
-        <InspectorRow icon={<Clock className="size-3.5" />} label={t('student.internshipOffers.chat.fields.appliedDate')}>
-          <span>{conversation.appliedDate}</span>
-        </InspectorRow>
-        <InspectorRow icon={<Calendar className="size-3.5" />} label={t('student.internshipOffers.chat.fields.interview')}>
-          <span>{conversation.interviewDate}</span>
-        </InspectorRow>
+      <div className="isi-inspector-fields isi-inspector-fields--card">
+        <InternshipInspectorRow
+          icon={<ClipboardCheck {...ICON} />}
+          label={t('student.internshipOffers.chat.fields.status')}
+        >
+          <span className={applicationStatusPillClass(conversation.applicationStatus)}>
+            {conversation.applicationStatus}
+          </span>
+        </InternshipInspectorRow>
+        <InternshipInspectorRow
+          icon={<Calendar {...ICON} />}
+          label={t('student.internshipOffers.chat.fields.appliedDate')}
+        >
+          <span className={conversation.appliedDate === '—' ? 'isi-inspector-empty' : undefined}>
+            {conversation.appliedDate}
+          </span>
+        </InternshipInspectorRow>
+        <InternshipInspectorRow
+          icon={<Calendar {...ICON} />}
+          label={t('student.internshipOffers.chat.fields.interview')}
+        >
+          <span className={conversation.interviewDate === '—' ? 'isi-inspector-empty' : undefined}>
+            {conversation.interviewDate}
+          </span>
+        </InternshipInspectorRow>
       </div>
 
       <div className="isi-inspector-divider" />
@@ -93,14 +125,14 @@ const StudentInternshipContextPanel: FunctionComponent<Props> = ({ conversation 
         <span className="isi-inspector-actions-title">
           {t('student.internshipOffers.chat.sections.quickActions')}
         </span>
-        <button type="button" className="isi-inspector-action" onClick={goOffer}>
+        <button type="button" className="isi-inspector-action isi-inspector-action--primary" onClick={goOffer}>
           <span className="isi-inspector-action-icon">
-            <ExternalLink className="size-3.5" />
+            <ExternalLink {...ICON} />
           </span>
           <span className="isi-inspector-action-text">
             {t('student.internshipOffers.chat.viewOffer')}
           </span>
-          <ChevronRight className="isi-inspector-action-chevron size-3.5" />
+          <ChevronRight className="isi-inspector-action-chevron size-4" strokeWidth={2.25} />
         </button>
       </div>
     </aside>

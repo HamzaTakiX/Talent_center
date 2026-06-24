@@ -7,6 +7,8 @@ interface ProfileAvatarUploaderProps {
   avatarPreview: string | null;
   fileInputRef: RefObject<HTMLInputElement>;
   onFileChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  /** Afficher le lien « Changer la photo » sous l’avatar (désactivé si actions externes). */
+  showChangeLink?: boolean;
 }
 
 const ProfileAvatarUploader: FunctionComponent<ProfileAvatarUploaderProps> = ({
@@ -14,6 +16,7 @@ const ProfileAvatarUploader: FunctionComponent<ProfileAvatarUploaderProps> = ({
   avatarPreview,
   fileInputRef,
   onFileChange,
+  showChangeLink = true,
 }) => {
   const { t } = useTranslation();
   const openPicker = () => fileInputRef.current?.click();
@@ -54,14 +57,16 @@ const ProfileAvatarUploader: FunctionComponent<ProfileAvatarUploaderProps> = ({
         tabIndex={-1}
       />
 
-      <button
-        type="button"
-        onClick={openPicker}
-        className="admin-avatar-upload-link inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all"
-      >
-        <ImagePlus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
-        {t('admin.account.changePhoto')}
-      </button>
+      {showChangeLink ? (
+        <button
+          type="button"
+          onClick={openPicker}
+          className="admin-avatar-upload-link inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all"
+        >
+          <ImagePlus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+          {t('admin.account.changePhoto')}
+        </button>
+      ) : null}
     </div>
   );
 };

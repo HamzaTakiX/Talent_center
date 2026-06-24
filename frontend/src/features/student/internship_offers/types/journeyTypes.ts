@@ -118,6 +118,9 @@ export interface ReadinessChecklistItem {
 export interface ApplicationReadiness {
   can_apply: boolean;
   already_applied: boolean;
+  offer_applyable: boolean;
+  external_tracking_available: boolean;
+  offer_status: string;
   application_status: string | null;
   checklist: ReadinessChecklistItem[];
   match_score: number;

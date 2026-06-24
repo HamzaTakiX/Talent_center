@@ -1,7 +1,7 @@
 import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
 import StudentBackNavLink from './StudentBackNavLink';
-import { STUDENT_ALL_INTERNSHIP_OFFERS_PATH } from '../constants/routes';
+import { STUDENT_INTERNSHIP_OFFERS_PATH } from '../constants/routes';
 
 interface BackToOffersLinkProps {
   label?: string;
@@ -10,7 +10,7 @@ interface BackToOffersLinkProps {
 
 const BackToOffersLink: FunctionComponent<BackToOffersLinkProps> = ({
   label,
-  to = STUDENT_ALL_INTERNSHIP_OFFERS_PATH,
+  to = STUDENT_INTERNSHIP_OFFERS_PATH,
 }) => {
   const { t } = useTranslation();
 

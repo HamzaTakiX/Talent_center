@@ -13,6 +13,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Check, ChevronDown, Loader2, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAdminTheme } from '../../dashboard/context/AdminThemeContext';
+import { useAdminDropdownOpenState } from '../../ui/hooks/useAdminDropdownOpenState';
 import { useAdminDropdownPosition } from '../../ui/hooks/useAdminDropdownPosition';
 import { useAdminDropdownScrollChain } from '../../ui/hooks/useAdminDropdownScrollChain';
 import { adminFormLabelClass, adminFormRequiredClass } from './adminFormClasses';
@@ -75,9 +76,10 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
   const optionsRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const { open, setOpen, close } = useAdminDropdownOpenState(controlId);
 
   const resolvedPlaceholder =
     placeholder ?? t('admin.forms.academicScope.selectPlaceholder');
@@ -124,10 +126,9 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
   const coords = useAdminDropdownPosition(open, triggerRef, menuRef);
   useAdminDropdownScrollChain(open && Boolean(coords), menuRef, optionsRef, triggerRef);
 
-  const close = useCallback(() => {
-    setOpen(false);
-    setQuery('');
-  }, []);
+  useEffect(() => {
+    if (!open) setQuery('');
+  }, [open]);
 
   const toggleValue = useCallback(
     (value: string) => {

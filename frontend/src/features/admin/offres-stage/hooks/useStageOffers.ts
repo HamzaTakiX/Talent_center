@@ -5,18 +5,26 @@ import {
   mapBackendStatusToUi,
   mapStageOfferToAdminRow,
   mapUiStatusToBackend,
+  resolveMediaUrl,
 } from '../../../shared/utils/stageMappers';
 import type {
   StageAnalyticsDashboard,
   StageOfferDetail,
   StageOfferListParams,
 } from '../../../shared/types/stageTypes';
-import type { InternshipOffer, InternshipOfferStat } from '../types';
+import type { InternshipOffer, InternshipOfferStat, PopularOfferBrief } from '../types';
+import {
+  applyMutationToOfferList,
+  deltaTotalForMutation,
+  subscribeStageOfferDashboardRefresh,
+  subscribeStageOfferMutations,
+} from '../utils/stageOffersSync';
 
 interface StatusCounts {
   draft: number;
   expired: number;
   closed: number;
+  archived: number;
 }
 
 async function fetchStatusTotal(status: string): Promise<number> {
@@ -35,7 +43,24 @@ async function loadStatusCounts(): Promise<StatusCounts> {
   return {
     draft: draft + pendingReview,
     expired,
-    closed: closed + archived,
+    closed,
+    archived,
+  };
+}
+
+function mapPopularOfferBrief(
+  offer: StageAnalyticsDashboard['mostActiveOffers'][number],
+): PopularOfferBrief {
+  const logo = offer.company_logo_url?.trim();
+  return {
+    uuid: offer.uuid,
+    title: offer.title,
+    companyName: offer.company_name,
+    companyLogoUrl: logo ? resolveMediaUrl(logo) : null,
+    locationCity: offer.location_city ?? null,
+    applicationDeadline: offer.application_deadline ?? null,
+    viewCount: offer.view_count,
+    applicationCount: offer.application_count,
   };
 }
 
@@ -43,6 +68,7 @@ function buildStats(data: StageAnalyticsDashboard, counts: StatusCounts): Intern
   const s = data.summary;
   const topOffer = data.mostActiveOffers?.[0];
   const hasTopOffer = Boolean(topOffer?.title?.trim());
+  const popularOffer = hasTopOffer ? mapPopularOfferBrief(topOffer!) : undefined;
 
   return [
     {
@@ -81,6 +107,13 @@ function buildStats(data: StageAnalyticsDashboard, counts: StatusCounts): Intern
       icon: 'Clock',
     },
     {
+      label: 'Archived Offers',
+      labelKey: 'admin.kpi.offers.archivedOffers',
+      statKey: 'archivedOffers',
+      value: String(counts.archived),
+      icon: 'Archive',
+    },
+    {
       label: 'Total Applications',
       labelKey: 'admin.kpi.offers.totalApplications',
       statKey: 'totalApplications',
@@ -97,21 +130,65 @@ function buildStats(data: StageAnalyticsDashboard, counts: StatusCounts): Intern
     {
       label: 'Most Popular',
       labelKey: 'admin.kpi.offers.mostPopular',
-      value: hasTopOffer ? topOffer!.title.slice(0, 28) : 'Not detected yet',
+      value: hasTopOffer ? topOffer!.title : 'Not detected yet',
       valueKey: hasTopOffer ? undefined : 'admin.kpi.offers.notDetectedYet',
       icon: 'Award',
+      popularOffer,
     },
   ];
 }
 
+function adjustStatusCountsForMutation(
+  counts: StatusCounts,
+  previousUiStatus: InternshipOffer['status'],
+  nextUiStatus: InternshipOffer['status'] | null,
+): StatusCounts {
+  const next = { ...counts };
+
+  const decrement = (key: keyof StatusCounts) => {
+    next[key] = Math.max(0, next[key] - 1);
+  };
+  const increment = (key: keyof StatusCounts) => {
+    next[key] += 1;
+  };
+
+  const uiToCountKey = (status: InternshipOffer['status']): keyof StatusCounts | null => {
+    switch (status) {
+      case 'Draft':
+        return 'draft';
+      case 'Expired':
+        return 'expired';
+      case 'Closed':
+        return 'closed';
+      case 'Archived':
+        return 'archived';
+      default:
+        return null;
+    }
+  };
+
+  const prevKey = uiToCountKey(previousUiStatus);
+  const nextKey = nextUiStatus ? uiToCountKey(nextUiStatus) : null;
+
+  if (prevKey) decrement(prevKey);
+  if (nextKey) increment(nextKey);
+
+  return next;
+}
+
 export function useStageDashboard() {
   const [data, setData] = useState<StageAnalyticsDashboard | null>(null);
-  const [statusCounts, setStatusCounts] = useState<StatusCounts>({ draft: 0, expired: 0, closed: 0 });
+  const [statusCounts, setStatusCounts] = useState<StatusCounts>({
+    draft: 0,
+    expired: 0,
+    closed: 0,
+    archived: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
+  const refresh = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) setLoading(true);
     setError(null);
     try {
       const [dashboard, counts] = await Promise.all([
@@ -122,15 +199,42 @@ export function useStageDashboard() {
       setStatusCounts(counts);
     } catch (err) {
       setError(parseAdminApiError(err, 'dashboard_load_failed').message);
-      setData(null);
+      if (!options?.silent) setData(null);
     } finally {
-      setLoading(false);
+      if (!options?.silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    return subscribeStageOfferDashboardRefresh(() => {
+      void refresh({ silent: true });
+    });
+  }, [refresh]);
+
+  useEffect(() => {
+    return subscribeStageOfferMutations((event) => {
+      setStatusCounts((prev) =>
+        adjustStatusCountsForMutation(prev, event.previousUiStatus, event.nextUiStatus),
+      );
+      if (data && event.action === 'delete') {
+        setData((prev) =>
+          prev
+            ? {
+                ...prev,
+                summary: {
+                  ...prev.summary,
+                  total_offers: Math.max(0, prev.summary.total_offers - 1),
+                },
+              }
+            : prev,
+        );
+      }
+    });
+  }, [data]);
 
   const stats = useMemo(
     (): InternshipOfferStat[] => (data ? buildStats(data, statusCounts) : []),
@@ -140,18 +244,32 @@ export function useStageDashboard() {
   return { data, stats, loading, error, refresh };
 }
 
-export function useStageOffersList(params?: StageOfferListParams) {
+interface StageOffersListOptions extends StageOfferListParams {
+  listFilter?: 'all' | InternshipOffer['status'];
+}
+
+export function useStageOffersList(params?: StageOffersListOptions) {
   const [items, setItems] = useState<InternshipOffer[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(params?.page ?? 1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const listFilter = params?.listFilter ?? 'all';
 
-  const apiParams = useMemo(() => ({ ...params, page }), [JSON.stringify(params), page]);
+  const apiParams = useMemo(
+    () => ({
+      page,
+      page_size: params?.page_size,
+      status: params?.status,
+      search: params?.search,
+      ordering: params?.ordering,
+    }),
+    [page, params?.page_size, params?.status, params?.search, params?.ordering],
+  );
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
+  const refresh = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) setLoading(true);
     setError(null);
     try {
       const result = await stageApi.list(apiParams);
@@ -172,12 +290,28 @@ export function useStageOffersList(params?: StageOfferListParams) {
       setItems([]);
       setTotal(0);
     } finally {
-      setLoading(false);
+      if (!options?.silent) setLoading(false);
     }
-  }, [JSON.stringify(apiParams)]);
+  }, [apiParams, params?.search]);
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    return subscribeStageOfferMutations((event) => {
+      setItems((prev) => {
+        const next = applyMutationToOfferList(prev, event, listFilter);
+        setTotal((totalPrev) => deltaTotalForMutation(prev, event, listFilter, totalPrev));
+        return next;
+      });
+    });
+  }, [listFilter]);
+
+  useEffect(() => {
+    return subscribeStageOfferDashboardRefresh(() => {
+      void refresh({ silent: true });
+    });
   }, [refresh]);
 
   return { items, total, page, setPage, totalPages, loading, error, refresh };
@@ -189,6 +323,7 @@ export function useStageOffersByStatus(uiStatus: 'all' | InternshipOffer['status
     status: backendStatus,
     search,
     page_size: 100,
+    listFilter: uiStatus,
   });
 }
 
@@ -198,8 +333,8 @@ export function useStageDraftOffersList(search = '') {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
+  const refresh = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) setLoading(true);
     setError(null);
     try {
       const [drafts, pendingReview] = await Promise.all([
@@ -220,12 +355,28 @@ export function useStageDraftOffersList(search = '') {
       setItems([]);
       setTotal(0);
     } finally {
-      setLoading(false);
+      if (!options?.silent) setLoading(false);
     }
   }, [search]);
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    return subscribeStageOfferMutations((event) => {
+      setItems((prev) => {
+        const next = applyMutationToOfferList(prev, event, 'Draft');
+        setTotal((totalPrev) => deltaTotalForMutation(prev, event, 'Draft', totalPrev));
+        return next;
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    return subscribeStageOfferDashboardRefresh(() => {
+      void refresh({ silent: true });
+    });
   }, [refresh]);
 
   return { items, total, loading, error, refresh };

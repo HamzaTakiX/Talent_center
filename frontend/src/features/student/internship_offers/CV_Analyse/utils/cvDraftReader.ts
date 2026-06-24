@@ -1,3 +1,11 @@
+import type { User } from '../../../../auth/types';
+import {
+  getAdminDisplayName,
+  getAdminUserInitials,
+  resolveAvatarUrl,
+} from '../../../../admin/dashboard/utils/adminUserDisplay';
+import type { CvAnalysisStudentProfile } from '../types/cvAnalysisDashboard';
+
 export const CV_DRAFT_STORAGE_KEY = 'talent-center-quickcv-draft';
 
 export interface CvBuilderSnapshot {
@@ -63,27 +71,192 @@ const DEFAULT_CV_SNAPSHOT: CvBuilderSnapshot = {
   ],
 };
 
-export function readDefaultCvSnapshot(): CvBuilderSnapshot {
+export interface StudentCvProfileInput {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  city?: string;
+  programMajor?: string;
+  currentClass?: string;
+  academicYear?: string;
+  linkedinUrl?: string;
+  professionalSummary?: string;
+  skills?: string[];
+  cvFileUrl?: string;
+}
+
+export type StudentCvResolveSource = 'draft' | 'profile' | 'profile_file';
+
+export interface ResolvedStudentCv {
+  cv: CvBuilderSnapshot;
+  source: StudentCvResolveSource;
+  fileName?: string;
+}
+
+function normalizeCvSnapshot(parsed: Partial<CvBuilderSnapshot>): CvBuilderSnapshot {
+  return {
+    details: parsed.details ?? {},
+    workExp: Array.isArray(parsed.workExp) ? parsed.workExp : [],
+    education: Array.isArray(parsed.education) ? parsed.education : [],
+    projects: Array.isArray(parsed.projects) ? parsed.projects : [],
+    skills: Array.isArray(parsed.skills) ? parsed.skills : [],
+    languages: Array.isArray(parsed.languages) ? parsed.languages : [],
+  };
+}
+
+export function readStoredCvDraft(): CvBuilderSnapshot | null {
   try {
     const raw = localStorage.getItem(CV_DRAFT_STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<CvBuilderSnapshot>;
-      return {
-        details: parsed.details ?? {},
-        workExp: Array.isArray(parsed.workExp) ? parsed.workExp : [],
-        education: Array.isArray(parsed.education) ? parsed.education : [],
-        projects: Array.isArray(parsed.projects) ? parsed.projects : [],
-        skills: Array.isArray(parsed.skills) ? parsed.skills : [],
-        languages: Array.isArray(parsed.languages) ? parsed.languages : [],
-      };
-    }
+    if (!raw) return null;
+    return normalizeCvSnapshot(JSON.parse(raw) as Partial<CvBuilderSnapshot>);
   } catch {
-    /* use default */
+    return null;
   }
-  return structuredClone(DEFAULT_CV_SNAPSHOT);
+}
+
+export function readDefaultCvSnapshot(): CvBuilderSnapshot {
+  return readStoredCvDraft() ?? structuredClone(DEFAULT_CV_SNAPSHOT);
 }
 
 const text = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+
+export function hasMeaningfulCvContent(cv: CvBuilderSnapshot): boolean {
+  const detailKeys = ['name', 'about', 'email', 'phone', 'location', 'role', 'github', 'linkedin'];
+  if (detailKeys.some((key) => text(cv.details[key]))) return true;
+
+  const lists: unknown[][] = [cv.workExp, cv.education, cv.projects, cv.skills, cv.languages];
+  return lists.some((list) =>
+    list.some((entry) =>
+      Object.values(entry as Record<string, unknown>).some((value) => text(value)),
+    ),
+  );
+}
+
+export function extractFileNameFromUrl(url: string): string {
+  const clean = url.split('?')[0]?.split('#')[0] ?? url;
+  const segment = clean.split('/').filter(Boolean).pop();
+  return segment ? decodeURIComponent(segment) : 'Mon_CV.pdf';
+}
+
+export function buildCvSnapshotFromProfile(input: StudentCvProfileInput): CvBuilderSnapshot | null {
+  const name = text(input.fullName);
+  const about = text(input.professionalSummary);
+  const skills = (input.skills ?? []).map((skill) => text(skill)).filter(Boolean);
+
+  if (!name && !about && skills.length === 0) {
+    return null;
+  }
+
+  const education =
+    text(input.programMajor) || text(input.currentClass) || text(input.academicYear)
+      ? [
+          {
+            institution: text(input.programMajor),
+            qualification: text(input.currentClass),
+            date: text(input.academicYear),
+          },
+        ]
+      : [];
+
+  return {
+    details: {
+      name,
+      about,
+      email: text(input.email),
+      phone: text(input.phone),
+      location: text(input.city),
+      role: text(input.programMajor),
+      linkedin: text(input.linkedinUrl),
+    },
+    workExp: [],
+    education,
+    projects: [],
+    skills: skills.map((skill) => ({ name: skill })),
+    languages: [],
+  };
+}
+
+export function resolveStudentCvSnapshot(
+  input?: StudentCvProfileInput | null,
+): ResolvedStudentCv | null {
+  const draft = readStoredCvDraft();
+  if (draft && hasMeaningfulCvContent(draft)) {
+    return { cv: draft, source: 'draft' };
+  }
+
+  if (input) {
+    const profileCv = buildCvSnapshotFromProfile(input);
+    if (profileCv) {
+      return { cv: profileCv, source: 'profile' };
+    }
+
+    const cvFileUrl = text(input.cvFileUrl);
+    if (cvFileUrl) {
+      const name = text(input.fullName) || 'Mon CV';
+      return {
+        cv: {
+          details: {
+            name,
+            email: text(input.email),
+            phone: text(input.phone),
+            location: text(input.city),
+            role: text(input.programMajor),
+            about: text(input.professionalSummary),
+            linkedin: text(input.linkedinUrl),
+          },
+          workExp: [],
+          education: [],
+          projects: [],
+          skills: (input.skills ?? []).map((skill) => ({ name: text(skill) })).filter((s) => s.name),
+          languages: [],
+        },
+        source: 'profile_file',
+        fileName: extractFileNameFromUrl(cvFileUrl),
+      };
+    }
+  }
+
+  return null;
+}
+
+export function profileInputFromUser(user: {
+  email?: string;
+  full_name?: string;
+  profile?: { first_name?: string; last_name?: string; updated_at?: string };
+  student_profile?: {
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+    city?: string;
+    program_major?: string;
+    current_class?: string;
+    academic_year?: string;
+    linkedin_url?: string;
+    professional_summary?: string;
+    skills?: string[];
+    cv_file?: string;
+  };
+} | null | undefined): StudentCvProfileInput | null {
+  if (!user) return null;
+
+  const sp = user.student_profile;
+  const profileName = [sp?.first_name, sp?.last_name].filter(Boolean).join(' ');
+  const accountName = [user.profile?.first_name, user.profile?.last_name].filter(Boolean).join(' ');
+
+  return {
+    fullName: profileName || accountName || text(user.full_name),
+    email: user.email,
+    phone: sp?.phone,
+    city: sp?.city,
+    programMajor: sp?.program_major,
+    currentClass: sp?.current_class,
+    academicYear: sp?.academic_year,
+    linkedinUrl: sp?.linkedin_url,
+    professionalSummary: sp?.professional_summary,
+    skills: sp?.skills,
+    cvFileUrl: sp?.cv_file,
+  };
+}
 
 export function getCvDisplayName(cv: CvBuilderSnapshot): string {
   return text(cv.details.name) || 'Mon CV';
@@ -102,6 +275,42 @@ export function getAvatarInitials(cv: CvBuilderSnapshot): string {
     return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
   }
   return name.slice(0, 2).toUpperCase();
+}
+
+export function computeStudentProfileCompletionPercent(user: User | null | undefined): number {
+  const sp = user?.student_profile;
+  if (!sp) return 0;
+  if (sp.profile_completed) return 100;
+
+  const checks = [
+    Boolean(sp.filiere_id || sp.filiere || text(sp.program_major)),
+    Boolean(sp.skills?.length),
+    Boolean(text(sp.professional_summary)),
+    Boolean(text(sp.city)),
+  ];
+  const done = checks.filter(Boolean).length;
+  return Math.round((done / checks.length) * 100);
+}
+
+export function buildCvAnalysisStudentProfileFromUser(
+  user: User | null | undefined,
+): CvAnalysisStudentProfile | null {
+  if (!user) return null;
+
+  const name = getAdminDisplayName(user);
+  if (!name) return null;
+
+  const program =
+    text(user.student_profile?.program_major) || text(user.student_profile?.current_class);
+  const avatarUrl = resolveAvatarUrl(user.profile?.avatar);
+
+  return {
+    name,
+    program,
+    avatarInitials: getAdminUserInitials(name, user.email),
+    avatarUrl: avatarUrl ?? undefined,
+    profileCompletion: computeStudentProfileCompletionPercent(user),
+  };
 }
 
 export function computeProfileCompletion(cv: CvBuilderSnapshot): number {

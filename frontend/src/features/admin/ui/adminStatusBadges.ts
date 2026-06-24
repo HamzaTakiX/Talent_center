@@ -10,6 +10,7 @@ export const OFFER_STATUS_BADGE: Record<string, AdminBadgeVariant> = {
   Draft: 'warning',
   Expired: 'danger',
   Closed: 'neutral',
+  Archived: 'neutral',
 };
 
 export const ANNOUNCEMENT_TYPE_BADGE: Record<string, AdminBadgeVariant> = {

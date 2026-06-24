@@ -13,6 +13,7 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, ChevronDown, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAdminDropdownOpenState } from './hooks/useAdminDropdownOpenState';
 import { useAdminDropdownPosition } from './hooks/useAdminDropdownPosition';
 import { useAdminDropdownScrollChain } from './hooks/useAdminDropdownScrollChain';
 import { useAdminTheme } from '../dashboard/context/AdminThemeContext';
@@ -39,6 +40,7 @@ export interface AdminCustomSelectProps {
   wrapperClassName?: string;
   id?: string;
   'aria-label'?: string;
+  'aria-invalid'?: boolean;
 }
 
 const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
@@ -55,6 +57,7 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
   wrapperClassName = '',
   id: idProp,
   'aria-label': ariaLabel,
+  'aria-invalid': ariaInvalid,
 }) => {
   const { theme } = useAdminTheme();
   const { i18n } = useTranslation();
@@ -67,9 +70,10 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
   const optionsRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const { open, setOpen, close } = useAdminDropdownOpenState(id);
 
   const selected = options.find((o) => o.value === value);
   const label = selected?.label ?? placeholder;
@@ -83,10 +87,9 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
   const coords = useAdminDropdownPosition(open, triggerRef, menuRef);
   useAdminDropdownScrollChain(open && Boolean(coords), menuRef, optionsRef, triggerRef);
 
-  const close = useCallback(() => {
-    setOpen(false);
-    setQuery('');
-  }, []);
+  useEffect(() => {
+    if (!open) setQuery('');
+  }, [open]);
 
   const selectAt = useCallback(
     (index: number) => {
@@ -296,6 +299,7 @@ const AdminCustomSelect: FunctionComponent<AdminCustomSelectProps> = ({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? listboxId : undefined}
+        aria-invalid={ariaInvalid}
         className="admin-custom-select__trigger"
         onClick={() => !disabled && setOpen((v) => !v)}
         onKeyDown={onTriggerKeyDown}

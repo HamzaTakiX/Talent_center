@@ -1,4 +1,4 @@
-import { FunctionComponent, useState, useEffect, useMemo, useCallback } from 'react';
+import { FunctionComponent, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -17,6 +17,13 @@ import { FormSelect } from '../components/FormSelect';
 import { academicReferenceApi } from '../../admin/api/reference';
 import type { AcademicYearOption, ClassGroupOption, FiliereOption } from '../../admin/api/types';
 import type { StudentProfile } from '../types';
+import {
+  dateOfBirthInputBounds,
+  MIN_STUDENT_AGE,
+  MAX_STUDENT_AGE,
+  validateDateOfBirth,
+  type DateOfBirthValidationCode,
+} from '../utils/validation';
 
 const profileFiliereId = (sp?: StudentProfile | null): number | null => {
   if (!sp) return null;
@@ -30,6 +37,25 @@ const profileClassGroupId = (sp?: StudentProfile | null): number | null => {
   if (sp.class_group_id != null) return sp.class_group_id;
   if (typeof sp.class_group === 'number') return sp.class_group;
   return null;
+};
+
+const resolveFiliereIdFromProfile = (
+  sp: StudentProfile | null | undefined,
+  list: FiliereOption[],
+): string => {
+  if (!sp || !list.length) return '';
+  const fid = profileFiliereId(sp);
+  if (fid != null && list.some((f) => f.id === fid)) return String(fid);
+  const major = sp.program_major?.trim();
+  if (!major) return '';
+  const match = list.find(
+    (f) =>
+      f.name === major ||
+      f.code === major ||
+      major.toLowerCase().includes(f.code.toLowerCase()) ||
+      major.toLowerCase().includes(f.name.toLowerCase()),
+  );
+  return match ? String(match.id) : '';
 };
 
 const containerVariants: Variants = {
@@ -55,22 +81,60 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
-  const profile = user?.student_profile || ({} as any);
+  const studentProfile = user?.student_profile ?? null;
+  const profileAcademicYear = studentProfile?.academic_year?.trim() ?? '';
+  const profileFiliereSeed = profileFiliereId(studentProfile) ?? '';
+  const profileProgramMajor = studentProfile?.program_major?.trim() ?? '';
+  const profileClassGroupSeed = profileClassGroupId(studentProfile) ?? '';
+  const filiereBootstrapKey = `${lang}:${profileFiliereSeed}:${profileProgramMajor}`;
+  const loadedClassGroupsKeyRef = useRef('');
+  const filiereBootstrapKeyRef = useRef('');
 
   // Form State
-  const [firstName, setFirstName] = useState(profile.first_name || '');
-  const [lastName, setLastName] = useState(profile.last_name || '');
-  const [dateOfBirth, setDateOfBirth] = useState(profile.date_of_birth || '');
-  const [programMajor, setProgramMajor] = useState(profile.program_major || '');
-  const [currentClass, setCurrentClass] = useState(profile.current_class || '');
+  const [firstName, setFirstName] = useState(studentProfile?.first_name || '');
+  const [lastName, setLastName] = useState(studentProfile?.last_name || '');
+  const [dateOfBirth, setDateOfBirth] = useState(studentProfile?.date_of_birth || '');
+  const [programMajor, setProgramMajor] = useState(studentProfile?.program_major || '');
+  const [currentClass, setCurrentClass] = useState(studentProfile?.current_class || '');
   const [filiereId, setFiliereId] = useState('');
   const [classGroupId, setClassGroupId] = useState('');
   const [filieres, setFilieres] = useState<FiliereOption[]>([]);
   const [classGroups, setClassGroups] = useState<ClassGroupOption[]>([]);
-  const [academicYearCode, setAcademicYearCode] = useState('2025-2026');
+  const [academicYearCode, setAcademicYearCode] = useState('');
   const [loadingFilieres, setLoadingFilieres] = useState(true);
   const [loadingClasses, setLoadingClasses] = useState(false);
   const [referenceError, setReferenceError] = useState(false);
+  const [dateOfBirthError, setDateOfBirthError] = useState('');
+
+  const dateOfBirthBounds = useMemo(() => dateOfBirthInputBounds(), []);
+
+  const getDateOfBirthErrorMessage = useCallback(
+    (code: DateOfBirthValidationCode): string => {
+      switch (code) {
+        case 'required':
+          return t('auth.confirmIdentity.errors.dateOfBirthRequired');
+        case 'invalid':
+          return t('auth.confirmIdentity.errors.dateOfBirthInvalid');
+        case 'future':
+          return t('auth.confirmIdentity.errors.dateOfBirthFuture');
+        case 'tooYoung':
+          return t('auth.confirmIdentity.errors.dateOfBirthTooYoung', { minAge: MIN_STUDENT_AGE });
+        case 'tooOld':
+          return t('auth.confirmIdentity.errors.dateOfBirthTooOld', { maxAge: MAX_STUDENT_AGE });
+        default:
+          return t('auth.confirmIdentity.errors.dateOfBirthInvalid');
+      }
+    },
+    [t],
+  );
+
+  const resolveDateOfBirthError = useCallback(
+    (value: string): string => {
+      const code = validateDateOfBirth(value);
+      return code ? getDateOfBirthErrorMessage(code) : '';
+    },
+    [getDateOfBirthErrorMessage],
+  );
 
   useEffect(() => {
     setLoadingFilieres(true);
@@ -89,20 +153,26 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   }, [lang]);
 
   useEffect(() => {
+    if (profileAcademicYear) {
+      setAcademicYearCode(profileAcademicYear);
+      return;
+    }
+
+    let cancelled = false;
     academicReferenceApi
       .listAcademicYears({ structured: true, lang })
       .then((data) => {
+        if (cancelled) return;
         const years = data as AcademicYearOption[];
-        const fromProfile = (profile as { academic_year?: string }).academic_year?.trim();
-        if (fromProfile) {
-          setAcademicYearCode(fromProfile);
-          return;
-        }
         const current = years.find((y) => y.is_current) ?? years[0];
         if (current?.code) setAcademicYearCode(current.code);
       })
       .catch(() => undefined);
-  }, [lang, profile]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang, profileAcademicYear]);
 
   // Déjà confirmé → ne pas réafficher cette étape
   useEffect(() => {
@@ -116,70 +186,75 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   }, [user?.student_profile?.identity_confirmed, user?.student_profile?.profile_completed, navigate]);
 
   useEffect(() => {
-    if (!filiereId) {
-      setClassGroups([]);
+    if (!filieres.length || filiereBootstrapKeyRef.current === filiereBootstrapKey) return;
+    const resolved = resolveFiliereIdFromProfile(studentProfile, filieres);
+    if (resolved) setFiliereId(resolved);
+    filiereBootstrapKeyRef.current = filiereBootstrapKey;
+  }, [filieres, filiereBootstrapKey, studentProfile]);
+
+  useEffect(() => {
+    const queryKey =
+      filiereId && academicYearCode ? `${lang}:${filiereId}:${academicYearCode}` : '';
+
+    if (!queryKey) {
+      loadedClassGroupsKeyRef.current = '';
+      setClassGroups((prev) => (prev.length ? [] : prev));
+      setLoadingClasses(false);
       return;
     }
+
+    if (loadedClassGroupsKeyRef.current === queryKey) return;
+
+    let cancelled = false;
     setLoadingClasses(true);
+
     academicReferenceApi
       .listClassGroups({
         filiere_id: Number(filiereId),
         academic_year: academicYearCode,
         lang,
       })
-      .then(setClassGroups)
-      .catch(() => setClassGroups([]))
-      .finally(() => setLoadingClasses(false));
+      .then((data) => {
+        if (cancelled) return;
+        loadedClassGroupsKeyRef.current = queryKey;
+        setClassGroups(data);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        loadedClassGroupsKeyRef.current = queryKey;
+        setClassGroups([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingClasses(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [filiereId, academicYearCode, lang]);
-
-  const syncAcademicIdsFromProfile = useCallback(
-    (sp?: StudentProfile | null) => {
-      if (!sp) return;
-      const fid = profileFiliereId(sp);
-      const cid = profileClassGroupId(sp);
-      if (fid) setFiliereId(String(fid));
-      if (cid) setClassGroupId(String(cid));
-    },
-    []
-  );
-
-  useEffect(() => {
-    syncAcademicIdsFromProfile(user?.student_profile);
-  }, [user?.student_profile, syncAcademicIdsFromProfile]);
-
-  useEffect(() => {
-    if (!filieres.length || !filiereId) return;
-    if (!filieres.some((f) => String(f.id) === filiereId)) {
-      setFiliereId('');
-      setClassGroupId('');
-    }
-  }, [filieres, filiereId]);
-
-  useEffect(() => {
-    if (!filieres.length || filiereId) return;
-    const sp = user?.student_profile;
-    const fid = profileFiliereId(sp);
-    if (fid) {
-      setFiliereId(String(fid));
-      return;
-    }
-    const major = sp?.program_major?.trim();
-    if (!major) return;
-    const match = filieres.find(
-      (f) =>
-        f.name === major ||
-        f.code === major ||
-        major.toLowerCase().includes(f.code.toLowerCase()) ||
-        major.toLowerCase().includes(f.name.toLowerCase())
-    );
-    if (match) setFiliereId(String(match.id));
-  }, [filieres, filiereId, user?.student_profile]);
 
   useEffect(() => {
     if (!classGroups.length || classGroupId) return;
-    const cid = profileClassGroupId(user?.student_profile);
-    if (cid) setClassGroupId(String(cid));
-  }, [classGroups, classGroupId, user?.student_profile]);
+    if (
+      profileClassGroupSeed === '' ||
+      !classGroups.some((c) => c.id === profileClassGroupSeed)
+    ) {
+      return;
+    }
+    setClassGroupId(String(profileClassGroupSeed));
+  }, [classGroups, classGroupId, profileClassGroupSeed]);
+
+  const applyProfileAcademicIds = useCallback(() => {
+    loadedClassGroupsKeyRef.current = '';
+    const resolved = resolveFiliereIdFromProfile(studentProfile, filieres);
+    setFiliereId(resolved);
+    const cid = profileClassGroupId(studentProfile);
+    if (cid != null && classGroups.some((c) => c.id === cid)) {
+      setClassGroupId(String(cid));
+    } else {
+      setClassGroupId('');
+    }
+  }, [studentProfile, filieres, classGroups]);
 
   const programMajorOptions = filieres.map((f) => ({
     value: String(f.id),
@@ -195,21 +270,22 @@ const ConfirmIdentityPage: FunctionComponent = () => {
       const f = filieres.find((x) => String(x.id) === filiereId);
       if (f) return f.name;
     }
-    return profile.program_major || t('auth.confirmIdentity.placeholders.emptyValue');
-  }, [filiereId, filieres, profile.program_major, t]);
+    return studentProfile?.program_major || t('auth.confirmIdentity.placeholders.emptyValue');
+  }, [filiereId, filieres, studentProfile?.program_major, t]);
 
   const currentClassLabel = useMemo(() => {
     if (classGroupId) {
       const c = classGroups.find((x) => String(x.id) === classGroupId);
       if (c) return c.code ? `${c.code} — ${c.name}` : c.name;
     }
-    return profile.current_class || t('auth.confirmIdentity.placeholders.emptyValue');
-  }, [classGroupId, classGroups, profile.current_class, t]);
+    return studentProfile?.current_class || t('auth.confirmIdentity.placeholders.emptyValue');
+  }, [classGroupId, classGroups, studentProfile?.current_class, t]);
 
-  const onFiliereChange = (next: string) => {
+  const onFiliereChange = useCallback((next: string) => {
+    loadedClassGroupsKeyRef.current = '';
     setFiliereId(next);
     setClassGroupId('');
-  };
+  }, []);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -220,18 +296,19 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   }, [successMsg]);
 
   useEffect(() => {
-    const studentProfile = user?.student_profile;
-    if (studentProfile) {
-      setFirstName(studentProfile.first_name || '');
-      setLastName(studentProfile.last_name || '');
-      setDateOfBirth(studentProfile.date_of_birth || '');
-      setProgramMajor(studentProfile.program_major || '');
-      setCurrentClass(studentProfile.current_class || '');
-      syncAcademicIdsFromProfile(studentProfile);
-      const year = studentProfile.academic_year?.trim();
-      if (year) setAcademicYearCode(year);
-    }
-  }, [user?.student_profile, syncAcademicIdsFromProfile]);
+    if (!studentProfile) return;
+    setFirstName(studentProfile.first_name || '');
+    setLastName(studentProfile.last_name || '');
+    setDateOfBirth(studentProfile.date_of_birth || '');
+    setProgramMajor(studentProfile.program_major || '');
+    setCurrentClass(studentProfile.current_class || '');
+  }, [
+    studentProfile?.first_name,
+    studentProfile?.last_name,
+    studentProfile?.date_of_birth,
+    studentProfile?.program_major,
+    studentProfile?.current_class,
+  ]);
 
   const getErrorMessage = (err: any): string => {
     if (!err.response) {
@@ -292,6 +369,19 @@ const ConfirmIdentityPage: FunctionComponent = () => {
       setSuccessMsg('');
       
       // Frontend validation
+      const dobValidationError = resolveDateOfBirthError(dateOfBirth);
+      if (dobValidationError) {
+        setDateOfBirthError(dobValidationError);
+        setError(
+          isEditing
+            ? dobValidationError
+            : t('auth.confirmIdentity.errors.dateOfBirthFixRequired'),
+        );
+        setLoading(false);
+        return;
+      }
+      setDateOfBirthError('');
+
       if (isEditing) {
         if (!firstName.trim()) {
           setError(t('auth.confirmIdentity.errors.firstNameRequired'));
@@ -300,11 +390,6 @@ const ConfirmIdentityPage: FunctionComponent = () => {
         }
         if (!lastName.trim()) {
           setError(t('auth.confirmIdentity.errors.lastNameRequired'));
-          setLoading(false);
-          return;
-        }
-        if (!dateOfBirth) {
-          setError(t('auth.confirmIdentity.errors.dateOfBirthRequired'));
           setLoading(false);
           return;
         }
@@ -356,16 +441,17 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   const toggleEditMode = () => {
     if (isEditing) {
       // Revert to original profile values if cancelling
-      setFirstName(profile.first_name || '');
-      setLastName(profile.last_name || '');
-      setDateOfBirth(profile.date_of_birth || '');
-      setProgramMajor(profile.program_major || '');
-      setCurrentClass(profile.current_class || '');
-      syncAcademicIdsFromProfile(user?.student_profile);
+      setFirstName(studentProfile?.first_name || '');
+      setLastName(studentProfile?.last_name || '');
+      setDateOfBirth(studentProfile?.date_of_birth || '');
+      setProgramMajor(studentProfile?.program_major || '');
+      setCurrentClass(studentProfile?.current_class || '');
+      applyProfileAcademicIds();
     }
     setIsEditing(!isEditing);
     setError('');
     setSuccessMsg('');
+    setDateOfBirthError('');
   };
 
   return (
@@ -448,7 +534,20 @@ const ConfirmIdentityPage: FunctionComponent = () => {
                     <FormInput label={t('auth.confirmIdentity.fields.firstName')} value={firstName} onChange={(e) => setFirstName(e.target.value)} Icon={User} />
                     <FormInput label={t('auth.confirmIdentity.fields.lastName')} value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   </div>
-                  <FormInput label={t('auth.confirmIdentity.fields.dateOfBirth')} type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} Icon={Calendar} />
+                  <FormInput
+                    label={t('auth.confirmIdentity.fields.dateOfBirth')}
+                    type="date"
+                    value={dateOfBirth}
+                    min={dateOfBirthBounds.min}
+                    max={dateOfBirthBounds.max}
+                    error={dateOfBirthError}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setDateOfBirth(next);
+                      setDateOfBirthError(resolveDateOfBirthError(next));
+                    }}
+                    Icon={Calendar}
+                  />
                   <FormSelect 
                     label={t('auth.confirmIdentity.fields.programMajor')} 
                     value={filiereId} 
@@ -487,9 +586,9 @@ const ConfirmIdentityPage: FunctionComponent = () => {
                   transition={{ duration: 0.3 }}
                   className="flex flex-col gap-2.5"
                 >
-                  <ReadOnlyField label={t('auth.confirmIdentity.fields.firstName')} value={profile.first_name || t('auth.confirmIdentity.placeholders.emptyValue')} />
-                  <ReadOnlyField label={t('auth.confirmIdentity.fields.lastName')} value={profile.last_name || t('auth.confirmIdentity.placeholders.emptyValue')} />
-                  <ReadOnlyField label={t('auth.confirmIdentity.fields.dateOfBirth')} value={profile.date_of_birth || t('auth.confirmIdentity.placeholders.emptyValue')} />
+                  <ReadOnlyField label={t('auth.confirmIdentity.fields.firstName')} value={studentProfile?.first_name || t('auth.confirmIdentity.placeholders.emptyValue')} />
+                  <ReadOnlyField label={t('auth.confirmIdentity.fields.lastName')} value={studentProfile?.last_name || t('auth.confirmIdentity.placeholders.emptyValue')} />
+                  <ReadOnlyField label={t('auth.confirmIdentity.fields.dateOfBirth')} value={studentProfile?.date_of_birth || t('auth.confirmIdentity.placeholders.emptyValue')} />
                   <ReadOnlyField label={t('auth.confirmIdentity.fields.programMajor')} value={programMajorLabel} />
                   <ReadOnlyField label={t('auth.confirmIdentity.fields.currentClass')} value={currentClassLabel} />
                 </motion.div>

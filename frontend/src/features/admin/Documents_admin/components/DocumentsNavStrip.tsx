@@ -6,24 +6,14 @@ import {
   BookOpen,
   Calendar,
   ClipboardList,
-  FileStack,
-  GitBranch,
   LayoutGrid,
-  Settings2,
-  Truck,
-  Users,
 } from 'lucide-react';
 
 const NAV = [
   { path: '/admin/documents/catalog', icon: BookOpen, key: 'catalog' },
   { path: '/admin/documents/requests', icon: ClipboardList, key: 'requests' },
-  { path: '/admin/documents/workflows', icon: GitBranch, key: 'workflows' },
   { path: '/admin/documents/reservations', icon: Calendar, key: 'reservations' },
-  { path: '/admin/documents/resources', icon: Users, key: 'resources' },
-  { path: '/admin/documents/templates', icon: FileStack, key: 'templates' },
-  { path: '/admin/documents/sla', icon: Settings2, key: 'sla' },
   { path: '/admin/documents/analytics', icon: BarChart3, key: 'analytics' },
-  { path: '/admin/documents/delivery', icon: Truck, key: 'delivery' },
   { path: '/admin/documents/workload', icon: LayoutGrid, key: 'workload' },
 ] as const;
 

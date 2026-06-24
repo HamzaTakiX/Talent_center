@@ -5,16 +5,43 @@ from __future__ import annotations
 from datetime import timedelta
 from decimal import Decimal
 
-from django.db.models import Count
 from django.utils import timezone
 
 from apps.accounts_et_roles.models import StudentProfile
+from apps.admin_management.services.internship_resolver import ensure_student_internship_synced
 from apps.stage.models import InternshipOffer, OfferApplication, StudentOfferMatchScore
 from apps.stage.models_extended import OfferRecommendation
-from apps.stage.services.matching_service import compute_match_score, top_matches_for_student
+from apps.stage.services.matching_service import (
+    compute_match_score,
+    offer_matches_student_internship_type,
+)
 from apps.stage.services.offer_lifecycle import PUBLICLY_VISIBLE_STATUSES, STUDENT_APPLYABLE_STATUSES
 
 RECOMMENDATION_LIMIT = 20
+FALLBACK_MIN_MATCH_SCORE = 50
+
+
+def _offer_company_logo_url(offer: InternshipOffer) -> str | None:
+    if offer.company_logo:
+        return offer.company_logo.url
+    meta_logo = (offer.metadata_json or {}).get('company_logo')
+    if isinstance(meta_logo, str) and meta_logo.strip():
+        return meta_logo.strip()
+    return None
+
+
+def _serialize_recommendation_entry(offer: InternshipOffer, **fields) -> dict:
+    return {
+        'offer_uuid': str(offer.uuid),
+        'offer_title': offer.title,
+        'company_name': offer.company_name,
+        'company_logo_url': _offer_company_logo_url(offer),
+        'location_city': offer.location_city or '',
+        'location_country': offer.location_country or '',
+        'offer_type': offer.offer_type or '',
+        'required_skills': list(offer.required_skills or [])[:3],
+        **fields,
+    }
 
 
 def _upsert_recommendation(
@@ -38,13 +65,91 @@ def _upsert_recommendation(
     return obj
 
 
+def _collect_scored_offers(
+    student: StudentProfile,
+    *,
+    limit: int = 100,
+) -> list[tuple[InternshipOffer, float, list]]:
+    """Return visible offers with match scores, highest first."""
+    scored: list[tuple[InternshipOffer, float, list]] = []
+    seen_offer_ids: set[int] = set()
+
+    match_rows = (
+        StudentOfferMatchScore.objects.filter(
+            student_profile=student,
+            offer__status__in=PUBLICLY_VISIBLE_STATUSES,
+        )
+        .select_related('offer')
+        .prefetch_related('offer__targeting_rules')
+        .order_by('-score')[:limit]
+    )
+    for row in match_rows:
+        scored.append((row.offer, float(row.score), []))
+        seen_offer_ids.add(row.offer_id)
+
+    if len(scored) < limit:
+        remaining = limit - len(scored)
+        offers = (
+            InternshipOffer.objects.filter(status__in=PUBLICLY_VISIBLE_STATUSES)
+            .exclude(pk__in=seen_offer_ids)
+            .prefetch_related('targeting_rules')
+            .order_by('-published_at', '-updated_at')[:remaining]
+        )
+        for offer in offers:
+            score, reasons, _ = compute_match_score(student, offer)
+            score_value = float(score)
+            if score_value <= 0:
+                continue
+            scored.append((offer, score_value, reasons if isinstance(reasons, list) else []))
+
+    scored.sort(key=lambda item: -item[1])
+    return scored
+
+
+def build_recommended_offers_feed(student: StudentProfile) -> list[dict]:
+    """
+    Recommended offers for the student portal:
+    1. Same internship type as the student, sorted by match score.
+    2. If none, offers with match score > 50%, sorted by score.
+    """
+    ensure_student_internship_synced(student)
+    student = StudentProfile.objects.select_related('internship_type').get(pk=student.pk)
+
+    scored_offers = _collect_scored_offers(student)
+    same_type = [
+        item for item in scored_offers
+        if offer_matches_student_internship_type(student, item[0])
+    ]
+
+    if same_type:
+        selected = same_type[:RECOMMENDATION_LIMIT]
+    else:
+        selected = [
+            item for item in scored_offers
+            if item[1] > FALLBACK_MIN_MATCH_SCORE
+        ][:RECOMMENDATION_LIMIT]
+
+    return [
+        _serialize_recommendation_entry(
+            offer,
+            recommendation_type=OfferRecommendation.RecommendationType.FOR_YOU,
+            score=score,
+            reasons=reasons,
+        )
+        for offer, score, reasons in selected
+    ]
+
+
 def generate_for_you(student: StudentProfile) -> list[OfferRecommendation]:
-    scores = top_matches_for_student(student, limit=RECOMMENDATION_LIMIT)
     results = []
-    for ms in scores:
+    for entry in build_recommended_offers_feed(student):
+        offer = InternshipOffer.objects.get(uuid=entry['offer_uuid'])
         results.append(_upsert_recommendation(
-            student, ms.offer, OfferRecommendation.RecommendationType.FOR_YOU,
-            ms.score, ms.score_breakdown.get('required_skills', {}).get('matched', []),
+            student,
+            offer,
+            OfferRecommendation.RecommendationType.FOR_YOU,
+            Decimal(str(entry['score'])),
+            entry.get('reasons', []),
         ))
     return results
 
@@ -125,43 +230,26 @@ def generate_all_recommendations(student: StudentProfile) -> dict:
 
 
 def _visible_offers_fallback(student: StudentProfile, limit: int = RECOMMENDATION_LIMIT) -> list[dict]:
-    """Return published/open offers when no personalized recommendations exist yet."""
-    offers = InternshipOffer.objects.filter(
-        status__in=PUBLICLY_VISIBLE_STATUSES,
-    ).order_by('-published_at', '-updated_at')[:limit]
-    results = []
-    for offer in offers:
-        score, reasons, _ = compute_match_score(student, offer)
-        results.append({
-            'recommendation_type': OfferRecommendation.RecommendationType.RECENT,
-            'score': float(score),
-            'reasons': reasons if isinstance(reasons, list) else [],
-            'offer_uuid': str(offer.uuid),
-            'offer_title': offer.title,
-            'company_name': offer.company_name,
-        })
-    return results
+    """Fallback when personalized recommendations are requested before scores exist."""
+    return build_recommended_offers_feed(student)[:limit]
 
 
 def get_student_recommendation_feed(student: StudentProfile, rec_type: str | None = None) -> list[dict]:
+    if rec_type is None:
+        return build_recommended_offers_feed(student)
+
     qs = OfferRecommendation.objects.filter(
         student_profile=student,
         is_dismissed=False,
         expires_at__gte=timezone.now(),
     ).select_related('offer')
-    if rec_type:
-        qs = qs.filter(recommendation_type=rec_type)
-    feed = [
-        {
-            'recommendation_type': r.recommendation_type,
-            'score': float(r.score),
-            'reasons': r.reasons_json,
-            'offer_uuid': str(r.offer.uuid),
-            'offer_title': r.offer.title,
-            'company_name': r.offer.company_name,
-        }
+    qs = qs.filter(recommendation_type=rec_type)
+    return [
+        _serialize_recommendation_entry(
+            r.offer,
+            recommendation_type=r.recommendation_type,
+            score=float(r.score),
+            reasons=r.reasons_json,
+        )
         for r in qs.order_by('-score')[:RECOMMENDATION_LIMIT]
     ]
-    if not feed and rec_type is None:
-        return _visible_offers_fallback(student)
-    return feed

@@ -5,15 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { academicReferenceApi } from '../../api/reference';
 
 import type {
-
   AcademicLevelOption,
-
   AcademicSectorOption,
-
+  AcademicYearOption,
   FiliereOption,
-
   SpecializationDomainOption,
-
 } from '../../api/types';
 
 import type { AcademicScopeState } from '../../sous_Admin/components/AdminAcademicScopeFields';
@@ -129,42 +125,21 @@ const EncadrantAcademicScopeFields: FunctionComponent<EncadrantAcademicScopeFiel
 
 
   useEffect(() => {
-
-    if (value.filiereIds.length === 0) {
-
-      setYearOptions([]);
-
-      return;
-
-    }
-
     setLoadingYears(true);
-
     academicReferenceApi
-
-      .listAcademicYearsByFiliere(value.filiereIds)
-
-      .then((years) => {
-
+      .listAcademicYears({ structured: true, lang: i18n.language })
+      .then((data) => {
+        const years = (data as AcademicYearOption[]).map((year) => year.code);
         setYearOptions(years);
-
         const validScopeYears = value.academicYears.filter((y) => years.includes(y));
-
         if (validScopeYears.length !== value.academicYears.length) {
-
           onChange({ ...value, academicYears: validScopeYears });
-
         }
-
       })
-
       .catch(() => setYearOptions([]))
-
       .finally(() => setLoadingYears(false));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-
-  }, [filiereIdsKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync scope years when catalog loads
+  }, [i18n.language]);
 
 
 

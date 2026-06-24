@@ -7,6 +7,23 @@ export type StudentAccountStatus =
   | 'ARCHIVED'
   | 'LOCKED';
 
+export interface StudentIntelligenceScores {
+  risk_score: number;
+  risk_category: string;
+  engagement_score: number;
+  engagement_category: string;
+  employability_score: number;
+  internship_readiness_score: number;
+  profile_completion_score: number;
+  interview_readiness_score: number;
+  career_progress_score: number;
+  placement_probability: number;
+  health_score: number;
+  health_index: string;
+  is_at_risk: boolean;
+  computed_at: string | null;
+}
+
 export interface AdminStudentRow {
   id: number;
   email: string;
@@ -29,6 +46,7 @@ export interface AdminStudentRow {
   internship_type_id: number | null;
   internship_type_name?: string;
   academic_year: string;
+  academic_year_id: number | null;
   student_number: string;
   identity_confirmed: boolean;
   profile_completed: boolean;
@@ -38,6 +56,54 @@ export interface AdminStudentRow {
   risk_flags: string[];
   onboarding_percent: number;
   has_internship_assignment: boolean;
+  intelligence?: StudentIntelligenceScores | null;
+  internship_duration?: string;
+  internship_category?: string;
+  avatar_url?: string | null;
+}
+
+export interface AdminStudentUserProfileDetail {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  phone?: string | null;
+  date_of_birth?: string | null;
+  gender?: string | null;
+  avatar?: string | null;
+  bio?: string | null;
+  timezone?: string | null;
+  language?: string | null;
+}
+
+export interface AdminStudentProfileNested {
+  id: number;
+  phone?: string | null;
+  student_number?: string;
+  program_major?: string;
+  current_class?: string;
+  academic_year?: string;
+  academic_year_ref?: number | null;
+  internship_duration?: string;
+  internship_category?: string;
+  linkedin_url?: string;
+  professional_summary?: string;
+  career_objective?: string;
+  city?: string;
+  mobility?: string;
+  availability?: string;
+  start_date?: string | null;
+  enrollment_year?: number | null;
+  expected_graduation_year?: number | null;
+  filiere?: number | { id: number; name?: string; code?: string } | null;
+  class_group?: number | { id: number; name?: string; code?: string } | null;
+  academic_level?: number | { id: number; name?: string; code?: string } | null;
+  academic_sector?: number | { id: number; name?: string } | null;
+  internship_type?: number | { id: number; name?: string } | null;
+}
+
+export interface AdminStudentDetail extends AdminStudentRow {
+  profile?: AdminStudentUserProfileDetail | null;
+  student_profile?: AdminStudentProfileNested | null;
 }
 
 export interface FiliereOption {
@@ -226,6 +292,22 @@ export interface StudentDashboardStats {
   without_internship: number;
   with_internship: number;
   engagement_percent: number;
+  at_risk_count?: number;
+  critical_risk_count?: number;
+  avg_engagement_score?: number;
+}
+
+export interface IntelligencePlatformOverview {
+  health_score: number;
+  critical_alerts: number;
+  students_at_risk: number;
+  active_users: number;
+  total_students: number;
+  healthy_students: number;
+  avg_engagement: number;
+  avg_risk: number;
+  risk_trend: number[];
+  activity_trend: number[];
 }
 
 interface ApiEnvelope<T> {
@@ -295,6 +377,7 @@ export interface AdminAdministratorRow {
   last_login_at: string | null;
   onboarding_complete: boolean;
   created_at: string;
+  avatar_url?: string | null;
   notes?: string;
   permission_codes?: string[];
 }

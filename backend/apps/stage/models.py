@@ -849,6 +849,7 @@ from apps.stage.models_extended import (  # noqa: E402, F401
     InterviewSchedule,
     InterviewStatusHistory,
     MatchingWeightConfig,
+    SemanticEmbedding,
     OfferContentHistory,
     OfferRecommendation,
     OfferVersion,

@@ -37,6 +37,7 @@
       "catalog": "Catalogue des services",
       "chat": "Chat",
       "drafts": "Brouillons",
+      "archived": "Archives",
       "reports": "Rapports",
       "smartAssignment": "Affectation des encadrants",
       "meetings": "Réunions",
@@ -359,6 +360,8 @@
       "attachFile": "Joindre un fichier",
       "tagTemplate": "Étiquette ou modèle",
       "sendMessage": "Envoyer le message",
+      "voiceNote": "Note vocale",
+      "composerHint": "Entrée pour envoyer · Maj+Entrée pour nouvelle ligne",
       "unreadCount": "{{count}} non lus"
     },
     "chatEmpty": {
@@ -606,6 +609,11 @@
         "firstNameRequired": "Le prénom est obligatoire.",
         "lastNameRequired": "Le nom est obligatoire.",
         "dateOfBirthRequired": "La date de naissance est obligatoire.",
+        "dateOfBirthInvalid": "Date de naissance invalide.",
+        "dateOfBirthFuture": "La date de naissance ne peut pas être dans le futur.",
+        "dateOfBirthTooYoung": "Vous devez avoir au moins {{minAge}} ans pour vous inscrire.",
+        "dateOfBirthTooOld": "La date de naissance semble incorrecte (âge supérieur à {{maxAge}} ans).",
+        "dateOfBirthFixRequired": "La date de naissance semble incorrecte. Cliquez sur « Modifier les informations » pour la corriger.",
         "programRequired": "Veuillez sélectionner votre filière ESCA.",
         "classRequired": "Veuillez sélectionner votre classe.",
         "referenceLoadFailed": "Impossible de charger les filières et classes ESCA. Vérifiez votre connexion ou réessayez."
@@ -1030,6 +1038,60 @@
         "linkedin": "linkedin.com/in/vous",
         "website": "votresite.com",
         "location": "Ville, Pays"
+      }
+    }
+  },
+  "notifications": {
+    "center": {
+      "badge": "Centre de notifications",
+      "title": "Centre de notifications",
+      "subtitle": "Toutes vos alertes plateforme en un seul endroit.",
+      "loading": "Chargement…",
+      "loadMore": "Charger plus",
+      "markRead": "Marquer comme lu",
+      "archive": "Archiver",
+      "actionRequired": "Action requise",
+      "panelTitle": "Notifications récentes",
+      "emptyTitle": "Aucune notification",
+      "emptyDesc": "Vous serez alerté ici lorsqu'un événement important se produira.",
+      "sections": {
+        "all": "Toutes",
+        "unread": "Non lues",
+        "read": "Lues",
+        "archived": "Archivées",
+        "action_required": "Action requise"
+      },
+      "filters": {
+        "allCategories": "Toutes les catégories",
+        "allPriorities": "Toutes les priorités"
+      }
+    },
+    "preferences": {
+      "save": "Enregistrer les préférences",
+      "channels": {
+        "in_app": "In-app",
+        "email": "Email",
+        "push": "Push"
+      }
+    },
+    "analytics": {
+      "title": "Analytics notifications",
+      "subtitle": "Suivi des envois, livraisons, lectures et clics.",
+      "matrixTitle": "Matrice événements → destinataires → canaux",
+      "metrics": {
+        "sent": "Envoyées",
+        "delivered": "Livrées",
+        "opened": "Ouvertes",
+        "clicked": "Cliquées",
+        "failed": "Échouées",
+        "suppressed": "Supprimées"
+      },
+      "columns": {
+        "event": "Événement",
+        "category": "Catégorie",
+        "priority": "Priorité",
+        "channels": "Canaux",
+        "recipients": "Destinataires"
       }
     }
   }

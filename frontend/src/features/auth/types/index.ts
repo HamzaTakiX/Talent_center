@@ -17,6 +17,8 @@ export interface StudentProfile {
   first_name: string;
   last_name: string;
   date_of_birth: string;
+  phone?: string;
+  student_number?: string;
   program_major: string;
   current_class: string;
   /** FK id from API (`filiere` field) */
@@ -26,9 +28,30 @@ export interface StudentProfile {
   class_group?: number | null;
   class_group_id?: number | null;
   academic_year?: string;
+  academic_level?: number | null;
+  academic_level_name?: string;
+  academic_sector?: number | null;
+  academic_sector_name?: string;
+  internship_type?: number | null;
+  internship_type_name?: string;
+  internship_duration?: string;
+  internship_category?: string;
   linkedin_url?: string;
   professional_summary?: string;
   cv_file?: string;
+  career_objective?: string;
+  skills?: string[];
+  availability?: string;
+  start_date?: string | null;
+  city?: string;
+  mobility?: string[];
+  has_applied?: boolean | null;
+  has_internship?: boolean;
+  internship_status_acknowledged?: boolean;
+  internship_company_name?: string;
+  internship_specialization?: string;
+  internship_company_city?: string;
+  internship_stage_duration?: string;
   identity_confirmed: boolean;
   profile_completed: boolean;
 }

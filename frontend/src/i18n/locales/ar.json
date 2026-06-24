@@ -37,6 +37,7 @@
       "catalog": "كتالوج الخدمات",
       "chat": "الدردشة",
       "drafts": "المسودات",
+      "archived": "الأرشيف",
       "reports": "التقارير",
       "smartAssignment": "تعيين المشرفين",
       "meetings": "الاجتماعات",
@@ -354,6 +355,8 @@
       "attachFile": "إرفاق ملف",
       "tagTemplate": "وسم أو قالب",
       "sendMessage": "إرسال الرسالة",
+      "voiceNote": "ملاحظة صوتية",
+      "composerHint": "Enter للإرسال · Shift+Enter لسطر جديد",
       "unreadCount": "{{count}} غير مقروء"
     },
     "chatEmpty": {
@@ -601,6 +604,11 @@
         "firstNameRequired": "الاسم الأول مطلوب.",
         "lastNameRequired": "اسم العائلة مطلوب.",
         "dateOfBirthRequired": "تاريخ الميلاد مطلوب.",
+        "dateOfBirthInvalid": "تاريخ الميلاد غير صالح.",
+        "dateOfBirthFuture": "لا يمكن أن يكون تاريخ الميلاد في المستقبل.",
+        "dateOfBirthTooYoung": "يجب أن يكون عمرك {{minAge}} سنة على الأقل.",
+        "dateOfBirthTooOld": "يبدو تاريخ الميلاد غير صحيح (عمر يتجاوز {{maxAge}} سنة).",
+        "dateOfBirthFixRequired": "يبدو تاريخ الميلاد غير صحيح. انقر على « تعديل المعلومات » لتصحيحه.",
         "programRequired": "يرجى اختيار تخصص ESCA.",
         "classRequired": "يرجى اختيار القسم.",
         "referenceLoadFailed": "تعذر تحميل التخصصات والأقسام ESCA. تحقق من الاتصال وأعد المحاولة."

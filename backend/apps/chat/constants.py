@@ -64,4 +64,27 @@ SMART_ACTION_CODES = frozenset({
     'mark_urgent',
     'mark_resolved',
     'archive_conversation',
+    'unarchive_conversation',
+    'assign_admin',
+    'set_priority',
+    'add_internal_note',
+})
+
+# Admin-inbox actions that must not appear in the student chat timeline.
+STUDENT_HIDDEN_SMART_ACTIONS = frozenset({
+    'archive_conversation',
+    'unarchive_conversation',
+    'assign_admin',
+    'add_internal_note',
+    'set_priority',
+    'notify_admin',
+})
+
+# Smart actions restricted to admin / superuser roles.
+ADMIN_ONLY_SMART_ACTIONS = frozenset({
+    *STUDENT_HIDDEN_SMART_ACTIONS,
+    'mark_resolved',
+    'mark_urgent',
+    'escalate',
+    'assign_admin',
 })

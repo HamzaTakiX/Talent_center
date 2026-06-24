@@ -21,7 +21,6 @@ class ProfileIntelligenceConfig(AppConfig):
     verbose_name = 'Student Profile Intelligence'
 
     def ready(self):
-        # Importing signals wires receivers (auth login, CV updates...)
-        # into the dispatch table. The import is kept local so Django
-        # avoids cyclic app-loading issues.
         from . import signals  # noqa: F401
+        from .intelligence_hooks import register_cross_app_hooks
+        register_cross_app_hooks()

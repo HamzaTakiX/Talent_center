@@ -10,7 +10,7 @@ from django.utils import timezone
 from apps.admin_management.models import Assignment
 
 from apps.accounts_et_roles.models import StudentProfile, UserProfile
-from apps.accounts_et_roles.services import change_account_status
+from apps.accounts_et_roles.services import change_account_status, ensure_user_profile
 from apps.admin_management.models import Assignment, ClassGroup, Filiere
 from apps.admin_management.services.academic_validation import validate_academic_selection
 from apps.authentication.models import StudentCredential
@@ -262,6 +262,27 @@ def update_student_assignment(
     return profile
 
 
+@transaction.atomic
+def update_student_profile(
+    *,
+    user: User,
+    avatar=None,
+    remove_avatar: bool = False,
+) -> User:
+    profile = ensure_user_profile(user)
+    if remove_avatar:
+        if profile.avatar:
+            profile.avatar.delete(save=False)
+        profile.avatar = None
+    elif avatar is not None:
+        profile.avatar = avatar
+    profile.save()
+    user.refresh_from_db()
+    if hasattr(user, 'profile'):
+        user.profile.refresh_from_db()
+    return user
+
+
 def regenerate_student_password(*, user: User, generated_by=None) -> str:
     plaintext = generate_secure_password()
     set_student_password(user=user, plaintext=plaintext, generated_by=generated_by)
@@ -317,6 +338,13 @@ def student_dashboard_stats(*, acting_user=None) -> dict[str, int]:
 
     onboarding_total = 0
     onboarding_sum = 0
+    engagement_sum = 0
+    engagement_count = 0
+    at_risk_count = 0
+    critical_risk_count = 0
+
+    from apps.profile_intelligence.models import StudentProfileIndicator
+
     for user in qs.iterator(chunk_size=200):
         try:
             sp = user.student_profile
@@ -327,7 +355,18 @@ def student_dashboard_stats(*, acting_user=None) -> dict[str, int]:
         onboarding_sum += percent
         onboarding_total += 1
 
-    engagement_percent = int(onboarding_sum / onboarding_total) if onboarding_total else 0
+        indicator = StudentProfileIndicator.objects.filter(student_profile=sp).first()
+        if indicator:
+            engagement_sum += indicator.engagement_score
+            engagement_count += 1
+            if indicator.is_at_risk:
+                at_risk_count += 1
+            if indicator.risk_category == StudentProfileIndicator.RiskCategory.CRITICAL:
+                critical_risk_count += 1
+
+    engagement_percent = (
+        int(engagement_sum / engagement_count) if engagement_count else 0
+    )
 
     return {
         'total': total,
@@ -336,6 +375,9 @@ def student_dashboard_stats(*, acting_user=None) -> dict[str, int]:
         'without_internship': without_internship,
         'with_internship': with_internship,
         'engagement_percent': engagement_percent,
+        'at_risk_count': at_risk_count,
+        'critical_risk_count': critical_risk_count,
+        'avg_engagement_score': engagement_percent,
     }
 
 
@@ -353,6 +395,7 @@ def list_students_queryset(*, search: str = '', status: str = '', acting_user=No
             'student_profile__academic_level',
             'student_profile__academic_sector',
             'student_profile__internship_type',
+            'student_profile__indicator',
         )
         .prefetch_related('student_credentials')
         .order_by('-created_at')

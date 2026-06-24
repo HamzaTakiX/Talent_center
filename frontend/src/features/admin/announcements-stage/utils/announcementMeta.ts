@@ -2,7 +2,6 @@ import type { LucideIcon } from 'lucide-react';
 import {
   AlertTriangle,
   Archive,
-  Briefcase,
   CalendarClock,
   Eye,
   FileEdit,
@@ -11,7 +10,7 @@ import {
   Radio,
   Sparkles,
 } from 'lucide-react';
-
+import { resolveTypeIconFromItem } from './announcementTypeIcons';
 export type AnnStatus =
   | 'DRAFT'
   | 'SCHEDULED'
@@ -31,9 +30,9 @@ export const statusMeta: Record<
   string,
   { badgeClass: string; icon: LucideIcon; chartColor: string }
 > = {
-  DRAFT: { badgeClass: 'admin-ann-status--draft', icon: FileEdit, chartColor: '#64748b' },
+  DRAFT: { badgeClass: 'admin-ann-status--draft', icon: FileEdit, chartColor: '#f97316' },
   SCHEDULED: { badgeClass: 'admin-ann-status--scheduled', icon: CalendarClock, chartColor: '#4f46e5' },
-  PUBLISHED: { badgeClass: 'admin-ann-status--published', icon: Radio, chartColor: '#2563eb' },
+  PUBLISHED: { badgeClass: 'admin-ann-status--published', icon: Radio, chartColor: '#22c55e' },
   EXPIRED: { badgeClass: 'admin-ann-status--expired', icon: Archive, chartColor: '#94a3b8' },
   ARCHIVED: { badgeClass: 'admin-ann-status--archived', icon: Archive, chartColor: '#64748b' },
   HIDDEN: { badgeClass: 'admin-ann-status--hidden', icon: Eye, chartColor: '#475569' },
@@ -50,8 +49,10 @@ export const priorityMeta: Record<string, { badgeClass: string; icon: LucideIcon
   },
 };
 
-export const typeIcon = (code?: string): LucideIcon => {
-  if (!code) return Megaphone;
-  if (code.includes('internship') || code.includes('pfe')) return Briefcase;
-  return Megaphone;
+export const typeIcon = (codeOrType?: string | { icon?: string | null; code?: string }): LucideIcon => {
+  if (codeOrType && typeof codeOrType === 'object') {
+    return resolveTypeIconFromItem(codeOrType);
+  }
+  if (!codeOrType) return Megaphone;
+  return resolveTypeIconFromItem({ code: codeOrType });
 };

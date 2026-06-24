@@ -111,6 +111,10 @@ export const adminCopyEn = {
         "title": "Closed Offers ({{count}})",
         "subtitle": "Filtered list of internship offers"
       },
+      "archived": {
+        "title": "Archived Offers ({{count}})",
+        "subtitle": "Filtered list of internship offers"
+      },
       "draft": {
         "title": "Draft Offers ({{count}})",
         "subtitle": "Filtered list of internship offers"
@@ -501,16 +505,25 @@ export const adminCopyEn = {
         "type": "Type",
         "audience": "Target Audience",
         "eventDate": "Event / Deadline Date",
+        "expirationDate": "Expiration date",
         "priority": "Priority",
         "visibility": "Visibility",
         "message": "Message Content",
-        "attachments": "Attachments (Optional)"
+        "attachments": "Attachments (Optional)",
+        "attachmentFiles": "Files",
+        "attachmentLinks": "External links",
+        "coverImage": "Cover image (optional)"
       },
       "placeholders": {
         "title": "e.g., Career Fair 2026",
-        "message": "Write the announcement message that will be displayed to the target audience..."
+        "message": "Write the announcement message that will be displayed to the target audience...",
+        "attachmentLink": "https://example.com/document"
       },
-      "attachmentsHint": "Upload any relevant files (PDF, images, documents)",
+      "coverImageHint": "Shown on the announcement card instead of the default type icon.",
+      "coverImageDropHint": "JPG, PNG or WebP — recommended 1200×630 px",
+      "coverImagePreviewAlt": "Cover image preview",
+      "coverImageRemove": "Remove image",
+      "attachmentsHint": "Upload relevant files (PDF, images, documents) or add external links.",
       "types": {
         "select": "Select type",
         "event": "Event",
@@ -525,29 +538,87 @@ export const adminCopyEn = {
       },
       "priorities": {
         "select": "Select priority",
-        "low": "Low",
         "normal": "Normal",
-        "high": "High"
+        "important": "Important",
+        "urgent": "Urgent"
       },
       "visibilities": {
         "select": "Select visibility",
-        "facultyStudents": "Students & Faculty",
-        "studentsOnly": "Students only",
-        "internal": "Internal admins"
+        "allStudents": "All students",
+        "targeted": "Targeted audience",
+        "custom": "Custom rules"
       },
       "actions": {
         "create": "Create",
         "draft": "Save as Draft",
         "publish": "Publish Now",
+        "schedule": "Schedule publication",
+        "scheduling": "Scheduling…",
+        "savingDraft": "Saving draft…",
+        "publishing": "Publishing…",
         "cancel": "Cancel",
-        "save": "Save"
+        "save": "Save",
+        "saving": "Saving…",
+        "addAttachmentLink": "Add link"
+      },
+      "draftSuccess": "Draft saved",
+      "publishSuccess": "Announcement published successfully",
+      "scheduleSuccess": "Announcement scheduled successfully",
+      "updateSuccess": "Changes saved.",
+      "coverUploadError": "The announcement was created but the cover image could not be uploaded.",
+      "attachmentsUploadError": "The announcement was created but attachments could not be uploaded.",
+      "attachmentLinksUploadError": "The announcement was created but links could not be saved.",
+      "attachmentRemove": "Remove {{name}}",
+      "attachmentLinkRemove": "Remove link {{url}}",
+      "validation": {
+        "summary": "Please fix {{count}} required field(s) highlighted in red.",
+        "requiredTitle": "Announcement title is required.",
+        "requiredType": "Select an announcement type.",
+        "requiredAudience": "Select a target audience.",
+        "requiredPriority": "Select a priority.",
+        "requiredVisibility": "Select a visibility option.",
+        "requiredMessage": "Message content is required.",
+        "requiredExpirationDate": "Expiration date is required.",
+        "requiredPublishDate": "Publish date is required.",
+        "requiredPublishTime": "Publish time is required.",
+        "requiredTimezone": "Timezone is required.",
+        "publishDateFuture": "Publish date and time must be in the future.",
+        "invalidAttachmentUrl": "Enter a valid URL (http:// or https://).",
+        "duplicateAttachmentUrl": "This link has already been added.",
+        "generic": "Please check the form fields."
       },
       "editTitle": "Edit announcement",
       "editSubtitle": "Update the announcement content and distribution.",
       "sections": {
         "general": "General information",
         "generalHint": "Title, type, audience, and distribution settings.",
-        "messageHint": "Main content visible to students."
+        "messageHint": "Main content visible to students.",
+        "attachmentsTitle": "Attachments"
+      },
+      "publication": {
+        "title": "Publication settings",
+        "hint": "Publish immediately or schedule a future publication.",
+        "modeLabel": "Publication mode",
+        "immediate": "Publish immediately",
+        "schedule": "Schedule publication",
+        "publishDate": "Publish date",
+        "publishTime": "Publish time",
+        "timezone": "Timezone",
+        "preview": "The announcement will be published automatically on {{datetime}}",
+        "datePicker": {
+          "title": "Select date",
+          "prevMonth": "Previous month",
+          "nextMonth": "Next month",
+          "cancel": "Cancel",
+          "confirm": "OK"
+        },
+        "timePicker": {
+          "title": "Select time",
+          "hours": "Hours",
+          "minutes": "Minutes",
+          "cancel": "Cancel",
+          "confirm": "OK"
+        }
       }
     },
     "createOffer": {
@@ -1058,6 +1129,8 @@ export const adminCopyEn = {
       "sections": {
         "personal": "Personal information",
         "personalHint": "Contact details and student identifier.",
+        "photo": "Profile photo",
+        "photoHint": "Visible in chat, profile, and student spaces.",
         "academic": "Academic assignment",
         "academicHint": "Program, level, specialization, internship type, year, and class are loaded from ESCA reference data.",
         "access": "Access & status",
@@ -1089,7 +1162,8 @@ export const adminCopyEn = {
       "actions": {
         "cancel": "Cancel",
         "create": "Create student",
-        "save": "Save"
+        "save": "Save",
+        "removePhoto": "Remove photo"
       },
       "messages": {
         "loadFilieresError": "Could not load fields of study.",
@@ -1162,6 +1236,10 @@ export const adminCopyEn = {
           "rowError": "Row {{row}} ({{email}}): {{message}}",
           "moreErrors": "… and {{count}} more error(s)."
         }
+      },
+      "actions": {
+        "menuAria": "Actions for {{name}}",
+        "authorize": "Authorize"
       }
     },
     "academicStructure": {
@@ -1405,9 +1483,37 @@ export const adminCopyEn = {
     "offers": {
       "title": "Internship offers",
       "subtitle": "Manage all internship opportunities",
+      "section": {
+        "countAria": "{{count}} offers in list"
+      },
+      "listFilters": {
+        "deadline": {
+          "aria": "Filter by deadline",
+          "all": "All dates",
+          "no_deadline": "No deadline",
+          "overdue": "Overdue",
+          "this_week": "This week",
+          "this_month": "This month"
+        },
+        "applicants": {
+          "aria": "Filter by applications",
+          "all": "All",
+          "none": "No applications",
+          "has_applicants": "With applications",
+          "high": "5+ applications"
+        }
+      },
       "draftsPage": {
         "title": "Draft offers",
         "subtitle": "Review and publish unpublished internship offers",
+        "filters": {
+          "aria": "Filter draft offers",
+          "all": "All drafts",
+          "ready": "Ready to publish",
+          "incomplete": "Needs completion",
+          "pending_review": "Pending review",
+          "no_deadline": "No deadline"
+        },
         "readiness": {
           "column": "Completion",
           "ready": "Ready to publish",
@@ -1430,6 +1536,7 @@ export const adminCopyEn = {
         }
       },
       "actions": {
+        "menuAria": "Actions for {{title}}",
         "delete": {
           "title": "Delete Internship Offer",
           "description": "Are you sure you want to delete this offer? This action may affect applications, matching results and analytics.",
@@ -1437,6 +1544,18 @@ export const adminCopyEn = {
           "success": "Offer deleted successfully.",
           "errors": {
             "failed": "Unable to delete this offer."
+          }
+        },
+        "archive": {
+          "success": "Offer archived successfully.",
+          "errors": {
+            "failed": "Unable to archive this offer."
+          }
+        },
+        "restore": {
+          "success": "Offer restored successfully.",
+          "errors": {
+            "failed": "Unable to restore this offer."
           }
         },
         "errors": {
@@ -1554,6 +1673,85 @@ export const adminCopyEn = {
         "accept": "Accept",
         "reject": "Reject"
       },
+      "detailPage": {
+        "backToOffers": "Back to offers",
+        "adminMeta": "Admin record",
+        "adminData": "Admin data",
+        "adminDataSubtitle": "Targeting, publication, audit, and application insights",
+        "openExternal": "Open external link",
+        "analytics": {
+          "title": "Offer analytics",
+          "views": "Views",
+          "applications": "Applications",
+          "conversion": "Conversion",
+          "pending": "Pending",
+          "accepted": "Accepted",
+          "interviewing": "Interviewing"
+        },
+        "emailPreview": {
+          "title": "Email preview",
+          "subtitle": "Preview how students receive this offer by email",
+          "subject": "New internship offer: {{title}} — {{company}}",
+          "intro": "A new internship opportunity matching your profile is available at {{company}}.",
+          "ctaHint": "Open Talent Center to view the full offer and apply.",
+          "cta": "View offer",
+          "footer": "You received this email because you are enrolled on Talent Center.",
+          "senderName": "Talent Center",
+          "senderEmail": "noreply@talentcenter.ma",
+          "from": "From",
+          "to": "To",
+          "subjectLabel": "Subject",
+          "fields": {
+            "internshipType": "Internship type",
+            "workMode": "Work mode",
+            "duration": "Duration",
+            "compensation": "Compensation",
+            "deadline": "Application deadline",
+            "startDate": "Start date",
+            "endDate": "End date",
+            "minEducation": "Minimum education",
+            "yearsExperience": "Experience",
+            "externalUrl": "External application link",
+            "offerUrl": "Talent Center offer page"
+          },
+          "sections": {
+            "overview": "About the role",
+            "responsibilities": "Responsibilities",
+            "requirements": "Requirements",
+            "benefits": "Benefits",
+            "additionalNotes": "Additional information",
+            "requiredSkills": "Required skills",
+            "preferredSkills": "Preferred skills",
+            "languages": "Languages",
+            "softSkills": "Soft skills",
+            "certifications": "Certifications"
+          }
+        },
+        "applicantsTable": {
+          "title": "Applicants ({{count}})",
+          "subtitle": "Students who applied for this internship offer",
+          "filterAria": "Filter applicants by status",
+          "filters": {
+            "all": "All"
+          },
+          "columns": {
+            "student": "Student",
+            "class": "Class",
+            "field": "Field",
+            "match": "Match",
+            "status": "Status",
+            "appliedAt": "Applied"
+          },
+          "status": {
+            "Pending": "Pending",
+            "Interview": "Interview",
+            "Accepted": "Accepted",
+            "Rejected": "Rejected"
+          },
+          "empty": "No students have applied to this offer yet.",
+          "searchEmpty": "No applicants match your search or filters."
+        }
+      },
       "inbox": {
         "sidebarTitle": "Recruitment center",
         "filters": "Filters",
@@ -1568,15 +1766,37 @@ export const adminCopyEn = {
         "noConversations": "No conversations",
         "noConversationsDesc": "Application-related conversations will appear here.",
         "noConversationsFilterHint": "Try adjusting your filters or search",
+        "viewArchivedAria": "View archived conversations",
+        "backToActiveConversations": "Back to active conversations",
+        "archivedBanner": "Archived conversations",
+        "noArchivedConversations": "No archived conversations",
+        "noArchivedConversationsDesc": "Conversations you archive will appear here.",
         "noMessages": "No messages yet. Start the conversation with the student.",
+        "seenAt": "Seen at {{time}}",
         "composerPlaceholder": "Write a message…",
         "attachFile": "Attach file",
         "sendMessage": "Send",
         "loadError": "Loading error",
+        "systemEvents": {
+          "archive_conversation": "Conversation archived in your inbox",
+          "unarchive_conversation": "Conversation restored to your inbox",
+          "mark_resolved": "Conversation marked as resolved",
+          "mark_urgent": "Conversation marked as urgent",
+          "assign_admin": "Conversation assigned to an administrator",
+          "add_internal_note": "Internal note added",
+          "set_priority": "Priority updated",
+          "notify_admin": "Administrators notified",
+          "escalate": "Conversation escalated",
+          "validate": "Item validated",
+          "request_correction": "Correction requested",
+          "create_task": "Task created",
+          "create_meeting": "Meeting scheduled"
+        },
         "back": "Back",
         "moreActions": "More actions",
         "resolve": "Resolve",
         "archive": "Archive",
+        "unarchive": "Unarchive",
         "viewStudent": "View student",
         "viewApplication": "View application",
         "viewOffer": "View offer",
@@ -1604,11 +1824,18 @@ export const adminCopyEn = {
           "lastChange": "Last status change"
         },
         "quickActions": {
-          "sendReminder": "Send reminder",
-          "requestDocuments": "Request documents",
-          "scheduleInterview": "Schedule interview",
-          "updateApplication": "Update application",
           "assignAdmin": "Assign to internship admin"
+        },
+        "assignAdminModal": {
+          "title": "Assign to internship admin",
+          "description": "Choose the administrator who will handle this conversation.",
+          "searchPlaceholder": "Search by name or email…",
+          "empty": "No administrators found.",
+          "loading": "Loading administrators…",
+          "confirm": "Assign",
+          "cancel": "Cancel",
+          "success": "Conversation assigned",
+          "error": "Unable to assign the conversation"
         },
         "filterSections": {
           "program": "Program",
@@ -2030,6 +2257,9 @@ export const adminCopyEn = {
           "rowError": "Row {{row}} ({{email}}): {{message}}",
           "moreErrors": "… and {{count}} more error(s)."
         }
+      },
+      "actions": {
+        "menuAria": "Actions for {{name}}"
       }
     },
     "administratorsFiltered": {
@@ -2234,13 +2464,16 @@ export const adminCopyEn = {
       "download": "Download",
       "approve": "Approve",
       "reject": "Reject",
+      "menuAria": "Row actions",
       "viewProfile": "View Profile",
       "deactivate": "Deactivate",
       "viewDetails": "View Details",
       "manageStudents": "Manage Students",
       "managePermissions": "Manage Permissions",
       "importExcel": "Import Excel",
-      "validate": "Validate"
+      "validate": "Validate",
+      "archive": "Archive",
+      "restore": "Restore"
     },
     "delete": {
       "confirm": "Delete permanently",
@@ -2274,7 +2507,11 @@ export const adminCopyEn = {
         "academicScope": "Academic scope",
         "access": "Access control",
         "overview": "Overview",
-        "assignment": "Academic assignment"
+        "assignment": "Academic assignment",
+        "profile": "Profile & career",
+        "engagement": "Student engagement",
+        "riskScores": "Risk & health scores",
+        "careerInsights": "Career insights"
       },
       "fields": {
         "sso": "SSO enabled",
@@ -2283,8 +2520,73 @@ export const adminCopyEn = {
         "lastLogin": "Last login",
         "createdAt": "Created at",
         "onboardingPercent": "Onboarding progress",
-        "applicants": "Applicants"
+        "applicants": "Applicants",
+        "phone": "Phone",
+        "dateOfBirth": "Date of birth",
+        "gender": "Gender",
+        "city": "City",
+        "academicLevel": "Academic level",
+        "academicSector": "Specialization",
+        "internshipType": "Internship type",
+        "internshipDuration": "Internship duration",
+        "internshipCategory": "Internship category",
+        "hasInternshipAssignment": "Internship assigned",
+        "bio": "Bio / summary",
+        "careerObjective": "Career objective",
+        "linkedin": "LinkedIn",
+        "availability": "Availability",
+        "mobility": "Mobility",
+        "identityConfirmed": "Identity confirmed",
+        "profileCompleted": "Profile completed",
+        "riskFlags": "Risk alerts",
+        "language": "Language",
+        "timezone": "Timezone",
+        "engagementScore": "Engagement score",
+        "engagementBand": "Activity band",
+        "profileCompletion": "Profile completion",
+        "riskScore": "Risk score",
+        "healthIndex": "Health index",
+        "healthScore": "Health score",
+        "atRisk": "At-risk status",
+        "computedAt": "Scores computed at",
+        "intelligencePending": "Not computed yet",
+        "noRiskFlags": "No active alerts",
+        "employability": "Employability",
+        "internshipReadiness": "Internship readiness",
+        "careerProgress": "Career progress",
+        "placementProbability": "Placement probability",
+        "interviewReadiness": "Interview readiness"
       },
+      "engagementCategories": {
+        "HIGHLY_ENGAGED": "Highly engaged",
+        "ACTIVE": "Active",
+        "LOW": "Low",
+        "INACTIVE": "Inactive"
+      },
+      "riskCategories": {
+        "LOW": "Low",
+        "MEDIUM": "Moderate",
+        "HIGH": "High",
+        "CRITICAL": "Critical"
+      },
+      "healthIndex": {
+        "HEALTHY": "Healthy",
+        "NEEDS_ATTENTION": "Needs attention",
+        "AT_RISK": "At risk",
+        "CRITICAL": "Critical"
+      },
+      "riskFlags": {
+        "NO_PLATFORM_ACCESS": "No platform access",
+        "PENDING_AUTHORIZATION": "Pending authorization",
+        "IDENTITY_NOT_CONFIRMED": "Identity not confirmed",
+        "PROFILE_INCOMPLETE": "Profile incomplete",
+        "MISSING_STUDENT_PROFILE": "Missing student profile",
+        "NEVER_LOGGED_IN": "Never logged in",
+        "INACTIVE_30D": "Inactive for 30+ days",
+        "NO_CREDENTIAL_ON_FILE": "No credential on file"
+      },
+      "loading": "Loading information…",
+      "loadError": "Some information could not be loaded.",
       "administrator": {
         "title": "Administrator details"
       },
@@ -2367,6 +2669,7 @@ export const adminCopyEn = {
       "filterAllOffers": "Filter all offers",
       "filterActiveOffers": "Filter active offers",
       "filterClosedOffers": "Filter closed offers",
+      "filterArchivedOffers": "Filter archived offers",
       "filterDraftOffers": "Filter draft offers",
       "filterExpiredOffers": "Filter expired offers",
       "filterOffersWithApplications": "Filter offers with applications",
@@ -2523,6 +2826,7 @@ export const adminCopyEn = {
       "draft": "Draft",
       "expired": "Expired",
       "closed": "Closed",
+      "archived": "Archived",
       "pending": "Pending",
       "accepted": "Accepted",
       "rejected": "Rejected"
@@ -3641,10 +3945,14 @@ export const adminCopyEn = {
       "expiredOffers": "Expired Offers",
       "draftOffers": "Draft Offers",
       "closedOffers": "Closed Offers",
+      "archivedOffers": "Archived Offers",
       "totalApplications": "Total Applications",
       "acceptanceRate": "Acceptance Rate",
       "mostPopular": "Most Popular",
       "notDetectedYet": "Not detected yet",
+      "popularOffer": {
+        "views": "views"
+      },
       "draftsPage": {
         "totalDrafts": "Total Drafts",
         "pendingReview": "Pending Review",

@@ -4,11 +4,17 @@ import StudentLayout from '../../components/StudentLayout';
 import BackToOfferDetailsLink from '../components/apply/BackToOfferDetailsLink';
 import ApplyInternshipHeader from '../components/apply/ApplyInternshipHeader';
 import ApplicationReadinessChecklist from '../components/journey/ApplicationReadinessChecklist';
+import ExternalApplyBootRedirect from '../components/ExternalApplyBootRedirect';
 import { InternshipOfferPageLoadingState } from '../components/loading/InternshipOfferPageSkeleton';
-import { STUDENT_ALL_INTERNSHIP_OFFERS_PATH, STUDENT_MY_APPLICATIONS_PATH } from '../constants/routes';
+import {
+  STUDENT_INTERNSHIP_OFFERS_PATH,
+  STUDENT_MY_APPLICATIONS_PATH,
+} from '../constants/routes';
+import { getOfferExternalApplicationUrl } from '../helpers/offerApplyAction';
 import { INTERNSHIP_OFFERS_PAGE_ROOT } from '../constants/internshipOffersLayout';
 import { useApplicationReadiness } from '../hooks/useInternshipJourney';
 import { submitStudentApplication, useStudentOfferDetail } from '../hooks/useStudentStageOffers';
+import { isDuplicateApplicationError } from '../helpers/applicationError';
 import { parseAdminApiError } from '../../../admin/shared/utils/parseAdminApiError';
 
 const ApplyToInternshipPage: FunctionComponent = () => {
@@ -27,6 +33,10 @@ const ApplyToInternshipPage: FunctionComponent = () => {
       await submitStudentApplication(offerId, {});
       navigate(STUDENT_MY_APPLICATIONS_PATH);
     } catch (err) {
+      if (isDuplicateApplicationError(err)) {
+        navigate(STUDENT_MY_APPLICATIONS_PATH);
+        return;
+      }
       setApplyError(parseAdminApiError(err, 'application_failed').message);
     } finally {
       setApplying(false);
@@ -38,7 +48,24 @@ const ApplyToInternshipPage: FunctionComponent = () => {
   }
 
   if (error || !offer) {
-    return <Navigate to={STUDENT_ALL_INTERNSHIP_OFFERS_PATH} replace />;
+    return <Navigate to={STUDENT_INTERNSHIP_OFFERS_PATH} replace />;
+  }
+
+  const externalApplicationUrl = getOfferExternalApplicationUrl({
+    externalUrl: offer.externalUrl,
+    applicationMethod: offer.applicationMethod,
+  });
+  if (externalApplicationUrl) {
+    return (
+      <StudentLayout>
+        <ExternalApplyBootRedirect
+          offerId={offer.id}
+          externalUrl={externalApplicationUrl}
+          offerTitle={offer.title}
+        />
+        <InternshipOfferPageLoadingState variant="apply" loadingLabelKey="loadingApply" />
+      </StudentLayout>
+    );
   }
 
   return (

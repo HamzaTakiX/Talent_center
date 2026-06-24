@@ -2,11 +2,9 @@ export type EmailSystemTab =
   | 'general'
   | 'provider'
   | 'senders'
-  | 'categories'
-  | 'templates'
+  | 'template'
   | 'analytics'
   | 'queue'
-  | 'test'
   | 'advanced';
 
 export type ProviderStatus = 'connected' | 'disconnected' | 'connection_error';

@@ -1,6 +1,7 @@
 import { FunctionComponent, ReactNode, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAdminTheme } from '../dashboard/context/AdminThemeContext';
 import { easePremium } from '../dashboard/ui/animations';
@@ -15,8 +16,12 @@ interface AdminModalProps {
   maxWidthClass?: string;
   dir?: 'ltr' | 'rtl';
   closeAriaLabel?: string;
+  headerIcon?: LucideIcon;
+  headerIconColor?: string;
+  headerIconBg?: string;
+  bodyClassName?: string;
+  modalClassName?: string;
 }
-
 const AdminModal: FunctionComponent<AdminModalProps> = ({
   open,
   onClose,
@@ -27,8 +32,12 @@ const AdminModal: FunctionComponent<AdminModalProps> = ({
   maxWidthClass = 'max-w-[680px]',
   dir,
   closeAriaLabel = 'Close',
-}) => {
-  const { theme } = useAdminTheme();
+  headerIcon: HeaderIcon,
+  headerIconColor,
+  headerIconBg,
+  bodyClassName = '',
+  modalClassName = '',
+}) => {  const { theme } = useAdminTheme();
   const { i18n } = useTranslation();
   const resolvedDir = dir ?? (i18n.dir() === 'rtl' ? 'rtl' : 'ltr');
 
@@ -45,7 +54,9 @@ const AdminModal: FunctionComponent<AdminModalProps> = ({
     };
   }, [open, onClose]);
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -65,14 +76,29 @@ const AdminModal: FunctionComponent<AdminModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.28, ease: easePremium }}
-            className={`admin-modal ${maxWidthClass}`}
+            className={`admin-modal ${maxWidthClass} ${modalClassName}`.trim()}
             data-admin-theme={theme}
             dir={resolvedDir}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="admin-modal-header">
-              <div className="admin-modal-header__content min-w-0">
-                <h3 id="admin-modal-title" className="admin-modal-header__title">
+            <div
+              className={`admin-modal-header ${HeaderIcon ? 'admin-modal-header--branded' : ''}`.trim()}
+            >
+              {HeaderIcon ? (
+                <span
+                  className="admin-modal-header__icon"
+                  style={{
+                    color: headerIconColor ?? 'var(--admin-brand)',
+                    backgroundColor:
+                      headerIconBg ??
+                      `color-mix(in srgb, ${headerIconColor ?? 'var(--admin-brand)'} 14%, var(--admin-bg-elevated))`,
+                  }}
+                  aria-hidden
+                >
+                  <HeaderIcon className="h-5 w-5" strokeWidth={1.75} />
+                </span>
+              ) : null}
+              <div className="admin-modal-header__content min-w-0">                <h3 id="admin-modal-title" className="admin-modal-header__title">
                   {title}
                 </h3>
                 {description ? (
@@ -88,12 +114,14 @@ const AdminModal: FunctionComponent<AdminModalProps> = ({
                 <X className="h-5 w-5" strokeWidth={2} />
               </button>
             </div>
-            <div className="admin-modal-body">{children}</div>
-            {footer ? <div className="admin-modal-footer">{footer}</div> : null}
+            <div className={`admin-modal-body admin-scroll admin-scroll--slim ${bodyClassName}`.trim()}>
+              {children}
+            </div>            {footer ? <div className="admin-modal-footer">{footer}</div> : null}
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 };
 

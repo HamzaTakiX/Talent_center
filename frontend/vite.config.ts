@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
     }),
     react(),
   ],
-  server: {
+    server: {
     port: 5173,
     host: '0.0.0.0',
     proxy: {
@@ -45,6 +45,11 @@ export default defineConfig(({ mode }) => {
       },
       '/api': {
         target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: 'ws://localhost:8000',
+        ws: true,
         changeOrigin: true,
       },
     },

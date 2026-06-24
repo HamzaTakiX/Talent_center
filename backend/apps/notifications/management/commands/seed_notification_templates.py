@@ -337,6 +337,50 @@ TEMPLATE_DEFINITIONS = [
             },
         },
     },
+    {
+        'code': 'chat_new_message',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.CHAT,
+        'html_file': 'email/generic.html',
+        'translations': {
+            'en': {
+                'subject': 'New message: {{ title }}',
+                'body_html': '<p>{{ body }}</p>',
+                'body_text': '{{ body }}',
+                'in_app_title': '{{ title }}',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Nouveau message : {{ title }}',
+                'body_html': '<p>{{ body }}</p>',
+                'body_text': '{{ body }}',
+                'in_app_title': '{{ title }}',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'chat_admin_reply',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.CHAT,
+        'html_file': 'email/generic.html',
+        'translations': {
+            'en': {
+                'subject': 'Admin reply: {{ title }}',
+                'body_html': '<p>{{ body }}</p>',
+                'body_text': '{{ body }}',
+                'in_app_title': '{{ title }}',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Réponse administrateur : {{ title }}',
+                'body_html': '<p>{{ body }}</p>',
+                'body_text': '{{ body }}',
+                'in_app_title': '{{ title }}',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
 ]
 
 # IN_APP variants for feed rendering

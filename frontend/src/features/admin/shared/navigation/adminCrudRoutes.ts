@@ -8,6 +8,7 @@ export const adminCrudRoutes = {
   encadrantCreate: '/admin/encadrants/new',
   encadrantEdit: (id: number | string) => `/admin/encadrants/${id}/edit`,
   internshipOfferCreate: '/admin/internship-offers/create',
+  internshipOfferView: (id: string) => `/admin/internship-offers/${id}`,
   internshipOfferEdit: (id: string) => `/admin/internship-offers/${id}/edit`,
   announcementCreate: '/admin/announcements/create',
   announcementEdit: (id: string) => `/admin/announcements/${id}/edit`,

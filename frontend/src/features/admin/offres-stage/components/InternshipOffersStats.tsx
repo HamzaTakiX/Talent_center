@@ -1,6 +1,7 @@
 import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import InternshipOfferStatCard from './InternshipOfferStatCard';
+import InternshipPopularOfferCard from './InternshipPopularOfferCard';
 import AdminKpiGrid from '../../ui/AdminKpiGrid';
 import { AdminKpiGridSkeleton } from '../../ui/AdminKpiGridSkeleton';
 import { useStageDashboard } from '../hooks/useStageOffers';
@@ -11,6 +12,7 @@ const routeByStatKey: Record<string, string> = {
   expiredOffers: '/admin/internship-offers/expired',
   draftOffers: '/admin/internship-offers/drafts',
   closedOffers: '/admin/internship-offers/closed',
+  archivedOffers: '/admin/internship-offers/archived',
   totalApplications: '/admin/internship-offers/with-applications',
 };
 
@@ -19,7 +21,7 @@ const InternshipOffersStats: FunctionComponent = () => {
   const { stats, loading, error } = useStageDashboard();
 
   if (loading) {
-    return <AdminKpiGridSkeleton count={8} columns={4} />;
+    return <AdminKpiGridSkeleton count={9} columns={4} />;
   }
 
   if (error) {
@@ -32,22 +34,32 @@ const InternshipOffersStats: FunctionComponent = () => {
 
   return (
     <AdminKpiGrid columns={4}>
-      {stats.map((stat, index) => (
-        <InternshipOfferStatCard
-          key={stat.statKey ?? stat.label}
-          label={stat.label}
-          labelKey={stat.labelKey}
-          valueKey={stat.valueKey}
-          value={stat.value}
-          icon={stat.icon}
-          index={index}
-          onClick={
-            stat.statKey && routeByStatKey[stat.statKey]
-              ? () => navigate(routeByStatKey[stat.statKey!])
-              : undefined
-          }
-        />
-      ))}
+      {stats.map((stat, index) =>
+        stat.popularOffer ? (
+          <InternshipPopularOfferCard
+            key={stat.statKey ?? stat.label}
+            label={stat.label}
+            labelKey={stat.labelKey}
+            offer={stat.popularOffer}
+            index={index}
+          />
+        ) : (
+          <InternshipOfferStatCard
+            key={stat.statKey ?? stat.label}
+            label={stat.label}
+            labelKey={stat.labelKey}
+            valueKey={stat.valueKey}
+            value={stat.value}
+            icon={stat.icon}
+            index={index}
+            onClick={
+              stat.statKey && routeByStatKey[stat.statKey]
+                ? () => navigate(routeByStatKey[stat.statKey!])
+                : undefined
+            }
+          />
+        ),
+      )}
     </AdminKpiGrid>
   );
 };

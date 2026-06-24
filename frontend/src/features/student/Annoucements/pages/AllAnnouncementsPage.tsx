@@ -1,51 +1,61 @@
-import { FunctionComponent, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { FunctionComponent, useState } from 'react';
 import StudentLayout from '../../components/StudentLayout';
 import RecommendedForYouSection from '../components/RecommendedForYouSection';
 import AllAnnouncementsFeedSection from '../components/AllAnnouncementsFeedSection';
+import AnnouncementsFilterBar from '../components/AnnouncementsFilterBar';
+import StudentAnnouncementsFiltersSkeleton from '../components/StudentAnnouncementsFiltersSkeleton';
 import { ANNOUNCEMENTS_PAGE_ROOT } from '../constants/announcementsLayout';
-import {
-  allAnnouncementsFeed,
-  recommendedAnnouncements,
-} from '../data/allAnnouncementsMock';
-import { filterAnnouncements } from '../utils/filterAnnouncements';
-import { resolveAnnouncementItem } from '../utils/resolveAnnouncementItem';
+import { useStudentAnnouncements } from '../hooks/useStudentAnnouncements';
+import type { AnnouncementDateFilter } from '../types';
+import '../../../admin/announcements-stage/styles/admin-announcements.css';
 
 const AllAnnouncementsPage: FunctionComponent = () => {
-  const { t, i18n } = useTranslation();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState<AnnouncementDateFilter>('all');
 
-  const resolvedRecommended = useMemo(
-    () => recommendedAnnouncements.map((item) => resolveAnnouncementItem(item, t)),
-    [t, i18n.language],
-  );
+  const { items, recommended, typeOptions, loading, error } = useStudentAnnouncements({
+    search,
+    type: typeFilter,
+    priority: priorityFilter,
+    date: dateFilter,
+  });
 
-  const resolvedAll = useMemo(
-    () => allAnnouncementsFeed.map((item) => resolveAnnouncementItem(item, t)),
-    [t, i18n.language],
-  );
-
-  /** Recherche / filtres : section « Toutes les annonces » uniquement. */
-  const filteredAll = useMemo(
-    () => filterAnnouncements(resolvedAll, search, typeFilter, priorityFilter, t),
-    [resolvedAll, search, typeFilter, priorityFilter, t],
-  );
+  const isInitialLoad = loading && items.length === 0 && recommended.length === 0;
 
   return (
     <StudentLayout>
       <div id="student-announcements-all-root" className={ANNOUNCEMENTS_PAGE_ROOT}>
-        <RecommendedForYouSection items={resolvedRecommended} />
+        {error ? (
+          <p className="m-0 text-sm text-[var(--admin-danger)]" role="alert">
+            {error}
+          </p>
+        ) : null}
+
+        <RecommendedForYouSection items={recommended} loading={isInitialLoad || (loading && recommended.length === 0)} />
+
+        {isInitialLoad ? (
+          <StudentAnnouncementsFiltersSkeleton />
+        ) : (
+          <AnnouncementsFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            typeFilter={typeFilter}
+            onTypeFilterChange={setTypeFilter}
+            priorityFilter={priorityFilter}
+            onPriorityFilterChange={setPriorityFilter}
+            dateFilter={dateFilter}
+            onDateFilterChange={setDateFilter}
+            typeOptions={typeOptions}
+            searchLoading={loading}
+            totalCount={items.length}
+          />
+        )}
 
         <AllAnnouncementsFeedSection
-          items={filteredAll}
-          search={search}
-          onSearchChange={setSearch}
-          typeFilter={typeFilter}
-          onTypeFilterChange={setTypeFilter}
-          priorityFilter={priorityFilter}
-          onPriorityFilterChange={setPriorityFilter}
+          items={items}
+          loading={isInitialLoad || (loading && items.length === 0)}
         />
       </div>
     </StudentLayout>

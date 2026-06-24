@@ -11,7 +11,6 @@ interface Props {
 const DEFAULT_LABELS: Record<keyof SupportQuickFilters, string> = {
   unread: 'Non lus',
   urgent: 'Urgent',
-  archived: 'Archivées',
 };
 
 const SupportQuickFilterBar: FunctionComponent<Props> = ({
@@ -21,7 +20,7 @@ const SupportQuickFilterBar: FunctionComponent<Props> = ({
   labels = {},
 }) => {
   const resolvedLabels = { ...DEFAULT_LABELS, ...labels };
-  const hasActive = filters.unread || filters.urgent || filters.archived;
+  const hasActive = filters.unread || filters.urgent;
 
   return (
     <div className="isi-filters-panel">
