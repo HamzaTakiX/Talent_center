@@ -3,20 +3,13 @@
 from __future__ import annotations
 
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 
 
-def schedule_student_recompute(student_profile_id: int) -> None:
-    """Enqueue async recompute or run synchronously when Celery is unavailable."""
-    try:
-        from .celery_tasks import recompute_student_intelligence_task
-        if recompute_student_intelligence_task is not None:
-            recompute_student_intelligence_task.delay(student_profile_id)
-            return
-    except Exception:
-        pass
-
+def _run_recompute_in_background(student_profile_id: int) -> None:
+    """Run intelligence recompute outside the HTTP request thread."""
     from apps.accounts_et_roles.models import StudentProfile
     from apps.profile_intelligence.services.student_intelligence_service import (
         recompute_student_intelligence,
@@ -27,6 +20,28 @@ def schedule_student_recompute(student_profile_id: int) -> None:
         recompute_student_intelligence(student)
     except StudentProfile.DoesNotExist:
         logger.warning('Student profile %s not found for intelligence recompute', student_profile_id)
+    except Exception:
+        logger.exception('Background intelligence recompute failed for %s', student_profile_id)
+
+
+def schedule_student_recompute(student_profile_id: int) -> None:
+    """Enqueue async recompute; never block the caller on the full scoring pipeline."""
+    try:
+        from .celery_tasks import recompute_student_intelligence_task
+
+        if recompute_student_intelligence_task is not None:
+            recompute_student_intelligence_task.delay(student_profile_id)
+            return
+    except Exception:
+        pass
+
+    thread = threading.Thread(
+        target=_run_recompute_in_background,
+        args=(student_profile_id,),
+        name=f'intel-recompute-{student_profile_id}',
+        daemon=True,
+    )
+    thread.start()
 
 
 try:

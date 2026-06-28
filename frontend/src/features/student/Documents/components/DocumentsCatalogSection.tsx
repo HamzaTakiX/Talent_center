@@ -1,8 +1,9 @@
 import { FunctionComponent } from 'react';
+import { FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminPagination from '../../../admin/ui/AdminPagination';
 import { useAdminPagination } from '../../../admin/shared/hooks/useAdminPagination';
-import type { ResolvedDocumentCatalogItem } from '../types';
+import type { DocumentServiceCatalogItem } from '../../../admin/Documents_admin/types/documentServiceCatalog';
 import DocumentCatalogCard from './DocumentCatalogCard';
 import DocumentsCatalogToolbar from './DocumentsCatalogToolbar';
 import StudentSearchEmptyState from '../../ui/StudentSearchEmptyState';
@@ -11,15 +12,18 @@ import {
   type DocumentBadgeFilter,
   type DocumentCategoryFilter,
 } from '../constants/documentsCatalog';
+import { DOCUMENTS_CATALOG_BODY, DOCUMENTS_CATALOG_PANEL } from '../constants/documentsLayout';
 
 interface DocumentsCatalogSectionProps {
-  items: ResolvedDocumentCatalogItem[];
+  items: DocumentServiceCatalogItem[];
   search: string;
   onSearchChange: (value: string) => void;
   categoryFilter: DocumentCategoryFilter;
   onCategoryFilterChange: (value: DocumentCategoryFilter) => void;
   badgeFilter: DocumentBadgeFilter;
   onBadgeFilterChange: (value: DocumentBadgeFilter) => void;
+  loading?: boolean;
+  onViewDocument: (id: string) => void;
 }
 
 const DocumentsCatalogSection: FunctionComponent<DocumentsCatalogSectionProps> = ({
@@ -30,6 +34,8 @@ const DocumentsCatalogSection: FunctionComponent<DocumentsCatalogSectionProps> =
   onCategoryFilterChange,
   badgeFilter,
   onBadgeFilterChange,
+  loading = false,
+  onViewDocument,
 }) => {
   const { t } = useTranslation();
   const { page, setPage, paginatedItems, totalItems, totalPages, pageSize } = useAdminPagination(
@@ -38,54 +44,69 @@ const DocumentsCatalogSection: FunctionComponent<DocumentsCatalogSectionProps> =
   );
 
   return (
-    <section className="min-w-0 space-y-4 sm:space-y-5" aria-labelledby="documents-catalog-heading">
-      <div className="flex min-w-0 flex-col gap-3 sm:gap-4">
-        <div className="min-w-0">
-          <h2
-            id="documents-catalog-heading"
-            className="m-0 text-lg font-semibold leading-7 text-[var(--admin-text)] sm:text-xl"
-          >
-            {t('student.documents.catalogTitle')}
-          </h2>
-          <p className="mt-1 text-sm leading-6 text-[var(--admin-text-muted)] sm:text-base">
-            {t('student.documents.catalogSubtitle')}
-          </p>
+    <section className={DOCUMENTS_CATALOG_PANEL} aria-labelledby="documents-catalog-heading">
+      <div className="admin-ann-feed__hero">
+        <div className="admin-ann-feed__hero-top">
+          <div className="admin-ann-feed__title-block">
+            <span className="admin-ann-feed__icon-wrap" aria-hidden>
+              <FileText className="h-[1.125rem] w-[1.125rem] text-[var(--admin-brand)]" />
+            </span>
+            <div className="admin-ann-feed__titles">
+              <div className="admin-ann-feed__title-row">
+                <h2 id="documents-catalog-heading" className="admin-ann-feed__title">
+                  {t('student.documents.catalogTitle')}
+                </h2>
+                <span className="admin-ann-feed__count">{totalItems}</span>
+              </div>
+              <p className="admin-ann-feed__subtitle">{t('student.documents.catalogSubtitle')}</p>
+            </div>
+          </div>
         </div>
 
-        <DocumentsCatalogToolbar
-          search={search}
-          onSearchChange={onSearchChange}
-          categoryFilter={categoryFilter}
-          onCategoryFilterChange={onCategoryFilterChange}
-          badgeFilter={badgeFilter}
-          onBadgeFilterChange={onBadgeFilterChange}
-        />
+        <div className="admin-ann-feed__toolbar">
+          <DocumentsCatalogToolbar
+            search={search}
+            onSearchChange={onSearchChange}
+            categoryFilter={categoryFilter}
+            onCategoryFilterChange={onCategoryFilterChange}
+            badgeFilter={badgeFilter}
+            onBadgeFilterChange={onBadgeFilterChange}
+          />
+        </div>
       </div>
 
-      {items.length === 0 ? (
-        <StudentSearchEmptyState title={t('student.documents.noSearchResults')} />
-      ) : (
-        <>
-          <div className="student-document-catalog-grid grid w-full min-w-0 grid-cols-1 items-stretch gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
-            {paginatedItems.map((item) => (
-              <DocumentCatalogCard
-                key={item.id}
-                item={item}
-                onRequest={(id) => console.log('Demander document', id)}
-              />
+      <div className={DOCUMENTS_CATALOG_BODY}>
+        {loading ? (
+          <div className="admin-doc-svc-grid admin-doc-svc-grid--loading w-full min-w-0">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="admin-doc-svc-card admin-doc-svc-card--skeleton" />
             ))}
           </div>
+        ) : items.length === 0 ? (
+          <StudentSearchEmptyState title={t('student.documents.noSearchResults')} />
+        ) : (
+          <>
+            <div className="admin-doc-svc-grid w-full min-w-0">
+              {paginatedItems.map((item) => (
+                <DocumentCatalogCard
+                  key={item.id}
+                  item={item}
+                  onView={onViewDocument}
+                />
+              ))}
+            </div>
 
-          <AdminPagination
-            page={page}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageChange={setPage}
-            itemLabel={t('student.documents.pagination.documents')}
-          />
-        </>
-      )}
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              itemLabel={t('student.documents.pagination.documents')}
+            />
+          </>
+        )}
+      </div>
     </section>
   );
 };

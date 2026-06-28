@@ -40,6 +40,8 @@ import CreateOfferPreviewPanel from './CreateOfferPreviewPanel';
 
 import ImportFromUrlWorkspace from './ImportFromUrlWorkspace';
 
+import ParseFromTextWorkspace from './ParseFromTextWorkspace';
+
 import DuplicateDetectionBanner from './DuplicateDetectionBanner';
 
 import SuggestedStudentsPanel from './SuggestedStudentsPanel';
@@ -177,7 +179,7 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
 
       toast.warning(t(`${PREFIX}.messages.incompleteOffer`));
 
-      if (workflow.method !== 'import') {
+      if (workflow.method !== 'import' && workflow.method !== 'text') {
         workflow.setCurrentStep('review');
       }
 
@@ -277,7 +279,7 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
 
     }
 
-    if (workflow.method !== 'import' && isReadyToPublish(workflow.form)) {
+    if (workflow.method !== 'import' && workflow.method !== 'text' && isReadyToPublish(workflow.form)) {
 
       toast.warning(t(`${PREFIX}.messages.completeOfferUsePublish`));
 
@@ -399,8 +401,11 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
     if (workflow.method === 'import') {
       return workflow.importPhase !== 'extracted' || !importCanPublish;
     }
+    if (workflow.method === 'text') {
+      return workflow.textPhase !== 'extracted' || !workflow.form.title.trim();
+    }
     return !workflow.form.title.trim();
-  }, [importCanPublish, isBusy, workflow.form.title, workflow.importPhase, workflow.method]);
+  }, [importCanPublish, isBusy, workflow.form.title, workflow.importPhase, workflow.method, workflow.textPhase]);
 
   const saveDraftDisabled = useMemo(() => {
     if (isBusy) return true;
@@ -408,8 +413,11 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
     if (workflow.method === 'import') {
       return workflow.importPhase !== 'extracted';
     }
+    if (workflow.method === 'text') {
+      return workflow.textPhase !== 'extracted';
+    }
     return formIsComplete;
-  }, [formIsComplete, isBusy, workflow.importPhase, workflow.isEditMode, workflow.method]);
+  }, [formIsComplete, isBusy, workflow.importPhase, workflow.isEditMode, workflow.method, workflow.textPhase]);
 
 
 
@@ -476,7 +484,7 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
           workflow.currentStep === 'review' && workflow.method === 'manual'
             ? 'offer-studio__layout--review'
             : ''
-        } ${workflow.method === 'import' ? 'offer-studio__layout--import' : ''} ${
+        } ${workflow.method === 'import' || workflow.method === 'text' ? 'offer-studio__layout--import' : ''} ${
           !workflow.method && !workflow.isEditMode ? 'offer-studio__layout--method-select' : ''
         }`}
       >
@@ -556,6 +564,98 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
               )}
 
               {workflow.importPhase === 'extracted' && (
+
+                <div className="offer-studio-footer">
+
+                  <button type="button" className={OFFER_STUDIO_BTN_SECONDARY} onClick={() => workflow.setMethod(null)} disabled={isBusy}>
+
+                    {t(`${PREFIX}.actions.changeMethod`)}
+
+                  </button>
+
+                  <OfferStudioActionButton
+
+                    icon={Save}
+
+                    loading={submitAction === 'draft'}
+
+                    loadingLabel={t(`${PREFIX}.actions.savingDraft`)}
+
+                    disabled={saveDraftDisabled}
+
+                    onClick={() => void handleSaveDraft()}
+
+                  >
+
+                    {t(`${PREFIX}.actions.saveDraft`)}
+
+                  </OfferStudioActionButton>
+
+                  <OfferStudioActionButton
+
+                    variant="primary"
+
+                    icon={CheckCircle}
+
+                    loading={submitAction === 'publish'}
+
+                    loadingLabel={t(`${PREFIX}.actions.publishing`)}
+
+                    disabled={publishDisabled}
+
+                    onClick={handlePublish}
+
+                  >
+
+                    {t(`${PREFIX}.actions.publish`)}
+
+                  </OfferStudioActionButton>
+
+                </div>
+
+              )}
+
+            </>
+
+          )}
+
+
+
+          {workflow.method === 'text' && (
+
+            <>
+
+              <ParseFromTextWorkspace
+
+                textInput={workflow.textInput}
+
+                onTextChange={workflow.setTextInput}
+
+                textPhase={workflow.textPhase}
+
+                textError={workflow.textError}
+
+                textExtractedFields={workflow.textExtractedFields}
+
+                form={workflow.form}
+
+                onFormChange={workflow.updateForm}
+
+                onParse={() => { void workflow.parseText(); }}
+
+                onReset={workflow.resetTextParse}
+
+                validationAttempted={workflow.validationAttempted}
+
+                hasTargeting={workflow.hasTargeting}
+
+                audienceSize={workflow.audienceSize}
+
+                audiencePreviewLoading={workflow.audiencePreviewLoading}
+
+              />
+
+              {workflow.textPhase === 'extracted' && (
 
                 <div className="offer-studio-footer">
 
@@ -826,6 +926,7 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
 
 
         {(workflow.method === 'import' ||
+          workflow.method === 'text' ||
           (workflow.method === 'manual' && workflow.currentStep !== 'review')) && (
 
         <div className="offer-studio__preview-col">

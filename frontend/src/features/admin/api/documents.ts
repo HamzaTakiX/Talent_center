@@ -137,4 +137,29 @@ export const adminDocumentsApi = {
     const res = await apiClient.post<ApiEnvelope<{ created: number }>>(`${BASE}/catalog/seed`);
     return res.data.data;
   },
+
+  catalogTemplateFile: async (id: string): Promise<Blob> => {
+    const res = await apiClient.get<Blob>(`${BASE}/catalog/${id}/template-file`, {
+      responseType: 'blob',
+      validateStatus: (status) => status < 500,
+    });
+    if (res.status >= 400) {
+      throw new Error('template file not found');
+    }
+    const blob = res.data;
+    if (blob.type.includes('json')) {
+      throw new Error('template file not found');
+    }
+    return blob;
+  },
+
+  catalogUploadTemplateFile: async (id: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient.post<ApiEnvelope<DocumentServiceCatalogItem>>(
+      `${BASE}/catalog/${id}/template-file`,
+      formData,
+    );
+    return res.data.data!;
+  },
 };

@@ -155,8 +155,7 @@ export function useDeskSupportChat({
     setConversations((prev) =>
       prev.map((c) => (c.id === id ? { ...c, archived: true, resolved: true } : c))
     );
-    setSelectedId('');
-    setMobileView('list');
+    setPrimaryFilter('archived');
   }, []);
 
   const unarchiveConversation = useCallback((id: string) => {

@@ -150,3 +150,54 @@ export function patchConversationPreviewInList(
     ),
   );
 }
+
+/** Clear unread for one conversation in local inbox state. */
+export function zeroConversationUnreadInList(
+  items: ConversationDto[],
+  conversationId: number,
+): ConversationDto[] {
+  const targetId = Number(conversationId);
+  return items.map((conversation) =>
+    Number(conversation.id) === targetId ? { ...conversation, unread_count: 0 } : conversation,
+  );
+}
+
+const SEEN_WS_MESSAGE_CAP = 500;
+
+/**
+ * Apply optimistic preview + unread bump for an incoming WS message.
+ * Deduplicates by message_id and derives unread from prev list state (not refs).
+ */
+export function applyIncomingMessageUnreadPreview(
+  prev: ConversationDto[],
+  conversationId: number,
+  preview: string,
+  options: {
+    isActiveConv: boolean;
+    isOwn?: boolean;
+    at?: string;
+    messageId?: number | null;
+    seenMessageIds: Set<number>;
+  },
+): ConversationDto[] {
+  const messageId = options.messageId;
+  if (messageId != null && Number.isFinite(messageId)) {
+    if (options.seenMessageIds.has(messageId)) {
+      return prev;
+    }
+    options.seenMessageIds.add(messageId);
+    if (options.seenMessageIds.size > SEEN_WS_MESSAGE_CAP) {
+      options.seenMessageIds.clear();
+      options.seenMessageIds.add(messageId);
+    }
+  }
+
+  const existing = prev.find((c) => Number(c.id) === Number(conversationId));
+  const unreadCount = options.isActiveConv ? 0 : (existing?.unread_count ?? 0) + 1;
+
+  return patchConversationPreviewInList(prev, conversationId, preview, {
+    isOwn: options.isOwn ?? false,
+    at: options.at,
+    unreadCount,
+  });
+}

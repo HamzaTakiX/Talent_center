@@ -1,25 +1,44 @@
 import { FunctionComponent, useState } from 'react';
-import { Filter, Search, X } from 'lucide-react';
+import { Archive, FileText, Search, X } from 'lucide-react';
+import { useInternshipInboxCopy } from '../../../offres-stage/hooks/useOffersListLabels';
+import InternshipSidebarEmptyState from '../../../offres-stage/chat/components/InternshipSidebarEmptyState';
+import { InternshipChatSidebarSkeleton } from '../../../offres-stage/chat/components/InternshipChatLoadingSkeletons';
+import InternshipStudentAvatar from '../../../offres-stage/chat/components/InternshipStudentAvatar';
+import ChatSidebarHeader from '../../../../shared/chat-design-system/components/ChatSidebarHeader';
+import ChatToolbarActions from '../../../../shared/chat-design-system/components/ChatToolbarActions';
+import ChatUnreadBadge from '../../../../shared/chat-design-system/components/ChatUnreadBadge';
 import type { StudentAcademicFilterCounts } from '../../../shared/chat-filters/studentAcademicChatFilterTypes';
-import type { DocumentConversation, DocumentInboxFilters } from '../types/documentChatTypes';
+import DocumentServiceChatIcon from '../../components/service-catalog/DocumentServiceChatIcon';
+import type {
+  DocumentConversation,
+  DocumentInboxFilters,
+  PrimaryFilterCounts,
+} from '../types/documentChatTypes';
 import DocumentFilterAccordion from './DocumentFilterAccordion';
 
 type Props = {
   conversations: DocumentConversation[];
+  loading?: boolean;
+  loadError?: string | null;
   selectedId: string;
   filters: DocumentInboxFilters;
+  primaryFilterCounts: PrimaryFilterCounts;
   hasActiveFilters: boolean;
   filterCounts: StudentAcademicFilterCounts;
   programOptions: string[];
   classOptions: string[];
   academicLevelOptions: string[];
   search: string;
+  onSetPrimary: (value: DocumentInboxFilters['primary']) => void;
   onToggleFilter: <K extends 'categories' | 'statuses' | 'priorities'>(
     key: K,
-    value: DocumentInboxFilters[K][number]
+    value: DocumentInboxFilters[K][number],
   ) => void;
-  onToggleStudentAcademicFilter: (key: keyof import('../../../shared/chat-filters/studentAcademicChatFilterTypes').StudentAcademicChatFilters, value: string) => void;
-  onToggleQuickFilter: (key: 'unread' | 'urgent' | 'archived') => void;
+  onToggleStudentAcademicFilter: (
+    key: keyof import('../../../shared/chat-filters/studentAcademicChatFilterTypes').StudentAcademicChatFilters,
+    value: string,
+  ) => void;
+  onToggleQuickFilter: (key: 'unread' | 'urgent') => void;
   onClearFilters: () => void;
   onSearchChange: (v: string) => void;
   onSelect: (id: string) => void;
@@ -27,14 +46,18 @@ type Props = {
 
 const DocumentConversationList: FunctionComponent<Props> = ({
   conversations,
+  loading = false,
+  loadError,
   selectedId,
   filters,
+  primaryFilterCounts,
   hasActiveFilters,
   filterCounts,
   programOptions,
   classOptions,
   academicLevelOptions,
   search,
+  onSetPrimary,
   onToggleFilter,
   onToggleStudentAcademicFilter,
   onToggleQuickFilter,
@@ -43,22 +66,46 @@ const DocumentConversationList: FunctionComponent<Props> = ({
   onSelect,
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const { t } = useInternshipInboxCopy();
+  const viewingArchived = filters.primary === 'archived';
+
+  if (loading && conversations.length === 0) {
+    return <InternshipChatSidebarSkeleton />;
+  }
 
   return (
     <aside className="isi-sidebar">
-      <div className="isi-sidebar-head">
-        <h2 className="isi-sidebar-title">Conversations</h2>
-        <button
-          type="button"
-          onClick={() => setFiltersOpen((v) => !v)}
-          className={`isi-filter-toggle ${filtersOpen || hasActiveFilters ? 'isi-filter-toggle--active' : ''}`}
-          aria-expanded={filtersOpen}
-          aria-label="Filtres"
-        >
-          <Filter className="size-4" strokeWidth={2} />
-          {hasActiveFilters ? <span className="isi-filter-dot" /> : null}
-        </button>
-      </div>
+      <ChatSidebarHeader
+        title="Conversations documents"
+        subtitle="Questions étudiants sur le catalogue"
+        icon={FileText}
+        actions={
+          <ChatToolbarActions
+            viewingArchived={viewingArchived}
+            archivedCount={primaryFilterCounts.archived}
+            hasActiveFilters={hasActiveFilters}
+            filtersOpen={filtersOpen}
+            onToggleArchive={() => onSetPrimary(viewingArchived ? 'all' : 'archived')}
+            onToggleFilters={() => setFiltersOpen((v) => !v)}
+          />
+        }
+      />
+
+      {loadError ? (
+        <p className="isi-load-error px-4 py-2 text-sm text-[var(--admin-danger,#dc2626)]" role="alert">
+          {loadError}
+        </p>
+      ) : null}
+
+      {viewingArchived ? (
+        <div className="isi-archived-strip">
+          <Archive className="isi-archived-strip-icon" strokeWidth={2} aria-hidden />
+          <span className="isi-archived-strip-label">{t('archivedBanner')}</span>
+          <button type="button" onClick={() => onSetPrimary('all')} className="isi-archived-strip-back">
+            {t('backToActiveConversations')}
+          </button>
+        </div>
+      ) : null}
 
       <div className="isi-search-wrap">
         <label className="admin-header-search-field isi-search-field">
@@ -67,7 +114,7 @@ const DocumentConversationList: FunctionComponent<Props> = ({
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Rechercher un document…"
+            placeholder="Rechercher un document ou un étudiant…"
             className="admin-input admin-header-search-input isi-search-input"
             aria-label="Rechercher une conversation"
             autoComplete="off"
@@ -119,12 +166,15 @@ const DocumentConversationList: FunctionComponent<Props> = ({
               </button>
             </div>
           ) : (
-            <div className="isi-conv-empty">
-              <p className="text-sm font-medium text-[var(--admin-text)]">Aucune conversation</p>
-              <p className="mt-1 text-xs text-[var(--admin-text-muted)]">
-                Ajustez vos filtres ou votre recherche
-              </p>
-            </div>
+            <InternshipSidebarEmptyState
+              title={viewingArchived ? 'Aucune conversation archivée' : 'Aucune conversation'}
+              description={
+                viewingArchived
+                  ? 'Les conversations archivées apparaîtront ici.'
+                  : 'Les questions des étudiants sur les documents apparaîtront ici.'
+              }
+              variant={viewingArchived ? 'archived' : 'default'}
+            />
           )
         ) : (
           conversations.map((conv) => {
@@ -134,25 +184,31 @@ const DocumentConversationList: FunctionComponent<Props> = ({
                 key={conv.id}
                 type="button"
                 onClick={() => onSelect(conv.id)}
-                className={`isi-conv-item ${active ? 'isi-conv-item--active' : ''}`}
+                className={`isi-conv-item isi-conv-item--offer ${active ? 'isi-conv-item--active' : ''}`}
               >
-                <div className="isi-avatar">{conv.studentInitials}</div>
+                <DocumentServiceChatIcon
+                  iconKey={conv.iconKey}
+                  colorTheme={conv.colorTheme}
+                  size="list"
+                />
                 <div className="isi-conv-body">
                   <div className="isi-conv-row">
-                    <span className="isi-conv-name">{conv.studentName}</span>
-                    <span className="isi-conv-time">{conv.timeLabel}</span>
+                    <span className="isi-conv-name">{conv.documentTitle}</span>
+                    {conv.timeLabel ? <span className="isi-conv-time">{conv.timeLabel}</span> : null}
                   </div>
-                  <p className="isi-conv-meta-line">
-                    {conv.program}
-                    {conv.className !== '—' ? ` · ${conv.className}` : ''}
-                  </p>
-                  <p className="isi-conv-offer">{conv.documentTitle}</p>
-                  <p className="isi-conv-preview">{conv.lastMessage}</p>
-                  <span className="isi-status-text">{conv.requestStatus}</span>
+                  <div className="isi-conv-row isi-conv-row--student">
+                    <InternshipStudentAvatar
+                      url={conv.studentAvatarUrl}
+                      name={conv.studentName}
+                      email={conv.studentEmail}
+                      initials={conv.studentInitials}
+                      size="list"
+                    />
+                    <span className="isi-conv-student-name">{conv.studentName}</span>
+                  </div>
+                  {conv.lastMessage ? <p className="isi-conv-preview isi-conv-preview--offer">{conv.lastMessage}</p> : null}
                 </div>
-                {conv.unreadCount > 0 ? (
-                  <span className="isi-unread">{conv.unreadCount > 99 ? '99+' : conv.unreadCount}</span>
-                ) : null}
+                <ChatUnreadBadge count={conv.unreadCount} />
               </button>
             );
           })

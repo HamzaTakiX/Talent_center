@@ -1,14 +1,17 @@
-import { FunctionComponent, useMemo, useState } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Sparkles } from 'lucide-react';
 import AdminModulePageShell from '../../ui/AdminModulePageShell';
-import { AdminSearchInput, AdminSelectField } from '../../ui';
+import { AdminPagination, AdminSearchInput, AdminSelectField } from '../../ui';
+import { useAdminPagination } from '../../shared/hooks/useAdminPagination';
 import AdminToggle from '../../account/components/AdminToggle';
 import ServiceCatalogCard from '../components/service-catalog/ServiceCatalogCard';
 import DocumentsPremiumEmpty from '../components/DocumentsPremiumEmpty';
 import { seedServiceCatalog, useServiceCatalogList } from '../hooks/useServiceCatalog';
 import '../styles/admin-documents.css';
+
+const SERVICE_CATALOG_PAGE_SIZE = 8;
 
 const ServiceCatalogPage: FunctionComponent = () => {
   const { t } = useTranslation();
@@ -33,6 +36,20 @@ const ServiceCatalogPage: FunctionComponent = () => {
     }
     return list;
   }, [items, search, category, activeOnly]);
+
+  const {
+    page,
+    setPage,
+    paginatedItems,
+    totalItems,
+    totalPages,
+    pageSize,
+    resetPage,
+  } = useAdminPagination(filtered, SERVICE_CATALOG_PAGE_SIZE);
+
+  useEffect(() => {
+    resetPage();
+  }, [search, category, activeOnly, resetPage]);
 
   const handleSeed = async () => {
     await seedServiceCatalog();
@@ -101,23 +118,35 @@ const ServiceCatalogPage: FunctionComponent = () => {
               onChange={setActiveOnly}
             />
           </div>
-        </section>
 
-        {loading ? (
-          <div className="admin-doc-svc-grid admin-doc-svc-grid--loading">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="admin-doc-svc-card admin-doc-svc-card--skeleton" />
-            ))}
+          <div className="admin-doc-catalog-filters__grid">
+            {loading ? (
+              <div className="admin-doc-svc-grid admin-doc-svc-grid--loading">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="admin-doc-svc-card admin-doc-svc-card--skeleton" />
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <DocumentsPremiumEmpty variant="requests" />
+            ) : (
+              <>
+                <div className="admin-doc-svc-grid">
+                  {paginatedItems.map((service) => (
+                    <ServiceCatalogCard key={service.id} service={service} />
+                  ))}
+                </div>
+                <AdminPagination
+                  page={page}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                  itemLabel={t('admin.documentsModule.catalog.paginationLabel')}
+                />
+              </>
+            )}
           </div>
-        ) : filtered.length === 0 ? (
-          <DocumentsPremiumEmpty variant="requests" />
-        ) : (
-          <div className="admin-doc-svc-grid">
-            {filtered.map((service) => (
-              <ServiceCatalogCard key={service.id} service={service} />
-            ))}
-          </div>
-        )}
+        </section>
       </div>
     </AdminModulePageShell>
   );

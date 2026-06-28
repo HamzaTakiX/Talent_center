@@ -1,3 +1,5 @@
+export { default as ChatMessageBubbleContent } from './components/ChatMessageBubbleContent';
+export type { ChatMessageBubbleContentProps } from './components/ChatMessageBubbleContent';
 export { default as ContextualChatShell } from './components/ContextualChatShell';
 export type { ContextualChatShellProps } from './components/ContextualChatShell';
 export { useContextualChat } from './hooks/useContextualChat';

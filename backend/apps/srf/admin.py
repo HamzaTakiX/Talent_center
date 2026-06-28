@@ -7,6 +7,10 @@ from .compliance_models import (
     ProgramExamPeriod,
     StudentAcademicAccess,
 )
+from .config_models import (
+    SrfInstallmentPlanTemplate,
+    SrfInstallmentPlanTranche,
+)
 from .import_models import (
     FinancialImportAuditEvent,
     FinancialImportBatch,
@@ -139,6 +143,23 @@ class PaymentProofSubmissionAdmin(admin.ModelAdmin):
 class ProgramExamPeriodAdmin(admin.ModelAdmin):
     list_display = ('filiere', 'academic_year', 'semester', 'exam_start', 'exam_end', 'is_active')
     list_filter = ('is_active', 'semester')
+
+
+class SrfInstallmentPlanTrancheInline(admin.TabularInline):
+    model = SrfInstallmentPlanTranche
+    extra = 0
+    fields = ('tranche_number', 'label', 'percentage', 'due_date', 'semester')
+
+
+@admin.register(SrfInstallmentPlanTemplate)
+class SrfInstallmentPlanTemplateAdmin(admin.ModelAdmin):
+    list_display = (
+        'name', 'filiere', 'academic_level', 'academic_year',
+        'number_of_tranches', 'split_mode', 'is_mandatory', 'is_active',
+    )
+    list_filter = ('split_mode', 'is_mandatory', 'is_active')
+    search_fields = ('name', 'description')
+    inlines = [SrfInstallmentPlanTrancheInline]
 
 
 @admin.register(StudentAcademicAccess)

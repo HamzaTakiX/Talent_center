@@ -2118,4 +2118,190 @@
       font-size: 0.8125rem;
     }
   }
+
+  /*
+   * CV Analysis Tool page — mobile layout (content unchanged).
+   * Fixes sections not spanning / aligning horizontally on narrow screens.
+   */
+  @media (max-width: 767px) {
+    #student-cv-analysis-tool-root {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      margin-inline: auto;
+      box-sizing: border-box;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva__root {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      margin-inline: auto;
+      padding-inline: 0;
+      box-sizing: border-box;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva__grid {
+      width: 100%;
+      min-width: 0;
+      margin-inline: auto;
+      gap: 1rem;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva__left,
+    #student-cv-analysis-tool-root .sr-cva-nav,
+    #student-cv-analysis-tool-root .sr-cva__main {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      margin-inline: auto;
+      box-sizing: border-box;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva__main > section {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      margin-inline: auto;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-glass {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      margin-inline: auto;
+      box-sizing: border-box;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva__nav-scroll {
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+      padding-inline: 0.125rem;
+      -webkit-overflow-scrolling: touch;
+      scroll-padding-inline: 0.75rem;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva__nav-item {
+      width: auto;
+      min-width: max-content;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva__nav-item--active {
+      box-shadow: inset 0 -3px 0 var(--admin-brand);
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-hero__inner {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-hero__inner > .min-w-0 {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-hero__profile {
+      width: 100%;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-hero__actions {
+      width: 100%;
+      margin-inline: auto;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-hero__title,
+    #student-cv-analysis-tool-root .sr-cva-hero__subtitle {
+      max-width: 100%;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-insights-grid {
+      grid-template-columns: minmax(0, 1fr);
+      justify-content: stretch;
+      justify-items: stretch;
+      width: 100%;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-insight-group {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-breakdown-grid,
+    #student-cv-analysis-tool-root .sr-cva-roadmap-grid,
+    #student-cv-analysis-tool-root .sr-cva-metrics-grid,
+    #student-cv-analysis-tool-root .sr-cva-skills-grid {
+      width: 100%;
+      max-width: 100%;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-score-card {
+      width: 100%;
+      justify-items: center;
+      text-align: center;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-score-card > .min-w-0 {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-section-card,
+    #student-cv-analysis-tool-root .sr-cva-match-card,
+    #student-cv-analysis-tool-root .sr-cva-rec-card,
+    #student-cv-analysis-tool-root .sr-cva-compare {
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+      box-sizing: border-box;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-cv-preview {
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-cv-preview__title {
+      width: 100%;
+      text-align: center;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-cv-preview__paper,
+    #student-cv-analysis-tool-root .sr-cva-cv-preview__pdf-shell,
+    #student-cv-analysis-tool-root .sr-cva-cv-preview__doc {
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+      box-sizing: border-box;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-outdated-banner,
+    #student-cv-analysis-tool-root .sr-cva-processing-banner {
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+      box-sizing: border-box;
+    }
+
+    #student-cv-analysis-tool-root .sr-cva-state {
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+      min-height: 20rem;
+      padding: 2rem 1rem;
+    }
+
+    html[dir='rtl'] #student-cv-analysis-tool-root .sr-cva__nav-item--active {
+      box-shadow: inset 0 -3px 0 var(--admin-brand);
+    }
+  }
 }

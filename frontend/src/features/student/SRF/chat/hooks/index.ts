@@ -1,1 +1,1 @@
-/** Hooks — Student SRF chat (placeholder). */
+export { useStudentSrfChat } from './useStudentSrfChat';

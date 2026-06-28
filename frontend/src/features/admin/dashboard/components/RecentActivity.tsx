@@ -1,16 +1,43 @@
 import { FunctionComponent, MouseEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, ChevronRight } from 'lucide-react';
+import { ArrowRight, Clock, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAdminDashboardData } from '../hooks/useAdminDashboardData';
 import DashboardSectionHeader from './DashboardSectionHeader';
 import DashboardPanel from '../ui/DashboardPanel';
-import { scaleTap } from '../ui/animations';
+import RecentActivitySkeleton from './RecentActivitySkeleton';
+import AdminSectionEmptyState from '../../ui/AdminSectionEmptyState';
+import { easePremium, scaleTap } from '../ui/animations';
 
 const getInitials = (name: string) => {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   return name.slice(0, 2).toUpperCase();
+};
+
+const RecentActivityViewAllButton: FunctionComponent<{ empty?: boolean }> = ({ empty = false }) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  return (
+    <div className={`admin-activity-view-all-footer${empty ? ' px-3 pb-4 pt-1 sm:px-4 sm:pb-5' : ''}`}>
+      <motion.button
+        type="button"
+        className={`admin-activity-view-all-btn${empty ? ' admin-activity-view-all-btn--empty' : ''}`}
+        onClick={() => navigate('/admin/history')}
+        whileTap={scaleTap.whileTap}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: easePremium, delay: empty ? 0 : 0.12 }}
+      >
+        <span>{t('admin.dashboard.activity.viewHistory')}</span>
+        <span className="admin-activity-view-all-btn__icon" aria-hidden>
+          <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" strokeWidth={2.25} />
+        </span>
+      </motion.button>
+    </div>
+  );
 };
 
 const RecentActivityRow: FunctionComponent<{
@@ -51,27 +78,36 @@ const RecentActivityRow: FunctionComponent<{
 
 const RecentActivity: FunctionComponent = () => {
   const { t } = useTranslation();
-  const { recentActivity } = useAdminDashboardData();
-
-  const handleActivityClick = (activityId: string) => {
-    console.log(`Clicked on activity ${activityId}`);
-  };
+  const navigate = useNavigate();
+  const { recentActivity, loading } = useAdminDashboardData();
 
   return (
-    <DashboardPanel data-admin-search-id="dashboard-activity" className="admin-section-panel h-full">
+    <DashboardPanel
+      data-admin-search-id="dashboard-activity"
+      className={`admin-section-panel h-full${loading ? ' admin-section-panel--loading' : ''}`}
+      aria-busy={loading}
+    >
       <DashboardSectionHeader
         icon={<Clock strokeWidth={1.75} aria-hidden />}
         title={t('admin.dashboard.activity.title')}
         subtitle={t('admin.dashboard.activity.subtitle')}
       />
 
-      <motion.div className="admin-section-list flex flex-col">
-        {recentActivity.length === 0 ? (
-          <p className="px-4 py-6 text-center text-sm text-[var(--admin-text-secondary)] sm:px-5">
-            {t('admin.dashboard.activity.empty', { defaultValue: 'No recent activity on the platform.' })}
-          </p>
-        ) : (
-          recentActivity.map((activity, index) => (
+      {loading ? (
+        <RecentActivitySkeleton />
+      ) : recentActivity.length === 0 ? (
+        <div className="flex flex-col">
+          <AdminSectionEmptyState
+            variant="inline"
+            iconPreset="inbox"
+            title={t('admin.dashboard.activity.empty')}
+            description={t('admin.dashboard.activity.emptyDesc')}
+          />
+          <RecentActivityViewAllButton empty />
+        </div>
+      ) : (
+        <motion.div className="admin-section-list flex flex-col">
+          {recentActivity.map((activity, index) => (
             <RecentActivityRow
               key={activity.id}
               action={activity.action}
@@ -80,12 +116,13 @@ const RecentActivity: FunctionComponent = () => {
               index={index}
               onClick={(e: MouseEvent<HTMLButtonElement>) => {
                 e.stopPropagation();
-                handleActivityClick(activity.id);
+                navigate('/admin/history');
               }}
             />
-          ))
-        )}
-      </motion.div>
+          ))}
+          <RecentActivityViewAllButton />
+        </motion.div>
+      )}
     </DashboardPanel>
   );
 };

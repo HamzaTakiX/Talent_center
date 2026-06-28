@@ -17,6 +17,7 @@ export const srfFeeRows: SrfFeeRow[] = [
     amountPaid: 15000,
     amountRemaining: 0,
     status: 'paid',
+    canPay: false,
   },
   {
     id: 'fee-2',
@@ -26,6 +27,7 @@ export const srfFeeRows: SrfFeeRow[] = [
     amountPaid: 15000,
     amountRemaining: 0,
     status: 'paid',
+    canPay: false,
   },
   {
     id: 'fee-3',
@@ -35,6 +37,7 @@ export const srfFeeRows: SrfFeeRow[] = [
     amountPaid: 2500,
     amountRemaining: 0,
     status: 'paid',
+    canPay: false,
   },
   {
     id: 'fee-4',
@@ -44,6 +47,7 @@ export const srfFeeRows: SrfFeeRow[] = [
     amountPaid: 800,
     amountRemaining: 0,
     status: 'paid',
+    canPay: false,
   },
   {
     id: 'fee-5',
@@ -53,41 +57,37 @@ export const srfFeeRows: SrfFeeRow[] = [
     amountPaid: 0,
     amountRemaining: 300,
     status: 'unpaid',
+    canPay: true,
   },
 ];
 
 export const srfPaymentHistoryRows: SrfPaymentHistoryRow[] = [
   {
+    id: 'hist-proof-1-reviewed',
+    date: '20/01/2026',
+    sortAt: new Date('2026-01-20').getTime(),
+    type: 'verification',
+    description: 'tranche_2 (VIR-2026-001)',
+    amount: 11000,
+    status: 'approved',
+  },
+  {
+    id: 'hist-proof-1-submitted',
+    date: '18/01/2026',
+    sortAt: new Date('2026-01-18').getTime(),
+    type: 'verification',
+    description: 'Demande de verification — tranche_2 (VIR-2026-001)',
+    amount: 11000,
+    status: 'pending',
+  },
+  {
     id: 'hist-1',
     date: '15/01/2026',
-    type: 'Paiement',
+    sortAt: new Date('2026-01-15').getTime(),
+    type: 'payment',
     description: 'Paiement frais scolarité S2',
     amount: 15000,
-    status: 'Validé',
-  },
-  {
-    id: 'hist-2',
-    date: '20/01/2026',
-    type: 'Validation',
-    description: 'Validation du reçu de paiement',
-    amount: 15000,
-    status: 'Approuvé',
-  },
-  {
-    id: 'hist-3',
-    date: '10/09/2025',
-    type: 'Paiement',
-    description: 'Paiement frais scolarité S1',
-    amount: 15000,
-    status: 'Validé',
-  },
-  {
-    id: 'hist-4',
-    date: '01/09/2025',
-    type: 'Paiement',
-    description: "Paiement frais d'inscription",
-    amount: 2500,
-    status: 'Validé',
+    status: 'validated',
   },
 ];
 

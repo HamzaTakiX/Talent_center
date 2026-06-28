@@ -13,8 +13,8 @@ const SKELETON_COUNT: Record<InternshipOffersGridSkeletonLayout, number> = {
 };
 
 const gridLayoutClass: Record<InternshipOffersGridSkeletonLayout, string> = {
-  recommended: 'grid-cols-1 md:grid-cols-2',
-  all: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+  recommended: 'grid-cols-2 md:grid-cols-2',
+  all: 'grid-cols-2 md:grid-cols-2 lg:grid-cols-3',
 };
 
 interface InternshipOfferCardSkeletonProps {
@@ -25,7 +25,7 @@ const InternshipOfferCardSkeleton: FunctionComponent<InternshipOfferCardSkeleton
   index,
 }) => (
   <motion.article
-    className={`${STUDENT_SURFACE_CARD} student-internship-offer-skeleton box-border flex w-full min-w-0 max-w-full flex-col items-start gap-5 overflow-hidden px-4 pb-4 pt-5 max-[429px]:gap-4 sm:gap-6 sm:px-[21px] sm:pb-4 sm:pt-[21px]`}
+    className={`${STUDENT_SURFACE_CARD} student-internship-offer-card student-internship-offer-skeleton box-border flex w-full min-w-0 max-w-full flex-col items-start gap-5 overflow-hidden px-4 pb-4 pt-5 max-[429px]:gap-4 sm:gap-6 sm:px-[21px] sm:pb-4 sm:pt-[21px]`}
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: index * 0.07, duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
@@ -62,19 +62,21 @@ const InternshipOfferCardSkeleton: FunctionComponent<InternshipOfferCardSkeleton
 interface InternshipOffersGridSkeletonProps {
   layout?: InternshipOffersGridSkeletonLayout;
   loadingLabelKey?: 'loadingRecommendations' | 'loadingAllOffers';
+  count?: number;
 }
 
 const InternshipOffersGridSkeleton: FunctionComponent<InternshipOffersGridSkeletonProps> = ({
   layout = 'recommended',
   loadingLabelKey = 'loadingRecommendations',
+  count: countOverride,
 }) => {
   const { t } = useTranslation();
   const loadingLabel = t(`student.internshipOffers.${loadingLabelKey}`);
-  const count = SKELETON_COUNT[layout];
+  const count = countOverride ?? SKELETON_COUNT[layout];
 
   return (
     <motion.div
-      className={`grid w-full min-w-0 max-w-full gap-3 max-[429px]:gap-2.5 sm:gap-4 ${gridLayoutClass[layout]}`}
+      className={`student-internship-offers-grid grid w-full min-w-0 max-w-full gap-3 max-[429px]:gap-2.5 sm:gap-4 ${gridLayoutClass[layout]}`}
       role="status"
       aria-live="polite"
       aria-busy="true"

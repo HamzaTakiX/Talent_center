@@ -67,7 +67,6 @@ const StudentAnnouncementContextPanel: FunctionComponent<Props> = ({
         <span className="isi-inspector-head-title">
           {t('student.announcements.chat.contextTitle', { defaultValue: 'Contexte' })}
         </span>
-        <span className="isi-inspector-head-badge">{conversation.category}</span>
       </header>
 
       <div className="isi-inspector-section-title">

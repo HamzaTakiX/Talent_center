@@ -224,6 +224,20 @@ export interface StageImportJob {
   completed_at: string | null;
 }
 
+export interface StageOfferImportPreview {
+  title: string;
+  company_name: string;
+  description: string;
+  requirements: string;
+  benefits?: string;
+  location_city: string;
+  required_skills: string[];
+  company_logo?: string;
+  source_platform: string;
+  parser_used: string;
+  source_url: string;
+}
+
 export interface StageImportListResponse {
   items: StageImportJob[];
   pagination: Record<string, unknown>;

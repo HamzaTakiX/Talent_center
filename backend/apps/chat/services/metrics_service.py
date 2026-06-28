@@ -10,6 +10,10 @@ from django.utils import timezone
 from apps.accounts_et_roles.models import User
 from apps.chat.models import Conversation, ConversationContext, Message
 from apps.chat.permissions import conversations_for_user
+from apps.chat.services.conversation_service import (
+    filter_offer_threads_with_student_messages,
+    should_filter_offer_threads_by_student_messages,
+)
 from apps.chat.services.message_service import unread_count_for_user
 
 
@@ -42,12 +46,14 @@ def _last_message_sender_role(conversation: Conversation) -> str | None:
 
 
 def compute_module_metrics(user: User, *, module: str) -> dict[str, Any]:
-    convs = list(
+    qs = (
         conversations_for_user(user)
         .filter(context__module=module, is_archived=False)
         .select_related('context')
-        .order_by('-last_message_at')[:500]
     )
+    if should_filter_offer_threads_by_student_messages(user, module=module):
+        qs = filter_offer_threads_with_student_messages(qs)
+    convs = list(qs.order_by('-last_message_at')[:500])
 
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)

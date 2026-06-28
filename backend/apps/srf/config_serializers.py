@@ -5,6 +5,8 @@ from rest_framework import serializers
 from apps.srf.compliance_models import ProgramExamPeriod
 from apps.srf.config_models import (
     SrfConfigAuditLog,
+    SrfInstallmentPlanTemplate,
+    SrfInstallmentPlanTranche,
     SrfNotificationTemplate,
     SrfRestrictionPolicy,
     SrfWarningTier,
@@ -29,7 +31,7 @@ class SrfRestrictionPolicySerializer(serializers.ModelSerializer):
             'id', 'singleton_key', 'stop_reminders_on_payment', 'mark_at_risk_on_warning',
             'escalate_unresolved_after_days', 'enable_email_notifications',
             'enable_in_app_notifications', 'enable_critical_alerts',
-            'unpaid_blocks_exams', 'unpaid_blocks_convention', 'notes',
+            'unpaid_blocks_exams', 'unpaid_blocks_convention', 'exam_gate_mode', 'notes',
             'updated_at',
         ]
         read_only_fields = ['singleton_key']
@@ -83,6 +85,75 @@ class ProgramExamPeriodConfigSerializer(serializers.ModelSerializer):
         if not level:
             return None
         return level.name or level.code
+
+
+class SrfInstallmentPlanTrancheSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SrfInstallmentPlanTranche
+        fields = ['id', 'tranche_number', 'label', 'percentage', 'due_date', 'semester']
+
+
+class SrfInstallmentPlanTemplateSerializer(serializers.ModelSerializer):
+    tranches = SrfInstallmentPlanTrancheSerializer(many=True)
+    filiere_name = serializers.CharField(source='filiere.name', read_only=True, allow_null=True)
+    academic_level_label = serializers.SerializerMethodField()
+    academic_year_code = serializers.CharField(source='academic_year.code', read_only=True, allow_null=True)
+    total_percentage = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SrfInstallmentPlanTemplate
+        fields = [
+            'id', 'name', 'description',
+            'filiere', 'filiere_name',
+            'academic_level', 'academic_level_label',
+            'academic_year', 'academic_year_code',
+            'number_of_tranches', 'split_mode', 'currency',
+            'is_mandatory', 'is_active', 'notes',
+            'tranches', 'total_percentage',
+            'created_at', 'updated_at',
+        ]
+
+    def get_academic_level_label(self, obj) -> str | None:
+        level = obj.academic_level
+        if not level:
+            return None
+        return level.name or level.code
+
+    def get_total_percentage(self, obj) -> float:
+        return float(sum((t.percentage for t in obj.tranches.all()), 0))
+
+    def validate(self, attrs):
+        tranches = attrs.get('tranches')
+        if tranches is not None and len(tranches) == 0:
+            raise serializers.ValidationError({'tranches': 'At least one tranche is required.'})
+        return attrs
+
+    def _write_tranches(self, template, tranches_data):
+        template.tranches.all().delete()
+        for idx, row in enumerate(tranches_data, start=1):
+            SrfInstallmentPlanTranche.objects.create(
+                template=template,
+                tranche_number=row.get('tranche_number') or idx,
+                label=row.get('label') or f'Tranche {idx}',
+                percentage=row.get('percentage') or 0,
+                due_date=row['due_date'],
+                semester=row.get('semester', 1),
+            )
+
+    def create(self, validated_data):
+        tranches_data = validated_data.pop('tranches', [])
+        template = SrfInstallmentPlanTemplate.objects.create(**validated_data)
+        self._write_tranches(template, tranches_data)
+        return template
+
+    def update(self, instance, validated_data):
+        tranches_data = validated_data.pop('tranches', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if tranches_data is not None:
+            self._write_tranches(instance, tranches_data)
+        return instance
 
 
 class TemplatePreviewSerializer(serializers.Serializer):

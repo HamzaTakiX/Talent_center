@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700&display=swap');
 @import './features/admin/dashboard/styles/admin-dashboard.css';
+@import './features/shared/chat-design-system/styles/chat-conversation-tools.css';
 @import './features/admin/offres-stage/chat/styles/internship-support-inbox.css';
 @import './features/admin/shared/admin-module-chat/styles/chat-empty-state.css';
 @import './features/admin/dashboard/styles/admin-alerts-analytics.css';

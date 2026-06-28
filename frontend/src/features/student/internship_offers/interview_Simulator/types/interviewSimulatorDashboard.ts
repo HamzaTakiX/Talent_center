@@ -1,4 +1,16 @@
+import type { StageOfferImportPreview } from '../../../../shared/types/stageTypes';
+
 export type SimulatorView = 'hub' | 'config' | 'active' | 'summary' | 'loading';
+
+export type SimulationBasis = 'personal' | 'offer';
+
+export type InterviewFocusType = 'hr' | 'technical' | 'mixed';
+
+export type OfferInputMode = 'url' | 'manual';
+
+export type InterviewerGender = 'female' | 'male';
+
+export type ExperienceLevel = 'intern' | 'junior' | 'mid' | 'senior';
 
 export type InterviewDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
@@ -36,12 +48,17 @@ export interface InterviewMode {
 
 export interface InterviewHistoryRow {
   id: string;
+  sessionUuid: string;
   date: string;
   typeKey: string;
   difficulty: InterviewDifficulty;
   score: number;
   duration: string;
   statusKey: string;
+  status: string;
+  roleLabel?: string;
+  hasReport?: boolean;
+  readinessText?: string;
 }
 
 export interface AnalyticsMetric {
@@ -52,6 +69,15 @@ export interface AnalyticsMetric {
 }
 
 export interface SimulatorConfig {
+  basis?: SimulationBasis;
+  interviewFocus?: InterviewFocusType;
+  offerInputMode?: OfferInputMode;
+  offerUrl?: string;
+  offerImportJobUuid?: string;
+  /** Pre-linked platform offer — skips basis / offer-data wizard steps. */
+  linkedOfferId?: string;
+  interviewerGender?: InterviewerGender;
+  experienceLevel?: ExperienceLevel;
   modeId: InterviewModeId;
   role: string;
   difficulty: InterviewDifficulty;
@@ -61,6 +87,8 @@ export interface SimulatorConfig {
   customJobTitle?: string;
   customCompany?: string;
   customDescription?: string;
+  /** Full payload returned by URL extraction — shown in the offer preview panel. */
+  extractedOfferPreview?: StageOfferImportPreview;
 }
 
 export interface InterviewQuestion {

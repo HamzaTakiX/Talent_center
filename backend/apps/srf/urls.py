@@ -16,6 +16,8 @@ from .config_views import (
     SrfConfigAuditLogView,
     SrfConfigExamPeriodDetailView,
     SrfConfigExamPeriodListCreateView,
+    SrfConfigInstallmentPlanDetailView,
+    SrfConfigInstallmentPlanListCreateView,
     SrfConfigSimulateView,
     SrfConfigTemplatePreviewView,
     SrfConfigWorkspaceView,
@@ -31,6 +33,7 @@ from .views import (
     SrfExamPeriodDetailView,
     SrfExamPeriodListCreateView,
     SrfKpiCardsView,
+    SrfMyFinancialDetailView,
     SrfPaymentProofDetailView,
     SrfPaymentProofQueueView,
     SrfPaymentProofReviewView,
@@ -42,6 +45,8 @@ from .views import (
     SrfStudentAccessView,
     SrfStudentFinancialDetailView,
     SrfStudentFinancialListView,
+    SrfAdminChatOpenView,
+    SrfStudentChatView,
 )
 
 urlpatterns = [
@@ -49,6 +54,13 @@ urlpatterns = [
     path('dashboard/kpi', SrfKpiCardsView.as_view(), name='srf-dashboard-kpi'),
     path('analytics', SrfAnalyticsView.as_view(), name='srf-analytics'),
     path('students', SrfStudentFinancialListView.as_view(), name='srf-students-list'),
+    path('student/me', SrfMyFinancialDetailView.as_view(), name='srf-student-me'),
+    path('chat/open', SrfStudentChatView.as_view(), name='srf-student-chat-open'),
+    path(
+        'students/<int:account_id>/chat/open',
+        SrfAdminChatOpenView.as_view(),
+        name='srf-admin-chat-open',
+    ),
     path('students/<int:account_id>', SrfStudentFinancialDetailView.as_view(), name='srf-student-detail'),
     path('students/<int:student_id>/refresh', SrfRefreshStudentView.as_view(), name='srf-student-refresh'),
     path('payment-proofs', SrfPaymentProofQueueView.as_view(), name='srf-payment-proofs'),
@@ -66,6 +78,8 @@ urlpatterns = [
     path('config/templates/<int:template_id>', SrfNotificationTemplateDetailView.as_view(), name='srf-config-template-detail'),
     path('config/exam-periods', SrfConfigExamPeriodListCreateView.as_view(), name='srf-config-exam-periods'),
     path('config/exam-periods/<int:period_id>', SrfConfigExamPeriodDetailView.as_view(), name='srf-config-exam-period-detail'),
+    path('config/installment-plans', SrfConfigInstallmentPlanListCreateView.as_view(), name='srf-config-installment-plans'),
+    path('config/installment-plans/<int:template_id>', SrfConfigInstallmentPlanDetailView.as_view(), name='srf-config-installment-plan-detail'),
     path('config/audit-log', SrfConfigAuditLogView.as_view(), name='srf-config-audit-log'),
     path('config/simulate', SrfConfigSimulateView.as_view(), name='srf-config-simulate'),
     path('config/preview-template', SrfConfigTemplatePreviewView.as_view(), name='srf-config-preview-template'),

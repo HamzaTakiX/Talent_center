@@ -187,7 +187,16 @@ export interface InternshipTypeOption {
   academic_level_id: number;
   academic_sector_id: number | null;
   duration_hint: string;
+  competencies?: InternshipCompetencyOption[];
   is_active: boolean;
+}
+
+export interface InternshipCompetencyOption {
+  code: string;
+  name: string;
+  name_fr?: string;
+  name_en?: string;
+  name_ar?: string;
 }
 
 export interface ClassGroupOption {

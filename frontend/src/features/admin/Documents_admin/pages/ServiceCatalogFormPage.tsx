@@ -10,11 +10,13 @@ import AdminBackButton from '../../ui/AdminBackButton';
 
 import ServiceCatalogForm from '../components/service-catalog/ServiceCatalogForm';
 
-import DocumentsPageSkeleton from '../components/skeletons/DocumentsPageSkeleton';
+import ServiceCatalogFormSkeleton from '../components/skeletons/ServiceCatalogFormSkeleton';
 
 import { createEmptyServicePayload, DEFAULT_SERVICE_CONFIG } from '../data/serviceCatalogDefaults';
+import { generateServiceCode } from '../components/service-catalog/generateServiceCode';
 
 import { saveServiceCatalog, useServiceCatalogDetail } from '../hooks/useServiceCatalog';
+import { adminDocumentsApi } from '../../api/documents';
 
 import type { DocumentServiceWritePayload } from '../types/documentServiceCatalog';
 
@@ -37,6 +39,7 @@ const ServiceCatalogFormPage: FunctionComponent = () => {
   const [form, setForm] = useState<DocumentServiceWritePayload>(createEmptyServicePayload());
 
   const [saving, setSaving] = useState(false);
+  const [pendingTemplateFile, setPendingTemplateFile] = useState<File | null>(null);
 
 
 
@@ -78,7 +81,25 @@ const ServiceCatalogFormPage: FunctionComponent = () => {
 
     try {
 
-      await saveServiceCatalog(isEdit ? id : undefined, form);
+      const payload = {
+        ...form,
+        code: form.code.trim() || generateServiceCode(form.name),
+      };
+      const saved = await saveServiceCatalog(isEdit ? id : undefined, payload);
+      const targetId = saved?.id ?? id;
+      if (
+        pendingTemplateFile
+        && targetId
+        && form.config.availability.autoGenerateEnabled
+      ) {
+        const updated = await adminDocumentsApi.catalogUploadTemplateFile(targetId, pendingTemplateFile);
+        if (updated.config?.template) {
+          setForm((current) => ({
+            ...current,
+            config: { ...current.config, template: updated.config?.template },
+          }));
+        }
+      }
 
       goCatalog();
 
@@ -98,7 +119,7 @@ const ServiceCatalogFormPage: FunctionComponent = () => {
 
       <AdminModulePageShell width="wide">
 
-        <DocumentsPageSkeleton />
+        <ServiceCatalogFormSkeleton />
 
       </AdminModulePageShell>
 
@@ -132,7 +153,11 @@ const ServiceCatalogFormPage: FunctionComponent = () => {
 
           isEdit={isEdit}
 
+          serviceId={id}
+
           saving={saving}
+
+          onPendingTemplateFileChange={setPendingTemplateFile}
 
           onCancel={goCatalog}
 

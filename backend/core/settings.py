@@ -8,8 +8,13 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Never override variables already set by Render/Railway/host (production).
-load_dotenv(BASE_DIR / '.env', override=False)
+# On Railway/Render, host-injected env wins. Locally, re-read .env on autoreload.
+_on_host_with_injected_env = bool(
+    os.getenv('RAILWAY_ENVIRONMENT')
+    or os.getenv('RAILWAY_SERVICE_ID')
+    or os.getenv('RENDER')
+)
+load_dotenv(BASE_DIR / '.env', override=not _on_host_with_injected_env)
 
 
 def env(key: str, default: str = '') -> str:
@@ -170,21 +175,19 @@ if _database_url:
             conn_health_checks=True,
         )
     }
-elif _ON_RAILWAY:
-    raise RuntimeError(
-        'Railway: set DATABASE_URL on the backend service (Reference → Postgres → '
-        'DATABASE_URL), then redeploy.'
-    )
-elif DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+    _db_options = DATABASES['default'].setdefault('OPTIONS', {})
+    _db_options.setdefault('connect_timeout', env_int('DB_CONNECT_TIMEOUT', 10))
+    # Reuse TCP connections to remote Postgres (Railway); avoid per-request handshakes.
+    DATABASES['default'].setdefault('CONN_MAX_AGE', 600)
 else:
+    if _ON_RAILWAY:
+        raise RuntimeError(
+            'Railway: set DATABASE_URL on the backend service (Reference → Postgres → '
+            'DATABASE_URL), then redeploy.'
+        )
     raise RuntimeError(
-        'Set DATABASE_URL in backend/.env to your Railway PostgreSQL Connect URL.'
+        'PostgreSQL required: set DATABASE_URL in backend/.env to your Railway '
+        'PostgreSQL Connect URL.'
     )
 
 print('DATABASE_ENGINE =', DATABASES['default'].get('ENGINE'))
@@ -298,6 +301,9 @@ OLLAMA_AUTO_PULL_MODELS = env_bool('OLLAMA_AUTO_PULL_MODELS', DEBUG)
 OLLAMA_STARTUP_TIMEOUT = env_int('OLLAMA_STARTUP_TIMEOUT', 45)
 OLLAMA_BINARY = env('OLLAMA_BINARY', '')
 OLLAMA_CHAT_TIMEOUT = env_int('OLLAMA_CHAT_TIMEOUT', 20)
+INTERVIEW_QUESTION_TEMPERATURE = float(env('INTERVIEW_QUESTION_TEMPERATURE', '0.65'))
+INTERVIEW_EVAL_TEMPERATURE = float(env('INTERVIEW_EVAL_TEMPERATURE', '0.15'))
+INTERVIEW_STALE_SESSION_SECONDS = env_int('INTERVIEW_STALE_SESSION_SECONDS', 3600)
 # When True, only semantic + SWOT use Ollama; other sections use fast rule-based logic.
 CV_INTELLIGENCE_LIGHT_AI = env_bool('CV_INTELLIGENCE_LIGHT_AI', True)
 CV_INTELLIGENCE_OFFER_AI_ENABLED = env_bool('CV_INTELLIGENCE_OFFER_AI_ENABLED', False)
@@ -321,9 +327,10 @@ AI_SEMANTIC_SEARCH_ENABLED = env_bool('AI_SEMANTIC_SEARCH_ENABLED', True)
 AI_MATCHING_ENABLED = env_bool('AI_MATCHING_ENABLED', True)
 
 # ---------- Auth policy ----------
-AUTH_MAX_FAILED_ATTEMPTS = env_int('AUTH_MAX_FAILED_ATTEMPTS', 5)
+# Lockout disabled by default in DEBUG (set AUTH_LOCKOUT_SECONDS>0 to re-enable locally).
+AUTH_MAX_FAILED_ATTEMPTS = env_int('AUTH_MAX_FAILED_ATTEMPTS', 5 if not DEBUG else 0)
 AUTH_FAILED_WINDOW_SECONDS = env_int('AUTH_FAILED_WINDOW_SECONDS', 900)
-AUTH_LOCKOUT_SECONDS = env_int('AUTH_LOCKOUT_SECONDS', 900)
+AUTH_LOCKOUT_SECONDS = env_int('AUTH_LOCKOUT_SECONDS', 900 if not DEBUG else 0)
 PASSWORD_RESET_TOKEN_TTL_SECONDS = env_int('PASSWORD_RESET_TOKEN_TTL_SECONDS', 1800)
 FRONTEND_RESET_PASSWORD_URL = env('FRONTEND_RESET_PASSWORD_URL', 'http://localhost:5173/reset-password')
 FRONTEND_BASE_URL = env('FRONTEND_BASE_URL', env('FRONTEND_ORIGIN', 'http://localhost:5173'))
@@ -342,6 +349,25 @@ NOTIFICATION_DEFAULT_LANGUAGE = env('NOTIFICATION_DEFAULT_LANGUAGE', 'en')
 NOTIFICATION_RATE_LIMIT_EMAIL_PER_HOUR = env_int('NOTIFICATION_RATE_LIMIT_EMAIL_PER_HOUR', 20)
 NOTIFICATION_RATE_LIMIT_GLOBAL_PER_MINUTE = env_int('NOTIFICATION_RATE_LIMIT_GLOBAL_PER_MINUTE', 100)
 REDIS_URL = env('REDIS_URL', '')
+
+# ---------- Cache (Redis when available, else per-process LocMem) ----------
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+            'KEY_PREFIX': 'tc',
+            'TIMEOUT': 300,
+        },
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'talent-center-default',
+        },
+    }
+
 CELERY_BROKER_URL = env('CELERY_BROKER_URL', REDIS_URL)
 CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', REDIS_URL)
 CELERY_TASK_ALWAYS_EAGER = env_bool('CELERY_TASK_ALWAYS_EAGER', not bool(REDIS_URL))

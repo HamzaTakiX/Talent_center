@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Iterable, Optional
 
+from django.core.cache import cache
 from django.db.models import Q
 
 from apps.admin_management.models import (
@@ -60,7 +61,29 @@ def parse_level_ids_param(request) -> list[int]:
     return []
 
 
+_FILIERES_CACHE_TTL = 120
+
+
+def _filieres_cache_key(*, program_family: Optional[str], student_catalog: bool) -> str:
+    return f'academic:active_filieres:{program_family or ""}:{int(student_catalog)}'
+
+
+def invalidate_active_filieres_cache() -> None:
+    """Clear active filière list caches (call after catalog mutations)."""
+    for student_catalog in (False, True):
+        cache.delete(_filieres_cache_key(program_family=None, student_catalog=student_catalog))
+        for family in ESCA_PROGRAM_FAMILIES:
+            cache.delete(_filieres_cache_key(program_family=family, student_catalog=student_catalog))
+
+
 def active_filieres(*, program_family: Optional[str] = None, student_catalog: bool = False):
+    cache_key = _filieres_cache_key(program_family=program_family, student_catalog=student_catalog)
+    cached_ids = cache.get(cache_key)
+    if cached_ids is not None:
+        return Filiere.objects.filter(pk__in=cached_ids, is_active=True, is_archived=False).order_by(
+            'sort_order', 'name',
+        )
+
     qs = Filiere.objects.filter(is_active=True, is_archived=False)
     if student_catalog:
         qs = qs.filter(
@@ -69,7 +92,9 @@ def active_filieres(*, program_family: Optional[str] = None, student_catalog: bo
         )
     if program_family:
         qs = qs.filter(program_family=program_family)
-    return qs.order_by('sort_order', 'name')
+    ids = list(qs.order_by('sort_order', 'name').values_list('pk', flat=True))
+    cache.set(cache_key, ids, _FILIERES_CACHE_TTL)
+    return Filiere.objects.filter(pk__in=ids).order_by('sort_order', 'name')
 
 
 def active_academic_years():
@@ -217,6 +242,28 @@ def serialize_sector(sector: AcademicSector, lang: str) -> dict:
 
 
 def serialize_internship_type(item: InternshipType, lang: str) -> dict:
+    competencies = []
+    for entry in item.competencies or []:
+        if not isinstance(entry, dict):
+            continue
+        name_fr = entry.get('name_fr') or entry.get('name', '')
+        name_en = entry.get('name_en') or name_fr
+        name_ar = entry.get('name_ar') or name_fr
+        i18n = entry.get('name_i18n') or {'en': name_en, 'fr': name_fr, 'ar': name_ar}
+        if lang == 'fr':
+            label = i18n.get('fr') or name_fr
+        elif lang == 'ar':
+            label = i18n.get('ar') or name_ar
+        else:
+            label = i18n.get('en') or name_en
+        competencies.append({
+            'code': entry.get('code', ''),
+            'name': label,
+            'name_fr': name_fr,
+            'name_en': name_en,
+            'name_ar': name_ar,
+        })
+
     return {
         'id': item.id,
         'code': item.code,
@@ -224,6 +271,7 @@ def serialize_internship_type(item: InternshipType, lang: str) -> dict:
         'academic_level_id': item.academic_level_id,
         'academic_sector_id': item.academic_sector_id,
         'duration_hint': item.duration_hint,
+        'competencies': competencies,
         'is_active': item.is_active,
     }
 

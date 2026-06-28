@@ -13,6 +13,12 @@ export const adminCopyEn = {
     "panelEmpty": "Select a thread to view business context",
     "panelWorkflow": "Workflow status",
     "panelNoStatus": "Not set",
+    "supportStatus": {
+      "open": "Open",
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
     "panelDeadline": "Deadline",
     "panelParticipants": "Participants",
     "panelFiles": "Related files",
@@ -678,7 +684,10 @@ export const adminCopyEn = {
         "title": "Loading Offer",
         "retrieving": "Retrieving offer information…",
         "preparing": "Preparing editing workspace…",
-        "subtitle": "Please wait while we prepare your editing workspace."
+        "subtitle": "Please wait while we prepare your editing workspace.",
+        "setting_up": "Setting up the offer studio…",
+        "loading_options": "Loading creation options…",
+        "almost_ready": "Almost ready…"
       },
       "saveStatus": {
         "idle": "All changes are synced",
@@ -713,7 +722,7 @@ export const adminCopyEn = {
       "method": {
         "eyebrow": "Internship Offer Studio",
         "stepTitle": "How would you like to create this offer?",
-        "stepDesc": "Choose the path that fits your workflow. Both options support live preview, student targeting, and one-click publish.",
+        "stepDesc": "Choose the path that fits your workflow. All options support live preview, student targeting, and one-click publish.",
         "hint": "Select a method to get started.",
         "compareNote": "You can save as draft or publish at any time after choosing a method.",
         "manual": {
@@ -743,6 +752,20 @@ export const adminCopyEn = {
           ],
           "bestFor": "Best for existing listings & quick turnaround",
           "cta": "Import from link"
+        },
+        "text": {
+          "title": "Paste from Text",
+          "badge": "Flexible",
+          "description": "Paste or upload a text file — we extract the offer details.",
+          "longDesc": "Have an offer description in a document, email, or notes? Paste the text directly or upload a .txt file. The system reads section titles and fills in the offer fields automatically.",
+          "benefits": [
+            "Works with any plain text or document copy-paste",
+            "Upload a .txt file or type directly",
+            "Editable preview before publish",
+            "Supports French & English structured formats"
+          ],
+          "bestFor": "Best for offers from emails, PDFs or documents",
+          "cta": "Paste offer text"
         }
       },
       "steps": {
@@ -1099,6 +1122,27 @@ export const adminCopyEn = {
           "normalizingContent": "Normalizing content…",
           "generatingPreview": "Preparing preview…"
         }
+      },
+      "text": {
+        "title": "Paste Offer Text",
+        "desc": "Paste the offer text or upload a .txt file. We'll detect the sections and fill in the fields automatically.",
+        "pasteLabel": "Offer text",
+        "pastePlaceholder": "Paste the offer text here…\n\nExample:\nTitle: Full Stack Developer Internship\nCompany: TechCorp Morocco\nLocation: Casablanca\nType: PFE\n\nDescription:\nWe are looking for a motivated intern…\n\nRequired Skills:\nReact, Node.js, Python\n\nDeadline: 2025-12-31",
+        "uploadFile": "Upload .txt file",
+        "uploadHint": "Accepts plain text files (.txt)",
+        "parse": "Extract offer info",
+        "parsing": "Reading and extracting offer details…",
+        "reset": "Paste new text",
+        "extractedSummary": "{{count}} fields extracted successfully",
+        "extractedHint": "Review the extracted fields below, edit if needed, then save as draft or publish.",
+        "viewOriginalText": "View original text",
+        "formatHintTitle": "Expected format (click to expand)",
+        "formatHint": "Title: [Offer title]\nCompany: [Company name]\nLocation: [City, Country]\nType: [PFE / Internship / Alternance…]\n\nDescription:\n[General description of the offer]\n\nMissions / Responsibilities:\n[List of tasks]\n\nRequired Profile / Requirements:\n[Required qualifications]\n\nSkills / Technologies:\n[Comma or line-separated list]\n\nLanguages: French, English\n\nBenefits:\n[What the intern will gain]\n\nDeadline: YYYY-MM-DD",
+        "errors": {
+          "title": "Could not extract offer information",
+          "no_fields_extracted": "No recognizable sections found. Please make sure the text contains labeled sections (e.g. \"Title:\", \"Description:\", \"Skills:\").",
+          "parse_failed": "An error occurred while reading the text. Please try again."
+        }
       }
     },
     "createStudent": {
@@ -1229,7 +1273,8 @@ export const adminCopyEn = {
         },
         "errors": {
           "noFile": "Select a CSV or Excel (.xlsx) file.",
-          "generic": "Import failed. Check the file and try again."
+          "generic": "Import failed. Check the file and try again.",
+          "timeout": "Import is taking too long. Reload the page — students may have been created anyway."
         },
         "result": {
           "summary": "{{success}} / {{total}} student(s) created, {{errors}} error(s).",
@@ -1781,6 +1826,7 @@ export const adminCopyEn = {
           "archive_conversation": "Conversation archived in your inbox",
           "unarchive_conversation": "Conversation restored to your inbox",
           "mark_resolved": "Conversation marked as resolved",
+          "auto_reopen": "Conversation reopened automatically",
           "mark_urgent": "Conversation marked as urgent",
           "assign_admin": "Conversation assigned to an administrator",
           "add_internal_note": "Internal note added",
@@ -1868,6 +1914,20 @@ export const adminCopyEn = {
     "srf": {
       "title": "SRF",
       "subtitle": "Track and manage student payment status",
+      "dashboard": {
+        "liveStatus": "{{count}} accounts tracked",
+        "kpi": {
+          "students": "Students",
+          "pendingPayments": "Pending Payments",
+          "paid": "Paid",
+          "overdue": "Overdue",
+          "outstandingAmount": "Outstanding Amount",
+          "averagePaymentRate": "Average Payment Rate"
+        },
+        "empty": {
+          "importData": "Import Financial Data"
+        }
+      },
       "importCenter": {
         "title": "Financial Data Import Center",
         "subtitle": "Sync ERP, accounting, or Excel exports with validation, preview, and rollback.",
@@ -1882,6 +1942,8 @@ export const adminCopyEn = {
         "browse": "Browse files",
         "mappingTitle": "Column mapping",
         "mappingHint": "Map each imported column to an SRF financial field.",
+        "mappingProgress": "{{mapped}} of {{total}} columns mapped",
+        "mappingRequired": "{{mapped}} of {{total}} required fields",
         "rowCount": "{{count}} rows",
         "sourceCol": "Source column",
         "targetField": "SRF field",
@@ -2080,6 +2142,7 @@ export const adminCopyEn = {
           "conventionBlocked": "Agreement download disabled.",
           "internshipBlocked": "Internship eligibility not financially confirmed.",
           "overdue": "{{count}} overdue installment(s). Blocking risk applies.",
+          "overdueNonBlocking": "{{count}} overdue installment(s) — exam access still granted.",
           "pendingProof": "{{count}} proof(s) pending validation.",
           "clear": "Financial situation cleared. Academic access is open."
         }
@@ -2107,6 +2170,10 @@ export const adminCopyEn = {
         "requestCorrection": "Request correction",
         "reject": "Reject",
         "approve": "Approve",
+        "approvedAmount": "Amount received (MAD)",
+        "approvedAmountHint": "Amount declared by student: {{submitted}}. Enter the actual amount received if different.",
+        "approvedAmountRequired": "Received amount is required to approve.",
+        "installmentRemaining": "Remaining on installment: {{amount}}",
         "rejectionRequired": "Rejection reason is required.",
         "submitFailed": "Could not save decision.",
         "alreadyReviewed": "This proof has already been processed.",
@@ -2163,6 +2230,45 @@ export const adminCopyEn = {
           "notes": "Notes",
           "cancel": "Cancel",
           "save": "Save"
+        },
+        "installmentPlans": {
+          "title": "Installment plans (tranches)",
+          "subtitle": "Split the yearly tuition into tranches, each with its own payment deadline.",
+          "addPlan": "Add plan",
+          "editPlan": "Edit plan",
+          "name": "Plan name",
+          "program": "Program",
+          "level": "Level",
+          "academicYear": "Academic year",
+          "allPrograms": "All programs",
+          "allLevels": "All levels",
+          "allYears": "All years",
+          "splitMode": "Split mode",
+          "splitEqual": "Equal split",
+          "splitCustom": "Custom percentages",
+          "currency": "Currency",
+          "tranches": "Tranches",
+          "trancheLabel": "Label",
+          "percentage": "Percentage",
+          "dueDate": "Deadline",
+          "semester": "Semester",
+          "addTranche": "Add tranche",
+          "totalPct": "Total: {{pct}}%",
+          "trancheCount": "{{count}} tranches",
+          "mandatory": "Mandatory",
+          "active": "Active",
+          "inactive": "Inactive",
+          "emptyTitle": "No installment plans",
+          "emptyDesc": "Create a tranche plan to split tuition across deadlines and gate exams on due tranches.",
+          "cancel": "Cancel",
+          "save": "Save",
+          "saving": "Saving…",
+          "gate": {
+            "title": "Exam access rule",
+            "desc": "Choose what must be paid for installment-plan students to sit their exams.",
+            "dueTranches": "Pay tranches due before the exam (recommended)",
+            "fullClearance": "Pay the full year before exams"
+          }
         },
         "warningTiers": {
           "title": "Warning rules & frequency",
@@ -2591,7 +2697,11 @@ export const adminCopyEn = {
         "title": "Administrator details"
       },
       "student": {
-        "title": "Student details"
+        "title": "Student details",
+        "sendMessage": "Send message",
+        "openingChat": "Opening…",
+        "chatUnavailable": "Only available for active student accounts.",
+        "chatOpenError": "Could not open the conversation. Please try again."
       },
       "encadrant": {
         "title": "Supervisor details"
@@ -2908,6 +3018,36 @@ export const adminCopyEn = {
       "STUDENT": "Student",
       "SUPERVISOR": "Supervisor",
       "SYSTEM": "System"
+    },
+    "summaries": {
+      "auth_token_refreshed": "Token refreshed",
+      "auth_login_success": "User signed in",
+      "auth_login_failed": "Failed login attempt",
+      "auth_logout": "User signed out",
+      "auth_logout_all": "Signed out of all sessions",
+      "auth_password_reset_requested": "Password reset requested",
+      "auth_password_reset_completed": "Password reset completed",
+      "auth_password_changed": "Password changed",
+      "auth_account_activated": "Account activated",
+      "auth_account_locked": "Account locked",
+      "auth_session_revoked": "Session revoked",
+      "auth_suspicious_lockout": "Suspicious lockout",
+      "auth_provider_linked": "Provider linked",
+      "student_password_reset": "Student password reset",
+      "cv_analysis_completed": "CV analysis completed",
+      "cv_score_updated": "CV score updated",
+      "internship_application_submitted": "Internship application submitted",
+      "internship_application_withdrawn": "Internship application withdrawn",
+      "internship_application_offer_accepted": "Internship offer accepted",
+      "internship_application_offer_declined": "Internship offer declined",
+      "internship_offer_published": "Internship offer published",
+      "documents_uploaded": "Document uploaded",
+      "documents_approved": "Document approved",
+      "notification_created": "New notification",
+      "notification_read": "Notification read",
+      "chat_message_sent": "Message sent",
+      "interview_simulation_completed": "Interview simulation completed",
+      "report_submitted": "Report submitted"
     },
     "relative": {
       "justNow": "just now",

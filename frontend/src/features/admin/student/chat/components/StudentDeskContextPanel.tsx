@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import InternshipInspectorRow from '../../../offres-stage/chat/components/InternshipInspectorRow';
 import InternshipStudentAvatar from '../../../offres-stage/chat/components/InternshipStudentAvatar';
+import PlatformDeskSupportStatusBadge from '../../../shared/platform-desk-chat/components/PlatformDeskSupportStatusBadge';
+import { visibleSupportStatus } from '../../../shared/platform-desk-chat/utils/platformDeskSupportStatus';
 import type { DeskConversationRecord } from '../../../shared/admin-support-inbox/adapters/mapDeskChatData';
 
 type Props = {
@@ -28,14 +30,12 @@ function resolveStudentName(conversation: DeskConversationRecord): string {
 const StudentDeskContextPanel: FunctionComponent<Props> = ({ conversation, onOpenStudent }) => {
   const studentName = resolveStudentName(conversation);
   const canViewStudent = Boolean(onOpenStudent && conversation.userId);
+  const supportStatus = visibleSupportStatus(conversation, 'admin');
 
   return (
     <aside className="isi-inspector">
       <header className="isi-inspector-head">
         <span className="isi-inspector-head-title">Contexte étudiant</span>
-        {conversation.program && conversation.program !== '—' ? (
-          <span className="isi-inspector-head-badge">{conversation.program}</span>
-        ) : null}
       </header>
 
       <div className="isi-inspector-section-title">Étudiant</div>
@@ -84,9 +84,9 @@ const StudentDeskContextPanel: FunctionComponent<Props> = ({ conversation, onOpe
             <span>{conversation.entityLabel}</span>
           </InternshipInspectorRow>
         ) : null}
-        {conversation.workflowStatus ? (
+        {supportStatus ? (
           <InternshipInspectorRow icon={<CircleDot {...ICON_SM} />} label="Statut">
-            <span>{conversation.workflowStatus}</span>
+            <PlatformDeskSupportStatusBadge status={supportStatus} viewerRole="admin" inline />
           </InternshipInspectorRow>
         ) : null}
       </div>

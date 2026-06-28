@@ -140,6 +140,7 @@ export const NotificationProvider: FunctionComponent<{ children: ReactNode }> = 
 
   useEffect(() => {
     const interval = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
       void refreshUnreadOnly();
     }, 120000);
     return () => window.clearInterval(interval);

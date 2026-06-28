@@ -59,6 +59,7 @@ export interface CoachConversation {
   updatedAt: number;
   archived?: boolean;
   offerContext?: CoachOfferContext;
+  isPending?: boolean;
 }
 
 export interface CoachMessage {

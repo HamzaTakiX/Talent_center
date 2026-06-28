@@ -78,8 +78,25 @@ export interface StudentSummary {
   academicYear: string;
   classGroup: string;
   avatarInitials: string;
+  avatarUrl?: string | null;
   srfClearance: boolean;
   encadrantName?: string;
+}
+
+export interface DocumentFilePreviewMeta {
+  fileName: string;
+  fileUrl?: string | null;
+  fileType?: string;
+  templateId?: string;
+}
+
+export interface GeneratedDocumentOutput {
+  id: string;
+  format: string;
+  generatedAt: string;
+  signed: boolean;
+  fileName?: string;
+  fileUrl?: string | null;
 }
 
 export interface WorkflowStep {
@@ -123,12 +140,15 @@ export interface DocumentRequestListItem {
 
 export interface DocumentRequestDetail extends DocumentRequestListItem {
   reason?: string;
+  documentTypeId?: string;
+  autoGenerateEnabled?: boolean;
+  templatePreview?: DocumentFilePreviewMeta | null;
   fields: { name: string; labelKey: string; value: string }[];
   attachments: { id: string; name: string; type: string; uploadedAt: string }[];
   workflowSteps: WorkflowStep[];
   reservation?: ReservationSlot;
   validationHistory: { at: string; by: string; action: string; note?: string }[];
-  generatedOutputs: { id: string; format: string; generatedAt: string; signed: boolean }[];
+  generatedOutputs: GeneratedDocumentOutput[];
   insights: string[];
   rejectionReason?: string;
 }

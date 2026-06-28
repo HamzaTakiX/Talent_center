@@ -89,6 +89,7 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   const filiereBootstrapKey = `${lang}:${profileFiliereSeed}:${profileProgramMajor}`;
   const loadedClassGroupsKeyRef = useRef('');
   const filiereBootstrapKeyRef = useRef('');
+  const confirmInFlightRef = useRef(false);
 
   // Form State
   const [firstName, setFirstName] = useState(studentProfile?.first_name || '');
@@ -173,17 +174,6 @@ const ConfirmIdentityPage: FunctionComponent = () => {
       cancelled = true;
     };
   }, [lang, profileAcademicYear]);
-
-  // Déjà confirmé → ne pas réafficher cette étape
-  useEffect(() => {
-    const sp = user?.student_profile;
-    if (!sp?.identity_confirmed) return;
-    if (sp.profile_completed) {
-      navigate('/cv-editor', { replace: true });
-      return;
-    }
-    navigate('/complete-profile', { replace: true });
-  }, [user?.student_profile?.identity_confirmed, user?.student_profile?.profile_completed, navigate]);
 
   useEffect(() => {
     if (!filieres.length || filiereBootstrapKeyRef.current === filiereBootstrapKey) return;
@@ -363,13 +353,37 @@ const ConfirmIdentityPage: FunctionComponent = () => {
   };
 
   const handleConfirm = async (shouldRedirect: boolean = false) => {
+    if (confirmInFlightRef.current) return;
+
     try {
+      confirmInFlightRef.current = true;
       setLoading(true);
       setError('');
       setSuccessMsg('');
+
+      const sp = studentProfile;
+      const effectiveFirstName = (firstName || sp?.first_name || '').trim();
+      const effectiveLastName = (lastName || sp?.last_name || '').trim();
+      const effectiveDateOfBirth = (dateOfBirth || sp?.date_of_birth || '').trim();
+      const resolvedFiliereId = filiereId
+        ? Number(filiereId)
+        : profileFiliereId(sp);
+      const resolvedClassGroupId = classGroupId
+        ? Number(classGroupId)
+        : profileClassGroupId(sp);
+      const selectedFiliere =
+        filieres.find((f) => String(f.id) === filiereId) ??
+        (resolvedFiliereId != null
+          ? filieres.find((f) => f.id === resolvedFiliereId)
+          : undefined);
+      const selectedClass =
+        classGroups.find((c) => String(c.id) === classGroupId) ??
+        (resolvedClassGroupId != null
+          ? classGroups.find((c) => c.id === resolvedClassGroupId)
+          : undefined);
       
       // Frontend validation
-      const dobValidationError = resolveDateOfBirthError(dateOfBirth);
+      const dobValidationError = resolveDateOfBirthError(effectiveDateOfBirth);
       if (dobValidationError) {
         setDateOfBirthError(dobValidationError);
         setError(
@@ -383,38 +397,40 @@ const ConfirmIdentityPage: FunctionComponent = () => {
       setDateOfBirthError('');
 
       if (isEditing) {
-        if (!firstName.trim()) {
+        if (!effectiveFirstName) {
           setError(t('auth.confirmIdentity.errors.firstNameRequired'));
           setLoading(false);
           return;
         }
-        if (!lastName.trim()) {
+        if (!effectiveLastName) {
           setError(t('auth.confirmIdentity.errors.lastNameRequired'));
           setLoading(false);
           return;
         }
-        if (!filiereId) {
+        if (!resolvedFiliereId) {
           setError(t('auth.confirmIdentity.errors.programRequired'));
           setLoading(false);
           return;
         }
-        if (!classGroupId) {
+        if (!resolvedClassGroupId) {
           setError(t('auth.confirmIdentity.errors.classRequired'));
           setLoading(false);
           return;
         }
+      } else if (!effectiveFirstName || !effectiveLastName) {
+        setError(t('auth.confirmIdentity.errors.validation'));
+        setLoading(false);
+        return;
       }
       
-      const selectedFiliere = filieres.find((f) => String(f.id) === filiereId);
-      const selectedClass = classGroups.find((c) => String(c.id) === classGroupId);
       const payload = {
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        date_of_birth: dateOfBirth,
-        program_major: selectedFiliere?.name || programMajor,
-        current_class: selectedClass?.name || currentClass,
-        filiere_id: filiereId ? Number(filiereId) : null,
-        class_group_id: classGroupId ? Number(classGroupId) : null,
+        first_name: effectiveFirstName,
+        last_name: effectiveLastName,
+        date_of_birth: effectiveDateOfBirth,
+        program_major: selectedFiliere?.name || programMajor || sp?.program_major || '',
+        current_class: selectedClass?.name || currentClass || sp?.current_class || '',
+        filiere_id: resolvedFiliereId,
+        class_group_id: resolvedClassGroupId,
       };
 
       const updatedUser = await authApi.confirmIdentity(payload);
@@ -428,12 +444,13 @@ const ConfirmIdentityPage: FunctionComponent = () => {
       
       // Only redirect if explicitly requested (Confirm button, not Save)
       if (shouldRedirect) {
-        navigate('/complete-profile');
+        navigate('/complete-profile', { replace: true });
       }
     } catch (err: any) {
       const errorMessage = getErrorMessage(err);
       setError(errorMessage);
     } finally {
+      confirmInFlightRef.current = false;
       setLoading(false);
     }
   };

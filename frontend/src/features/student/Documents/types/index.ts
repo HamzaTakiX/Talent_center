@@ -1,10 +1,20 @@
-import type { LucideIcon } from 'lucide-react';
+import type { DocumentServiceCatalogItem } from '../../../admin/Documents_admin/types/documentServiceCatalog';
+
+export type { DocumentServiceCatalogItem };
 
 export type DocumentsStatIconKey = 'total' | 'pending' | 'validated' | 'reserved';
 
-export type DocumentCatalogBadgeType = 'auto' | 'reservation';
+export interface StudentDocumentsStats {
+  total: number;
+  pending: number;
+  validated: number;
+  reserved: number;
+}
 
-export type DocumentCategoryKey = 'administrative' | 'internship' | 'academic' | 'financial';
+export interface StudentDocumentsOverviewResponse {
+  stats: StudentDocumentsStats;
+  catalog: DocumentServiceCatalogItem[];
+}
 
 export interface DocumentsStatItem {
   label: string;
@@ -12,14 +22,3 @@ export interface DocumentsStatItem {
   subtitle: string;
   iconKey: DocumentsStatIconKey;
 }
-
-export interface DocumentCatalogItem {
-  id: string;
-  title: string;
-  categoryKey: DocumentCategoryKey;
-  delayLabel: string;
-  requirement: string;
-  badgeType: DocumentCatalogBadgeType;
-}
-
-export type ResolvedDocumentCatalogItem = DocumentCatalogItem & { category: string };

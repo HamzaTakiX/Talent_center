@@ -5,9 +5,9 @@ import { useAdminBackLabel } from '../../i18n/useAdminCopy';
 import { adminStudentsApi } from '../../api/students';
 import type { AdminStudentDetail } from '../../api/types';
 import AdminFormPageShell from '../../ui/AdminFormPageShell';
-import { AdminPanelListSkeleton } from '../../ui';
 import StudentAccountForm from '../components/StudentAccountForm';
 import StudentEditPageHero from '../components/StudentEditPageHero';
+import StudentEditPageSkeleton, { StudentEditHeroSkeleton } from '../components/StudentEditPageSkeleton';
 
 const FORM_PREFIX = 'admin.forms.createStudent';
 
@@ -38,24 +38,32 @@ const EditStudentPage: FunctionComponent = () => {
       .finally(() => setLoading(false));
   }, [id, t]);
 
+  const heroContent = loading
+    ? <StudentEditHeroSkeleton />
+    : student
+      ? <StudentEditPageHero student={student} />
+      : undefined;
+
   return (
     <AdminFormPageShell
       backLabel={backLabel}
       onBack={goBack}
-      heroTitle={!student ? t(`${FORM_PREFIX}.editTitle`) : undefined}
-      heroSubtitle={!student ? t(`${FORM_PREFIX}.editSubtitle`) : undefined}
-      heroContent={student ? <StudentEditPageHero student={student} /> : undefined}
+      heroContent={heroContent}
+      heroTitle={!loading && !student ? t(`${FORM_PREFIX}.editTitle`) : undefined}
+      heroSubtitle={!loading && !student ? t(`${FORM_PREFIX}.editSubtitle`) : undefined}
       breadcrumbs={[
         { label: t('admin.common.breadcrumbs.students'), onClick: goBack },
         { label: student?.full_name ?? t('admin.common.actions.edit') },
       ]}
     >
-      {loading ? <AdminPanelListSkeleton rows={8} /> : null}
+      {loading ? <StudentEditPageSkeleton /> : null}
+
       {!loading && error && (
         <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {error}
         </p>
       )}
+
       {!loading && !error && student && (
         <StudentAccountForm
           hidePanelHeader

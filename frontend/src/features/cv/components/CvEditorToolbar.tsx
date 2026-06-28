@@ -8,6 +8,7 @@ import {
   isOnboardingCvPending,
 } from '../../auth/utils/onboardingCvGate';
 import { STUDENT_DASHBOARD_PATH } from '../../student/config/studentNavConfig';
+import { CV_DRAFT_STORAGE_KEY } from '../../student/internship_offers/CV_Analyse/utils/cvDraftReader';
 import {
   quickCvDemoClear,
   quickCvDemoFill,
@@ -32,7 +33,13 @@ const CvEditorToolbar: FunctionComponent = () => {
   const onboardingCv = isOnboardingCvPending();
   const [mode, setMode] = useState<QuickCvViewMode>(quickCvUiBridge.mode);
   const [scale, setScale] = useState(quickCvUiBridge.viewScale);
-  const [demoOn, setDemoOn] = useState(true);
+  const [demoOn, setDemoOn] = useState(() => {
+    try {
+      return !localStorage.getItem(CV_DRAFT_STORAGE_KEY);
+    } catch {
+      return true;
+    }
+  });
   const [aiBusy, setAiBusy] = useState(false);
   const [saveSucceeded, setSaveSucceeded] = useState(false);
   const [saveError, setSaveError] = useState(false);
@@ -189,12 +196,12 @@ const CvEditorToolbar: FunctionComponent = () => {
           setSaveSucceeded(false);
           requestCvSave();
         }}
-        className={`inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold shadow-sm transition-colors max-sm:w-full max-sm:justify-center ${
+        className={`quickcv-save-btn inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold shadow-sm transition-colors max-sm:w-full max-sm:justify-center ${
           saveError
-            ? 'border-red-300 bg-red-50 text-red-700'
+            ? 'quickcv-save-btn--error'
             : saveSucceeded
-              ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-600/50 dark:bg-emerald-950/40 dark:text-emerald-200'
-              : 'border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] text-[var(--admin-text)] hover:border-[var(--admin-brand)] hover:bg-[var(--admin-brand-muted)]'
+              ? 'quickcv-save-btn--saved'
+              : 'quickcv-save-btn--default'
         }`}
       >
         <Save className="h-4 w-4" />

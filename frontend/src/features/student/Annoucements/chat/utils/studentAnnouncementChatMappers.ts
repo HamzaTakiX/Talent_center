@@ -3,6 +3,8 @@ import { resolveMediaUrl } from '../../../../../shared/api/mediaUrl';
 import type { StudentAnnouncementPriority } from '../types/studentAnnouncementChatTypes';
 import { mapStudentAnnouncementPriority } from './studentAnnouncementChatUtils';
 
+import type { ChatAttachmentView } from '../../../../shared/contextual-chat/utils/chatAttachmentUtils';
+
 export type StudentAnnouncementMessage = {
   id: string;
   direction: 'in' | 'out';
@@ -10,6 +12,11 @@ export type StudentAnnouncementMessage = {
   time: string;
   deliveryStatus?: 'sent' | 'delivered' | 'read';
   seenTime?: string;
+  messageType?: string;
+  smartActionCode?: string;
+  createdAt?: string;
+  attachmentName?: string;
+  attachments?: ChatAttachmentView[];
 };
 
 export type StudentAnnouncementPublishStatus = 'Published' | 'Scheduled' | 'Draft' | 'Expired';

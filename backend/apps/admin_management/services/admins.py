@@ -417,10 +417,14 @@ def list_administrators_queryset(*, search: str = '', status: str = '', role: st
 
 
 def get_admin_effective_permissions(user: User) -> set[str]:
+    cached = getattr(user, '_tc_admin_effective_permissions', None)
+    if cached is not None:
+        return cached
     perms = user.permission_codes()
     profile = getattr(user, 'admin_profile', None)
     if profile and profile.extra_permission_codes:
         perms |= set(profile.extra_permission_codes)
+    user._tc_admin_effective_permissions = perms
     return perms
 
 

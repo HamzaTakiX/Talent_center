@@ -21,6 +21,18 @@ def _user_can_manage_announcements(user: User) -> bool:
     return _user_can_manage_announcements(user)
 
 
+def _user_can_manage_srf(user: User) -> bool:
+    from apps.srf.services.chat_service import user_can_manage_srf_chat
+
+    return user_can_manage_srf_chat(user)
+
+
+def _user_can_manage_documents(user: User) -> bool:
+    from apps.documents.services.chat_service import user_can_manage_document_chat
+
+    return user_can_manage_document_chat(user)
+
+
 def ensure_conversation_participant(
     conversation: Conversation,
     user: User,
@@ -112,6 +124,20 @@ def _admin_can_access(user: User, conversation: Conversation) -> bool:
             role=ConversationParticipant.Role.ADMIN,
         )
         return True
+    if ctx and ctx.module == ConversationContext.Module.SRF and _user_can_manage_srf(user):
+        ensure_conversation_participant(
+            conversation,
+            user,
+            role=ConversationParticipant.Role.ADMIN,
+        )
+        return True
+    if ctx and ctx.module == ConversationContext.Module.DOCUMENTS and _user_can_manage_documents(user):
+        ensure_conversation_participant(
+            conversation,
+            user,
+            role=ConversationParticipant.Role.ADMIN,
+        )
+        return True
     if ctx and ctx.module == ConversationContext.Module.PLATFORM:
         from apps.chat.services.platform_chat_service import (
             ADMIN_DESK_ENTITY,
@@ -172,6 +198,10 @@ def conversations_for_user(user: User, *, include_archived: bool = False) -> Que
 
         if user_can_manage_platform_desk(user):
             module_filters.append(ConversationContext.Module.PLATFORM)
+        if _user_can_manage_srf(user):
+            module_filters.append(ConversationContext.Module.SRF)
+        if _user_can_manage_documents(user):
+            module_filters.append(ConversationContext.Module.DOCUMENTS)
         if module_filters:
             extra = qs.filter(context__module__in=module_filters)
             return (base | extra).distinct()
@@ -194,7 +224,14 @@ def user_can_apply_smart_action(user: User, conversation: Conversation, action_c
         if (
             action_code in ('archive_conversation', 'unarchive_conversation')
             and ctx
-            and ctx.module == ConversationContext.Module.ANNOUNCEMENTS
+            and ctx.module
+            in (
+                ConversationContext.Module.ANNOUNCEMENTS,
+                ConversationContext.Module.OFFERS,
+                ConversationContext.Module.PLATFORM,
+                ConversationContext.Module.DOCUMENTS,
+                ConversationContext.Module.SRF,
+            )
         ):
             return True
         return False
@@ -212,6 +249,10 @@ def user_can_apply_smart_action(user: User, conversation: Conversation, action_c
             from apps.chat.services.platform_chat_service import user_can_manage_platform_desk
 
             return user_can_manage_platform_desk(user)
+        if ctx and ctx.module == ConversationContext.Module.SRF:
+            return _user_can_manage_srf(user)
+        if ctx and ctx.module == ConversationContext.Module.DOCUMENTS:
+            return _user_can_manage_documents(user)
         return ConversationParticipant.objects.filter(
             conversation=conversation,
             user=user,

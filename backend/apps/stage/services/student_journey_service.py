@@ -480,10 +480,23 @@ def build_journey_dashboard(student: StudentProfile) -> dict[str, Any]:
     ).count()
     rejected = applications_qs.filter(status='REJECTED').count()
 
+    # Fetch cached intelligence scores (cheaply — no recompute)
+    internship_readiness_score = None
+    try:
+        from apps.profile_intelligence.models import StudentProfileIndicator
+        indicator = StudentProfileIndicator.objects.filter(
+            student_profile=student,
+        ).values('internship_readiness_score').first()
+        if indicator:
+            internship_readiness_score = indicator['internship_readiness_score']
+    except Exception:  # noqa: BLE001
+        pass
+
     return {
         'academic_profile': _academic_profile(student),
         'profile_completion': _profile_completion(student),
         'cv_score': _latest_cv_analysis_score(student),
+        'internship_readiness_score': internship_readiness_score,
         'applications_in_progress': [_serialize_application(app) for app in active_apps[:8]],
         'upcoming_deadlines': deadlines[:8],
         'interviews_scheduled': interviews,

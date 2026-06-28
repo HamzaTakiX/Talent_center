@@ -165,6 +165,11 @@ class InternshipType(TimestampedModel):
     name_en = models.CharField(max_length=255, blank=True, default='')
     name_i18n = models.JSONField(default=dict, blank=True)
     duration_hint = models.CharField(max_length=64, blank=True, default='')
+    competencies = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_('Program-specific competencies for this internship type (list of i18n objects).'),
+    )
     sort_order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
     is_archived = models.BooleanField(default=False, db_index=True)

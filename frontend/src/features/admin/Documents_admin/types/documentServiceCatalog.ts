@@ -78,12 +78,24 @@ export interface DocumentServiceConfig {
   };
   requiredAttachments: ServiceAttachmentRule[];
   dynamicFields: ServiceDynamicField[];
+  template?: {
+    fileName?: string;
+    fileType?: 'docx' | 'pdf';
+    fileSize?: number;
+    fileUrl?: string;
+    templateId?: string;
+    validated?: boolean;
+    placeholdersFound?: string[];
+  };
   validation: {
     automatic: boolean;
     manual: boolean;
     multiStep: boolean;
     serviceApprovalRequired: boolean;
     srfClearanceRequired: boolean;
+    internshipRequired: boolean;
+    activeStudentRequired: boolean;
+    registrationCompleteRequired: boolean;
   };
   workflow: {
     steps: ServiceWorkflowStep[];
@@ -115,6 +127,39 @@ export interface DocumentServiceCatalogItem {
   visibleToStudents: boolean;
   autoGenerate: boolean;
   requiresWorkflow: boolean;
+  /** Present on student catalog API responses only. */
+  studentRequest?: StudentDocumentRequestSummary;
+}
+
+export interface StudentDocumentRequestSummary {
+  hasRequest: boolean;
+  canRequestNew: boolean;
+  isPending: boolean;
+  hasGeneratedOutput?: boolean;
+  canGenerate?: boolean;
+  mode?: 'auto_generate' | 'manual_request';
+  status?: string;
+  reference?: string;
+  requestId?: string;
+  submittedAt?: string;
+  generatedOutput?: {
+    fileName: string;
+    fileUrl?: string | null;
+    generatedAt?: string;
+  };
+}
+
+export interface StudentDocumentGenerateResponse {
+  reference: string;
+  requestId: string;
+  status: string;
+  output: {
+    id: string;
+    fileName: string;
+    fileUrl?: string | null;
+    format: string;
+    generatedAt: string;
+  };
 }
 
 export interface DocumentServiceWritePayload {
@@ -128,14 +173,12 @@ export interface DocumentServiceWritePayload {
 }
 
 export type ServiceCatalogFormTab =
-  | 'basic'
-  | 'availability'
-  | 'eligibility'
+  | 'information'
+  | 'visibility'
+  | 'requestMode'
   | 'processing'
   | 'delivery'
   | 'pickup'
   | 'attachments'
-  | 'fields'
   | 'validation'
-  | 'workflow'
-  | 'automation';
+  | 'workflowAutomation';

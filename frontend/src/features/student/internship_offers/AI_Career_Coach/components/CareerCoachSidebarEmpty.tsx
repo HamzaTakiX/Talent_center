@@ -1,15 +1,17 @@
 import { FunctionComponent } from 'react';
-import { MessageSquarePlus, MessagesSquare } from 'lucide-react';
+import { Loader2, MessageSquarePlus, MessagesSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface CareerCoachSidebarEmptyProps {
   variant: 'active' | 'archived';
   onNewConversation?: () => void;
+  isCreatingConversation?: boolean;
 }
 
 const CareerCoachSidebarEmpty: FunctionComponent<CareerCoachSidebarEmptyProps> = ({
   variant,
   onNewConversation,
+  isCreatingConversation = false,
 }) => {
   const { t } = useTranslation();
 
@@ -35,9 +37,21 @@ const CareerCoachSidebarEmpty: FunctionComponent<CareerCoachSidebarEmptyProps> =
         {t('student.internshipOffers.careerCoach.history.emptyDescription')}
       </p>
       {onNewConversation ? (
-        <button type="button" className="sr-acc-sidebar__empty-cta" onClick={onNewConversation}>
-          <MessageSquarePlus size={16} aria-hidden />
-          {t('student.internshipOffers.careerCoach.history.emptyCta')}
+        <button
+          type="button"
+          className="sr-acc-sidebar__empty-cta"
+          onClick={onNewConversation}
+          disabled={isCreatingConversation}
+          aria-busy={isCreatingConversation}
+        >
+          {isCreatingConversation ? (
+            <Loader2 size={16} className="sr-acc-sidebar__new-btn-spinner" aria-hidden />
+          ) : (
+            <MessageSquarePlus size={16} aria-hidden />
+          )}
+          {isCreatingConversation
+            ? t('student.internshipOffers.careerCoach.history.creating')
+            : t('student.internshipOffers.careerCoach.history.emptyCta')}
         </button>
       ) : null}
     </li>

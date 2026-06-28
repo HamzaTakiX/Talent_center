@@ -29,7 +29,7 @@ const ActivityRow: FunctionComponent<{
       <span className="student-activity-row__icon" aria-hidden>
         <Icon className="h-4 w-4" strokeWidth={1.75} />
       </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5 text-start">
         <span className="text-[13px] font-medium text-[var(--admin-text)]">{action}</span>
         <span className="text-[12px] text-[var(--admin-text-muted)]">{time}</span>
       </span>

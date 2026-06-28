@@ -13,6 +13,7 @@ interface CareerCoachComposerProps {
   onDragOver: (e: DragEvent) => void;
   onDragLeave: () => void;
   onDrop: (e: DragEvent) => void;
+  disabled?: boolean;
 }
 
 const CareerCoachComposer: FunctionComponent<CareerCoachComposerProps> = ({
@@ -26,6 +27,7 @@ const CareerCoachComposer: FunctionComponent<CareerCoachComposerProps> = ({
   onDragOver,
   onDragLeave,
   onDrop,
+  disabled = false,
 }) => {
   const { t } = useTranslation();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -37,10 +39,13 @@ const CareerCoachComposer: FunctionComponent<CareerCoachComposerProps> = ({
 
   return (
     <div
-      className={`sr-acc-composer${isDragging ? ' sr-acc-composer--dragging' : ''}`}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
+      className={`sr-acc-composer${isDragging ? ' sr-acc-composer--dragging' : ''}${
+        disabled ? ' sr-acc-composer--disabled' : ''
+      }`}
+      onDragOver={disabled ? undefined : onDragOver}
+      onDragLeave={disabled ? undefined : onDragLeave}
+      onDrop={disabled ? undefined : onDrop}
+      aria-busy={disabled}
     >
       {isDragging && (
         <div className="sr-acc-composer__dropzone">
@@ -73,6 +78,7 @@ const CareerCoachComposer: FunctionComponent<CareerCoachComposerProps> = ({
           type="button"
           className="sr-acc-composer__icon-btn"
           onClick={() => fileRef.current?.click()}
+          disabled={disabled}
           aria-label={t('student.internshipOffers.careerCoach.composer.attach')}
         >
           <Paperclip className="h-4 w-4" />
@@ -80,15 +86,20 @@ const CareerCoachComposer: FunctionComponent<CareerCoachComposerProps> = ({
         <input
           type="text"
           className="sr-acc-composer__input"
-          placeholder={t('student.internshipOffers.careerCoach.composer.placeholder')}
+          placeholder={
+            disabled
+              ? t('student.internshipOffers.careerCoach.composer.preparing')
+              : t('student.internshipOffers.careerCoach.composer.placeholder')
+          }
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
           aria-label={t('student.internshipOffers.careerCoach.composer.placeholder')}
         />
         <button
           type="submit"
           className="sr-acc-composer__send"
-          disabled={!value.trim() && !pendingAttachment}
+          disabled={disabled || (!value.trim() && !pendingAttachment)}
           aria-label={t('student.internshipOffers.careerCoach.composer.placeholder')}
         >
           <Send className="h-4 w-4" aria-hidden />

@@ -3,14 +3,19 @@ import {
   InternshipChatMessagesSkeleton,
   InternshipChatWorkspaceSkeleton,
 } from '../../../offres-stage/chat/components/InternshipChatLoadingSkeletons';
-import InternshipMessageReadStatus from '../../../offres-stage/chat/components/InternshipMessageReadStatus';
 import ChatEmptyState from '../../admin-module-chat/components/ChatEmptyState';
 import SupportMessageComposer from '../../admin-support-inbox/components/SupportMessageComposer';
+import {
+  StandardChatMessageThread,
+  toChatToolMessages,
+  useChatConversationTools,
+} from '../../../../shared/chat-design-system';
 import { useAdminChatChannel, useChatEmptyState } from '../../../i18n/useAdminCopy';
 import type { AdminChatChannel } from '../../../i18n/useAdminCopy';
 import type {
   PlatformDeskConversation,
   PlatformDeskInboxStats,
+  PlatformDeskViewerRole,
 } from '../types/platformDeskChatTypes';
 import PlatformDeskChatHeader from './PlatformDeskChatHeader';
 
@@ -22,14 +27,15 @@ type Props = {
   conversationLoading?: boolean;
   statsLoading?: boolean;
   peerTyping?: boolean;
-  onSend: (text: string) => void;
+  onSend: (text: string, files?: File[]) => void;
   onTyping?: (isTyping: boolean) => void;
   onBack?: () => void;
-  onOpenProfile?: () => void;
   onMarkResolved: () => void;
   onArchive: () => void;
   onUnarchive: () => void;
   showAdminActions?: boolean;
+  showArchiveActions?: boolean;
+  viewerRole?: PlatformDeskViewerRole;
 };
 
 const PlatformDeskChatArea: FunctionComponent<Props> = ({
@@ -43,16 +49,32 @@ const PlatformDeskChatArea: FunctionComponent<Props> = ({
   onSend,
   onTyping,
   onBack,
-  onOpenProfile,
   onMarkResolved,
   onArchive,
   onUnarchive,
   showAdminActions = true,
+  showArchiveActions,
+  viewerRole = 'admin',
 }) => {
   const [draft, setDraft] = useState('');
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [attachError, setAttachError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const emptyState = useChatEmptyState(channel);
   const chatCopy = useAdminChatChannel(channel);
+
+  const archiveEnabled = showArchiveActions ?? showAdminActions;
+
+  const chatTools = useChatConversationTools({
+    messages: toChatToolMessages(conversation?.messages ?? []),
+    conversationKey: conversation?.id ?? '',
+    counterpartyName: conversation?.displayName,
+    archived: conversation?.archived,
+    showArchive: archiveEnabled,
+    onArchive,
+    onUnarchive,
+    scrollContainerRef: scrollRef,
+  });
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -60,14 +82,18 @@ const PlatformDeskChatArea: FunctionComponent<Props> = ({
 
   useEffect(() => {
     setDraft('');
+    setPendingFiles([]);
+    setAttachError(null);
   }, [conversation?.id]);
 
   const handleSend = useCallback(() => {
     const text = draft.trim();
-    if (!text) return;
-    onSend(text);
+    if (!text && !pendingFiles.length) return;
+    onSend(text, pendingFiles.length ? pendingFiles : undefined);
     setDraft('');
-  }, [draft, onSend]);
+    setPendingFiles([]);
+    setAttachError(null);
+  }, [draft, onSend, pendingFiles]);
 
   if ((conversationLoading || messagesLoading) && !conversation) {
     return <InternshipChatWorkspaceSkeleton />;
@@ -99,59 +125,39 @@ const PlatformDeskChatArea: FunctionComponent<Props> = ({
       <PlatformDeskChatHeader
         conversation={conversation}
         onBack={onBack}
-        onOpenProfile={onOpenProfile}
         onMarkResolved={onMarkResolved}
-        onArchive={onArchive}
-        onUnarchive={onUnarchive}
         showAdminActions={showAdminActions}
+        viewerRole={viewerRole}
+        conversationMenu={chatTools.menu}
       />
+      {chatTools.searchBar}
 
       <div ref={scrollRef} className="isi-messages">
         {messagesLoading && conversation.messages.length === 0 ? (
           <InternshipChatMessagesSkeleton embedded />
         ) : (
-          conversation.messages.map((msg) => (
-            <div key={msg.id} className="isi-msg-block">
-              {msg.separatorBefore ? (
-                <div className="isi-date-sep">
-                  <span>{msg.separatorBefore}</span>
-                </div>
-              ) : null}
-              {msg.direction === 'in' ? (
-                <div className="isi-msg isi-msg--in">
-                  <div className="isi-bubble isi-bubble--in">{msg.text}</div>
-                  <time className="isi-msg-time">{msg.time}</time>
-                </div>
-              ) : (
-                <div className="isi-msg isi-msg--out">
-                  <div className="isi-bubble isi-bubble--out">{msg.text}</div>
-                  <InternshipMessageReadStatus
-                    message={{
-                      time: msg.time,
-                      deliveryStatus: msg.deliveryStatus,
-                      seenTime: msg.seenTime,
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          ))
+          <StandardChatMessageThread
+            messages={conversation.messages}
+            inboxMode={viewerRole === 'student' ? 'student' : 'admin'}
+            typing={peerTyping}
+            typingLabel={typingLabel}
+            getMessageBlockProps={chatTools.getMessageBlockProps}
+            renderHighlightedText={chatTools.renderHighlightedText}
+          />
         )}
-        {peerTyping ? (
-          <div className="isi-typing">
-            <span />
-            <span />
-            <span />
-            <span>{typingLabel}</span>
-          </div>
-        ) : null}
       </div>
+
+      {chatTools.panels}
 
       <SupportMessageComposer
         value={draft}
         onChange={setDraft}
         onSend={handleSend}
         onTyping={onTyping}
+        pendingFiles={pendingFiles}
+        onPendingFilesChange={setPendingFiles}
+        attachError={attachError}
+        onAttachError={setAttachError}
         showVoice={false}
         placeholder={chatCopy.composerPlaceholder}
       />

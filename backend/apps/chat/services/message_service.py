@@ -13,7 +13,12 @@ from apps.accounts_et_roles.models import User
 from ..models import ConversationParticipant, Mention, Message, MessageReaction, MessageRead, MessageTag, Tag
 from ..permissions import user_can_access_conversation
 from .audit_hooks import record_message_sent
-from .realtime import publish_inbox_updated, publish_message_created, publish_read_receipt
+from .realtime import (
+    publish_conversation_updated,
+    publish_inbox_updated,
+    publish_message_created,
+    publish_read_receipt,
+)
 
 
 def list_messages(
@@ -61,6 +66,7 @@ def send_message(
     parent_message_id: int | None = None,
     tag_codes: Optional[list[str]] = None,
     metadata: Optional[dict[str, Any]] = None,
+    uploaded_files: Optional[list] = None,
 ) -> Message | None:
     from ..models import Conversation
 
@@ -68,14 +74,30 @@ def send_message(
     if not conv or not user_can_access_conversation(user, conv):
         return None
 
+    files = list(uploaded_files or [])
+    trimmed_body = body.strip()
+    if not trimmed_body and not files:
+        return None
+
+    from .attachment_service import build_attachment_preview_body, create_message_attachments, resolve_message_type_for_attachments
+
+    resolved_type = message_type
+    if files:
+        resolved_type = resolve_message_type_for_attachments(files, trimmed_body)
+    if not trimmed_body and files:
+        trimmed_body = build_attachment_preview_body(files[0].name if hasattr(files[0], 'name') else 'file')
+
     msg = Message.objects.create(
         conversation=conv,
         sender=user,
-        body=body.strip(),
-        message_type=message_type,
+        body=trimmed_body,
+        message_type=resolved_type,
         parent_message_id=parent_message_id,
         metadata_json=metadata or {},
     )
+
+    if files:
+        create_message_attachments(msg, files)
 
     if tag_codes:
         tags = Tag.objects.filter(code__in=tag_codes)
@@ -87,7 +109,7 @@ def send_message(
 
     ctx = getattr(conv, 'context', None)
     if ctx:
-        _sync_workflow_state_after_message(ctx, user)
+        _sync_workflow_state_after_message(conv, ctx, user)
 
     ctx = getattr(conv, 'context', None)
     record_message_sent(
@@ -100,7 +122,7 @@ def send_message(
 
     conv_id = conv.pk
     sender_id = user.pk
-    preview = body.strip()[:200]
+    preview = trimmed_body[:200]
 
     def _publish_realtime() -> None:
         publish_message_created(
@@ -136,7 +158,7 @@ def send_message(
 
     transaction.on_commit(_emit_notification)
 
-    _notify_offer_participants(conv, user, body, metadata)
+    _notify_offer_participants(conv, user, trimmed_body, metadata)
 
     return msg
 
@@ -176,22 +198,105 @@ def _action_url_for_conversation(conv, user) -> str:
             return f'/student/internship-offers/chat?conversation={conv.pk}'
         if offer_uuid:
             return f'/admin/internship-offers/chat?conversation={conv.pk}'
+    if ctx and ctx.module == 'srf':
+        if user.role == user.RoleChoices.STUDENT:
+            return f'/student/srf/chat?conversation={conv.pk}'
+        return f'/admin/srf/chat?conversation={conv.pk}'
+    if ctx and ctx.module == 'documents':
+        if user.role == user.RoleChoices.STUDENT:
+            return f'/student/documents/chat?conversation={conv.pk}'
+        return f'/admin/documents/chat?conversation={conv.pk}'
     return f'/chat/conversations/{conv.pk}'
 
 
-def _sync_workflow_state_after_message(ctx, sender) -> None:
+def _sync_workflow_state_after_message(conv, ctx, sender) -> None:
     from ..models import ConversationContext
 
-    if ctx.workflow_state in {
-        ConversationContext.WorkflowState.RESOLVED,
-        ConversationContext.WorkflowState.ARCHIVED,
-    }:
+    if ctx.workflow_state == ConversationContext.WorkflowState.RESOLVED:
+        _reopen_resolved_conversation(conv, ctx, sender)
         return
+
+    if ctx.workflow_state == ConversationContext.WorkflowState.ARCHIVED:
+        return
+
     if sender.role == sender.RoleChoices.STUDENT:
         ctx.workflow_state = ConversationContext.WorkflowState.WAITING_ADMIN
     elif sender.role in (sender.RoleChoices.ADMIN,) or sender.is_superuser:
         ctx.workflow_state = ConversationContext.WorkflowState.WAITING_STUDENT
     ctx.save(update_fields=['workflow_state', 'updated_at'])
+
+
+def _reopen_resolved_conversation(conv, ctx, sender) -> None:
+    from ..models import ConversationContext, Message
+
+    if sender.role == sender.RoleChoices.STUDENT:
+        new_state = ConversationContext.WorkflowState.WAITING_ADMIN
+    elif sender.role in (sender.RoleChoices.ADMIN,) or sender.is_superuser:
+        new_state = ConversationContext.WorkflowState.WAITING_STUDENT
+    else:
+        new_state = ConversationContext.WorkflowState.WAITING_ADMIN
+
+    ctx.workflow_state = new_state
+    _restore_workflow_status_after_reopen(ctx)
+    ctx.save(update_fields=['workflow_state', 'workflow_status', 'updated_at'])
+
+    meta = dict(conv.metadata_json or {})
+    meta.pop('resolved', None)
+    meta.pop('resolved_at', None)
+    meta.pop('resolved_by', None)
+    meta.pop('resolution_note', None)
+    conv.metadata_json = meta
+    conv.save(update_fields=['metadata_json', 'updated_at'])
+
+    event_msg = Message.objects.create(
+        conversation=conv,
+        sender=sender,
+        body='[Action: auto_reopen]',
+        message_type=Message.MessageType.EVENT,
+        metadata_json={'smart_action': 'auto_reopen', 'triggered_by_user_id': sender.pk},
+    )
+
+    conv_id = conv.pk
+    workflow_state = new_state
+
+    def _publish_reopen() -> None:
+        publish_conversation_updated(
+            conv_id,
+            {
+                'reopened': True,
+                'workflow_state': workflow_state,
+                'action_code': 'auto_reopen',
+            },
+        )
+        publish_message_created(
+            conv_id,
+            {
+                'message_id': event_msg.pk,
+                'sender_id': sender.pk,
+                'body': event_msg.body,
+                'message_type': 'EVENT',
+            },
+        )
+        publish_inbox_updated(conv_id, {'reopened': True})
+
+    transaction.on_commit(_publish_reopen)
+
+
+def _restore_workflow_status_after_reopen(ctx) -> None:
+    from ..models import ConversationContext
+
+    if ctx.workflow_status != 'RESOLVED':
+        return
+
+    if ctx.module == ConversationContext.Module.PLATFORM:
+        ctx.workflow_status = 'OPEN'
+    elif ctx.module == ConversationContext.Module.OFFERS:
+        snap = ctx.context_snapshot_json or {}
+        ctx.workflow_status = snap.get('application_status') or 'INQUIRY'
+    elif ctx.module == ConversationContext.Module.ANNOUNCEMENTS:
+        ctx.workflow_status = 'OPEN'
+    else:
+        ctx.workflow_status = ''
 
 
 def mark_read(user: User, conversation_id: int, message_id: int) -> bool:

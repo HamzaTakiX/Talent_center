@@ -1,14 +1,15 @@
 import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Paperclip } from 'lucide-react';
 import ChatEmptyState from '../../../shared/admin-module-chat/components/ChatEmptyState';
 import SupportMessageComposer from '../../../shared/admin-support-inbox/components/SupportMessageComposer';
+import {
+  StandardChatMessageThread,
+  toChatToolMessages,
+  useChatConversationTools,
+} from '../../../../shared/chat-design-system';
 import type { InboxStats, InternshipConversation } from '../types/internshipChatTypes';
 import { InternshipChatMessagesSkeleton, InternshipChatWorkspaceSkeleton } from './InternshipChatLoadingSkeletons';
 import InternshipChatHeader from './InternshipChatHeader';
-import InternshipMessageReadStatus from './InternshipMessageReadStatus';
 import { useInternshipInboxCopy } from '../../hooks/useOffersListLabels';
-import { formatInternshipSystemMessage } from '../utils/internshipChatSystemMessageUtils';
 
 type Props = {
   conversation: InternshipConversation | null;
@@ -24,10 +25,6 @@ type Props = {
   statsLoading?: boolean;
   onSend: (text: string) => void;
   onBack?: () => void;
-  onViewStudent: () => void;
-  onViewApplication: () => void;
-  onViewOffer: () => void;
-  onOpenOfferInModule?: () => void;
   onMarkResolved: () => void;
   onArchive: () => void;
   onUnarchive: () => void;
@@ -44,10 +41,6 @@ const InternshipChatArea: FunctionComponent<Props> = ({
   statsLoading = false,
   onSend,
   onBack,
-  onViewStudent,
-  onViewApplication,
-  onViewOffer,
-  onOpenOfferInModule,
   onMarkResolved,
   onArchive,
   onUnarchive,
@@ -57,7 +50,16 @@ const InternshipChatArea: FunctionComponent<Props> = ({
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t, emptyState } = useInternshipInboxCopy();
-  const { t: tRoot } = useTranslation();
+
+  const chatTools = useChatConversationTools({
+    messages: toChatToolMessages(conversation?.messages ?? []),
+    conversationKey: conversation?.id ?? '',
+    counterpartyName: conversation?.studentName,
+    archived: conversation?.archived,
+    onArchive,
+    onUnarchive,
+    scrollContainerRef: scrollRef,
+  });
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -110,70 +112,32 @@ const InternshipChatArea: FunctionComponent<Props> = ({
       <InternshipChatHeader
         conversation={conversation}
         onBack={onBack}
-        onViewStudent={onViewStudent}
-        onViewApplication={onViewApplication}
-        onViewOffer={onViewOffer}
-        onOpenOfferInModule={onOpenOfferInModule}
         onMarkResolved={onMarkResolved}
-        onArchive={onArchive}
-        onUnarchive={onUnarchive}
+        conversationMenu={chatTools.menu}
       />
+      {chatTools.searchBar}
 
       <div ref={scrollRef} className="isi-messages">
         {messagesLoading && conversation.messages.length === 0 ? (
           <InternshipChatMessagesSkeleton embedded />
-        ) : conversation.messages.length === 0 ? (
-          <div className="isi-messages-empty">
-            <p className="text-sm text-[var(--admin-text-muted)]">{t('noMessages')}</p>
-          </div>
         ) : (
-          conversation.messages.map((msg) => {
-            const systemLabel =
-              msg.messageType === 'EVENT' || msg.messageType === 'SYSTEM'
-                ? formatInternshipSystemMessage(msg, 'admin', tRoot)
-                : null;
-
-            return (
-            <div key={msg.id} className="isi-msg-block">
-              {msg.separatorBefore ? (
-                <div className="isi-date-sep">
-                  <span>{msg.separatorBefore}</span>
-                </div>
-              ) : null}
-              {systemLabel ? (
-                <div className="isi-system-msg">{systemLabel}</div>
-              ) : msg.direction === 'in' ? (
-                <div className="isi-msg isi-msg--in">
-                  <div className="isi-bubble isi-bubble--in">{msg.text}</div>
-                  {msg.attachmentName ? (
-                    <div className="isi-file-preview">
-                      <Paperclip className="size-4 shrink-0" />
-                      <span>{msg.attachmentName}</span>
-                    </div>
-                  ) : null}
-                  <time className="isi-msg-time">{msg.time}</time>
-                </div>
-              ) : (
-                <div className="isi-msg isi-msg--out">
-                  <div className="isi-bubble isi-bubble--out">{msg.text}</div>
-                  <InternshipMessageReadStatus
-                    message={msg}
-                    seenLabel={
-                      msg.seenTime ? t('seenAt', { time: msg.seenTime }) : undefined
-                    }
-                  />
-                </div>
-              )}
-            </div>
-            );
-          })
+          <StandardChatMessageThread
+            messages={conversation.messages}
+            inboxMode="admin"
+            systemEventsPrefix="admin.modules.offers.inbox.systemEvents"
+            emptyLabel={t('noMessages')}
+            typing={peerTyping}
+            typingLabel={t('typingIndicator', { defaultValue: "L'étudiant écrit…" })}
+            getMessageBlockProps={chatTools.getMessageBlockProps}
+            renderHighlightedText={chatTools.renderHighlightedText}
+            seenLabelFor={(msg) =>
+              msg.seenTime ? t('seenAt', { time: msg.seenTime }) : undefined
+            }
+          />
         )}
-        {peerTyping ? (
-          <div className="isi-typing-indicator text-xs text-[var(--admin-text-muted)] px-4 pb-2">
-            {t('typingIndicator', { defaultValue: "L'étudiant écrit…" })}
-          </div>
-        ) : null}
       </div>
+
+      {chatTools.panels}
 
       <SupportMessageComposer
         value={draft}

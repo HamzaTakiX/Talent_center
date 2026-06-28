@@ -1,6 +1,9 @@
 import { FunctionComponent, ReactNode, useEffect, useMemo, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Eye, GraduationCap, Hash, Loader2, Mail, MessageSquare, UserCog, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { easePremium } from '../../dashboard/ui/animations';
 import type { TFunction } from 'i18next';
 import { adminStudentsApi } from '../../api/students';
 import type { AdminStudentDetail, AdminStudentRow, StudentIntelligenceScores } from '../../api/types';
@@ -12,6 +15,9 @@ import { engagementBandTableBadge, tableBadge } from '../../ui/adminStatusBadges
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
 import { resolveMediaUrl } from '../../../../shared/api/mediaUrl';
 import { engagementBand } from '../student_cards/shared/utils/studentListFilters';
+import {
+  adminFormBtnSecondaryClass,
+} from '../../shared/forms/adminFormClasses';
 
 const FORM_PREFIX = 'admin.forms.createStudent';
 const DETAIL_PREFIX = 'admin.common.detailModal';
@@ -299,45 +305,73 @@ const StudentDetailHero: FunctionComponent<{
   initials: string;
   program?: string;
   studentClass?: string;
+  studentNumber?: string;
   statusLabel?: string;
-}> = ({ name, email, avatarUrl, initials, program, studentClass, statusLabel }) => {
+}> = ({ name, email, avatarUrl, initials, program, studentClass, studentNumber, statusLabel }) => {
   const [failed, setFailed] = useState(false);
   const resolvedAvatar = avatarUrl?.trim();
   const showImage = Boolean(resolvedAvatar) && !failed;
+  const metaLabel = [program, studentClass].filter(Boolean).join(' · ');
 
   return (
-    <div className="admin-student-detail-hero">
-      <div
-        className={`admin-student-detail-hero__avatar${showImage ? ' admin-student-detail-hero__avatar--photo' : ''}`}
-      >
-        {showImage ? (
-          <img
-            src={resolvedAvatar}
-            alt={name ? `Photo de ${name}` : 'Photo étudiant'}
-            className="admin-student-detail-hero__avatar-img"
-            onError={() => setFailed(true)}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <span className="admin-student-detail-hero__avatar-fallback" aria-hidden>
-            {initials}
-          </span>
-        )}
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: easePremium }}
+      className="admin-student-detail-hero"
+    >
+      <div className="admin-student-detail-hero__mesh admin-student-detail-hero__mesh--primary" aria-hidden />
+      <div className="admin-student-detail-hero__mesh admin-student-detail-hero__mesh--secondary" aria-hidden />
+      <div className="admin-student-detail-hero__shine" aria-hidden />
+
+      <div className="admin-student-detail-hero__inner">
+        {/* Avatar */}
+        <div className={`admin-student-detail-hero__avatar${showImage ? ' admin-student-detail-hero__avatar--photo' : ''}`}>
+          {showImage ? (
+            <img
+              src={resolvedAvatar!}
+              alt={name ? `Photo de ${name}` : 'Photo étudiant'}
+              className="admin-student-detail-hero__avatar-img"
+              onError={() => setFailed(true)}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="admin-student-detail-hero__avatar-fallback" aria-hidden>
+              {initials}
+            </span>
+          )}
+        </div>
+
+        {/* Copy */}
+        <div className="admin-student-detail-hero__copy min-w-0">
+          <p className="admin-student-detail-hero__name">{name}</p>
+
+          <div className="admin-student-detail-hero__chips">
+            <span className="admin-student-detail-hero__chip">
+              <Mail className="h-3 w-3 shrink-0 opacity-70" strokeWidth={2} aria-hidden />
+              <span className="truncate">{email}</span>
+            </span>
+            {studentNumber && (
+              <span className="admin-student-detail-hero__chip">
+                <Hash className="h-3 w-3 shrink-0 opacity-70" strokeWidth={2} aria-hidden />
+                <span>{studentNumber}</span>
+              </span>
+            )}
+            {metaLabel && (
+              <span className="admin-student-detail-hero__chip">
+                <GraduationCap className="h-3 w-3 shrink-0 opacity-70" strokeWidth={2} aria-hidden />
+                <span className="truncate">{metaLabel}</span>
+              </span>
+            )}
+          </div>
+
+          {statusLabel && (
+            <span className="admin-student-detail-hero__status">{statusLabel}</span>
+          )}
+        </div>
       </div>
-      <div className="admin-student-detail-hero__copy min-w-0">
-        <p className="admin-student-detail-hero__name">{name}</p>
-        <p className="admin-student-detail-hero__email">{email}</p>
-        {(program || studentClass) && (
-          <p className="admin-student-detail-hero__meta">
-            {[program, studentClass].filter(Boolean).join(' · ')}
-          </p>
-        )}
-        {statusLabel ? (
-          <span className="admin-student-detail-hero__status">{statusLabel}</span>
-        ) : null}
-      </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -350,10 +384,12 @@ const StudentDetailModal: FunctionComponent<StudentDetailModalProps> = ({
   onEdit,
 }) => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const { accountStatus } = useAdminTableValues();
   const [detail, setDetail] = useState<AdminStudentDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [chatError, setChatError] = useState('');
 
   const resolvedId = student?.id ?? studentId ?? null;
 
@@ -361,6 +397,7 @@ const StudentDetailModal: FunctionComponent<StudentDetailModalProps> = ({
     if (!open || resolvedId == null) {
       setDetail(null);
       setLoadError(false);
+      setChatError('');
       return;
     }
 
@@ -631,6 +668,15 @@ const StudentDetailModal: FunctionComponent<StudentDetailModalProps> = ({
     display?.program_major || nestedLabel(studentProfile?.filiere) || display?.filiere_code;
   const classLabel = display?.current_class || nestedLabel(studentProfile?.class_group);
 
+  const showChatButton = Boolean(display?.is_active && !loading);
+
+  const handleOpenChat = () => {
+    if (!resolvedId || !showChatButton) return;
+    setChatError('');
+    onClose();
+    navigate(`/admin/student/chat?student=${resolvedId}&opening=1`);
+  };
+
   return (
     <AdminEntityDetailModal
       open={open}
@@ -639,7 +685,21 @@ const StudentDetailModal: FunctionComponent<StudentDetailModalProps> = ({
       description={displayEmail}
       sections={sections}
       onEdit={() => onEdit(resolvedId)}
-      maxWidthClass="max-w-[760px]"
+      maxWidthClass="max-w-[780px]"
+      showReadOnlyBanner={false}
+      headerIcon={UserCog}
+      footerExtra={
+        showChatButton ? (
+          <button
+            type="button"
+            className={adminFormBtnSecondaryClass}
+            onClick={handleOpenChat}
+          >
+            <MessageSquare className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+            {t(`${DETAIL_PREFIX}.student.sendMessage`)}
+          </button>
+        ) : undefined
+      }
       headerContent={
         <div className="admin-student-detail-hero-wrap">
           <StudentDetailHero
@@ -649,17 +709,46 @@ const StudentDetailModal: FunctionComponent<StudentDetailModalProps> = ({
             initials={initials}
             program={programLabel || undefined}
             studentClass={classLabel || undefined}
+            studentNumber={display?.student_number || undefined}
             statusLabel={display ? accountStatus(display.account_status) : undefined}
           />
-          {loading ? (
-            <p className="admin-student-detail-hero__loading">
-              <Loader2 className="inline size-4 animate-spin" aria-hidden />
-              {t(`${DETAIL_PREFIX}.loading`)}
-            </p>
-          ) : null}
+
+          {/* Loading bar */}
+          {loading && (
+            <div className="student-detail-load-bar" role="status" aria-label={t(`${DETAIL_PREFIX}.loading`)}>
+              <motion.div
+                className="student-detail-load-bar__fill"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 1.6, ease: 'easeOut' }}
+                style={{ transformOrigin: 'left' }}
+              />
+              <span className="student-detail-load-bar__label" aria-hidden>
+                <Loader2 className="h-3 w-3 shrink-0 animate-spin" strokeWidth={2} />
+                {t(`${DETAIL_PREFIX}.loading`)}
+              </span>
+            </div>
+          )}
+
           {loadError ? (
-            <p className="admin-student-detail-hero__error">{t(`${DETAIL_PREFIX}.loadError`)}</p>
+            <div className="student-detail-alert student-detail-alert--error" role="alert">
+              <AlertCircle className="student-detail-alert__icon" strokeWidth={1.75} aria-hidden />
+              <span>{t(`${DETAIL_PREFIX}.loadError`)}</span>
+            </div>
           ) : null}
+
+          {chatError ? (
+            <div className="student-detail-alert student-detail-alert--error" role="alert">
+              <AlertCircle className="student-detail-alert__icon" strokeWidth={1.75} aria-hidden />
+              <span>{chatError}</span>
+            </div>
+          ) : null}
+
+          {/* Compact read-only notice */}
+          <div className="student-detail-readonly-notice">
+            <Eye className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
+            <span>{t('admin.common.detailModal.readOnlyHint')}</span>
+          </div>
         </div>
       }
     />

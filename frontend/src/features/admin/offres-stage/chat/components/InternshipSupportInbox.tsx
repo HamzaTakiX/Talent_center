@@ -181,10 +181,6 @@ const InternshipSupportInbox: FunctionComponent = () => {
             statsLoading={loading}
             onSend={(text) => void sendMessage(text)}
             onBack={() => setMobileView('list')}
-            onViewStudent={openStudentModal}
-            onViewApplication={goApplication}
-            onViewOffer={openOfferDetail}
-            onOpenOfferInModule={openOfferInModule}
             onMarkResolved={handleResolved}
             onArchive={handleArchive}
             onUnarchive={handleUnarchive}

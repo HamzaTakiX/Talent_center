@@ -16,6 +16,12 @@ from .views import (
     ServiceCatalogDetailView,
     ServiceCatalogListCreateView,
     ServiceCatalogSeedView,
+    ServiceCatalogTemplateFileView,
+    StudentDocumentCatalogDetailView,
+    StudentDocumentChatView,
+    StudentDocumentGenerateView,
+    StudentDocumentRequestView,
+    StudentDocumentsOverviewView,
 )
 
 urlpatterns = [
@@ -34,4 +40,10 @@ urlpatterns = [
     path('admin/documents/catalog', ServiceCatalogListCreateView.as_view()),
     path('admin/documents/catalog/seed', ServiceCatalogSeedView.as_view()),
     path('admin/documents/catalog/<int:pk>', ServiceCatalogDetailView.as_view()),
+    path('admin/documents/catalog/<int:pk>/template-file', ServiceCatalogTemplateFileView.as_view()),
+    path('student/documents/overview', StudentDocumentsOverviewView.as_view()),
+    path('student/documents/catalog/<int:pk>', StudentDocumentCatalogDetailView.as_view()),
+    path('student/documents/catalog/<int:pk>/generate', StudentDocumentGenerateView.as_view()),
+    path('student/documents/catalog/<int:pk>/request', StudentDocumentRequestView.as_view()),
+    path('student/documents/catalog/<int:pk>/chat', StudentDocumentChatView.as_view()),
 ]

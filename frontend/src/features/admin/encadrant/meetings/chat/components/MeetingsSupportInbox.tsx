@@ -1,4 +1,5 @@
 import { FunctionComponent } from 'react';
+import { Calendar } from 'lucide-react';
 import { useChatEmptyState } from '../../../../i18n/useAdminCopy';
 import SupportChatWorkspace from '../../../../shared/admin-support-inbox/components/SupportChatWorkspace';
 import SupportConversationList from '../../../../shared/admin-support-inbox/components/SupportConversationList';
@@ -70,6 +71,9 @@ const MeetingsSupportInbox: FunctionComponent = () => {
       mobileView={mobileView}
       sidebar={
         <SupportConversationList
+          title="Conversations"
+          subtitle="Réunions de supervision"
+          icon={Calendar}
           items={toListItems(filtered)}
           selectedId={selectedId}
           search={search}

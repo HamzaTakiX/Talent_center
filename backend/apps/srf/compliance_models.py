@@ -45,6 +45,7 @@ class Installment(TimestampedModel):
     class PaymentStatus(models.TextChoices):
         UNPAID = 'UNPAID', _('Unpaid')
         PENDING_VALIDATION = 'PENDING_VALIDATION', _('Pending validation')
+        PARTIAL = 'PARTIAL', _('Partially paid')
         PAID = 'PAID', _('Paid')
         OVERDUE = 'OVERDUE', _('Overdue')
         WAIVED = 'WAIVED', _('Waived')
@@ -57,6 +58,12 @@ class Installment(TimestampedModel):
     installment_number = models.PositiveSmallIntegerField(db_index=True)
     label = models.CharField(max_length=64, help_text=_('e.g. tranche_1'))
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+    paid_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        help_text=_('Cumulative amount validated for this installment.'),
+    )
     currency = models.CharField(max_length=8, default='MAD')
     due_date = models.DateField(db_index=True)
     semester = models.PositiveSmallIntegerField(

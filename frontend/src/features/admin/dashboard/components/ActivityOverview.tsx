@@ -5,9 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { useAdminDashboardData } from '../hooks/useAdminDashboardData';
 import DashboardSectionHeader from './DashboardSectionHeader';
 import DashboardPanel from '../ui/DashboardPanel';
+import { DashboardChartSkeleton } from '../ui/DashboardSkeleton';
+import AdminSectionEmptyState from '../../ui/AdminSectionEmptyState';
 import { easePremium } from '../ui/animations';
 import AdminChartLegend from '../../ui/charts/AdminChartLegend';
 import { legendFromSeries } from '../../ui/charts/chartPalette';
+import { isAdminDashboardChartEmpty } from '../utils/buildAdminDashboardViewModel';
 
 const CHART_HEIGHT_DESKTOP = 148;
 const CHART_HEIGHT_MOBILE = 124;
@@ -65,9 +68,10 @@ const AnimatedBar: FunctionComponent<{
 
 const ActivityOverview: FunctionComponent = () => {
   const { t } = useTranslation();
-  const { chartLabels, chartData, legend, chartMaxValue } = useAdminDashboardData();
+  const { chartLabels, chartData, legend, chartMaxValue, loading } = useAdminDashboardData();
   const chartHeight = useChartHeight();
   const maxValue = Math.max(10, Math.ceil(chartMaxValue * 1.15));
+  const isEmpty = useMemo(() => isAdminDashboardChartEmpty(chartData), [chartData]);
   const yTicks = useMemo(() => {
     const step = Math.max(1, Math.ceil(maxValue / 4));
     const top = step * 4;
@@ -75,63 +79,83 @@ const ActivityOverview: FunctionComponent = () => {
   }, [maxValue]);
 
   return (
-    <DashboardPanel data-admin-search-id="dashboard-chart" className="admin-section-panel w-full">
+    <DashboardPanel
+      data-admin-search-id="dashboard-chart"
+      className={`admin-section-panel w-full${loading ? ' admin-section-panel--loading' : ''}`}
+      aria-busy={loading}
+    >
       <DashboardSectionHeader
         icon={<BarChart3 strokeWidth={1.75} aria-hidden />}
         title={t('admin.dashboard.chart.title')}
         subtitle={t('admin.dashboard.chart.subtitle')}
       />
 
-      <motion.div className="space-y-2.5 p-3 sm:space-y-3 sm:p-4">
-        <AdminChartLegend items={legendFromSeries(legend)} />
+      {loading ? (
+        <DashboardChartSkeleton />
+      ) : isEmpty ? (
+        <AdminSectionEmptyState
+          variant="inline"
+          iconPreset="chart"
+          title={t('admin.dashboard.chart.empty')}
+          description={t('admin.dashboard.chart.emptyDesc')}
+        />
+      ) : (
+        <motion.div
+          className="space-y-2.5 p-3 sm:space-y-3 sm:p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.28, ease: easePremium }}
+        >
+          <AdminChartLegend items={legendFromSeries(legend)} />
 
-        <motion.div className="admin-chart-inset -mx-0.5 overflow-x-auto overscroll-x-contain rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg)] p-3 sm:mx-0 sm:p-4">
-          <motion.div className="w-full min-w-[280px] sm:min-w-[480px]">
-            <motion.div className="flex gap-1.5 sm:gap-2">
-              <motion.div
-                className="flex w-6 shrink-0 flex-col justify-between pb-5 text-[9px] tabular-nums text-[var(--admin-text-muted)] sm:w-7 sm:text-[10px]"
-                style={{ height: chartHeight }}
-              >
-                {yTicks.map((v) => (
-                  <span key={v}>{v}</span>
-                ))}
-              </motion.div>
+          <motion.div className="admin-chart-inset -mx-0.5 overflow-x-auto overscroll-x-contain rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg)] p-3 sm:mx-0 sm:p-4">
+            <motion.div className="w-full min-w-[280px] sm:min-w-[480px]">
+              <motion.div className="flex gap-1.5 sm:gap-2">
+                <motion.div
+                  className="flex w-6 shrink-0 flex-col justify-between pb-5 text-[9px] tabular-nums text-[var(--admin-text-muted)] sm:w-7 sm:text-[10px]"
+                  style={{ height: chartHeight }}
+                >
+                  {yTicks.map((v) => (
+                    <span key={v}>{v}</span>
+                  ))}
+                </motion.div>
 
-              <motion.div className="min-w-0 flex-1">
-                <motion.div className="relative" style={{ height: chartHeight }}>
-                  <motion.div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <motion.div key={i} className="border-t border-dashed border-[var(--admin-border)]" />
-                    ))}
-                  </motion.div>
+                <motion.div className="min-w-0 flex-1">
+                  <motion.div className="relative" style={{ height: chartHeight }}>
+                    <motion.div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
+                      {[0, 1, 2, 3, 4].map((i) => (
+                        <motion.div key={i} className="border-t border-dashed border-[var(--admin-border)]" />
+                      ))}
+                    </motion.div>
 
-                  <motion.div className="absolute inset-x-0 bottom-5 top-0 grid grid-cols-7 items-end gap-0.5 sm:gap-2">
-                    {chartLabels.map((dayLabel, index) => (
-                      <motion.div key={dayLabel} className="flex h-full min-w-0 flex-col items-center justify-end">
-                        <motion.div className="flex h-full w-full max-w-[2.25rem] items-end gap-px sm:max-w-[3rem] sm:gap-0.5 md:max-w-[3.5rem]">
-                          {keys.map((k, ki) => (
-                            <AnimatedBar
-                              key={k}
-                              value={chartData[k][index]}
-                              color={seriesColors[k]}
-                              delay={index * 35 + ki * 15}
-                              chartHeight={chartHeight}
-                              maxValue={maxValue}
-                            />
-                          ))}
+                    <motion.div className="absolute inset-x-0 bottom-5 top-0 grid grid-cols-7 items-end gap-0.5 sm:gap-2">
+                      {chartLabels.map((dayLabel, index) => (
+                        <motion.div key={dayLabel} className="flex h-full min-w-0 flex-col items-center justify-end">
+                          <motion.div className="flex h-full w-full max-w-[2.25rem] items-end gap-px sm:max-w-[3rem] sm:gap-0.5 md:max-w-[3.5rem]">
+                            {keys.map((k, ki) => (
+                              <AnimatedBar
+                                key={k}
+                                value={chartData[k][index]}
+                                color={seriesColors[k]}
+                                delay={index * 35 + ki * 15}
+                                chartHeight={chartHeight}
+                                maxValue={maxValue}
+                              />
+                            ))}
+                          </motion.div>
+                          <span className="mt-1.5 max-w-full truncate text-center text-[9px] font-medium text-[var(--admin-text-muted)] sm:mt-2 sm:text-[10px]">
+                            {dayLabel}
+                          </span>
                         </motion.div>
-                        <span className="mt-1.5 max-w-full truncate text-center text-[9px] font-medium text-[var(--admin-text-muted)] sm:mt-2 sm:text-[10px]">
-                          {dayLabel}
-                        </span>
-                      </motion.div>
-                    ))}
+                      ))}
+                    </motion.div>
                   </motion.div>
                 </motion.div>
               </motion.div>
             </motion.div>
           </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </DashboardPanel>
   );
 };

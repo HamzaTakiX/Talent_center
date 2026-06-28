@@ -108,8 +108,10 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
   }, [user]);
 
   const isProfileDirty =
-    form.fullName !== savedSnapshot.fullName ||
-    form.email !== savedSnapshot.email ||
+    (!isStudentPortal && (
+      form.fullName !== savedSnapshot.fullName ||
+      form.email !== savedSnapshot.email
+    )) ||
     form.password !== '' ||
     form.confirmPassword !== '' ||
     avatarFile !== null;
@@ -134,10 +136,12 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
 
   const validate = (): boolean => {
     const next: Partial<Record<keyof ProfileFormState, string>> = {};
-    if (!form.fullName.trim()) next.fullName = t('admin.account.personalInfo.fullNameRequired');
-    if (!form.email.trim()) next.email = t('admin.account.personalInfo.emailRequired');
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      next.email = t('admin.account.personalInfo.emailInvalid');
+    if (!isStudentPortal) {
+      if (!form.fullName.trim()) next.fullName = t('admin.account.personalInfo.fullNameRequired');
+      if (!form.email.trim()) next.email = t('admin.account.personalInfo.emailRequired');
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+        next.email = t('admin.account.personalInfo.emailInvalid');
+      }
     }
     if (form.password || form.confirmPassword || form.currentPassword) {
       if (!form.currentPassword) {
@@ -175,11 +179,13 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
         if (isFrontendOnlyAdmin) {
           await new Promise((r) => setTimeout(r, 500));
         } else {
-          const { first_name, last_name } = splitFullName(form.fullName);
           const payload = new FormData();
-          payload.append('email', form.email);
-          payload.append('first_name', first_name);
-          payload.append('last_name', last_name);
+          if (!isStudentPortal) {
+            const { first_name, last_name } = splitFullName(form.fullName);
+            payload.append('email', form.email);
+            payload.append('first_name', first_name);
+            payload.append('last_name', last_name);
+          }
           if (avatarFile) payload.append('avatar', avatarFile);
 
           let updatedUser = await authApi.updateMe(payload);
@@ -392,10 +398,11 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
                     id="fullName"
                     type="text"
                     value={form.fullName}
-                    onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
+                    onChange={(e) => !isStudentPortal && setForm((f) => ({ ...f, fullName: e.target.value }))}
+                    readOnly={isStudentPortal}
                     className={`admin-input rounded-xl px-4 py-2.5 text-sm ${
                       errors.fullName ? 'border-red-500/50' : ''
-                    }`}
+                    } ${isStudentPortal ? 'cursor-default opacity-70 select-none' : ''}`}
                   />
                   {errors.fullName && (
                     <p className="text-xs font-medium text-red-500">{errors.fullName}</p>
@@ -409,10 +416,11 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
                     id="profileEmail"
                     type="email"
                     value={form.email}
-                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    onChange={(e) => !isStudentPortal && setForm((f) => ({ ...f, email: e.target.value }))}
+                    readOnly={isStudentPortal}
                     className={`admin-input rounded-xl px-4 py-2.5 text-sm ${
                       errors.email ? 'border-red-500/50' : ''
-                    }`}
+                    } ${isStudentPortal ? 'cursor-default opacity-70 select-none' : ''}`}
                   />
                   {errors.email && (
                     <p className="text-xs font-medium text-red-500">{errors.email}</p>

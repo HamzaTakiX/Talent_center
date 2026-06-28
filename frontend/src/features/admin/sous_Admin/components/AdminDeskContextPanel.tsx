@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import InternshipInspectorRow from '../../offres-stage/chat/components/InternshipInspectorRow';
 import InternshipStudentAvatar from '../../offres-stage/chat/components/InternshipStudentAvatar';
+import PlatformDeskSupportStatusBadge from '../../shared/platform-desk-chat/components/PlatformDeskSupportStatusBadge';
+import { visibleSupportStatus } from '../../shared/platform-desk-chat/utils/platformDeskSupportStatus';
 import type { DeskConversationRecord } from '../../shared/admin-support-inbox/adapters/mapDeskChatData';
 
 type Props = {
@@ -28,14 +30,12 @@ const AdminDeskContextPanel: FunctionComponent<Props> = ({
 }) => {
   const adminName = resolveAdminName(conversation);
   const canViewAdmin = Boolean(onOpenAdministrator && conversation.userId);
+  const supportStatus = visibleSupportStatus(conversation, 'admin');
 
   return (
     <aside className="isi-inspector">
       <header className="isi-inspector-head">
         <span className="isi-inspector-head-title">Contexte administrateur</span>
-        {conversation.roleLabel ? (
-          <span className="isi-inspector-head-badge">{conversation.roleLabel}</span>
-        ) : null}
       </header>
 
       <div className="isi-inspector-section-title">Administrateur</div>
@@ -74,9 +74,9 @@ const AdminDeskContextPanel: FunctionComponent<Props> = ({
             <span>{conversation.entityLabel}</span>
           </InternshipInspectorRow>
         ) : null}
-        {conversation.workflowStatus ? (
-          <InternshipInspectorRow icon={<CircleDot {...ICON_SM} />} label="Workflow">
-            <span>{conversation.workflowStatus}</span>
+        {supportStatus ? (
+          <InternshipInspectorRow icon={<CircleDot {...ICON_SM} />} label="Statut">
+            <PlatformDeskSupportStatusBadge status={supportStatus} viewerRole="admin" inline />
           </InternshipInspectorRow>
         ) : null}
         {conversation.contextKind ? (

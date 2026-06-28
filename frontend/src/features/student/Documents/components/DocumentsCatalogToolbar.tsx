@@ -34,7 +34,7 @@ const DocumentsCatalogToolbar: FunctionComponent<DocumentsCatalogToolbarProps> =
         label:
           value === 'all'
             ? t('student.documents.allCategories')
-            : t(`student.documents.categories.${value}`),
+            : t(`admin.documentsModule.catalog.categories.${value}`),
       })),
     [t, i18n.language],
   );
@@ -46,7 +46,13 @@ const DocumentsCatalogToolbar: FunctionComponent<DocumentsCatalogToolbarProps> =
         label:
           value === 'all'
             ? t('student.documents.allDeliveryTypes')
-            : t(`student.documents.badges.${value === 'auto' ? 'auto' : 'reservation'}`),
+            : value === 'online'
+              ? t('admin.documentsModule.catalog.badges.online')
+              : value === 'physical'
+                ? t('admin.documentsModule.catalog.badges.physical')
+                : value === 'reservation'
+                  ? t('admin.documentsModule.catalog.badges.reservation')
+                  : t('admin.documentsModule.catalog.badges.autoGen'),
       })),
     [t, i18n.language],
   );

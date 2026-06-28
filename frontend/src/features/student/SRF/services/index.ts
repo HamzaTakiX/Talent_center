@@ -1,1 +1,1 @@
-/** Services — Student SRF (placeholder). */
+export { studentSrfApi } from './studentSrfApi';

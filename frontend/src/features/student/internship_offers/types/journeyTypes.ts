@@ -91,6 +91,7 @@ export interface InternshipJourneyDashboard {
   academic_profile: JourneyAcademicProfile;
   profile_completion: JourneyProfileCompletion;
   cv_score: number | null;
+  internship_readiness_score: number | null;
   applications_in_progress: JourneyApplication[];
   upcoming_deadlines: JourneyDeadline[];
   interviews_scheduled: JourneyInterview[];

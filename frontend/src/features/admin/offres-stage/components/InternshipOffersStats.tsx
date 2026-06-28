@@ -1,23 +1,11 @@
 import { FunctionComponent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import InternshipOfferStatCard from './InternshipOfferStatCard';
 import InternshipPopularOfferCard from './InternshipPopularOfferCard';
 import AdminKpiGrid from '../../ui/AdminKpiGrid';
 import { AdminKpiGridSkeleton } from '../../ui/AdminKpiGridSkeleton';
 import { useStageDashboard } from '../hooks/useStageOffers';
 
-const routeByStatKey: Record<string, string> = {
-  totalOffers: '/admin/internship-offers/all',
-  activeOffers: '/admin/internship-offers/active',
-  expiredOffers: '/admin/internship-offers/expired',
-  draftOffers: '/admin/internship-offers/drafts',
-  closedOffers: '/admin/internship-offers/closed',
-  archivedOffers: '/admin/internship-offers/archived',
-  totalApplications: '/admin/internship-offers/with-applications',
-};
-
 const InternshipOffersStats: FunctionComponent = () => {
-  const navigate = useNavigate();
   const { stats, loading, error } = useStageDashboard();
 
   if (loading) {
@@ -52,11 +40,6 @@ const InternshipOffersStats: FunctionComponent = () => {
             value={stat.value}
             icon={stat.icon}
             index={index}
-            onClick={
-              stat.statKey && routeByStatKey[stat.statKey]
-                ? () => navigate(routeByStatKey[stat.statKey!])
-                : undefined
-            }
           />
         ),
       )}

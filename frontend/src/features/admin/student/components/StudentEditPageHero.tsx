@@ -1,10 +1,9 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
 import { Hash, Mail, UserCog } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AdminStudentDetail } from '../../api/types';
 import { easePremium } from '../../dashboard/ui/animations';
-import { getAdminUserInitials, resolveAvatarUrl } from '../../dashboard/utils/adminUserDisplay';
 
 const FORM_PREFIX = 'admin.forms.createStudent';
 
@@ -14,11 +13,7 @@ interface StudentEditPageHeroProps {
 
 const StudentEditPageHero: FunctionComponent<StudentEditPageHeroProps> = ({ student }) => {
   const { t } = useTranslation();
-  const [avatarFailed, setAvatarFailed] = useState(false);
-  const avatarUrl = resolveAvatarUrl(student.profile?.avatar);
-  const showAvatar = Boolean(avatarUrl) && !avatarFailed;
   const displayName = student.full_name?.trim() || student.email || '—';
-  const initials = getAdminUserInitials(displayName, student.email);
   const statusLabel = t(`${FORM_PREFIX}.accountStatus.${student.account_status}`);
 
   return (
@@ -33,34 +28,41 @@ const StudentEditPageHero: FunctionComponent<StudentEditPageHeroProps> = ({ stud
       <div className="admin-student-edit-hero__shine" aria-hidden />
 
       <div className="admin-student-edit-hero__inner">
-        <div
-          className={`admin-student-edit-hero__avatar${showAvatar ? ' admin-student-edit-hero__avatar--photo' : ''}`}
-        >
-          {showAvatar ? (
-            <img
-              src={avatarUrl!}
-              alt={displayName ? `Photo de ${displayName}` : 'Photo étudiant'}
-              className="admin-student-edit-hero__avatar-img"
-              onError={() => setAvatarFailed(true)}
-              loading="lazy"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <span className="admin-student-edit-hero__avatar-fallback" aria-hidden>
-              {initials}
-            </span>
-          )}
-        </div>
-
         <div className="admin-student-edit-hero__copy min-w-0">
-          <span className="admin-student-edit-hero__badge">
+          <motion.span
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.35, ease: easePremium, delay: 0.1 }}
+            className="admin-student-edit-hero__badge"
+          >
             <UserCog className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
             {t(`${FORM_PREFIX}.editTitle`)}
-          </span>
-          <h1 className="admin-student-edit-hero__title">{displayName}</h1>
-          <p className="admin-student-edit-hero__subtitle">{t(`${FORM_PREFIX}.editSubtitle`)}</p>
+          </motion.span>
 
-          <div className="admin-student-edit-hero__meta">
+          <motion.h1
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.38, ease: easePremium, delay: 0.15 }}
+            className="admin-student-edit-hero__title"
+          >
+            {displayName}
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.35, ease: easePremium, delay: 0.22 }}
+            className="admin-student-edit-hero__subtitle"
+          >
+            {t(`${FORM_PREFIX}.editSubtitle`)}
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: easePremium, delay: 0.28 }}
+            className="admin-student-edit-hero__meta"
+          >
             <span className="admin-student-edit-hero__chip">
               <Mail className="h-3.5 w-3.5 shrink-0 opacity-80" strokeWidth={2} aria-hidden />
               <span className="truncate">{student.email}</span>
@@ -72,7 +74,12 @@ const StudentEditPageHero: FunctionComponent<StudentEditPageHeroProps> = ({ stud
               </span>
             ) : null}
             <span className="admin-student-edit-hero__status">{statusLabel}</span>
-          </div>
+          </motion.div>
+        </div>
+
+        {/* Decorative icon — visible on medium+ screens */}
+        <div className="admin-student-edit-hero__deco" aria-hidden>
+          <UserCog className="admin-student-edit-hero__deco-icon" strokeWidth={0.75} />
         </div>
       </div>
     </motion.header>

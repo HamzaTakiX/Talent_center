@@ -31,7 +31,7 @@ function mapVisibleOffersToStudentCards(
   );
 }
 
-export function useStudentRecentOffers(limit = 3) {
+export function useStudentRecentOffers(limit = 2) {
   const [offers, setOffers] = useState<ReturnType<typeof mapStageOfferToStudentCard>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

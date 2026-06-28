@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from decimal import Decimal
 from typing import Any, Optional
 
 from django.db.models import Count, Q
@@ -13,7 +14,13 @@ from apps.srf.compliance_models import (
     FinancialRiskAlert,
     ProgramExamPeriod,
 )
-from apps.srf.config_models import SrfNotificationTemplate, SrfRestrictionPolicy, SrfWarningTier
+from apps.srf.config_models import (
+    SrfInstallmentPlanTemplate,
+    SrfInstallmentPlanTranche,
+    SrfNotificationTemplate,
+    SrfRestrictionPolicy,
+    SrfWarningTier,
+)
 from apps.srf.models import FinancialAccount, NotificationCampaign
 
 
@@ -102,6 +109,36 @@ def seed_default_templates() -> None:
     ])
 
 
+def seed_default_installment_template() -> None:
+    """Bootstrap a default ESCA-style 3-tranche plan when none exists."""
+    if SrfInstallmentPlanTemplate.objects.exists():
+        return
+    today = timezone.now().date()
+    template = SrfInstallmentPlanTemplate.objects.create(
+        name='Default 3-tranche plan',
+        description='Yearly fees split into 3 installments — adjust amounts and deadlines per program.',
+        number_of_tranches=3,
+        split_mode=SrfInstallmentPlanTemplate.SplitMode.CUSTOM,
+        currency='MAD',
+        is_mandatory=True,
+        is_active=True,
+    )
+    rows = [
+        ('Tranche 1', Decimal('40.00'), today + timedelta(days=30), 1),
+        ('Tranche 2', Decimal('30.00'), today + timedelta(days=120), 1),
+        ('Tranche 3', Decimal('30.00'), today + timedelta(days=210), 2),
+    ]
+    for idx, (label, pct, due, semester) in enumerate(rows, start=1):
+        SrfInstallmentPlanTranche.objects.create(
+            template=template,
+            tranche_number=idx,
+            label=label,
+            percentage=pct,
+            due_date=due,
+            semester=semester,
+        )
+
+
 def resolve_active_tier(days_until_exam: int) -> Optional[SrfWarningTier]:
     """Pick the most urgent tier whose threshold has been reached."""
     if days_until_exam < 0:
@@ -162,6 +199,7 @@ def build_workspace_analytics() -> dict[str, Any]:
         'open_alerts_by_severity': alerts_by_severity,
         'active_exam_periods': ProgramExamPeriod.objects.filter(is_active=True).count(),
         'active_warning_tiers': SrfWarningTier.objects.filter(is_active=True).count(),
+        'active_installment_plans': SrfInstallmentPlanTemplate.objects.filter(is_active=True).count(),
     }
 
 

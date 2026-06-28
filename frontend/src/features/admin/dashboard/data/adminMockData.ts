@@ -11,7 +11,7 @@ export type DashboardStatId =
 export type AlertPriority = 'High' | 'Medium';
 
 /** When true, dashboard widgets use mock data instead of live API responses. */
-export const USE_ADMIN_DASHBOARD_MOCK = true;
+export const USE_ADMIN_DASHBOARD_MOCK = false;
 
 export const adminPlatformHealthMock = {
   health_score: 87,

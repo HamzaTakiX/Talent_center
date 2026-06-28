@@ -78,7 +78,7 @@ const AllStudentsPage: FunctionComponent = () => {
   const openEdit = (student: AdminStudentRow) =>
     navigate(`/admin/students/${student.id}/edit`);
 
-  if (loading && statsLoading && students.length === 0 && !stats) {
+  if (loading && students.length === 0) {
     return (
       <AdminModulePageShell width="wide">
         <AdminModulePageSkeleton />
@@ -98,7 +98,7 @@ const AllStudentsPage: FunctionComponent = () => {
         }}
       />
       <div data-admin-search-id="students-stats">
-        <StudentsStatGrid stats={statsLoading ? null : stats} />
+        <StudentsStatGrid stats={stats} loading={statsLoading} />
       </div>
       <div className="mt-6" data-admin-search-id="students-table">
         <StudentsDashboardTable

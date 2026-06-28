@@ -24,14 +24,29 @@ from .file_security import CHUNK_SIZE
 from .validation import _parse_decimal
 
 
+def _serialize_installment_row(inst: dict[str, Any]) -> dict[str, Any]:
+    """Normalize ORM .values() row for JSONField storage."""
+    due = inst.get('due_date')
+    if isinstance(due, datetime):
+        due = due.date().isoformat()
+    elif isinstance(due, date):
+        due = due.isoformat()
+    return {
+        'installment_number': inst['installment_number'],
+        'amount': str(inst['amount']),
+        'payment_status': inst['payment_status'],
+        'due_date': due,
+        'academic_year': inst['academic_year'],
+    }
+
+
 def _capture_account_state(account: FinancialAccount) -> dict[str, Any]:
-    installments = list(
-        account.installments.filter(
-            academic_year=account.current_academic_year or '',
-        ).values(
-            'installment_number', 'amount', 'payment_status', 'due_date', 'academic_year',
-        )
+    raw_installments = account.installments.filter(
+        academic_year=account.current_academic_year or '',
+    ).values(
+        'installment_number', 'amount', 'payment_status', 'due_date', 'academic_year',
     )
+    installments = [_serialize_installment_row(inst) for inst in raw_installments]
     return {
         'account_id': account.pk,
         'total_amount': str(account.total_amount),
@@ -60,12 +75,30 @@ def _parse_date(value: Any) -> Optional[date]:
     return None
 
 
+_INSTALLMENT_STATUS_ALIASES = {
+    '1': Installment.PaymentStatus.PAID,
+    'OUI': Installment.PaymentStatus.PAID,
+    'YES': Installment.PaymentStatus.PAID,
+    'PAYE': Installment.PaymentStatus.PAID,
+    'PAYÉ': Installment.PaymentStatus.PAID,
+    '0': Installment.PaymentStatus.UNPAID,
+    'NON': Installment.PaymentStatus.UNPAID,
+    'NO': Installment.PaymentStatus.UNPAID,
+}
+
+
+def _normalize_installment_status(raw: Any) -> str:
+    text = str(raw or Installment.PaymentStatus.UNPAID).strip().upper()
+    return _INSTALLMENT_STATUS_ALIASES.get(text, text)
+
+
 def _apply_installments_from_row(account: FinancialAccount, mapped: dict[str, Any], year: str) -> None:
     for n in range(1, 5):
         amount = _parse_decimal(mapped.get(f'installment_{n}_amount'))
         if amount is None:
             continue
-        status = str(mapped.get(f'installment_{n}_status') or Installment.PaymentStatus.UNPAID).upper()
+        status = _normalize_installment_status(mapped.get(f'installment_{n}_status'))
+        paid_amount = amount if status == Installment.PaymentStatus.PAID else Decimal('0')
         due = _parse_date(mapped.get(f'installment_{n}_due_date')) or date.today()
         Installment.objects.update_or_create(
             account=account,
@@ -74,6 +107,7 @@ def _apply_installments_from_row(account: FinancialAccount, mapped: dict[str, An
             defaults={
                 'label': f'tranche_{n}',
                 'amount': amount,
+                'paid_amount': paid_amount,
                 'due_date': due,
                 'payment_status': status,
                 'semester': 1 if n <= 2 else 2,

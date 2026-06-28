@@ -1,5 +1,6 @@
 import { FunctionComponent, ReactNode } from 'react';
 import { Eye, Pencil } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminModal from './AdminModal';
 import AdminDetailGrid, { type AdminDetailSection } from './AdminDetailGrid';
@@ -18,6 +19,10 @@ export interface AdminEntityDetailModalProps {
   maxWidthClass?: string;
   headerContent?: ReactNode;
   showReadOnlyBanner?: boolean;
+  /** Optional icon shown in the modal header bar (uses AdminModal branded header). */
+  headerIcon?: LucideIcon;
+  /** Optional extra control(s) in the footer, before the edit action. */
+  footerExtra?: ReactNode;
 }
 
 const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = ({
@@ -30,23 +35,28 @@ const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = (
   maxWidthClass = 'max-w-[720px]',
   headerContent,
   showReadOnlyBanner = true,
+  headerIcon,
+  footerExtra,
 }) => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
 
-  const footer = onEdit ? (
+  const footer = onEdit || footerExtra ? (
     <>
       <button type="button" className={adminFormBtnSecondaryClass} onClick={onClose}>
         {t('admin.common.detailModal.close')}
       </button>
-      <button
-        type="button"
-        className={adminFormBtnPrimaryClass}
-        onClick={() => onEdit()}
-      >
-        <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-        {t('admin.common.actions.edit')}
-      </button>
+      {footerExtra}
+      {onEdit ? (
+        <button
+          type="button"
+          className={adminFormBtnPrimaryClass}
+          onClick={() => onEdit()}
+        >
+          <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+          {t('admin.common.actions.edit')}
+        </button>
+      ) : null}
     </>
   ) : undefined;
 
@@ -60,6 +70,7 @@ const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = (
       maxWidthClass={maxWidthClass}
       dir={isRtl ? 'rtl' : 'ltr'}
       closeAriaLabel={t('admin.common.detailModal.close')}
+      headerIcon={headerIcon}
     >
       {headerContent}
       {showReadOnlyBanner ? (

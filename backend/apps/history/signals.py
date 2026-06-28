@@ -32,9 +32,13 @@ def _document_request_status_audit(sender, instance, created, **kwargs):
         )
         return
     if old_status and old_status != instance.status:
-        actor = instance.reviewed_by or get_current_request() and getattr(get_current_request(), 'user', None)
-        req = get_current_request()
-        actor_user = req.user if req and getattr(req, 'user', None) and req.user.is_authenticated else instance.reviewed_by
+        actor_user = getattr(instance, '_history_actor', None)
+        if not actor_user:
+            actor_user = instance.reviewed_by
+        if not actor_user:
+            req = get_current_request()
+            if req and getattr(req, 'user', None) and req.user.is_authenticated:
+                actor_user = req.user
         document_request_status_changed(
             request_obj=instance,
             actor=actor_user,

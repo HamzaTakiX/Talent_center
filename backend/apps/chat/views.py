@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 from rest_framework import status
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.http import Http404
 from django.utils import timezone
 
 from apps.accounts_et_roles.models import User
 from apps.authentication.utils import envelope
 
-from .models import Channel, Conversation, ConversationContext, Tag
+from .models import Channel, Conversation, ConversationContext, Message, Tag
 from .permissions import conversations_for_user, user_can_access_conversation
 from .serializers import (
     ChannelListSerializer,
@@ -35,6 +37,8 @@ from .services.message_service import (
     send_message,
     toggle_reaction,
 )
+from .services.attachment_service import stream_attachment_download
+from .services.attachment_validation import AttachmentValidationError
 from .services.metrics_service import compute_module_metrics
 from .services.presence import get_presence
 from .services.realtime import publish_typing
@@ -130,6 +134,7 @@ class ChatConversationDetailView(APIView):
 
 class ChatMessageListView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get(self, request, conversation_id: int):
         before_id = request.query_params.get('before_id')
@@ -139,23 +144,55 @@ class ChatMessageListView(APIView):
         return Response(envelope(True, 'Messages loaded', data={'items': ser.data}))
 
     def post(self, request, conversation_id: int):
-        ser = MessageCreateSerializer(data=request.data)
+        ser = MessageCreateSerializer(data=request.data, context={'request': request})
         if not ser.is_valid():
             return Response(envelope(False, 'Invalid message', errors=ser.errors), status=400)
         payload = dict(ser.validated_data)
         metadata = payload.pop('metadata_json', {})
         tag_codes = payload.pop('tag_codes', [])
-        msg = send_message(
-            user=request.user,
-            conversation_id=conversation_id,
-            metadata=metadata,
-            tag_codes=tag_codes,
-            **payload,
-        )
+        if isinstance(tag_codes, str):
+            import json
+
+            try:
+                tag_codes = json.loads(tag_codes)
+            except (json.JSONDecodeError, TypeError):
+                tag_codes = []
+        uploaded_files = list(request.FILES.getlist('files'))
+        try:
+            msg = send_message(
+                user=request.user,
+                conversation_id=conversation_id,
+                metadata=metadata,
+                tag_codes=tag_codes,
+                uploaded_files=uploaded_files or None,
+                **payload,
+            )
+        except AttachmentValidationError as exc:
+            return Response(
+                envelope(False, exc.message, errors={'files': [exc.message]}),
+                status=400,
+            )
         if not msg:
             return Response(envelope(False, 'Cannot send message'), status=403)
-        out = MessageSerializer(msg, context={'request': request})
+        msg.refresh_from_db()
+        out = MessageSerializer(
+            Message.objects.filter(pk=msg.pk)
+            .select_related('sender')
+            .prefetch_related('attachments', 'message_tags__tag', 'reactions', 'mentions', 'read_receipts')
+            .first(),
+            context={'request': request},
+        )
         return Response(envelope(True, 'Message sent', data=out.data), status=201)
+
+
+class ChatAttachmentDownloadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, attachment_id: int):
+        try:
+            return stream_attachment_download(request.user, attachment_id)
+        except Http404:
+            return Response(envelope(False, 'Attachment not found'), status=404)
 
 
 class ChatMarkReadView(APIView):
@@ -230,18 +267,9 @@ class ChatInboxSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        from .services.message_service import batch_unread_counts_for_user
+        from .services.inbox_summary import build_inbox_summary
 
-        modules = [c[0] for c in ConversationContext.Module.choices]
-        summary = []
-        for mod in modules:
-            convs = list_module_conversations(request.user, module=mod)
-            conv_ids = [conv.pk for conv in convs]
-            unread_map = batch_unread_counts_for_user(request.user, conv_ids)
-            total_unread = sum(unread_map.values())
-            if convs or total_unread:
-                summary.append({'module': mod, 'conversation_count': len(convs), 'unread': total_unread})
-        return Response(envelope(True, 'Inbox summary', data={'modules': summary}))
+        return Response(envelope(True, 'Inbox summary', data={'modules': build_inbox_summary(request.user)}))
 
 
 class ChatModuleMetricsView(APIView):

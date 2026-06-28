@@ -20,6 +20,12 @@ GLOBAL_CHANNEL_SEEDS = [
         'channel_type': 'PUBLIC',
     },
     {
+        'code': 'srf',
+        'name': '#srf',
+        'description': 'Financial compliance and SRF student support.',
+        'channel_type': 'PUBLIC',
+    },
+    {
         'code': 'urgent-cases',
         'name': '#urgent-cases',
         'description': 'Critical escalations across modules.',
@@ -70,7 +76,7 @@ SMART_ACTION_CODES = frozenset({
     'add_internal_note',
 })
 
-# Admin-inbox actions that must not appear in the student chat timeline.
+# Internal admin actions that must not appear in the student chat timeline.
 STUDENT_HIDDEN_SMART_ACTIONS = frozenset({
     'archive_conversation',
     'unarchive_conversation',
@@ -78,6 +84,8 @@ STUDENT_HIDDEN_SMART_ACTIONS = frozenset({
     'add_internal_note',
     'set_priority',
     'notify_admin',
+    'mark_urgent',
+    'escalate',
 })
 
 # Smart actions restricted to admin / superuser roles.

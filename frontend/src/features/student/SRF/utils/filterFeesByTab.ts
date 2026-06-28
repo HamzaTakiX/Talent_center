@@ -5,15 +5,13 @@ export function filterFeesByTab(rows: SrfFeeRow[], tabId: SrfFeeTabId): SrfFeeRo
     case 'all':
       return rows;
     case 'unpaid':
-      return rows.filter((row) => row.status === 'unpaid');
+      return rows.filter((row) => row.status === 'unpaid' || row.status === 'late');
     case 'partial':
-      return rows.filter(
-        (row) => row.amountPaid > 0 && row.amountRemaining > 0 && row.status !== 'unpaid'
-      );
+      return rows.filter((row) => row.status === 'partial');
     case 'paid':
       return rows.filter((row) => row.status === 'paid');
     case 'late':
-      return [];
+      return rows.filter((row) => row.status === 'late');
     default:
       return rows;
   }

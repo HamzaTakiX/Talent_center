@@ -13,6 +13,8 @@ export type AnnouncementPublishStatus =
 
 export type AnnouncementPriority = 'Normal' | 'Important' | 'Urgent';
 
+import type { ChatAttachmentView } from '../../../../shared/contextual-chat/utils/chatAttachmentUtils';
+
 export type AnnouncementMessage = {
   id: string;
   direction: 'in' | 'out';
@@ -23,7 +25,11 @@ export type AnnouncementMessage = {
   deliveryStatus?: 'sent' | 'delivered' | 'read';
   seenAt?: string;
   seenTime?: string;
+  messageType?: string;
+  smartActionCode?: string;
+  createdAt?: string;
   attachmentName?: string;
+  attachments?: ChatAttachmentView[];
 };
 
 import type { StudentAcademicFields } from '../../../shared/chat-filters/studentAcademicChatFilterTypes';

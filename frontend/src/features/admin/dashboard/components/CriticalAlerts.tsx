@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import DashboardSectionHeader from './DashboardSectionHeader';
 import DashboardPanel from '../ui/DashboardPanel';
 import CriticalAlertsSkeleton from './CriticalAlertsSkeleton';
+import AdminSectionEmptyState from '../../ui/AdminSectionEmptyState';
 import { easePremium } from '../ui/animations';
 import { computeSeverityVolumes } from '../data/alertAnalyticsMock';
 import { useAdminDashboardData } from '../hooks/useAdminDashboardData';
-import { useAdminDashboardContext } from '../context/AdminDashboardContext';
 
 const DONUT_SIZE = 128;
 const DONUT_R = 46;
@@ -38,8 +38,7 @@ const SEVERITY_COLORS = {
 const CriticalAlerts: FunctionComponent = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { loading } = useAdminDashboardContext();
-  const { alertMetrics } = useAdminDashboardData();
+  const { alertMetrics, loading } = useAdminDashboardData();
 
   const activeMetrics = useMemo(
     () => alertMetrics.filter((item) => item.count > 0),
@@ -79,9 +78,27 @@ const CriticalAlerts: FunctionComponent = () => {
   }, [high, medium, low]);
 
   return (
-    <DashboardPanel data-admin-search-id="dashboard-alerts" className="admin-section-panel admin-alerts-analytics-panel">
+    <DashboardPanel
+      data-admin-search-id="dashboard-alerts"
+      className={`admin-section-panel admin-alerts-analytics-panel${loading ? ' admin-section-panel--loading' : ''}`}
+      aria-busy={loading}
+    >
       {loading ? (
         <CriticalAlertsSkeleton />
+      ) : activeMetrics.length === 0 ? (
+        <>
+          <DashboardSectionHeader
+            icon={<AlertTriangle strokeWidth={1.75} aria-hidden />}
+            title={t('admin.dashboard.alerts.title')}
+            subtitle={t('admin.dashboard.alerts.subtitle')}
+          />
+          <AdminSectionEmptyState
+            variant="inline"
+            iconPreset="reports"
+            title={t('admin.dashboard.alerts.empty')}
+            description={t('admin.dashboard.alerts.emptyDesc')}
+          />
+        </>
       ) : (
         <motion.div
           className="admin-alerts-content"
@@ -169,7 +186,7 @@ const CriticalAlerts: FunctionComponent = () => {
             </div>
 
             <ul className="admin-alerts-metric-grid">
-              {alertMetrics.map((item) => {
+              {activeMetrics.map((item) => {
                 const Icon = item.Icon;
                 const toneStyle = {
                   '--alert-accent': item.accent,

@@ -164,15 +164,16 @@
         "title": "Alertes critiques",
         "subtitle": "Attention immédiate requise",
         "empty": "Aucune alerte pour le moment",
+        "emptyDesc": "Tout va bien — aucun problème critique ne requiert votre attention pour l'instant.",
         "priority": {
           "high": "Haute",
           "medium": "Moyenne"
         },
         "messages": {
-          "unpaidSrf": "23 étudiants ont des frais SRF impayés",
-          "documentsPending": "45 documents en attente de validation",
-          "noInternship": "156 étudiants sans stage assigné",
-          "offersExpiring": "12 offres de stage expirent cette semaine"
+          "unpaidSrf": "{{count}} étudiants ont des frais SRF impayés",
+          "documentsPending": "{{count}} documents en attente de validation",
+          "noInternship": "{{count}} étudiants sans stage assigné",
+          "offersExpiring": "{{count}} offres de stage expirent cette semaine"
         },
         "analytics": {
           "active": "actives",
@@ -186,6 +187,9 @@
       "activity": {
         "title": "Activité récente",
         "subtitle": "Dernières actions sur la plateforme",
+        "empty": "Aucune activité récente",
+        "emptyDesc": "Les actions enregistrées dans le module historique s'afficheront ici au fil du temps.",
+        "viewHistory": "Ouvrir l'historique",
         "actions": {
           "newApplication": "Nouvelle candidature de stage",
           "documentValidated": "Document validé",
@@ -202,6 +206,8 @@
       "chart": {
         "title": "Vue d'activité",
         "subtitle": "7 derniers jours · plateforme",
+        "empty": "Aucune activité cette semaine",
+        "emptyDesc": "Les événements enregistrés dans le module historique alimenteront ce graphique.",
         "legend": {
           "applications": "Candidatures",
           "documents": "Documents",
@@ -346,6 +352,28 @@
       "noConversations": "Aucune conversation trouvée",
       "noConversationsHint": "Modifiez votre recherche ou le filtre",
       "searchInConversation": "Rechercher dans la conversation…",
+      "searchInConversationLabel": "Rechercher dans la conversation",
+      "sharedAttachments": "Pièces jointes",
+      "conversationHistory": "Historique",
+      "archiveConversation": "Archiver",
+      "unarchiveConversation": "Restaurer",
+      "archiveConversationHint": "Masquer de la boîte active",
+      "unarchiveConversationHint": "Revenir à la boîte active",
+      "conversationArchivedNotice": "Cette conversation est archivée",
+      "menuSectionExplore": "Explorer",
+      "menuSectionInbox": "Boîte de réception",
+      "searchResults": "{{current}} sur {{total}}",
+      "searchNavigatePrev": "Résultat précédent",
+      "searchNavigateNext": "Résultat suivant",
+      "closeSearch": "Fermer la recherche",
+      "closePanel": "Fermer le panneau",
+      "noAttachments": "Aucune pièce jointe partagée",
+      "noHistory": "Aucun historique pour cette conversation",
+      "firstMessage": "Premier message",
+      "historyEvent": "Événement",
+      "you": "Vous",
+      "otherParticipant": "Interlocuteur",
+      "downloadAttachment": "Télécharger {{name}}",
       "noMessages": "Aucun message ne correspond",
       "openSearch": "Rechercher dans la conversation",
       "moreActions": "Plus d'actions",
@@ -362,7 +390,24 @@
       "sendMessage": "Envoyer le message",
       "voiceNote": "Note vocale",
       "composerHint": "Entrée pour envoyer · Maj+Entrée pour nouvelle ligne",
-      "unreadCount": "{{count}} non lus"
+      "unreadCount": "{{count}} non lus",
+      "typingIndicator": "En train d'écrire…",
+      "systemEvents": {
+        "archive_conversation": "Conversation archivée dans votre boîte de réception",
+        "unarchive_conversation": "Conversation restaurée dans votre boîte de réception",
+        "mark_resolved": "Conversation marquée comme résolue",
+        "auto_reopen": "Conversation réouverte automatiquement",
+        "mark_urgent": "Conversation marquée comme urgente",
+        "assign_admin": "Conversation assignée à un administrateur",
+        "add_internal_note": "Note interne ajoutée",
+        "set_priority": "Priorité mise à jour",
+        "notify_admin": "Administrateurs notifiés",
+        "escalate": "Conversation escaladée",
+        "validate": "Élément validé",
+        "request_correction": "Correction demandée",
+        "create_task": "Tâche créée",
+        "create_meeting": "Réunion planifiée"
+      }
     },
     "chatEmpty": {
       "stats": {
@@ -542,7 +587,15 @@
         "suspendedTitle": "Compte suspendu",
         "suspendedMessage": "Votre compte a été suspendu. Contactez l'administrateur.",
         "pendingTitle": "Compte en attente",
-        "pendingMessage": "Votre compte est en attente de validation. Vous recevrez un email une fois approuvé.",
+        "pendingMessage": "Votre compte est en attente d'autorisation par un administrateur. Contactez l'administration ESCA.",
+        "platformAccessTitle": "Accès non accordé",
+        "platformAccessMessage": "L'accès à la plateforme n'a pas encore été accordé. Contactez votre administrateur.",
+        "blockedTitle": "Compte bloqué",
+        "blockedMessage": "Votre compte a été bloqué. Contactez l'administrateur.",
+        "archivedTitle": "Compte archivé",
+        "archivedMessage": "Votre compte a été archivé. Contactez l'administrateur.",
+        "disabledTitle": "Compte désactivé",
+        "disabledMessage": "Votre compte est désactivé. Contactez l'administrateur.",
         "deniedTitle": "Accès refusé",
         "deniedMessage": "Votre compte n'a pas accès. Contactez le support.",
         "lockedTitle": "Compte verrouillé",
@@ -638,6 +691,7 @@
         "linkedin": "URL du profil LinkedIn",
         "professionalSummary": "Résumé professionnel court",
         "careerObjective": "Type de stage recherché",
+        "internshipType": "Type de stage recherché",
         "skills": "Sélectionnez vos compétences",
         "whenStart": "Quand pouvez-vous commencer ?",
         "startDate": "Date de début",
@@ -649,6 +703,8 @@
         "linkedin": "https://linkedin.com/in/votre-profil",
         "professionalSummary": "Présentez brièvement votre parcours académique, vos compétences et vos objectifs…",
         "careerObjective": "ex. Stage en marketing dans une multinationale, orienté stratégie digitale…",
+        "selectInternshipType": "Sélectionnez votre type de stage",
+        "loadingInternshipTypes": "Chargement des types de stage…",
         "city": "ex. Casablanca"
       },
       "availability": {
@@ -682,7 +738,12 @@
       },
       "yes": "Oui",
       "no": "Non",
+      "hints": {
+        "selectInternshipTypeForSkills": "Sélectionnez d'abord votre type de stage pour afficher les compétences ESCA de votre programme."
+      },
       "save": "Enregistrer et continuer",
+      "saving": "Enregistrement…",
+      "redirecting": "Redirection…",
       "success": "Profil complété ! Vous allez être redirigé vers le créateur de CV pour préparer votre CV avant le tableau de bord.",
       "loginRecapTitle": "Vos identifiants de connexion",
       "loginRecapHint": "Redirection automatique vers le créateur de CV…",
@@ -697,7 +758,10 @@
         "missingFields": "Veuillez remplir les champs obligatoires suivants : {{fields}}",
         "linkedinInvalid": "Veuillez saisir une URL LinkedIn valide (ex. https://linkedin.com/in/votre-nom)",
         "linkedinInvalidField": "L'URL LinkedIn doit être un profil LinkedIn valide (ex. https://linkedin.com/in/votre-nom)",
-        "submitFailed": "Échec de la complétion du profil. Veuillez réessayer."
+        "submitFailed": "Échec de la complétion du profil. Veuillez réessayer.",
+        "internshipTypesNeedIdentity": "Confirmez d'abord votre identité (filière et classe) pour afficher les types de stage ESCA.",
+        "noInternshipTypesForProgram": "Aucun type de stage trouvé pour votre programme et votre classe. Contactez l'administration ou vérifiez votre inscription.",
+        "noCompetenciesForProgram": "Aucune compétence catalogue pour ce type de stage."
       }
     },
     "loading": {
@@ -836,7 +900,7 @@
       "panelTitle": "Construire votre CV",
       "panelSubtitle": "Formulaires structurés · Aperçu en direct",
       "nav": { "label": "Sections du CV" },
-      "mobile": { "form": "Formulaire", "preview": "Aperçu" },
+      "mobile": { "form": "Formulaire", "preview": "Aperçu", "livePreview": "Aperçu en direct", "editorTab": "Éditeur", "viewerTab": "Aperçu" },
       "wizard": { "prev": "Précédent", "next": "Suivant" },
       "empty": {
         "description": "Ajoutez au moins une section (expérience, formation, compétences…) via le formulaire."
@@ -859,6 +923,8 @@
       "personal": {
         "fullName": "Nom complet",
         "headline": "Titre professionnel",
+        "about": "À propos",
+        "role": "Poste / rôle",
         "email": "E-mail",
         "phone": "Téléphone",
         "location": "Localisation"
@@ -875,11 +941,12 @@
         "website": "Site web",
         "portfolio": "Portfolio"
       },
-      "common": { "start": "Début", "end": "Fin", "date": "Date" },
+      "common": { "start": "Début", "end": "Fin", "date": "Date", "delete": "Supprimer", "link": "Lien" },
       "education": {
         "add": "Ajouter une formation",
         "new": "Nouvelle formation",
-        "degree": "Diplôme",
+        "degree": "Diplôme / qualification",
+        "institution": "Établissement",
         "school": "Établissement",
         "location": "Lieu",
         "description": "Description"
@@ -890,17 +957,18 @@
         "title": "Poste",
         "company": "Entreprise",
         "location": "Lieu",
+        "description": "Description",
         "bullets": "Réalisations",
         "addBullet": "Ajouter une puce"
       },
-      "skills": { "add": "Ajouter une compétence", "new": "Compétence", "name": "Nom", "level": "Niveau" },
+      "skills": { "add": "Ajouter une compétence", "new": "Compétence", "name": "Nom de la compétence", "iconUrl": "URL icône SVG", "level": "Niveau" },
       "languages": { "add": "Ajouter une langue", "new": "Langue", "name": "Langue", "level": "Niveau" },
       "projects": {
         "add": "Ajouter un projet",
         "new": "Projet",
-        "name": "Nom",
+        "name": "Nom du projet",
         "tech": "Technologies",
-        "url": "URL",
+        "url": "Lien",
         "description": "Description"
       },
       "certifications": {
@@ -919,6 +987,7 @@
       "custom": { "add": "Ajouter une section", "new": "Section", "title": "Titre", "content": "Contenu" },
       "template": {
         "pick": "Choisir un modèle premium",
+        "contact": "Contact",
         "desc": {
           "executive": "Moderne, colonnes équilibrées, idéal tech & business",
           "minimal": "Ultra lisible, optimisé ATS et parsing automatique",
@@ -926,6 +995,23 @@
           "elegant": "Sobre et autoritaire, cadres et consultants",
           "corporate": "Dense et compact, maximum d'infos par page"
         }
+      },
+      "placeholders": {
+        "about": "Court résumé professionnel",
+        "role": "ex. Stagiaire en génie logiciel",
+        "companyExample": "Nom de l'entreprise",
+        "dateRange": "Juin 2022 – Aujourd'hui",
+        "experienceDesc": "Décrivez vos missions et réalisations",
+        "skillIcon": "URL d'icône Iconify",
+        "institutionExample": "Nom de l'université",
+        "dateExample": "Mai 2018",
+        "qualificationExample": "Licence en informatique",
+        "projectLink": "URL du projet",
+        "projectDesc": "Courte description du projet",
+        "languageExample": "Français, Anglais…",
+        "languageLevel": "Natif, B2, Professionnel…",
+        "githubUrl": "Identifiant ou URL GitHub",
+        "linkedinUrl": "URL du profil LinkedIn"
       }
     },
     "ai": {

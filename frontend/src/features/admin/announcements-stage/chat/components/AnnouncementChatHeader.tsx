@@ -1,13 +1,5 @@
-import { FunctionComponent, useEffect, useRef, useState } from 'react';
-import {
-  Archive,
-  ArchiveRestore,
-  ArrowLeft,
-  CheckCircle2,
-  Megaphone,
-  MoreHorizontal,
-  User,
-} from 'lucide-react';
+import { FunctionComponent, ReactNode } from 'react';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useInternshipInboxCopy } from '../../../offres-stage/hooks/useOffersListLabels';
 import InternshipStudentAvatar from '../../../offres-stage/chat/components/InternshipStudentAvatar';
 import type { AnnouncementConversation } from '../types/announcementChatTypes';
@@ -22,34 +14,17 @@ const STATUS_LABEL: Record<AnnouncementConversation['publishStatus'], string> = 
 type Props = {
   conversation: AnnouncementConversation;
   onBack?: () => void;
-  onOpenAnnouncement: () => void;
-  onOpenStudent: () => void;
   onMarkResolved: () => void;
-  onArchive: () => void;
-  onUnarchive: () => void;
+  conversationMenu?: ReactNode;
 };
 
 const AnnouncementChatHeader: FunctionComponent<Props> = ({
   conversation,
   onBack,
-  onOpenAnnouncement,
-  onOpenStudent,
   onMarkResolved,
-  onArchive,
-  onUnarchive,
+  conversationMenu,
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const { t } = useInternshipInboxCopy();
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const close = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-    };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [menuOpen]);
 
   return (
     <header className="isi-chat-header">
@@ -102,56 +77,7 @@ const AnnouncementChatHeader: FunctionComponent<Props> = ({
             <span>{t('resolve')}</span>
           </button>
         ) : null}
-        {conversation.archived ? (
-          <button type="button" onClick={onUnarchive} className="isi-header-btn">
-            <ArchiveRestore className="size-4" />
-            <span>{t('unarchive')}</span>
-          </button>
-        ) : (
-          <button type="button" onClick={onArchive} className="isi-header-btn">
-            <Archive className="size-4" />
-            <span>{t('archive')}</span>
-          </button>
-        )}
-        <div ref={menuRef} className="relative">
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            className="isi-icon-btn"
-            aria-label={t('moreActions')}
-            aria-expanded={menuOpen}
-          >
-            <MoreHorizontal className="size-4" />
-          </button>
-          {menuOpen ? (
-            <div className="isi-header-menu" role="menu">
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  onOpenStudent();
-                  setMenuOpen(false);
-                }}
-                disabled={!conversation.studentUserId}
-              >
-                <User className="size-4" />
-                {t('viewStudent')}
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  onOpenAnnouncement();
-                  setMenuOpen(false);
-                }}
-                disabled={!conversation.announcementUuid}
-              >
-                <Megaphone className="size-4" />
-                Voir l&apos;annonce
-              </button>
-            </div>
-          ) : null}
-        </div>
+        {conversationMenu}
       </div>
     </header>
   );

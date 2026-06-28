@@ -4,6 +4,7 @@ import {
   type SimulationResult,
   type SrfConfigWorkspace,
   type SrfExamPeriodConfig,
+  type SrfInstallmentPlanTemplate,
   type SrfNotificationTemplate,
   type SrfRestrictionPolicy,
   type SrfWarningTier,
@@ -116,6 +117,48 @@ export function useSrfConfigWorkspace() {
     }
   };
 
+  const saveInstallmentPlan = async (
+    id: number | null,
+    payload: Record<string, unknown>,
+  ): Promise<boolean> => {
+    setSaving(true);
+    setError('');
+    try {
+      const plan = id
+        ? await srfConfigApi.updateInstallmentPlan(id, payload)
+        : await srfConfigApi.createInstallmentPlan(payload);
+      setWorkspace((prev) => {
+        if (!prev) return prev;
+        const plans = id
+          ? prev.installment_plans.map((p) => (p.id === id ? plan : p))
+          : [...prev.installment_plans, plan];
+        return { ...prev, installment_plans: plans };
+      });
+      return true;
+    } catch {
+      setError('save_failed');
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeInstallmentPlan = async (id: number) => {
+    setSaving(true);
+    try {
+      await srfConfigApi.deleteInstallmentPlan(id);
+      setWorkspace((prev) =>
+        prev
+          ? { ...prev, installment_plans: prev.installment_plans.filter((p) => p.id !== id) }
+          : prev,
+      );
+    } catch {
+      setError('save_failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const saveTemplate = async (id: number, payload: Partial<SrfNotificationTemplate>) => {
     setSaving(true);
     try {
@@ -158,10 +201,12 @@ export function useSrfConfigWorkspace() {
     removeTier,
     saveExamPeriod,
     removeExamPeriod,
+    saveInstallmentPlan,
+    removeInstallmentPlan,
     saveTemplate,
     runSimulation,
     setSimulation,
   };
 }
 
-export type { SrfExamPeriodConfig, SrfWarningTier, SrfNotificationTemplate };
+export type { SrfExamPeriodConfig, SrfWarningTier, SrfNotificationTemplate, SrfInstallmentPlanTemplate };

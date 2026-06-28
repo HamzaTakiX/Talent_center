@@ -165,6 +165,11 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'chat_participants', urgent=True,
     ),
+    'chat.conversation.resolved': EventConfig(
+        Category.CHAT, Priority.NORMAL, 'chat_conversation_resolved',
+        (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
+        'chat_participants',
+    ),
     # CV
     'cv.analysis.completed': EventConfig(
         Category.CV_ANALYSIS, Priority.NORMAL, 'welcome',
@@ -188,6 +193,18 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
     ),
     # Interview simulator
     'interview.simulation.completed': EventConfig(
+        Category.INTERVIEW_SIMULATOR, Priority.NORMAL, 'interview_scheduled',
+        (NotificationRecipient.Channel.IN_APP,), 'student_only',
+    ),
+    'interview.simulation.report_available': EventConfig(
+        Category.INTERVIEW_SIMULATOR, Priority.NORMAL, 'interview_scheduled',
+        (NotificationRecipient.Channel.IN_APP,), 'student_only',
+    ),
+    'interview.simulation.score_improved': EventConfig(
+        Category.INTERVIEW_SIMULATOR, Priority.HIGH, 'interview_scheduled',
+        (NotificationRecipient.Channel.IN_APP,), 'student_only',
+    ),
+    'interview.simulation.retry_recommended': EventConfig(
         Category.INTERVIEW_SIMULATOR, Priority.NORMAL, 'interview_scheduled',
         (NotificationRecipient.Channel.IN_APP,), 'student_only',
     ),

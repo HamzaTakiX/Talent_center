@@ -13,6 +13,12 @@ export const adminCopyAr = {
     "panelEmpty": "اختر محادثة لعرض السياق",
     "panelWorkflow": "حالة سير العمل",
     "panelNoStatus": "غير محدد",
+    "supportStatus": {
+      "open": "مفتوح",
+      "pending": "قيد الانتظار",
+      "resolved": "تم الحل",
+      "closed": "مغلق"
+    },
     "panelDeadline": "الموعد النهائي",
     "panelParticipants": "المشاركون",
     "panelFiles": "ملفات مرتبطة",
@@ -705,6 +711,20 @@ export const adminCopyAr = {
           ],
           "bestFor": "الأفضل للإعلانات الموجودة والمواعيد الضيقة",
           "cta": "استيراد من رابط"
+        },
+        "text": {
+          "title": "لصق من نص",
+          "badge": "مرن",
+          "description": "الصق نص العرض أو ارفع ملف نصي — نستخرج التفاصيل تلقائياً.",
+          "longDesc": "هل لديك عرض تدريب في وثيقة أو بريد إلكتروني أو ملاحظات؟ الصق النص مباشرة أو ارفع ملف .txt. سيقرأ النظام عناوين الأقسام ويملأ الحقول تلقائياً.",
+          "benefits": [
+            "يعمل مع أي نص عادي أو لصق من وثيقة",
+            "ارفع ملف .txt أو أدخل النص مباشرة",
+            "معاينة قابلة للتعديل قبل النشر",
+            "يدعم الصيغ المنظّمة بالفرنسية والإنجليزية"
+          ],
+          "bestFor": "الأفضل للعروض المستخرجة من رسائل أو وثائق",
+          "cta": "لصق نص العرض"
         }
       },
       "steps": {
@@ -1055,6 +1075,27 @@ export const adminCopyAr = {
           "normalizingContent": "توحيد المحتوى…",
           "generatingPreview": "إنشاء المعاينة…"
         }
+      },
+      "text": {
+        "title": "لصق نص العرض",
+        "desc": "الصق نص العرض أو ارفع ملف .txt. سنكتشف الأقسام ونملأ الحقول تلقائياً.",
+        "pasteLabel": "نص العرض",
+        "pastePlaceholder": "الصق نص العرض هنا…\n\nمثال:\nالعنوان: متدرب مطور Full Stack\nالشركة: TechCorp المغرب\nالمدينة: الدار البيضاء\nالنوع: PFE\n\nالوصف:\nنبحث عن متدرب متحمس…\n\nالمهارات المطلوبة:\nReact, Node.js, Python\n\nآخر موعد: 31/12/2025",
+        "uploadFile": "رفع ملف .txt",
+        "uploadHint": "يقبل ملفات النصوص العادية (.txt)",
+        "parse": "استخراج معلومات العرض",
+        "parsing": "قراءة واستخراج تفاصيل العرض…",
+        "reset": "لصق نص جديد",
+        "extractedSummary": "تم استخراج {{count}} حقول بنجاح",
+        "extractedHint": "راجع الحقول المستخرجة أدناه، عدّل عند الحاجة، ثم احفظ كمسودة أو انشر.",
+        "viewOriginalText": "عرض النص الأصلي",
+        "formatHintTitle": "الصيغة المتوقعة (انقر للعرض)",
+        "formatHint": "العنوان: [عنوان العرض]\nالشركة: [اسم الشركة]\nالمدينة: [المدينة، البلد]\nالنوع: [PFE / تدريب / تناوب…]\n\nالوصف:\n[وصف عام للمنصب]\n\nالمهام / المسؤوليات:\n[قائمة المهام]\n\nالملف المطلوب:\n[المؤهلات المطلوبة]\n\nالمهارات / التقنيات:\n[قائمة مفصولة بفواصل أو أسطر]\n\nاللغات: الفرنسية، الإنجليزية\n\nالمزايا:\n[ما سيكتسبه المتدرب]\n\nآخر موعد: DD/MM/YYYY",
+        "errors": {
+          "title": "تعذّر استخراج معلومات العرض",
+          "no_fields_extracted": "لم يتم التعرف على أي أقسام. تأكد من أن النص يحتوي على أقسام موسومة (مثل: «العنوان:»، «الوصف:»، «المهارات:»).",
+          "parse_failed": "حدث خطأ أثناء قراءة النص. يرجى المحاولة مجدداً."
+        }
       }
     },
     "createStudent": {
@@ -1185,7 +1226,8 @@ export const adminCopyAr = {
         },
         "errors": {
           "noFile": "اختر ملف CSV أو Excel (.xlsx).",
-          "generic": "فشل الاستيراد. تحقق من الملف وحاول مرة أخرى."
+          "generic": "فشل الاستيراد. تحقق من الملف وحاول مرة أخرى.",
+          "timeout": "يستغرق الاستيراد وقتاً طويلاً. أعد تحميل الصفحة — ربما تم إنشاء الطلاب."
         },
         "result": {
           "summary": "تم إنشاء {{success}} / {{total}} طالب، {{errors}} خطأ.",
@@ -1719,6 +1761,7 @@ export const adminCopyAr = {
           "archive_conversation": "تم أرشفة المحادثة في صندوق الوارد",
           "unarchive_conversation": "تمت استعادة المحادثة في صندوق الوارد",
           "mark_resolved": "تم وضع علامة «محلولة» على المحادثة",
+          "auto_reopen": "تم إعادة فتح المحادثة تلقائياً بسبب رسالة جديدة",
           "mark_urgent": "تم وضع علامة «عاجلة» على المحادثة",
           "assign_admin": "تم تعيين المحادثة لمسؤول",
           "add_internal_note": "تمت إضافة ملاحظة داخلية",
@@ -1806,6 +1849,20 @@ export const adminCopyAr = {
     "srf": {
       "title": "الوضع المالي",
       "subtitle": "متابعة وإدارة حالة دفع الطلاب",
+      "dashboard": {
+        "liveStatus": "{{count}} حساب متابع",
+        "kpi": {
+          "students": "الطلاب",
+          "pendingPayments": "مدفوعات قيد الانتظار",
+          "paid": "مدفوع",
+          "overdue": "متأخر",
+          "outstandingAmount": "المبلغ المستحق",
+          "averagePaymentRate": "متوسط معدل الدفع"
+        },
+        "empty": {
+          "importData": "استيراد البيانات المالية"
+        }
+      },
       "importCenter": {
         "title": "مركز استيراد البيانات المالية",
         "subtitle": "مزامنة صادرات ERP أو المحاسبة أو Excel مع التحقق والمعاينة والتراجع.",
@@ -2018,6 +2075,7 @@ export const adminCopyAr = {
           "conventionBlocked": "تنزيل الاتفاقية معطل.",
           "internshipBlocked": "أهلية التدريب غير مؤكدة مالياً.",
           "overdue": "{{count}} قسط/أقساط متأخرة — خطر الحظر.",
+          "overdueNonBlocking": "{{count}} قسط/أقساط متأخرة — الوصول للامتحانات ما زال مسموحاً.",
           "pendingProof": "{{count}} إثبات/إثباتات بانتظار التحقق.",
           "clear": "الوضع المالي منتظم — الوصول الأكاديمي مفتوح."
         }
@@ -2101,6 +2159,45 @@ export const adminCopyAr = {
           "notes": "ملاحظات",
           "cancel": "إلغاء",
           "save": "حفظ"
+        },
+        "installmentPlans": {
+          "title": "خطط الدفع (الأقساط)",
+          "subtitle": "قسّم الرسوم السنوية إلى أقساط، لكل قسط موعد استحقاق خاص به.",
+          "addPlan": "إضافة خطة",
+          "editPlan": "تعديل الخطة",
+          "name": "اسم الخطة",
+          "program": "البرنامج",
+          "level": "المستوى",
+          "academicYear": "السنة الدراسية",
+          "allPrograms": "كل البرامج",
+          "allLevels": "كل المستويات",
+          "allYears": "كل السنوات",
+          "splitMode": "طريقة التقسيم",
+          "splitEqual": "تقسيم متساوٍ",
+          "splitCustom": "نسب مخصصة",
+          "currency": "العملة",
+          "tranches": "الأقساط",
+          "trancheLabel": "التسمية",
+          "percentage": "النسبة",
+          "dueDate": "الموعد النهائي",
+          "semester": "الفصل",
+          "addTranche": "إضافة قسط",
+          "totalPct": "المجموع: {{pct}}%",
+          "trancheCount": "{{count}} أقساط",
+          "mandatory": "إلزامي",
+          "active": "نشط",
+          "inactive": "غير نشط",
+          "emptyTitle": "لا توجد خطط دفع",
+          "emptyDesc": "أنشئ خطة أقساط لتوزيع الرسوم على مواعيد استحقاق وربط دخول الامتحانات بالأقساط المستحقة.",
+          "cancel": "إلغاء",
+          "save": "حفظ",
+          "saving": "جارٍ الحفظ…",
+          "gate": {
+            "title": "قاعدة الوصول إلى الامتحانات",
+            "desc": "حدّد ما يجب دفعه حتى يتمكن طلاب خطة الأقساط من اجتياز امتحاناتهم.",
+            "dueTranches": "دفع الأقساط المستحقة قبل الامتحان (موصى به)",
+            "fullClearance": "دفع السنة كاملة قبل الامتحانات"
+          }
         },
         "warningTiers": {
           "title": "قواعد التنبيه والتكرار",
@@ -2527,7 +2624,11 @@ export const adminCopyAr = {
         "title": "تفاصيل المسؤول"
       },
       "student": {
-        "title": "تفاصيل الطالب"
+        "title": "تفاصيل الطالب",
+        "sendMessage": "إرسال رسالة",
+        "openingChat": "جارٍ الفتح…",
+        "chatUnavailable": "متاح فقط للحسابات الطلابية النشطة.",
+        "chatOpenError": "تعذر فتح المحادثة. أعد المحاولة."
       },
       "encadrant": {
         "title": "تفاصيل المشرف"
@@ -2835,6 +2936,43 @@ export const adminCopyAr = {
       "STUDENT": "طالب",
       "SUPERVISOR": "مشرف",
       "SYSTEM": "النظام"
+    },
+    "relative": {
+      "justNow": "الآن",
+      "secondsAgo": "منذ {{count}} ث",
+      "minutesAgo": "منذ {{count}} د",
+      "hoursAgo": "منذ {{count}} س",
+      "daysAgo": "منذ {{count}} ي"
+    },
+    "summaries": {
+      "auth_token_refreshed": "تم تجديد الرمز",
+      "auth_login_success": "تسجيل دخول ناجح",
+      "auth_login_failed": "محاولة تسجيل دخول فاشلة",
+      "auth_logout": "تسجيل خروج",
+      "auth_logout_all": "تسجيل خروج من جميع الجلسات",
+      "auth_password_reset_requested": "طلب إعادة تعيين كلمة المرور",
+      "auth_password_reset_completed": "اكتملت إعادة تعيين كلمة المرور",
+      "auth_password_changed": "تم تغيير كلمة المرور",
+      "auth_account_activated": "تم تفعيل الحساب",
+      "auth_account_locked": "تم قفل الحساب",
+      "auth_session_revoked": "تم إلغاء الجلسة",
+      "auth_suspicious_lockout": "قفل أمني مشبوه",
+      "auth_provider_linked": "تم ربط مزود المصادقة",
+      "student_password_reset": "إعادة تعيين كلمة مرور الطالب",
+      "cv_analysis_completed": "اكتمل تحليل السيرة الذاتية",
+      "cv_score_updated": "تم تحديث درجة السيرة الذاتية",
+      "internship_application_submitted": "تم إرسال طلب التدريب",
+      "internship_application_withdrawn": "تم سحب طلب التدريب",
+      "internship_application_offer_accepted": "تم قبول عرض التدريب",
+      "internship_application_offer_declined": "تم رفض عرض التدريب",
+      "internship_offer_published": "تم نشر عرض تدريب",
+      "documents_uploaded": "تم رفع مستند",
+      "documents_approved": "تمت الموافقة على المستند",
+      "notification_created": "إشعار جديد",
+      "notification_read": "تمت قراءة الإشعار",
+      "chat_message_sent": "تم إرسال رسالة",
+      "interview_simulation_completed": "اكتملت محاكاة المقابلة",
+      "report_submitted": "تم تقديم تقرير"
     },
     "charts": {
       "activityTrend": "اتجاه النشاط",

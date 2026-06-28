@@ -37,3 +37,17 @@ def build_absolute_media_url(value: str | None, request=None) -> str | None:
         return f'{base}{raw}'
     media_prefix = settings.MEDIA_URL.rstrip('/')
     return f'{base}{media_prefix}/{raw.lstrip("/")}'
+
+
+def resolve_student_profile_avatar_url(student, request=None) -> str | None:
+    """Return absolute avatar URL for a StudentProfile (or compatible profile object)."""
+    if not student:
+        return None
+    user = getattr(student, 'user', None)
+    user_profile = getattr(user, 'profile', None) if user else None
+    if not user_profile or not user_profile.avatar:
+        return None
+    try:
+        return build_absolute_media_url(user_profile.avatar.url, request)
+    except (ValueError, AttributeError):
+        return None

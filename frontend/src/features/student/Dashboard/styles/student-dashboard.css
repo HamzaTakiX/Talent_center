@@ -723,95 +723,21 @@
     transform: translateX(-3px);
   }
 
-  /* Recommended offers — responsive grid */
-  .student-recommended-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+  /* Recent offers — same 2-column grid as internship offers page */
+  #student-recent-offers .student-dashboard-offers-grid-body {
+    width: 100%;
+    min-width: 0;
     padding: 0.75rem 1rem 1rem;
   }
 
-  @media (min-width: 768px) {
-    .student-recommended-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+  @media (min-width: 640px) {
+    #student-recent-offers .student-dashboard-offers-grid-body {
       padding: 0.75rem 1.25rem 1.25rem;
     }
   }
 
-  @media (min-width: 1280px) {
-    .student-recommended-grid--single-col {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .student-offer-card {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem 1.125rem;
-    border-radius: var(--admin-radius-md);
-    border: 1px solid var(--admin-border);
-    background: var(--admin-surface);
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease,
-      border-color 0.2s ease;
-  }
-
-  .student-offer-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--admin-shadow-md);
-    border-color: color-mix(in srgb, var(--admin-brand) 22%, var(--admin-border));
-  }
-
-  .student-offer-card--skeleton {
-    pointer-events: none;
-    animation: student-offer-skeleton-in 0.35s ease both;
-  }
-
-  .student-offer-card--skeleton:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: var(--admin-border);
-  }
-
-  @keyframes student-offer-skeleton-in {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .student-recent-offers-skeleton .admin-shimmer {
-    opacity: 0.85;
-  }
-
-  .student-offer-match {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.125rem;
-    padding: 0.375rem 0.625rem;
-    border-radius: var(--admin-radius-sm);
-    background: color-mix(in srgb, #eab308 12%, var(--admin-bg-elevated));
-    border: 1px solid color-mix(in srgb, #eab308 25%, var(--admin-border));
-  }
-
-  .student-tag {
-    display: inline-flex;
-    align-items: center;
-    height: 1.375rem;
-    padding: 0 0.5rem;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    border-radius: var(--admin-radius-sm);
-    border: 1px solid color-mix(in srgb, var(--admin-brand) 25%, var(--admin-border));
-    background: var(--admin-brand-muted);
-    color: var(--admin-brand);
+  #student-recent-offers .student-internship-offers-grid > * {
+    min-width: 0;
   }
 
   /* Activity rows inside panel */
@@ -821,7 +747,7 @@
     align-items: flex-start;
     gap: 0.75rem;
     padding: 0.5rem 0.625rem;
-    text-align: left;
+    text-align: start;
     border-radius: var(--admin-radius-md);
     border: none;
     background: transparent;

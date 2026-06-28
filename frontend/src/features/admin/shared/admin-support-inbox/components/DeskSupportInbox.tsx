@@ -1,5 +1,6 @@
 import { FunctionComponent, ReactNode } from 'react';
-import { Archive, ArchiveRestore, CheckCircle2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Briefcase, Calendar, CheckCircle2, CircleDollarSign, FileText, GraduationCap, Megaphone, Users } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 import type { AdminChatChannel } from '../../../i18n/useAdminCopy';
 
@@ -20,6 +21,20 @@ import SupportChatWorkspace from './SupportChatWorkspace';
 import SupportConversationList from './SupportConversationList';
 
 import SupportInboxShell from './SupportInboxShell';
+
+const CHANNEL_SIDEBAR_META: Record<
+  AdminChatChannel,
+  { icon: LucideIcon; subtitle?: string }
+> = {
+  students: { icon: GraduationCap, subtitle: 'Messagerie étudiants' },
+  encadrants: { icon: Users, subtitle: 'Supervision encadrants' },
+  documents: { icon: FileText, subtitle: 'Demandes documentaires' },
+  offers: { icon: Briefcase, subtitle: 'Offres de stage' },
+  announcements: { icon: Megaphone, subtitle: 'Annonces' },
+  srf: { icon: CircleDollarSign, subtitle: 'Suivi financier' },
+  admins: { icon: Users, subtitle: 'Équipe admin' },
+  meetings: { icon: Calendar, subtitle: 'Réunions' },
+};
 
 interface Props {
   channel: AdminChatChannel;
@@ -42,6 +57,7 @@ const DeskSupportInbox: FunctionComponent<Props> = ({
   const emptyState = useChatEmptyState(channel);
   const toast = useAdminToast();
   const { t: inboxT } = useInternshipInboxCopy();
+  const sidebarMeta = CHANNEL_SIDEBAR_META[channel];
 
   const {
     listItems,
@@ -97,6 +113,9 @@ const DeskSupportInbox: FunctionComponent<Props> = ({
       mobileView={mobileView}
       sidebar={
         <SupportConversationList
+          title="Conversations"
+          subtitle={sidebarMeta.subtitle}
+          icon={sidebarMeta.icon}
           items={listItems}
           selectedId={selectedId}
           search={search}
@@ -133,6 +152,9 @@ const DeskSupportInbox: FunctionComponent<Props> = ({
           onBack={() => setMobileView('list')}
           headerMeta={selected?.subtitle ?? selected?.workflowStatus}
           composerPlaceholder={chatCopy.composerPlaceholder}
+          archived={selected?.archived}
+          onArchive={handleArchive}
+          onUnarchive={handleUnarchive}
           headerActions={
             selected ? (
               <>

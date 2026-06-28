@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { easePremium } from '../ui/animations';
-import PlatformHealthOverview from './PlatformHealthOverview';
 
 const localeMap: Record<string, string> = {
   fr: 'fr-FR',
@@ -58,15 +57,6 @@ const DashboardPageHero: FunctionComponent = () => {
             {t('admin.dashboard.hero.title')}
           </h1>
           <p className="mt-1 text-xs capitalize text-[var(--admin-text-secondary)] sm:text-sm">{formattedDate}</p>
-        </motion.div>
-
-        <motion.div
-          className="admin-dashboard-hero-center"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.45, ease: easePremium }}
-        >
-          <PlatformHealthOverview />
         </motion.div>
       </motion.div>
     </motion.header>

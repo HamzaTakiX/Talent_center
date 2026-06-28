@@ -76,6 +76,21 @@ async function restoreSessionWithRefresh(): Promise<User | null> {
   }
 }
 
+/** Prevent a stale in-flight /auth/me from rolling back onboarding progress. */
+function mergeAuthUserProgress(prev: User | null, next: User): User {
+  const prevSp = prev?.student_profile;
+  const nextSp = next.student_profile;
+  if (!prevSp || !nextSp) return next;
+  return {
+    ...next,
+    student_profile: {
+      ...nextSp,
+      identity_confirmed: prevSp.identity_confirmed || nextSp.identity_confirmed,
+      profile_completed: prevSp.profile_completed || nextSp.profile_completed,
+    },
+  };
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const auth0Configured = getAuth0EnvConfig().isConfigured;
   const {
@@ -103,8 +118,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const hydrationRef = useRef<'idle' | 'backend' | 'auth0' | 'done'>('idle');
 
   const setUser = useCallback((next: User | null) => {
-    setUserState(next);
-    writeCachedAuthUser(next);
+    setUserState((prev) => {
+      if (!next) {
+        writeCachedAuthUser(null);
+        return null;
+      }
+      const merged = mergeAuthUserProgress(prev, next);
+      writeCachedAuthUser(merged);
+      return merged;
+    });
   }, []);
 
   const clearLocalAuth = useCallback(() => {

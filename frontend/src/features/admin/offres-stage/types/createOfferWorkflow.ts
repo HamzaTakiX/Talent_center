@@ -1,4 +1,4 @@
-export type CreationMethod = 'manual' | 'import' | null;
+export type CreationMethod = 'manual' | 'import' | 'text' | null;
 
 export type WorkMode = string;
 
@@ -94,6 +94,8 @@ export interface AnalyticsPreview {
 }
 
 export type ImportPhase = 'idle' | 'analyzing' | 'extracted' | 'failed';
+
+export type TextPhase = 'idle' | 'parsing' | 'extracted' | 'failed';
 
 export interface ImportJobMeta {
   jobUuid: string | null;

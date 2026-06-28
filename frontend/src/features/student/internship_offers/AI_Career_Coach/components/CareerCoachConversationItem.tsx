@@ -8,7 +8,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { Archive, ArchiveRestore, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Loader2, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { CoachConversation } from '../types/careerCoach';
 
@@ -158,11 +158,13 @@ const CareerCoachConversationItem: FunctionComponent<CareerCoachConversationItem
     onDelete();
   }, [onDelete]);
 
+  const isPending = conversation.isPending;
+
   return (
     <li
       className={`sr-acc-sidebar__row${isActive ? ' sr-acc-sidebar__row--active' : ''}${
         isRenaming ? ' sr-acc-sidebar__row--renaming' : ''
-      }${menuOpen ? ' sr-acc-sidebar__row--menu-open' : ''}`}
+      }${menuOpen ? ' sr-acc-sidebar__row--menu-open' : ''}${isPending ? ' sr-acc-sidebar__row--pending' : ''}`}
     >
       {isRenaming ? (
         <div className="sr-acc-sidebar__rename">
@@ -184,11 +186,18 @@ const CareerCoachConversationItem: FunctionComponent<CareerCoachConversationItem
             type="button"
             className="sr-acc-sidebar__item"
             onClick={onSelect}
+            disabled={isPending}
             aria-current={isActive ? 'true' : undefined}
           >
-            <span className="sr-acc-sidebar__item-title">{preview}</span>
+            <span className="sr-acc-sidebar__item-title">
+              {isPending ? (
+                <Loader2 size={14} className="sr-acc-sidebar__item-spinner" aria-hidden />
+              ) : null}
+              {preview}
+            </span>
           </button>
 
+          {!isPending ? (
           <div className="sr-acc-sidebar__menu-wrap" ref={menuWrapRef}>
             <button
               ref={menuBtnRef}
@@ -248,6 +257,7 @@ const CareerCoachConversationItem: FunctionComponent<CareerCoachConversationItem
                 )
               : null}
           </div>
+          ) : null}
         </>
       )}
     </li>

@@ -8,8 +8,16 @@ import {
 } from 'react';
 import ChatEmptyState from '../../admin-module-chat/components/ChatEmptyState';
 import type { ChatEmptyStateProps, ChatEmptyStateStats } from '../../admin-module-chat/types/chatEmptyStateTypes';
+import {
+  InternshipChatMessagesSkeleton,
+  InternshipChatWorkspaceSkeleton,
+} from '../../../offres-stage/chat/components/InternshipChatLoadingSkeletons';
+import {
+  toChatToolMessages,
+  useChatConversationTools,
+} from '../../../../shared/chat-design-system';
 import type { SupportChatThread, SupportInboxStats } from '../types/supportInboxTypes';
-import SupportChatHeader, { type SupportChatHeaderMenuItem } from './SupportChatHeader';
+import SupportChatHeader from './SupportChatHeader';
 import SupportMessageComposer from './SupportMessageComposer';
 import SupportMessageThread from './SupportMessageThread';
 
@@ -17,30 +25,50 @@ interface Props {
   thread: SupportChatThread | null;
   emptyState: Omit<ChatEmptyStateProps, 'className'>;
   stats?: SupportInboxStats | ChatEmptyStateStats;
+  statsLoading?: boolean;
+  conversationLoading?: boolean;
+  messagesLoading?: boolean;
   onSend: (text: string) => void;
   onBack?: () => void;
   headerMeta?: string;
   headerActions?: ReactNode;
-  headerMenuItems?: SupportChatHeaderMenuItem[];
   composerPlaceholder?: string;
   simulateTyping?: boolean;
+  archived?: boolean;
+  onArchive?: () => void;
+  onUnarchive?: () => void;
 }
 
 const SupportChatWorkspace: FunctionComponent<Props> = ({
   thread,
   emptyState,
   stats,
+  statsLoading = false,
+  conversationLoading = false,
+  messagesLoading = false,
   onSend,
   onBack,
   headerMeta,
   headerActions,
-  headerMenuItems,
   composerPlaceholder,
   simulateTyping = true,
+  archived = false,
+  onArchive,
+  onUnarchive,
 }) => {
   const [draft, setDraft] = useState('');
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const chatTools = useChatConversationTools({
+    messages: toChatToolMessages(thread?.messages ?? []),
+    conversationKey: thread?.id ?? '',
+    counterpartyName: thread?.title,
+    archived,
+    onArchive,
+    onUnarchive,
+    scrollContainerRef: scrollRef,
+  });
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -64,10 +92,14 @@ const SupportChatWorkspace: FunctionComponent<Props> = ({
     setDraft('');
   }, [draft, onSend]);
 
+  if ((conversationLoading || messagesLoading) && !thread) {
+    return <InternshipChatWorkspaceSkeleton />;
+  }
+
   if (!thread) {
     return (
       <section className="isi-chat isi-chat--empty">
-        <ChatEmptyState {...emptyState} stats={stats} />
+        <ChatEmptyState {...emptyState} stats={stats} statsLoading={statsLoading} />
       </section>
     );
   }
@@ -80,12 +112,24 @@ const SupportChatWorkspace: FunctionComponent<Props> = ({
         meta={headerMeta ?? thread.meta}
         onBack={onBack}
         actions={headerActions}
-        menuItems={headerMenuItems}
+        conversationMenu={chatTools.menu}
       />
+      {chatTools.searchBar}
 
       <div ref={scrollRef} className="isi-messages">
-        <SupportMessageThread messages={thread.messages} typing={typing} />
+        {messagesLoading && thread.messages.length === 0 ? (
+          <InternshipChatMessagesSkeleton embedded />
+        ) : (
+          <SupportMessageThread
+            messages={thread.messages}
+            typing={typing}
+            getMessageBlockProps={chatTools.getMessageBlockProps}
+            renderHighlightedText={chatTools.renderHighlightedText}
+          />
+        )}
       </div>
+
+      {chatTools.panels}
 
       <SupportMessageComposer
         value={draft}

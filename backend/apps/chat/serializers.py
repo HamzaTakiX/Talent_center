@@ -100,16 +100,25 @@ class ConversationContextSerializer(serializers.ModelSerializer):
         )
 
     def get_student_avatar_url(self, obj) -> str | None:
-        snap = obj.context_snapshot_json or {}
-        cached = snap.get('student_avatar_url')
-        if cached:
-            return str(cached)
         from apps.stage.services.chat_service import _student_avatar_url
 
+        request = self.context.get('request')
         student = self._resolve_student_profile(obj)
-        if not student:
+        if student:
+            live = _student_avatar_url(student, request)
+            if live:
+                return live
+
+        snap = obj.context_snapshot_json or {}
+        cached = snap.get('student_avatar_url')
+        if not cached:
             return None
-        return _student_avatar_url(student, self.context.get('request'))
+        cached_str = str(cached).strip()
+        if not cached_str:
+            return None
+        if request and not cached_str.startswith(('http://', 'https://')):
+            return request.build_absolute_uri(cached_str)
+        return cached_str
 
     def get_company_logo_url(self, obj) -> str | None:
         snap = obj.context_snapshot_json or {}
@@ -279,15 +288,17 @@ class MessageAttachmentSerializer(serializers.ModelSerializer):
             'file_size_bytes',
             'mime_type',
             'file_url',
+            'created_at',
         )
 
     def get_file_url(self, obj) -> str | None:
         request = self.context.get('request')
-        if not obj.file:
+        if not obj.file and not obj.pk:
             return None
         if request:
-            return request.build_absolute_uri(obj.file.url)
-        return obj.file.url
+            path = f'/api/chat/attachments/{obj.pk}/download'
+            return request.build_absolute_uri(path)
+        return f'/api/chat/attachments/{obj.pk}/download'
 
 
 class MessageReactionSerializer(serializers.ModelSerializer):
@@ -387,7 +398,7 @@ class ConversationCreateSerializer(serializers.Serializer):
 
 
 class MessageCreateSerializer(serializers.Serializer):
-    body = serializers.CharField()
+    body = serializers.CharField(required=False, allow_blank=True, default='')
     message_type = serializers.ChoiceField(
         choices=Message.MessageType.choices,
         default=Message.MessageType.TEXT,
@@ -395,6 +406,14 @@ class MessageCreateSerializer(serializers.Serializer):
     parent_message_id = serializers.IntegerField(required=False, allow_null=True)
     tag_codes = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     metadata_json = serializers.JSONField(required=False, default=dict)
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        files = list(getattr(request, 'FILES', {}).getlist('files')) if request else []
+        body = (attrs.get('body') or '').strip()
+        if not body and not files:
+            raise serializers.ValidationError({'body': 'Message body or at least one file is required.'})
+        return attrs
 
 
 class SmartActionSerializer(serializers.Serializer):

@@ -1,3 +1,5 @@
+import type { ChatAttachmentView } from '../../../../shared/contextual-chat/utils/chatAttachmentUtils';
+
 export type SupportMessageDirection = 'in' | 'out';
 
 export interface SupportMessage {
@@ -6,7 +8,9 @@ export interface SupportMessage {
   text: string;
   time: string;
   separatorBefore?: string;
+  messageType?: string;
   attachmentName?: string;
+  attachments?: ChatAttachmentView[];
 }
 
 export interface SupportConversationListItem {

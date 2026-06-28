@@ -12,6 +12,7 @@ import {
 import { useOfferComparison } from '../../hooks/useOfferAiCoach';
 import { STUDENT_CV_ANALYSIS_TOOL_PATH } from '../../CV_Analyse/constants/routes';
 import { STUDENT_AI_CAREER_COACH_PATH } from '../../AI_Career_Coach/constants/routes';
+import { resolveMediaUrl } from '../../../../../shared/api/mediaUrl';
 import StudentMatchStatCard from '../../../components/StudentMatchStatCard';
 import StudentMatchStatCardsSkeleton from '../../../components/StudentMatchStatCardsSkeleton';
 import type { InternshipOfferDetails } from '../../types';
@@ -133,7 +134,7 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
                     offerId: offer.id,
                     title: offer.title,
                     company: offer.company,
-                    companyLogoUrl: offer.companyLogoUrl ?? '',
+                    companyLogoUrl: resolveMediaUrl(offer.companyLogoUrl) ?? '',
                     internshipType: offer.internshipType ?? '',
                     deadline: offer.applicationDeadline ?? '',
                     applicationStatus: 'Not Applied',

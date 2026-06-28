@@ -1,9 +1,25 @@
-import { FunctionComponent } from 'react';
+import { type CSSProperties, FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import { AlertTriangle, Ban, Calendar, Mail, ShieldAlert, Users } from 'lucide-react';
 import type { SrfConfigAnalytics } from '../../../api/srfConfig';
+import { staggerContainer, staggerItem } from '../../../dashboard/ui/animations';
 
 const PREFIX = 'admin.modules.srf.configCenter.analytics';
+
+interface AccentConfig {
+  accent: string;
+  bg: string;
+}
+
+const ACCENTS: AccentConfig[] = [
+  { accent: 'var(--admin-brand)', bg: 'var(--admin-brand-muted)' },
+  { accent: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  { accent: '#10b981', bg: 'rgba(16,185,129,.12)' },
+  { accent: '#06b6d4', bg: 'rgba(6,182,212,.12)' },
+  { accent: '#ef4444', bg: 'rgba(239,68,68,.12)' },
+  { accent: '#f97316', bg: 'rgba(249,115,22,.12)' },
+];
 
 interface Props {
   analytics: SrfConfigAnalytics;
@@ -22,28 +38,58 @@ const ConfigAnalyticsStrip: FunctionComponent<Props> = ({ analytics }) => {
   ] as const;
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-      {cards.map(({ key, value, icon: Icon }) => (
-        <div
-          key={key}
-          className="group relative overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--admin-brand)_18%,var(--admin-border))] bg-gradient-to-br from-[var(--admin-bg-elevated)] to-[color-mix(in_srgb,var(--admin-brand)_6%,var(--admin-bg-elevated))] p-4 shadow-sm transition-all duration-300 hover:border-[var(--admin-brand)]/35 hover:shadow-[var(--admin-shadow-glow)]"
-        >
-          <span
-            className="pointer-events-none absolute -end-4 -top-4 h-16 w-16 rounded-full bg-[var(--admin-brand)]/10 blur-2xl transition-opacity group-hover:opacity-100"
-            aria-hidden
-          />
-          <div className="relative flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--admin-brand-muted)] ring-1 ring-[var(--admin-brand)]/15">
-              <Icon className="h-5 w-5 text-[var(--admin-brand)]" strokeWidth={1.75} />
-            </span>
-            <div className="min-w-0">
-              <p className="text-2xl font-bold tabular-nums text-[var(--admin-text)]">{value}</p>
-              <p className="text-xs leading-snug text-[var(--admin-text-secondary)]">{t(`${PREFIX}.${key}`)}</p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+    <motion.section
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+      className="overflow-hidden rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] shadow-sm"
+      aria-label={t(`${PREFIX}.sectionLabel`, { defaultValue: 'Financial module analytics' })}
+    >
+      <div className="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-6">
+        {cards.map(({ key, value, icon: Icon }, idx) => {
+          const { accent, bg } = ACCENTS[idx];
+          return (
+            <motion.div
+              key={key}
+              variants={staggerItem}
+              custom={idx}
+              className="group relative flex items-center gap-3 overflow-hidden border-b border-r border-[var(--admin-border)] p-4 transition-colors duration-200 last:border-r-0"
+              style={{ '--cell-bg': bg } as CSSProperties}
+            >
+              {/* Left accent bar */}
+              <span
+                className="pointer-events-none absolute inset-y-2 start-0 w-[3px] rounded-e-full opacity-75 transition-opacity duration-200 group-hover:opacity-100"
+                style={{ background: accent }}
+                aria-hidden
+              />
+
+              {/* Hover tint overlay */}
+              <span
+                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                style={{ background: bg, opacity: 0 }}
+                aria-hidden
+              />
+
+              {/* Icon */}
+              <span
+                className="relative ms-1.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105"
+                style={{ background: bg, color: accent }}
+              >
+                <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+              </span>
+
+              {/* Content */}
+              <div className="relative min-w-0">
+                <p className="text-xl font-bold tabular-nums leading-tight text-[var(--admin-text)] sm:text-2xl">
+                  {value}
+                </p>
+                <p className="truncate text-xs text-[var(--admin-text-secondary)]">{t(`${PREFIX}.${key}`)}</p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </motion.section>
   );
 };
 

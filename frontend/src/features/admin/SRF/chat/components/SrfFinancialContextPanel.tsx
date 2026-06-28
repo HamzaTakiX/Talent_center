@@ -10,7 +10,6 @@ import {
   STUDENT_ICON_CHIP_SUCCESS,
   STUDENT_INLINE_BADGE,
 } from '../../../../student/design-system/studentSemanticStyles';
-import SupportContextPanel from '../../../shared/admin-support-inbox/components/SupportContextPanel';
 import type { AdminSrfConversation } from '../types/adminSrfChatTypes';
 
 interface Props {
@@ -25,13 +24,23 @@ const SrfFinancialContextPanel: FunctionComponent<Props> = ({ conversation }) =>
     const q = obligationSearch.trim().toLowerCase();
     if (!q) return conversation.obligations;
     return conversation.obligations.filter(
-      (item) => item.title.toLowerCase().includes(q) || item.detail.toLowerCase().includes(q)
+      (item) => item.title.toLowerCase().includes(q) || item.detail.toLowerCase().includes(q),
     );
   }, [conversation.obligations, obligationSearch]);
 
   return (
-    <SupportContextPanel title={t('student.srf.chat.financialOverview')}>
-      <article className="student-srf-chat-summary rounded-[14px] border border-solid border-[var(--admin-border)] bg-[var(--admin-bg)] p-4">
+    <aside className="isi-inspector">
+      <header className="isi-inspector-head">
+        <span className="isi-inspector-head-title">
+          {t('student.srf.chat.contextTitle', { defaultValue: 'Contexte' })}
+        </span>
+      </header>
+
+      <div className="isi-inspector-section-title">
+        {t('student.srf.chat.financialOverview')}
+      </div>
+
+      <article className="student-srf-chat-summary mx-1 rounded-[14px] border border-solid border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
         <p className="m-0 text-xs font-medium text-[var(--admin-text-muted)]">
           {conversation.studentName} — {t('student.srf.chat.totalDue')}
         </p>
@@ -58,13 +67,14 @@ const SrfFinancialContextPanel: FunctionComponent<Props> = ({ conversation }) =>
         </div>
       </article>
 
-      <div className="mt-4">
+      <div className="mt-4 px-1">
         <input
-          type="text"
+          type="search"
           value={obligationSearch}
           onChange={(e) => setObligationSearch(e.target.value)}
           placeholder={t('student.srf.chat.searchObligations')}
           className="admin-input mb-3 h-9 w-full text-sm"
+          aria-label={t('student.srf.chat.searchObligations')}
         />
         <p className="m-0 mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
           {t('student.srf.chat.activeObligations')}
@@ -77,7 +87,7 @@ const SrfFinancialContextPanel: FunctionComponent<Props> = ({ conversation }) =>
                 <article
                   className={`student-srf-chat-obligation flex items-start gap-3 rounded-[12px] border border-solid p-3 ${
                     isPaid
-                      ? 'border-[var(--admin-border)] bg-[var(--admin-bg)]'
+                      ? 'border-[var(--admin-border)] bg-[var(--admin-bg-elevated)]'
                       : 'border-red-200 bg-red-50/60 dark:border-red-500/30 dark:bg-red-950/20'
                   }`}
                 >
@@ -113,7 +123,7 @@ const SrfFinancialContextPanel: FunctionComponent<Props> = ({ conversation }) =>
       </div>
 
       <article
-        className={`student-srf-chat-deadline mt-4 flex items-start gap-3 rounded-[12px] p-3.5 ${STUDENT_CALLOUT_INFO}`}
+        className={`student-srf-chat-deadline mx-1 mt-4 flex items-start gap-3 rounded-[12px] p-3.5 ${STUDENT_CALLOUT_INFO}`}
       >
         <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--admin-brand)_14%,transparent)] text-[var(--admin-brand)]">
           <Calendar className="size-4" strokeWidth={2} aria-hidden />
@@ -127,7 +137,7 @@ const SrfFinancialContextPanel: FunctionComponent<Props> = ({ conversation }) =>
           </p>
         </div>
       </article>
-    </SupportContextPanel>
+    </aside>
   );
 };
 

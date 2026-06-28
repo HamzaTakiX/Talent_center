@@ -1,5 +1,4 @@
 import { FunctionComponent, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   Briefcase,
@@ -10,22 +9,14 @@ import {
 } from 'lucide-react';
 import StudentCardStatGrid from './StudentCardStatGrid';
 import type { StudentDashboardStats } from '../../api/types';
-
-const routeByLabelKey: Record<string, string> = {
-  'students.totalStudents': '/admin/students/total-students',
-  'students.active': '/admin/students/active-students',
-  'students.inactive': '/admin/students/inactive-students',
-  'students.withoutInternship': '/admin/students/without-internship',
-  'students.withInternship': '/admin/students/with-internship',
-  'students.engagementLevel': '/admin/students/engagement-level',
-};
+import { AdminKpiStripSkeleton } from '../../ui/AdminSectionSkeleton';
 
 interface StudentsStatGridProps {
   stats?: StudentDashboardStats | null;
+  loading?: boolean;
 }
 
-const StudentsStatGrid: FunctionComponent<StudentsStatGridProps> = ({ stats = null }) => {
-  const navigate = useNavigate();
+const StudentsStatGrid: FunctionComponent<StudentsStatGridProps> = ({ stats = null, loading = false }) => {
   const displayStats = useMemo(() => {
     const data: StudentDashboardStats = stats ?? {
       total: 0,
@@ -76,6 +67,10 @@ const StudentsStatGrid: FunctionComponent<StudentsStatGridProps> = ({ stats = nu
     ];
   }, [stats]);
 
+  if (loading) {
+    return <AdminKpiStripSkeleton count={6} />;
+  }
+
   return (
     <StudentCardStatGrid
       stats={displayStats.map((card) => ({
@@ -86,10 +81,6 @@ const StudentsStatGrid: FunctionComponent<StudentsStatGridProps> = ({ stats = nu
         iconBgClass: card.iconBgClass,
       }))}
       columns={3}
-      onStatClick={(key) => {
-        const route = routeByLabelKey[key];
-        if (route) navigate(route);
-      }}
     />
   );
 };

@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useEffect, useRef } from 'react';
+import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CoachOfferContext } from '../types/careerCoach';
 import { useCareerCoachChat } from '../hooks/useCareerCoachChat';
@@ -60,6 +60,7 @@ const CareerCoachWorkspace: FunctionComponent<CareerCoachWorkspaceProps> = ({
     activeConversationId,
     isSessionsLoading,
     isHistoryLoading,
+    isCreatingConversation,
     selectConversation,
     renameConversation,
     archiveConversation,
@@ -83,6 +84,34 @@ const CareerCoachWorkspace: FunctionComponent<CareerCoachWorkspaceProps> = ({
     skipInitialHistory: Boolean(offerContext?.launchToken?.trim()),
   });
   const offerConversationHandledRef = useRef<string>('');
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
+  const toggleMobileSidebar = useCallback(() => setMobileSidebarOpen((open) => !open), []);
+
+  useEffect(() => {
+    if (!mobileSidebarOpen) return undefined;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeMobileSidebar();
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [closeMobileSidebar, mobileSidebarOpen]);
+
+  const handleSelectConversation = useCallback(
+    (id: string) => {
+      selectConversation(id);
+      closeMobileSidebar();
+    },
+    [closeMobileSidebar, selectConversation],
+  );
+
+  const handleNewConversation = useCallback(() => {
+    void startNewConversation();
+    closeMobileSidebar();
+  }, [closeMobileSidebar, startNewConversation]);
 
   useEffect(() => {
     const launchToken = offerContext?.launchToken?.trim();
@@ -179,19 +208,30 @@ const CareerCoachWorkspace: FunctionComponent<CareerCoachWorkspaceProps> = ({
   return (
     <div className={AI_CAREER_COACH_WORKSPACE_ROOT} id="student-ai-career-coach-dashboard">
       <div className={AI_CAREER_COACH_LAYOUT}>
+        <button
+          type="button"
+          className={`sr-acc-sidebar__backdrop${mobileSidebarOpen ? ' sr-acc-sidebar__backdrop--visible' : ''}`}
+          onClick={closeMobileSidebar}
+          aria-label={t('student.internshipOffers.careerCoach.history.closeSidebar')}
+          tabIndex={mobileSidebarOpen ? 0 : -1}
+        />
+
         <CareerCoachSidebar
           conversations={conversations}
           archivedConversations={archivedConversations}
           showArchived={showArchived}
           activeConversationId={activeConversationId}
           isLoading={isSessionsLoading}
-          onSelectConversation={selectConversation}
+          isCreatingConversation={isCreatingConversation}
+          isMobileOpen={mobileSidebarOpen}
+          onMobileClose={closeMobileSidebar}
+          onSelectConversation={handleSelectConversation}
           onRenameConversation={renameConversation}
           onArchiveConversation={archiveConversation}
           onUnarchiveConversation={unarchiveConversation}
           onDeleteConversation={deleteConversation}
           onToggleArchivedView={toggleArchivedView}
-          onNewConversation={startNewConversation}
+          onNewConversation={handleNewConversation}
         />
 
         <div className={AI_CAREER_COACH_GRID}>
@@ -200,7 +240,8 @@ const CareerCoachWorkspace: FunctionComponent<CareerCoachWorkspaceProps> = ({
             modeConfig={modeConfig}
             messages={messages}
             isTyping={isTyping}
-            isMessagesLoading={isHistoryLoading || isSessionsLoading}
+            isMessagesLoading={isHistoryLoading || isSessionsLoading || isCreatingConversation}
+            isComposerDisabled={isCreatingConversation}
             chatInput={chatInput}
             onChatInputChange={setChatInput}
             pendingAttachment={pendingAttachment}
@@ -229,6 +270,8 @@ const CareerCoachWorkspace: FunctionComponent<CareerCoachWorkspaceProps> = ({
             isMessagePinned={isPinned}
             onTogglePinMessage={handleTogglePinMessage}
             offerContext={activeOfferContext}
+            mobileSidebarOpen={mobileSidebarOpen}
+            onMobileSidebarToggle={toggleMobileSidebar}
           />
         </div>
       </div>

@@ -16,8 +16,8 @@ interface InternshipOffersGridProps {
 }
 
 const gridLayoutClass: Record<NonNullable<InternshipOffersGridProps['layout']>, string> = {
-  recommended: 'grid-cols-1 md:grid-cols-2',
-  all: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+  recommended: 'grid-cols-2 md:grid-cols-2',
+  all: 'grid-cols-2 md:grid-cols-2 lg:grid-cols-3',
 };
 
 const InternshipOffersGrid: FunctionComponent<InternshipOffersGridProps> = ({
@@ -52,7 +52,7 @@ const InternshipOffersGrid: FunctionComponent<InternshipOffersGridProps> = ({
 
   return (
     <div
-      className={`grid w-full min-w-0 max-w-full gap-3 max-[429px]:gap-2.5 sm:gap-4 ${gridLayoutClass[layout]}`}
+      className={`student-internship-offers-grid grid w-full min-w-0 max-w-full gap-3 max-[429px]:gap-2.5 sm:gap-4 ${gridLayoutClass[layout]}`}
     >
       {offers.map((offer) => (
         <InternshipOfferCard key={offer.id} offer={offer} />

@@ -13,13 +13,15 @@ import {
   GraduationCap,
   Lightbulb,
   Lock,
+  PieChart,
   ShieldAlert,
   Sparkles,
   Wallet,
+  type LucideIcon,
 } from 'lucide-react';
 import AdminBadge from '../../../ui/AdminBadge';
 import { srfRoutes, type SrfStudentFinancialDetail } from '../../../api/srf';
-import { financialStatusVariant, formatMad } from '../../utils/srfFormat';
+import { financialStatusVariant, formatMad, formatProgramShort } from '../../utils/srfFormat';
 import {
   buildSrfInsights,
   computeRiskScore,
@@ -82,6 +84,8 @@ const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({ de
   const riskScore = computeRiskScore(detail);
   const riskLevel = riskLevelKey(riskScore);
   const insights = useMemo(() => buildSrfInsights(detail, t), [detail, t]);
+  const blockingOverdue =
+    prog.blocking_overdue_installments ?? (access.can_take_exams ? 0 : prog.overdue_installments);
 
   const pendingProofId =
     detail.table_row.pendingProofId ??
@@ -190,17 +194,26 @@ const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({ de
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-xl">
-            <HeroStat label={t('admin.modules.srf.detail.heroCompletion')} value={`${completionPct}%`} />
+          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-2xl">
             <HeroStat
+              icon={PieChart}
+              label={t('admin.modules.srf.detail.heroCompletion')}
+              value={`${completionPct}%`}
+            />
+            <HeroStat
+              icon={Wallet}
               label={t('admin.modules.srf.detail.heroRemaining')}
               value={formatMad(account.remaining_amount, account.currency)}
             />
-            <HeroStat label={t('admin.modules.srf.detail.heroRiskScore')} value={String(riskScore)} />
             <HeroStat
+              icon={ShieldAlert}
+              label={t('admin.modules.srf.detail.heroRiskScore')}
+              value={String(riskScore)}
+            />
+            <HeroStat
+              icon={GraduationCap}
               label={t('admin.modules.srf.detail.heroProgram')}
-              value={student.program || student.filiere_code || '—'}
-              small
+              value={formatProgramShort(student.program, student.filiere_code)}
             />
           </div>
         </div>
@@ -230,8 +243,8 @@ const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({ de
                 total: prog.total_installments,
                 pct: prog.completion_pct,
               })}
-              {prog.overdue_installments > 0
-                ? ` · ${t('admin.modules.srf.detail.overdueCount', { count: prog.overdue_installments })}`
+              {blockingOverdue > 0
+                ? ` · ${t('admin.modules.srf.detail.overdueCount', { count: blockingOverdue })}`
                 : ''}
             </p>
           ) : null}
@@ -314,10 +327,17 @@ const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({ de
           <p className="mt-3 text-sm text-[var(--admin-text-secondary)]">
             {t(`admin.modules.srf.detail.riskInsight.${riskLevel}`)}
           </p>
-          {detail.restrictions.is_overdue ? (
+          {!access.can_take_exams ? (
             <div className="mt-4 flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-500">
               <AlertTriangle className="h-4 w-4 shrink-0" />
               {t('admin.modules.srf.detail.overdueState')}
+            </div>
+          ) : blockingOverdue > 0 ? (
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-600">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              {t('admin.modules.srf.detail.insights.overdueNonBlocking', {
+                count: blockingOverdue,
+              })}
             </div>
           ) : null}
           {detail.risk_alerts.length > 0 ? (
@@ -342,7 +362,7 @@ const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({ de
                 </li>
               ))}
             </ul>
-          ) : detail.restrictions.is_overdue ? null : (
+          ) : blockingOverdue > 0 || !access.can_take_exams ? null : (
             <p className="mt-4 text-sm text-[var(--admin-text-secondary)]">{t('admin.modules.srf.detail.noRisk')}</p>
           )}
         </section>
@@ -449,35 +469,47 @@ const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({ de
             description={t('admin.modules.srf.detail.emptyTimelineDesc')}
           />
         ) : (
-          <ol className="relative space-y-0 border-s-2 border-[var(--admin-brand)]/20 ms-4 ps-8">
+          <div className="space-y-3">
             {detail.audit_timeline.slice(0, 30).map((ev, i) => {
               const Icon = timelineIcon(ev.type, ev.action);
+              const label = ev.action || ev.type || ev.status;
+              const meta = [
+                ev.at ? new Date(ev.at).toLocaleString() : '',
+                ev.actor_name,
+                ev.amount,
+              ]
+                .filter(Boolean)
+                .join(' · ');
+
               return (
-                <li key={`${ev.type}-${ev.at}-${i}`} className="relative pb-8 last:pb-0">
-                  <span className="absolute -start-[2.35rem] flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--admin-brand)]/40 bg-[var(--admin-bg-elevated)] shadow-sm">
-                    <Icon className="h-3.5 w-3.5 text-[var(--admin-brand)]" />
-                  </span>
-                  <div className="rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-subtle)] px-4 py-3 transition-colors hover:border-[var(--admin-brand)]/35">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-medium text-[var(--admin-text)]">
-                        {ev.action || ev.type || ev.status}
+                <article
+                  key={`${ev.type}-${ev.at}-${i}`}
+                  className="admin-timeline-row font-inter"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <span className="admin-timeline-icon">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="m-0 truncate text-sm font-medium leading-5 text-[var(--admin-text)]">
+                        {label}
                       </p>
-                      {ev.status ? (
-                        <span className="rounded-full bg-[var(--admin-brand-muted)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[var(--admin-brand)]">
-                          {ev.status}
-                        </span>
+                      {meta ? (
+                        <p className="m-0 mt-0.5 text-xs leading-4 text-[var(--admin-text-secondary)]">
+                          {meta}
+                        </p>
                       ) : null}
                     </div>
-                    <p className="mt-1 text-xs text-[var(--admin-text-secondary)]">
-                      {ev.at ? new Date(ev.at).toLocaleString() : ''}
-                      {ev.actor_name ? ` · ${ev.actor_name}` : ''}
-                      {ev.amount ? ` · ${ev.amount}` : ''}
-                    </p>
                   </div>
-                </li>
+                  {ev.status ? (
+                    <span className="shrink-0 rounded-full bg-[var(--admin-brand-muted)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[var(--admin-brand)]">
+                      {ev.status}
+                    </span>
+                  ) : null}
+                </article>
               );
             })}
-          </ol>
+          </div>
         )}
       </section>
 
@@ -512,24 +544,31 @@ function SectionTitle({
 }
 
 function HeroStat({
+  icon: Icon,
   label,
   value,
   small,
 }: {
+  icon: LucideIcon;
   label: string;
   value: string;
   small?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-[var(--admin-border)]/80 bg-[color-mix(in_srgb,var(--admin-bg-elevated)_85%,transparent)] px-3 py-2.5 backdrop-blur-sm">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--admin-text-secondary)]">
-        {label}
-      </p>
-      <p
-        className={`mt-0.5 font-bold tabular-nums text-[var(--admin-text)] ${small ? 'truncate text-sm' : 'text-lg'}`}
-      >
-        {value}
-      </p>
+    <div className="group flex min-w-0 items-start gap-2.5 rounded-xl border border-[var(--admin-brand)]/40 bg-[color-mix(in_srgb,var(--admin-brand)_7%,var(--admin-bg-elevated))] px-3 py-2.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-[var(--admin-brand)]/70 hover:shadow-[0_0_18px_color-mix(in_srgb,var(--admin-brand)_18%,transparent)]">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--admin-brand-muted)] text-[var(--admin-brand)] ring-1 ring-[var(--admin-brand)]/25 transition-colors group-hover:bg-[color-mix(in_srgb,var(--admin-brand)_18%,var(--admin-bg-elevated))]">
+        <Icon className="h-4 w-4" strokeWidth={2} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-[var(--admin-text-secondary)]">
+          {label}
+        </p>
+        <p
+          className={`mt-0.5 font-bold tabular-nums leading-tight text-[var(--admin-text)] ${small ? 'truncate text-sm' : 'text-lg'}`}
+        >
+          {value}
+        </p>
+      </div>
     </div>
   );
 }

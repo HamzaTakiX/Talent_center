@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -26,6 +26,9 @@ import AuthImagePanel from '../components/AuthImagePanel';
 import { AuthScreenShell, AuthFormColumn } from '../components/AuthScreenShell';
 import AuthInfoBanner from '../components/AuthInfoBanner';
 import { FormInput } from '../components/FormInput';
+import { FormSelect } from '../components/FormSelect';
+import { academicReferenceApi } from '../../admin/api/reference';
+import type { InternshipCompetencyOption, InternshipTypeOption } from '../../admin/api/types';
 import '../styles/auth-form.css';
 
 const containerVariants: Variants = {
@@ -41,35 +44,6 @@ const itemVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
 };
 
-const SKILL_KEYS = [
-  'digitalMarketing', 'dataAnalysis', 'projectManagement', 'microsoftOffice',
-  'leadership', 'communication', 'problemSolving', 'socialMediaMarketing',
-  'googleAnalytics', 'teamwork', 'businessStrategy', 'financialAnalysis',
-  'python', 'excel', 'powerpoint', 'photoshop', 'illustrator',
-] as const;
-
-type SkillKey = (typeof SKILL_KEYS)[number];
-
-const SKILL_API_VALUE: Record<SkillKey, string> = {
-  digitalMarketing: 'Digital Marketing',
-  dataAnalysis: 'Data Analysis',
-  projectManagement: 'Project Management',
-  microsoftOffice: 'Microsoft Office',
-  leadership: 'Leadership',
-  communication: 'Communication',
-  problemSolving: 'Problem Solving',
-  socialMediaMarketing: 'Social Media Marketing',
-  googleAnalytics: 'Google Analytics',
-  teamwork: 'Teamwork',
-  businessStrategy: 'Business Strategy',
-  financialAnalysis: 'Financial Analysis',
-  python: 'Python',
-  excel: 'Excel',
-  powerpoint: 'PowerPoint',
-  photoshop: 'Photoshop',
-  illustrator: 'Illustrator',
-};
-
 const MOBILITY_KEYS = ['withinCity', 'national', 'international', 'remote'] as const;
 
 type MobilityKey = (typeof MOBILITY_KEYS)[number];
@@ -81,13 +55,14 @@ const MOBILITY_API_VALUE: Record<MobilityKey, string> = {
   remote: 'Remote',
 };
 
-type RequiredFieldKey = 'linkedin' | 'professionalSummary' | 'careerObjective' | 'startDate' | 'city';
+type RequiredFieldKey = 'linkedin' | 'professionalSummary' | 'internshipType' | 'startDate' | 'city';
 
 const choiceBtnClass = (selected: boolean, extra = '') =>
   `auth-choice flex items-center justify-center font-medium ${extra} ${selected ? 'auth-choice--selected' : ''}`.trim();
 
 const CompleteProfilePage: FunctionComponent = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.split('-')[0] || 'fr';
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   
@@ -96,11 +71,14 @@ const CompleteProfilePage: FunctionComponent = () => {
   const [linkedinError, setLinkedinError] = useState('');
   const [professionalSummary, setProfessionalSummary] = useState(user?.student_profile?.professional_summary || '');
   
-  // Career Objective
-  const [careerObjective, setCareerObjective] = useState('');
+  // Internship type (filtered by program + class / academic level)
+  const [internshipTypeId, setInternshipTypeId] = useState('');
+  const [internshipTypes, setInternshipTypes] = useState<InternshipTypeOption[]>([]);
+  const [loadingInternshipTypes, setLoadingInternshipTypes] = useState(true);
+  const [internshipTypesError, setInternshipTypesError] = useState(false);
   
-  // Skills
-  const [selectedSkills, setSelectedSkills] = useState<SkillKey[]>([]);
+  // Skills (program-specific competencies from selected internship type)
+  const [selectedSkillCodes, setSelectedSkillCodes] = useState<string[]>([]);
   
   // Availability & Location
   const [availability, setAvailability] = useState<'immediately' | 'specific' | ''>('');
@@ -136,15 +114,104 @@ const CompleteProfilePage: FunctionComponent = () => {
     []
   );
 
+  const studentProfile = user?.student_profile;
+  const academicLevelId = studentProfile?.academic_level ?? null;
+  const academicSectorId = studentProfile?.academic_sector ?? null;
+
+  useEffect(() => {
+    if (!academicLevelId) {
+      setInternshipTypes([]);
+      setLoadingInternshipTypes(false);
+      setInternshipTypesError(!academicLevelId);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingInternshipTypes(true);
+    setInternshipTypesError(false);
+
+    academicReferenceApi
+      .listInternshipTypes({
+        level_ids: [academicLevelId],
+        sector_id: academicSectorId ?? undefined,
+        lang,
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setInternshipTypes(data);
+        if (!data.length) {
+          setInternshipTypesError(true);
+          return;
+        }
+        const existingId = studentProfile?.internship_type;
+        if (existingId && data.some((item) => item.id === existingId)) {
+          setInternshipTypeId(String(existingId));
+        } else if (data.length === 1) {
+          setInternshipTypeId(String(data[0].id));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setInternshipTypes([]);
+          setInternshipTypesError(true);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingInternshipTypes(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [academicLevelId, academicSectorId, lang, studentProfile?.internship_type]);
+
   const devTestPassword =
     (import.meta.env.VITE_DEV_STUDENT_PASSWORD as string | undefined) ||
     (import.meta.env.DEV ? 'TalentCenter2026!' : undefined);
 
-  const toggleSkill = (skill: SkillKey) => {
-    setSelectedSkills((prev) =>
-      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill],
+  const toggleSkill = (code: string) => {
+    setSelectedSkillCodes((prev) =>
+      prev.includes(code) ? prev.filter((s) => s !== code) : [...prev, code],
     );
   };
+
+  const selectedInternshipType = useMemo(
+    () => internshipTypes.find((item) => String(item.id) === internshipTypeId) ?? null,
+    [internshipTypes, internshipTypeId],
+  );
+
+  const availableCompetencies = useMemo<InternshipCompetencyOption[]>(
+    () => selectedInternshipType?.competencies ?? [],
+    [selectedInternshipType],
+  );
+
+  useEffect(() => {
+    setSelectedSkillCodes([]);
+  }, [internshipTypeId]);
+
+  useEffect(() => {
+    if (!availableCompetencies.length) return;
+
+    setSelectedSkillCodes((prev) => {
+      const allowed = availableCompetencies.map((c) => c.code);
+      const filtered = prev.filter((code) => allowed.includes(code));
+      if (filtered.length) return filtered;
+
+      const existingSkills = studentProfile?.skills ?? [];
+      if (!existingSkills.length) return prev;
+
+      const preselected = availableCompetencies
+        .filter(
+          (comp) =>
+            existingSkills.includes(comp.name) ||
+            existingSkills.includes(comp.name_fr || '') ||
+            existingSkills.includes(comp.name_en || '') ||
+            existingSkills.includes(comp.name_ar || ''),
+        )
+        .map((comp) => comp.code);
+      return preselected.length ? preselected : prev;
+    });
+  }, [availableCompetencies, studentProfile?.skills]);
 
   const toggleMobility = (option: MobilityKey) => {
     setMobility((prev) =>
@@ -183,7 +250,7 @@ const CompleteProfilePage: FunctionComponent = () => {
       invalidFields.push(t('auth.completeProfile.errors.linkedinInvalidField'));
     }
     if (!professionalSummary.trim()) missingKeys.push('professionalSummary');
-    if (!careerObjective.trim()) missingKeys.push('careerObjective');
+    if (!internshipTypeId) missingKeys.push('internshipType');
     if (availability === 'specific' && !startDate) missingKeys.push('startDate');
     if (!city.trim()) missingKeys.push('city');
 
@@ -215,9 +282,14 @@ const CompleteProfilePage: FunctionComponent = () => {
       const formData = new FormData();
       if (linkedinUrl) formData.append('linkedin_url', linkedinUrl);
       if (professionalSummary) formData.append('professional_summary', professionalSummary);
-      if (careerObjective) formData.append('career_objective', careerObjective);
-      if (selectedSkills.length) {
-        formData.append('skills', selectedSkills.map((k) => SKILL_API_VALUE[k]).join(','));
+      if (internshipTypeId) formData.append('internship_type_id', internshipTypeId);
+      if (selectedSkillCodes.length) {
+        const labels = selectedSkillCodes
+          .map((code) => availableCompetencies.find((c) => c.code === code)?.name)
+          .filter((label): label is string => Boolean(label));
+        if (labels.length) {
+          formData.append('skills', labels.join(','));
+        }
       }
       if (availability) formData.append('availability', availability);
       if (startDate) formData.append('start_date', startDate);
@@ -234,10 +306,15 @@ const CompleteProfilePage: FunctionComponent = () => {
       redirectTimerRef.current = setTimeout(goToCvEditor, cvEditorRedirectMs);
     } catch (err: any) {
       setError(err.response?.data?.detail || t('auth.completeProfile.errors.submitFailed'));
-    } finally {
       setLoading(false);
     }
   };
+
+  const saveButtonLabel = loading
+    ? successMsg
+      ? t('auth.completeProfile.redirecting')
+      : t('auth.completeProfile.saving')
+    : t('auth.completeProfile.save');
 
   return (
     <AuthScreenShell>
@@ -373,22 +450,39 @@ const CompleteProfilePage: FunctionComponent = () => {
             />
           </motion.div>
 
-          {/* Career Objective */}
+          {/* Career Objective / Internship type */}
           <motion.div variants={itemVariants} className="auth-section-divider w-full pt-5 mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Briefcase className="auth-section-icon h-5 w-5" />
               <div className="auth-section-heading">{t('auth.completeProfile.sections.careerObjective')}</div>
             </div>
-            
-            <FormInput
-              label={t('auth.completeProfile.fields.careerObjective')}
-              isTextArea
-              boxClassName="min-h-[80px]"
-              rows={3}
-              value={careerObjective}
-              onChange={(e) => setCareerObjective(e.target.value)}
-              placeholder={t('auth.completeProfile.placeholders.careerObjective')}
-            />
+
+            {!academicLevelId ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {t('auth.completeProfile.errors.internshipTypesNeedIdentity')}
+              </div>
+            ) : internshipTypesError ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {t('auth.completeProfile.errors.noInternshipTypesForProgram')}
+              </div>
+            ) : (
+              <FormSelect
+                label={t('auth.completeProfile.fields.careerObjective')}
+                Icon={Briefcase}
+                value={internshipTypeId}
+                onChange={setInternshipTypeId}
+                options={internshipTypes.map((item) => ({
+                  value: String(item.id),
+                  label: item.name,
+                }))}
+                placeholder={
+                  loadingInternshipTypes
+                    ? t('auth.completeProfile.placeholders.loadingInternshipTypes')
+                    : t('auth.completeProfile.placeholders.selectInternshipType')
+                }
+                disabled={loadingInternshipTypes || !internshipTypes.length}
+              />
+            )}
           </motion.div>
 
           {/* Skills */}
@@ -397,24 +491,37 @@ const CompleteProfilePage: FunctionComponent = () => {
               <CheckCircle2 className="auth-section-icon h-5 w-5" />
               <div className="auth-section-heading">{t('auth.completeProfile.sections.skills')}</div>
             </div>
-            
+
             <div className="flex flex-col gap-3">
               <label className="auth-form-field__label text-sm font-medium">{t('auth.completeProfile.fields.skills')}</label>
-              <div className="flex flex-wrap gap-2">
-                {SKILL_KEYS.map((skill) => (
-                  <motion.button
-                    type="button"
-                    key={skill}
-                    onClick={() => toggleSkill(skill)}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className={choiceBtnClass(selectedSkills.includes(skill), 'auth-chip-pill px-3 py-1.5 text-sm')}
-                  >
-                    {t(`auth.completeProfile.skills.${skill}`)}
-                  </motion.button>
-                ))}
-              </div>
+              {!internshipTypeId ? (
+                <p className="text-sm text-[var(--auth-text-muted)]">
+                  {t('auth.completeProfile.hints.selectInternshipTypeForSkills')}
+                </p>
+              ) : !availableCompetencies.length ? (
+                <p className="text-sm text-[var(--auth-text-muted)]">
+                  {t('auth.completeProfile.errors.noCompetenciesForProgram')}
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {availableCompetencies.map((competency) => (
+                    <motion.button
+                      type="button"
+                      key={competency.code}
+                      onClick={() => toggleSkill(competency.code)}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className={choiceBtnClass(
+                        selectedSkillCodes.includes(competency.code),
+                        'auth-chip-pill px-3 py-1.5 text-sm',
+                      )}
+                    >
+                      {competency.name}
+                    </motion.button>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -539,24 +646,22 @@ const CompleteProfilePage: FunctionComponent = () => {
           <motion.div variants={itemVariants} className="w-full mb-4">
             <motion.button 
               type="button"
-              whileHover={{ y: -1, boxShadow: '0 6px 16px rgba(99, 102, 241, 0.25)' }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={loading ? undefined : { y: -1, boxShadow: '0 6px 16px rgba(99, 102, 241, 0.25)' }}
+              whileTap={loading ? undefined : { scale: 0.98 }}
               disabled={loading} 
               onClick={handleSave} 
-              className="auth-btn-primary flex h-11 w-full items-center justify-center gap-2 rounded-lg font-medium"
+              className={`auth-btn-primary flex h-11 w-full items-center justify-center gap-2 rounded-lg font-medium transition-opacity duration-300 ${loading ? 'cursor-not-allowed opacity-70' : ''}`}
             >
               {loading ? (
                 <motion.div 
                   animate={{ rotate: 360 }} 
                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                  className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                  className="h-4 w-4 shrink-0 rounded-full border-2 border-white/30 border-t-white"
                 />
               ) : (
-                <>
-                  <Save className="w-4 h-4 shrink-0" />
-                  <span>{t('auth.completeProfile.save')}</span>
-                </>
+                <Save className="h-4 w-4 shrink-0" />
               )}
+              <span className="font-semibold text-[15px]">{saveButtonLabel}</span>
             </motion.button>
           </motion.div>
 

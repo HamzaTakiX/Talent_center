@@ -6,3 +6,6 @@ class AdminManagementConfig(AppConfig):
     name = 'apps.admin_management'
     label = 'admin_management'
     verbose_name = 'Admin / User Management'
+
+    def ready(self):
+        from . import cache_signals  # noqa: F401

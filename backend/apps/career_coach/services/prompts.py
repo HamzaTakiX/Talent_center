@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from apps.career_coach.services.language_detector import build_language_instruction
+
 MODE_INSTRUCTIONS = {
     'career-coach': (
         'Focus on career strategy, internship roadmap, goals, and long-term development. '
@@ -37,10 +39,9 @@ CRITICAL SAFETY RULES — NEVER VIOLATE:
 
 MULTILINGUAL_RULES = """
 LANGUAGE RULES:
-- Automatically detect the user's language from their message.
-- Respond in the SAME language: French, English, Arabic, Moroccan Darija, or natural mixed language.
-- For Darija: use natural Moroccan dialect (e.g. "شنو", "واش", "بزاف", "دابا") mixed with French/English job terms when natural.
-- For Arabic: use Modern Standard Arabic or Moroccan Arabic as appropriate to the user's style.
+- Always reply in the SAME language as the user's latest message.
+- French message → French reply. English message → English reply. Arabic → Arabic. Darija → Darija.
+- Student profile/CV context may be in another language — still reply in the user's language.
 - Match the user's formality level and code-switching patterns.
 - Never announce which language you detected — just respond naturally.
 """
@@ -84,11 +85,18 @@ CONVERSATION BEHAVIOR:
 """
 
 
-def build_system_prompt(mode: str, context_text: str, retrieved_chunks: list[str]) -> str:
+def build_system_prompt(
+    mode: str,
+    context_text: str,
+    retrieved_chunks: list[str],
+    *,
+    language_hint: str = 'auto',
+) -> str:
     mode_instruction = MODE_INSTRUCTIONS.get(mode, MODE_INSTRUCTIONS['career-coach'])
+    language_rules = f'{MULTILINGUAL_RULES}\n\n{build_language_instruction(language_hint)}'
     prompt = BASE_SYSTEM_PROMPT.format(
         mode_instruction=mode_instruction,
-        multilingual_rules=MULTILINGUAL_RULES,
+        multilingual_rules=language_rules,
         safety_rules=SAFETY_RULES,
     )
     rag_section = ''
@@ -107,6 +115,7 @@ If they ask about CV, internships, or applications, invite them to ask a specifi
 """
 
 
-def build_minimal_system_prompt(mode: str) -> str:
+def build_minimal_system_prompt(mode: str, *, language_hint: str = 'auto') -> str:
+    language_rules = f'{MULTILINGUAL_RULES}\n\n{build_language_instruction(language_hint)}'
     mode_instruction = MODE_INSTRUCTIONS.get(mode, MODE_INSTRUCTIONS['career-coach'])
-    return MINIMAL_SYSTEM_PROMPT.format(multilingual_rules=MULTILINGUAL_RULES) + f'\nMode focus: {mode_instruction}'
+    return MINIMAL_SYSTEM_PROMPT.format(multilingual_rules=language_rules) + f'\nMode focus: {mode_instruction}'

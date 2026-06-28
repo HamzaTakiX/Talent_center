@@ -6,18 +6,16 @@ const ShimmerBlock: FunctionComponent<{ className?: string; style?: CSSPropertie
 }) => <div className={`admin-shimmer rounded-lg ${className}`} style={style} aria-hidden />;
 
 export const DashboardStatsSkeleton: FunctionComponent = () => (
-  <div className="admin-stats-panel overflow-hidden rounded-admin-lg border border-[var(--admin-border)]">
-    <div className="admin-stats-grid">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 px-4 py-3.5">
-          <ShimmerBlock className="h-4 w-4 rounded" />
-          <div className="min-w-0 flex-1">
-            <ShimmerBlock className="mb-1.5 h-3 w-2/3" />
-            <ShimmerBlock className="h-5 w-1/3" />
-          </div>
+  <div className="admin-stats-grid" aria-hidden>
+    {Array.from({ length: 8 }).map((_, i) => (
+      <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+        <ShimmerBlock className="h-4 w-4 rounded" />
+        <div className="min-w-0 flex-1">
+          <ShimmerBlock className="mb-1.5 h-3 w-2/3" />
+          <ShimmerBlock className="h-5 w-1/3" />
         </div>
-      ))}
-    </div>
+      </div>
+    ))}
   </div>
 );
 

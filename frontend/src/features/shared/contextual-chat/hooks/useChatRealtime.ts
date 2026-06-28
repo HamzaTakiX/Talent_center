@@ -15,9 +15,14 @@ export function useChatRealtime(
 
   useEffect(() => {
     if (!enabled || !conversationId) return undefined;
-    const id = window.setInterval(() => {
-      onRefreshRef.current();
-    }, intervalMs);
+
+    const tick = () => {
+      if (document.visibilityState === 'visible') {
+        onRefreshRef.current();
+      }
+    };
+
+    const id = window.setInterval(tick, intervalMs);
     return () => window.clearInterval(id);
   }, [conversationId, enabled, intervalMs]);
 }

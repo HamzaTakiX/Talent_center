@@ -1,40 +1,36 @@
-import type { TFunction } from 'i18next';
-import type { DocumentCatalogItem, ResolvedDocumentCatalogItem } from '../types';
+import type { DocumentServiceCatalogItem } from '../../../admin/Documents_admin/types/documentServiceCatalog';
 import type { DocumentBadgeFilter, DocumentCategoryFilter } from '../constants/documentsCatalog';
 import { DOCUMENT_BADGE_FILTER_ALL, DOCUMENT_CATEGORY_ALL } from '../constants/documentsCatalog';
 
-export function resolveDocumentCatalogItem(
-  item: DocumentCatalogItem,
-  t: TFunction,
-): ResolvedDocumentCatalogItem {
-  return {
-    ...item,
-    category: t(`student.documents.categories.${item.categoryKey}`),
-  };
+function matchesBadgeFilter(
+  item: DocumentServiceCatalogItem,
+  badgeFilter: DocumentBadgeFilter,
+): boolean {
+  if (badgeFilter === DOCUMENT_BADGE_FILTER_ALL) return true;
+  if (badgeFilter === 'online') return item.onlineEnabled;
+  if (badgeFilter === 'physical') return item.physicalEnabled;
+  if (badgeFilter === 'reservation') return item.reservationRequired;
+  if (badgeFilter === 'auto') return item.autoGenerate;
+  return true;
 }
 
 export function filterDocumentCatalog(
-  items: readonly DocumentCatalogItem[],
+  items: readonly DocumentServiceCatalogItem[],
   search: string,
   categoryFilter: DocumentCategoryFilter,
   badgeFilter: DocumentBadgeFilter,
-  t: TFunction,
-): ResolvedDocumentCatalogItem[] {
+): DocumentServiceCatalogItem[] {
   const q = search.trim().toLowerCase();
 
-  return items
-    .map((item) => resolveDocumentCatalogItem(item, t))
-    .filter((item) => {
-      if (categoryFilter !== DOCUMENT_CATEGORY_ALL && item.categoryKey !== categoryFilter) {
-        return false;
-      }
-      if (badgeFilter !== DOCUMENT_BADGE_FILTER_ALL && item.badgeType !== badgeFilter) {
-        return false;
-      }
-      if (!q) return true;
-      const hay = [item.title, item.category, item.delayLabel, item.requirement]
-        .join(' ')
-        .toLowerCase();
-      return hay.includes(q);
-    });
+  return items.filter((item) => {
+    if (categoryFilter !== DOCUMENT_CATEGORY_ALL && item.category !== categoryFilter) {
+      return false;
+    }
+    if (!matchesBadgeFilter(item, badgeFilter)) {
+      return false;
+    }
+    if (!q) return true;
+    const hay = [item.name, item.code, item.description, item.category].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
 }

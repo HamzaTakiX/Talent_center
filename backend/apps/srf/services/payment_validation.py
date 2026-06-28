@@ -14,6 +14,50 @@ from apps.srf.services.financial_profile import refresh_student_financial_state
 from apps.srf.services.srf_notifications import emit_srf_notification
 
 
+def _pending_proof_exists(installment: Installment) -> bool:
+    return installment.proof_submissions.filter(
+        status__in=[
+            PaymentProofSubmission.Status.PENDING,
+            PaymentProofSubmission.Status.UNDER_REVIEW,
+        ],
+    ).exists()
+
+
+def _restore_installment_status(installment: Installment) -> None:
+    paid = installment.paid_amount or Decimal('0')
+    if paid >= installment.amount:
+        installment.payment_status = Installment.PaymentStatus.PAID
+    elif paid > 0:
+        installment.payment_status = Installment.PaymentStatus.PARTIAL
+    else:
+        installment.payment_status = Installment.PaymentStatus.UNPAID
+    installment.save(update_fields=['payment_status', 'updated_at'])
+
+
+def _apply_installment_payment(
+    installment: Installment,
+    approved_amount: Decimal,
+    *,
+    reviewer,
+    proof_file,
+    payment: Payment,
+) -> None:
+    installment.paid_amount = min(
+        (installment.paid_amount or Decimal('0')) + approved_amount,
+        installment.amount,
+    )
+    if installment.paid_amount >= installment.amount:
+        installment.payment_status = Installment.PaymentStatus.PAID
+        installment.validated_at = timezone.now()
+        installment.validated_by = reviewer
+        installment.linked_payment = payment
+        if proof_file:
+            installment.uploaded_receipt = proof_file
+    else:
+        installment.payment_status = Installment.PaymentStatus.PARTIAL
+    installment.save()
+
+
 @transaction.atomic
 def submit_payment_proof(
     account: FinancialAccount,
@@ -24,6 +68,9 @@ def submit_payment_proof(
     reference_number: str = '',
     installment: Optional[Installment] = None,
 ) -> PaymentProofSubmission:
+    if installment and _pending_proof_exists(installment):
+        raise ValueError('A payment proof is already pending validation for this installment.')
+
     submission = PaymentProofSubmission.objects.create(
         account=account,
         installment=installment,
@@ -63,6 +110,7 @@ def review_payment_proof(
     new_status: str,
     rejection_reason: str = '',
     admin_notes: str = '',
+    approved_amount: Optional[Decimal] = None,
 ) -> PaymentProofSubmission:
     previous_status = submission.status
     submission.status = new_status
@@ -80,6 +128,7 @@ def review_payment_proof(
         'actor_name': getattr(reviewer, 'email', '') or str(reviewer),
         'admin_notes': admin_notes,
         'rejection_reason': rejection_reason,
+        'approved_amount': str(approved_amount) if approved_amount is not None else None,
     })
     submission.metadata_json = {**(submission.metadata_json or {}), 'audit_timeline': timeline}
     submission.save()
@@ -91,31 +140,38 @@ def review_payment_proof(
         return submission
 
     if new_status == PaymentProofSubmission.Status.APPROVED:
-        payment = _create_payment_from_proof(submission, reviewer)
+        amount = approved_amount if approved_amount is not None else submission.amount
+        if amount <= 0:
+            raise ValueError('Approved amount must be greater than zero.')
+        if submission.installment:
+            remaining = submission.installment.amount - (submission.installment.paid_amount or Decimal('0'))
+            if amount > remaining:
+                raise ValueError(
+                    f'Approved amount exceeds remaining installment balance ({remaining} MAD).',
+                )
+        payment = _create_payment_from_proof(submission, reviewer, amount=amount)
         submission.linked_payment = payment
         submission.save(update_fields=['linked_payment', 'updated_at'])
         if submission.installment:
-            inst = submission.installment
-            inst.payment_status = Installment.PaymentStatus.PAID
-            inst.validated_at = timezone.now()
-            inst.validated_by = reviewer
-            inst.linked_payment = payment
-            if submission.proof_file:
-                inst.uploaded_receipt = submission.proof_file
-            inst.save()
+            _apply_installment_payment(
+                submission.installment,
+                amount,
+                reviewer=reviewer,
+                proof_file=submission.proof_file,
+                payment=payment,
+            )
         emit_srf_notification(
             event_code='srf.payment.approved',
             student=student,
             title='Payment approved',
-            body=f'Your payment of {submission.amount} MAD has been validated.',
+            body=f'Your payment of {amount} MAD has been validated.',
             actor=reviewer,
             entity_type='payment_proof',
             entity_id=submission.pk,
         )
     elif new_status == PaymentProofSubmission.Status.REJECTED:
         if submission.installment:
-            submission.installment.payment_status = Installment.PaymentStatus.UNPAID
-            submission.installment.save(update_fields=['payment_status', 'updated_at'])
+            _restore_installment_status(submission.installment)
         emit_srf_notification(
             event_code='srf.payment.rejected',
             student=student,
@@ -126,6 +182,8 @@ def review_payment_proof(
             entity_id=submission.pk,
         )
     elif new_status == PaymentProofSubmission.Status.REQUIRES_CORRECTION:
+        if submission.installment:
+            _restore_installment_status(submission.installment)
         emit_srf_notification(
             event_code='srf.payment.requires_correction',
             student=student,
@@ -153,7 +211,12 @@ def review_payment_proof(
     return submission
 
 
-def _create_payment_from_proof(submission: PaymentProofSubmission, reviewer) -> Payment:
+def _create_payment_from_proof(
+    submission: PaymentProofSubmission,
+    reviewer,
+    *,
+    amount: Decimal,
+) -> Payment:
     method, _ = PaymentMethod.objects.get_or_create(
         code='bank_transfer',
         defaults={
@@ -165,7 +228,7 @@ def _create_payment_from_proof(submission: PaymentProofSubmission, reviewer) -> 
     payment = Payment.objects.create(
         account=account,
         payment_method=method,
-        amount=submission.amount,
+        amount=amount,
         currency=submission.currency,
         payment_date=timezone.now(),
         reference_number=submission.reference_number,
@@ -173,14 +236,6 @@ def _create_payment_from_proof(submission: PaymentProofSubmission, reviewer) -> 
         recorded_by=reviewer,
         notes=f'Approved from proof submission {submission.uuid}',
     )
-    account.paid_amount += submission.amount
-    account.remaining_amount = max(account.total_amount - account.paid_amount, Decimal('0'))
-    account.balance = account.remaining_amount
     account.last_payment_at = timezone.now()
-    account.save(
-        update_fields=[
-            'paid_amount', 'remaining_amount', 'balance',
-            'last_payment_at', 'updated_at',
-        ],
-    )
+    account.save(update_fields=['last_payment_at', 'updated_at'])
     return payment

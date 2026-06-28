@@ -1,4 +1,5 @@
-/** Aligné sur OfferApplication.Status (backend stage/models.py) */
+import type { ChatAttachmentView } from '../../../../shared/contextual-chat/utils/chatAttachmentUtils';
+
 export type BackendApplicationStatus =
   | 'SUBMITTED'
   | 'UNDER_REVIEW'
@@ -71,6 +72,7 @@ export type InternshipMessage = {
   seenAt?: string;
   seenTime?: string;
   attachmentName?: string;
+  attachments?: ChatAttachmentView[];
   messageType?: string;
   smartActionCode?: string;
   createdAt?: string;

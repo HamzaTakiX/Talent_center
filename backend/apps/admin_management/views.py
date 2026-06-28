@@ -489,6 +489,68 @@ class AdminStudentDetailView(APIView):
         return Response(envelope(True, 'Student deleted'), status=status.HTTP_200_OK)
 
 
+class AdminStudentChatOpenView(APIView):
+    """Open or create the admin ↔ student platform desk conversation."""
+
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+
+    def post(self, request, student_id: int):
+        user = list_students_queryset(acting_user=request.user).filter(pk=student_id).first()
+        if user is None:
+            return Response(
+                envelope(False, 'Student not found'),
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        try:
+            assert_student_in_scope(request.user, user)
+        except PermissionDenied as exc:
+            return Response(envelope(False, str(exc.detail)), status=status.HTTP_403_FORBIDDEN)
+
+        student_profile = getattr(user, 'student_profile', None)
+        if student_profile is None:
+            return Response(
+                envelope(False, 'Student profile not found'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from apps.chat.services.message_service import send_message
+        from apps.chat.services.platform_chat_service import (
+            ensure_student_admin_dm,
+            is_platform_desk_archived,
+            unarchive_platform_desk_conversation,
+            unarchive_student_platform_desk_conversation,
+        )
+
+        conv = ensure_student_admin_dm(
+            student=student_profile,
+            admin=request.user,
+            request=request,
+        )
+        if conv is None:
+            return Response(
+                envelope(False, 'Cannot open conversation with this student'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if conv.is_archived:
+            unarchive_student_platform_desk_conversation(conv, request.user)
+        if is_platform_desk_archived(conv):
+            unarchive_platform_desk_conversation(conv, request.user)
+
+        message_body = (request.data.get('message') or '').strip()
+        if message_body:
+            send_message(
+                user=request.user,
+                conversation_id=conv.pk,
+                body=message_body,
+            )
+
+        return Response(
+            envelope(True, 'Conversation ready', data={'conversation_id': conv.pk}),
+            status=status.HTTP_200_OK,
+        )
+
+
 class AdminStudentBulkDeleteView(APIView):
     permission_classes = [IsAuthenticated, IsPlatformAdmin]
 

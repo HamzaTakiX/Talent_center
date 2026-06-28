@@ -1,27 +1,26 @@
 import { FunctionComponent } from 'react';
-import { Briefcase, Check, Clock, ClipboardCheck, Gauge, Languages } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
-const STEPS = [
-  { id: 'role', icon: Briefcase, labelKey: 'student.internshipOffers.interviewSim.config.steps.role' },
-  { id: 'difficulty', icon: Gauge, labelKey: 'student.internshipOffers.interviewSim.config.steps.difficulty' },
-  { id: 'duration', icon: Clock, labelKey: 'student.internshipOffers.interviewSim.config.steps.duration' },
-  { id: 'language', icon: Languages, labelKey: 'student.internshipOffers.interviewSim.config.steps.language' },
-  { id: 'review', icon: ClipboardCheck, labelKey: 'student.internshipOffers.interviewSim.config.steps.review' },
-] as const;
+import type { WizardStepDef } from '../../../utils/interviewWizardSteps';
 
 interface InterviewConfigStepperProps {
+  steps: WizardStepDef[];
   step: number;
   onStepChange: (step: number) => void;
 }
 
-const InterviewConfigStepper: FunctionComponent<InterviewConfigStepperProps> = ({ step, onStepChange }) => {
+const InterviewConfigStepper: FunctionComponent<InterviewConfigStepperProps> = ({
+  steps,
+  step,
+  onStepChange,
+}) => {
   const { t } = useTranslation();
+  const progressPct = steps.length ? Math.round(((step + 1) / steps.length) * 100) : 0;
 
   return (
     <nav className="sr-is-config-stepper" aria-label={t('student.internshipOffers.interviewSim.config.stepperAria')}>
       <ol className="sr-is-config-stepper__list">
-        {STEPS.map((s, index) => {
+        {steps.map((s, index) => {
           const Icon = s.icon;
           const isActive = index === step;
           const isDone = index < step;
@@ -43,11 +42,15 @@ const InterviewConfigStepper: FunctionComponent<InterviewConfigStepperProps> = (
                 aria-current={isActive ? 'step' : undefined}
               >
                 <span className="sr-is-config-stepper__icon-wrap">
-                  {isDone ? <Check className="h-5 w-5" strokeWidth={2.5} /> : <Icon className="h-5 w-5" strokeWidth={2} />}
+                  {isDone ? (
+                    <CheckCircle2 className="h-5 w-5" strokeWidth={2} />
+                  ) : (
+                    <Icon className="h-5 w-5" strokeWidth={2} />
+                  )}
                 </span>
                 <span className="sr-is-config-stepper__label">{t(s.labelKey)}</span>
               </button>
-              {index < STEPS.length - 1 ? (
+              {index < steps.length - 1 ? (
                 <span
                   className={[
                     'sr-is-config-stepper__connector',
@@ -62,6 +65,12 @@ const InterviewConfigStepper: FunctionComponent<InterviewConfigStepperProps> = (
           );
         })}
       </ol>
+      <div className="sr-is-config-stepper__progress-row" aria-hidden>
+        <div className="sr-is-config-stepper__progress-bar">
+          <div className="sr-is-config-stepper__progress-fill" style={{ width: `${progressPct}%` }} />
+        </div>
+        <span className="sr-is-config-stepper__progress-pct">{progressPct}%</span>
+      </div>
     </nav>
   );
 };

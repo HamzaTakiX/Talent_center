@@ -61,5 +61,23 @@ export default defineConfig(({ mode }) => {
       $lib: cvLib,
     },
   },
-};
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@excalidraw/excalidraw')) return 'vendor-excalidraw';
+            if (id.includes('@tiptap/')) return 'vendor-tiptap';
+            if (id.includes('pdfjs-dist')) return 'vendor-pdfjs';
+            if (id.includes('konva') || id.includes('react-konva')) return 'vendor-konva';
+            if (id.includes('framer-motion')) return 'vendor-motion';
+            if (id.includes('@auth0/auth0-react')) return 'vendor-auth0';
+            if (id.includes('lucide-react')) return 'vendor-icons';
+          }
+          if (id.includes('/features/cv_builder/')) return 'feature-cv-builder';
+        },
+      },
+    },
+  },
+  };
 });

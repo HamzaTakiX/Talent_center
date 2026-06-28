@@ -1,6 +1,8 @@
 import { FunctionComponent, useState } from 'react';
-import { Archive, Filter, MessageSquare, Search, X } from 'lucide-react';
+import { Archive, Megaphone, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import SupportInboxSidebarBrandHeader from '../../../../admin/shared/admin-support-inbox/components/SupportInboxSidebarBrandHeader';
+import ChatToolbarActions from '../../../../shared/chat-design-system/components/ChatToolbarActions';
 import InternshipOfferAvatar from '../../../../admin/offres-stage/chat/components/InternshipOfferAvatar';
 import { InternshipChatSidebarSkeleton } from '../../../../admin/offres-stage/chat/components/InternshipChatLoadingSkeletons';
 import InternshipSidebarEmptyState from '../../../../admin/offres-stage/chat/components/InternshipSidebarEmptyState';
@@ -23,6 +25,7 @@ type Props = {
   announcementTypeOptions: string[];
   search: string;
   sidebarTitle: string;
+  sidebarSubtitle?: string;
   searchPlaceholder: string;
   onSetPrimary: (value: StudentAnnouncementInboxFilters['primary']) => void;
   onToggleAnnouncementType: (value: string) => void;
@@ -58,6 +61,7 @@ const StudentAnnouncementConversationList: FunctionComponent<Props> = ({
   announcementTypeOptions,
   search,
   sidebarTitle,
+  sidebarSubtitle,
   searchPlaceholder,
   onSetPrimary,
   onToggleAnnouncementType,
@@ -79,48 +83,32 @@ const StudentAnnouncementConversationList: FunctionComponent<Props> = ({
 
   return (
     <aside className="isi-sidebar">
-      <div className="isi-sidebar-head">
-        <div className="isi-sidebar-title-wrap">
-          <MessageSquare className="isi-sidebar-title-icon" strokeWidth={2} aria-hidden />
-          <h2 className="isi-sidebar-title">{sidebarTitle}</h2>
-        </div>
-
-        <div className="isi-sidebar-actions">
-          <button
-            type="button"
-            onClick={() => onSetPrimary(viewingArchived ? 'all' : 'archived')}
-            className={`isi-filter-toggle ${viewingArchived ? 'isi-filter-toggle--active' : ''}`}
-            aria-label={
+      <SupportInboxSidebarBrandHeader
+        title={sidebarTitle}
+        subtitle={sidebarSubtitle}
+        icon={Megaphone}
+        actions={
+          <ChatToolbarActions
+            viewingArchived={viewingArchived}
+            archivedCount={primaryFilterCounts.archived}
+            hasActiveFilters={hasActiveFilters}
+            filtersOpen={filtersOpen}
+            onToggleArchive={() => onSetPrimary(viewingArchived ? 'all' : 'archived')}
+            onToggleFilters={() => setFiltersOpen((value) => !value)}
+            archiveAriaLabel={
               viewingArchived
                 ? t(`${prefix}.backToActive`, { defaultValue: 'Retour aux conversations actives' })
                 : t(`${prefix}.viewArchived`, { defaultValue: 'Voir les conversations archivées' })
             }
-            title={
+            archiveTitle={
               viewingArchived
                 ? t(`${prefix}.backToActive`, { defaultValue: 'Retour aux conversations actives' })
                 : t(`${prefix}.archived`, { defaultValue: 'Archives' })
             }
-          >
-            <Archive className="size-4" strokeWidth={2} />
-            {!viewingArchived && primaryFilterCounts.archived > 0 ? (
-              <span className="isi-sidebar-action-badge">
-                {primaryFilterCounts.archived > 99 ? '99+' : primaryFilterCounts.archived}
-              </span>
-            ) : null}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setFiltersOpen((value) => !value)}
-            className={`isi-filter-toggle ${filtersOpen || hasActiveFilters ? 'isi-filter-toggle--active' : ''}`}
-            aria-expanded={filtersOpen}
-            aria-label={t(`${prefix}.filters`, { defaultValue: 'Filtres' })}
-          >
-            <Filter className="size-4" strokeWidth={2} />
-            {hasActiveFilters ? <span className="isi-filter-dot" /> : null}
-          </button>
-        </div>
-      </div>
+            filterAriaLabel={t(`${prefix}.filters`, { defaultValue: 'Filtres' })}
+          />
+        }
+      />
 
       {loadError ? (
         <p className="isi-load-error px-4 py-2 text-sm text-[var(--admin-danger,#dc2626)]" role="alert">

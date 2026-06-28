@@ -18,7 +18,10 @@ import { PLATFORM_FORM_INPUT } from '../../../../design-system/platformTokens';
 
 interface SrfPaymentModalProps {
   fee: SrfFeeRow;
+  submitting: boolean;
+  submitError: string | null;
   onClose: () => void;
+  onSubmit: (payload: { amount: number; reference: string; notes: string; file: File }) => Promise<void>;
 }
 
 const fieldLabelClass =
@@ -26,7 +29,13 @@ const fieldLabelClass =
 
 const fieldInputClass = `${PLATFORM_FORM_INPUT} h-11 w-full min-w-0 text-sm`;
 
-const SrfPaymentModal: FunctionComponent<SrfPaymentModalProps> = ({ fee, onClose }) => {
+const SrfPaymentModal: FunctionComponent<SrfPaymentModalProps> = ({
+  fee,
+  submitting,
+  submitError,
+  onClose,
+  onSubmit,
+}) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -34,6 +43,7 @@ const SrfPaymentModal: FunctionComponent<SrfPaymentModalProps> = ({ fee, onClose
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
   const [receiptName, setReceiptName] = useState<string | null>(null);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
 
   const methodOptions = useMemo(
     () =>
@@ -48,21 +58,19 @@ const SrfPaymentModal: FunctionComponent<SrfPaymentModalProps> = ({ fee, onClose
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    setReceiptFile(file ?? null);
     setReceiptName(file ? file.name : null);
   };
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!paymentMethod) return;
-    console.log('Soumettre paiement SRF', {
-      feeId: fee.id,
-      paymentMethod,
-      amount,
+    if (!paymentMethod || !receiptFile) return;
+    await onSubmit({
+      amount: Number(amount),
       reference,
       notes,
-      receiptName,
+      file: receiptFile,
     });
-    onClose();
   };
 
   return (
@@ -78,7 +86,12 @@ const SrfPaymentModal: FunctionComponent<SrfPaymentModalProps> = ({ fee, onClose
           <button type="button" onClick={onClose} className={`${SRF_OUTLINE_BTN} min-w-[7.5rem]`}>
             {t('student.srf.modal.cancel')}
           </button>
-          <button type="submit" form="srf-payment-form" className={`${SRF_PRIMARY_BTN} min-w-[10rem]`}>
+          <button
+            type="submit"
+            form="srf-payment-form"
+            className={`${SRF_PRIMARY_BTN} min-w-[10rem]`}
+            disabled={submitting}
+          >
             {t('student.srf.modal.submitPayment')}
           </button>
         </>
@@ -179,6 +192,7 @@ const SrfPaymentModal: FunctionComponent<SrfPaymentModalProps> = ({ fee, onClose
               accept=".pdf,.jpg,.jpeg,.png"
               className="sr-only"
               onChange={handleFileChange}
+              required
             />
             <button
               type="button"
@@ -199,6 +213,11 @@ const SrfPaymentModal: FunctionComponent<SrfPaymentModalProps> = ({ fee, onClose
             </button>
           </div>
         </div>
+        {submitError ? (
+          <p className="m-0 text-sm leading-5 text-[var(--admin-danger)]">
+            {t('student.srf.modal.submitError', { defaultValue: 'Echec de soumission. Reessayez.' })}
+          </p>
+        ) : null}
       </form>
     </AdminModal>
   );

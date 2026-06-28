@@ -34,9 +34,15 @@ def is_locked(identifier: str, ip: Optional[str] = None) -> bool:
     True if the identifier has >= AUTH_MAX_FAILED_ATTEMPTS failed attempts in
     the last AUTH_FAILED_WINDOW_SECONDS AND the most recent failure is within
     AUTH_LOCKOUT_SECONDS.
+
+    Set AUTH_LOCKOUT_SECONDS=0 (or AUTH_MAX_FAILED_ATTEMPTS=0) to disable lockout.
     """
     max_attempts = settings.AUTH_MAX_FAILED_ATTEMPTS
-    lockout = timedelta(seconds=settings.AUTH_LOCKOUT_SECONDS)
+    lockout_seconds = settings.AUTH_LOCKOUT_SECONDS
+    if max_attempts <= 0 or lockout_seconds <= 0:
+        return False
+
+    lockout = timedelta(seconds=lockout_seconds)
 
     recent_failures = count_recent_failed_attempts(identifier)
     if recent_failures < max_attempts:
@@ -62,9 +68,10 @@ def log_event(
         ip_address=ip,
     )
     try:
+        from django.db import transaction
         from apps.history.integrations.auth import mirror_security_event
 
-        mirror_security_event(event, ip=ip)
+        transaction.on_commit(lambda e=event, ip_addr=ip: mirror_security_event(e, ip=ip_addr))
     except Exception:
         pass
     return event

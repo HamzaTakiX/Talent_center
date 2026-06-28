@@ -28,6 +28,9 @@ export const getStudentHeaderTitleKey = (pathname: string): string => {
     return 'student.header.titles.announcementsSaved';
   }
   if (pathname.startsWith('/student/announcements')) return 'student.header.titles.announcements';
+  if (pathname.match(/\/student\/documents\/[^/]+$/) && !pathname.endsWith('/chat')) {
+    return 'student.header.titles.documentDetails';
+  }
   if (pathname.startsWith('/student/documents')) return 'student.header.titles.documents';
   if (pathname.startsWith('/student/srf')) return 'student.header.titles.srf';
   if (pathname.includes('/encadrant/agenda')) return 'student.header.titles.agenda';

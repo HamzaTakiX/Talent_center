@@ -29,6 +29,16 @@ export function resolveMediaUrl(path?: string | null): string | null {
   }
   const value = path.trim();
   if (/^(https?:|data:|blob:)/i.test(value)) {
+    if (import.meta.env.DEV && typeof window !== 'undefined') {
+      try {
+        const parsed = new URL(value);
+        if (parsed.pathname.startsWith('/media/')) {
+          return `${parsed.pathname}${parsed.search}`;
+        }
+      } catch {
+        return value;
+      }
+    }
     return value;
   }
   const origin = getBackendOrigin();

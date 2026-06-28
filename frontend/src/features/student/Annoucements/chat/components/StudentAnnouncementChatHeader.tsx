@@ -1,5 +1,5 @@
-import { FunctionComponent } from 'react';
-import { Archive, ArchiveRestore, ArrowLeft, Megaphone } from 'lucide-react';
+import { FunctionComponent, ReactNode } from 'react';
+import { ArrowLeft, Megaphone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import InternshipOfferAvatar from '../../../../admin/offres-stage/chat/components/InternshipOfferAvatar';
 import type { StudentAnnouncementConversation } from '../utils/studentAnnouncementChatMappers';
@@ -8,8 +8,7 @@ type Props = {
   conversation: StudentAnnouncementConversation;
   onBack?: () => void;
   onViewAnnouncement: () => void;
-  onArchive: () => void;
-  onUnarchive: () => void;
+  conversationMenu?: ReactNode;
 };
 
 function priorityLabelKey(priority: StudentAnnouncementConversation['priority']): string {
@@ -22,11 +21,9 @@ const StudentAnnouncementChatHeader: FunctionComponent<Props> = ({
   conversation,
   onBack,
   onViewAnnouncement,
-  onArchive,
-  onUnarchive,
+  conversationMenu,
 }) => {
   const { t } = useTranslation();
-  const prefix = 'student.announcements.chat.inbox';
 
   return (
     <header className="isi-chat-header isi-chat-header--student">
@@ -64,17 +61,6 @@ const StudentAnnouncementChatHeader: FunctionComponent<Props> = ({
       </div>
 
       <div className="isi-chat-actions">
-        {conversation.archived ? (
-          <button type="button" onClick={onUnarchive} className="isi-header-btn">
-            <ArchiveRestore className="size-4" />
-            <span>{t(`${prefix}.unarchive`, { defaultValue: 'Restaurer' })}</span>
-          </button>
-        ) : (
-          <button type="button" onClick={onArchive} className="isi-header-btn">
-            <Archive className="size-4" />
-            <span>{t(`${prefix}.archive`, { defaultValue: 'Archiver' })}</span>
-          </button>
-        )}
         <button
           type="button"
           onClick={onViewAnnouncement}
@@ -85,6 +71,7 @@ const StudentAnnouncementChatHeader: FunctionComponent<Props> = ({
             {t('student.announcements.chat.viewAnnouncement', { defaultValue: "Voir l'annonce" })}
           </span>
         </button>
+        {conversationMenu}
       </div>
     </header>
   );

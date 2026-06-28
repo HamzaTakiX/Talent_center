@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useLocation } from 'react-router-dom';
 import { fetchChatInboxSummary } from '../api/chatApi';
 import { useChatPresenceWebSocket } from '../hooks/useChatPresenceWebSocket';
 import type { ChatWsEvent } from '../hooks/useChatWebSocket';
@@ -29,7 +28,6 @@ const INBOX_REFRESH_EVENTS = new Set(['inbox.updated', 'message.created', 'read_
 export const ChatUnreadProvider: FunctionComponent<{ children: ReactNode }> = ({ children }) => {
   const [unreadByModule, setUnreadByModule] = useState<ModuleUnreadMap>({});
   const refreshTimerRef = useRef<number | null>(null);
-  const { pathname } = useLocation();
 
   const refresh = useCallback(async () => {
     try {
@@ -58,7 +56,7 @@ export const ChatUnreadProvider: FunctionComponent<{ children: ReactNode }> = ({
 
   useEffect(() => {
     void refresh();
-  }, [refresh, pathname]);
+  }, [refresh]);
 
   useEffect(
     () => () => {

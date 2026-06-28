@@ -1,5 +1,10 @@
 import type { ConversationContextDto, ConversationDto, MessageDto } from '../../../../shared/contextual-chat/types';
+import { mapMessageAttachments } from '../../../../shared/contextual-chat/utils/mapMessageAttachments';
 import { getMessageStableKey } from '../../../offres-stage/chat/utils/internshipChatMessageUtils';
+import {
+  parseSmartActionCode,
+  shouldHideSmartActionForInbox,
+} from '../../../offres-stage/chat/utils/internshipChatSystemMessageUtils';
 import type {
   AnnouncementCategory,
   AnnouncementConversation,
@@ -116,19 +121,38 @@ function mapOwnMessageReadState(m: MessageDto): {
 export function mapAnnouncementMessages(
   dtos: MessageDto[],
   studentUserId: number | null,
+  inboxMode: 'admin' | 'student' = 'admin',
 ): AnnouncementMessage[] {
   return [...dtos]
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-    .filter((m) => m.message_type !== 'EVENT' && m.message_type !== 'SYSTEM')
+    .filter((m) => {
+      const isSystem = m.message_type === 'EVENT' || m.message_type === 'SYSTEM';
+      if (!isSystem) return true;
+      const actionCode = parseSmartActionCode(m.body, m.metadata_json);
+      return !shouldHideSmartActionForInbox(actionCode, inboxMode);
+    })
     .map((m) => {
       const isStudent = studentUserId != null && m.sender_id === studentUserId;
+      const isSystem = m.message_type === 'EVENT' || m.message_type === 'SYSTEM';
+      const smartActionCode = parseSmartActionCode(m.body, m.metadata_json) ?? undefined;
       const readState = mapOwnMessageReadState(m);
-      const direction: 'in' | 'out' = m.is_own ? 'out' : isStudent ? 'in' : 'out';
+      const direction: 'in' | 'out' = isSystem
+        ? 'in'
+        : m.is_own
+          ? 'out'
+          : isStudent
+            ? 'in'
+            : 'out';
       return {
         id: getMessageStableKey(m),
         direction,
         text: m.body,
         time: formatTime(m.created_at),
+        messageType: m.message_type,
+        smartActionCode,
+        createdAt: m.created_at,
+        attachmentName: m.attachments?.[0]?.original_filename,
+        attachments: mapMessageAttachments(m),
         ...readState,
       };
     });

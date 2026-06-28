@@ -38,9 +38,9 @@ const DocumentsDashboardPage: FunctionComponent = () => {
     return (
       <AdminModulePageShell width="wide">
         <div className="admin-doc-workspace admin-doc-workspace--error">
-          <div className="admin-doc-empty">
-            <h3 className="admin-doc-empty__title">{t('admin.documentsModule.hub.loadError')}</h3>
-            <p className="admin-doc-empty__subtitle">{error}</p>
+          <div className="admin-doc-error-state">
+            <h3 className="admin-doc-error-state__title">{t('admin.documentsModule.hub.loadError')}</h3>
+            <p className="admin-doc-error-state__subtitle">{error}</p>
             <button type="button" className="admin-form-btn admin-form-btn--primary mt-4" onClick={refresh}>
               <RefreshCw className="h-4 w-4" aria-hidden />
               {t('admin.documentsModule.hub.retry')}
@@ -53,8 +53,11 @@ const DocumentsDashboardPage: FunctionComponent = () => {
 
   return (
     <AdminModulePageShell width="wide">
-      <div className="admin-doc-workspace" data-admin-search-id="documents-hub">
-        <DocumentsOverviewHeader summary={data?.summary ?? null} loading={loading} />
+      <div className="admin-doc-workspace admin-doc-workspace--hub" data-admin-search-id="documents-hub">
+        <DocumentsOverviewHeader
+          activeRequests={data?.summary?.activeRequests}
+          loading={loading}
+        />
         <DocumentsKpiStrip
           summary={data?.summary ?? null}
           loading={loading}
@@ -62,12 +65,7 @@ const DocumentsDashboardPage: FunctionComponent = () => {
         />
         <DocumentsNavStrip />
         {data ? <DocumentsDashboardCharts data={data} loading={loading} /> : null}
-        <section className="admin-doc-recent-section">
-          <h2 className="admin-doc-recent-section__title">
-            {t('admin.documentsModule.feed.recent')}
-          </h2>
-          <DocumentsRequestsModernTable rows={data?.recentRequests ?? []} loading={loading} />
-        </section>
+        <DocumentsRequestsModernTable rows={data?.recentRequests ?? []} loading={loading} />
       </div>
     </AdminModulePageShell>
   );

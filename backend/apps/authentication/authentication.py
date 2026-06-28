@@ -14,7 +14,11 @@ class SessionAwareJWTAuthentication(JWTAuthentication):
         if not jti:
             raise AuthenticationFailed('Token is missing jti claim.')
 
-        session = LoginSession.objects.filter(jti=jti).first()
+        session = (
+            LoginSession.objects.filter(jti=jti)
+            .only('id', 'user_id', 'jti', 'revoked_at', 'expires_at', 'device_name', 'ip_address', 'user_agent', 'created_at')
+            .first()
+        )
         if session is None:
             raise AuthenticationFailed('Session not found.')
         if session.revoked_at is not None:

@@ -5,15 +5,15 @@ import { Clock } from 'lucide-react';
 import DashboardPanel from '../../../../admin/dashboard/ui/DashboardPanel';
 import AdminSectionEmptyState from '../../../../admin/ui/AdminSectionEmptyState';
 import { STUDENT_INTERNSHIP_OFFERS_PATH } from '../../../internship_offers/constants/routes';
-import InternshipOfferCard from '../../../internship_offers/cards/InternshipOfferCard';
+import InternshipOffersGrid from '../../../internship_offers/components/InternshipOffersGrid';
+import InternshipOffersGridSkeleton from '../../../internship_offers/components/InternshipOffersGridSkeleton';
 import { useStudentRecentOffers } from '../../../internship_offers/hooks/useStudentStageOffers';
 import StudentSectionHeader from '../StudentSectionHeader';
-import StudentRecentOffersSkeleton from './StudentRecentOffersSkeleton';
 
 const StudentRecommendedOffersCard: FunctionComponent = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { offers, loading, error } = useStudentRecentOffers(3);
+  const { offers, loading, error } = useStudentRecentOffers(2);
 
   return (
     <DashboardPanel id="student-recent-offers" className="admin-section-panel w-full">
@@ -28,24 +28,22 @@ const StudentRecommendedOffersCard: FunctionComponent = () => {
         <p className="px-4 pt-2 text-sm text-[var(--admin-danger)]">{error}</p>
       ) : null}
 
-      {loading ? (
-        <StudentRecentOffersSkeleton count={3} />
-      ) : offers.length === 0 ? (
-        <div className="p-4 sm:p-5">
-          <AdminSectionEmptyState
-            variant="inline"
-            iconPreset="inbox"
-            title={t('student.dashboard.empty.noRecentOffers')}
-            description={t('student.dashboard.empty.noRecentOffersDesc')}
-          />
-        </div>
-      ) : (
-        <div className="student-recommended-grid student-recommended-grid--single-col">
-          {offers.map((offer) => (
-            <InternshipOfferCard key={offer.id} offer={offer} />
-          ))}
-        </div>
-      )}
+      <div className="student-dashboard-offers-grid-body">
+        {loading ? (
+          <InternshipOffersGridSkeleton layout="recommended" count={2} />
+        ) : offers.length === 0 ? (
+          <div className="p-4 sm:p-5">
+            <AdminSectionEmptyState
+              variant="inline"
+              iconPreset="inbox"
+              title={t('student.dashboard.empty.noRecentOffers')}
+              description={t('student.dashboard.empty.noRecentOffersDesc')}
+            />
+          </div>
+        ) : (
+          <InternshipOffersGrid offers={offers} layout="recommended" />
+        )}
+      </div>
     </DashboardPanel>
   );
 };

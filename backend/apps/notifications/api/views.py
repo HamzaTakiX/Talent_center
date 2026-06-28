@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import status
@@ -135,7 +135,11 @@ class NotificationMarkReadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, notification_id: int):
-        notification = Notification.objects.filter(pk=notification_id, recipient=request.user).first()
+        notification = (
+            Notification.objects.filter(pk=notification_id, recipient=request.user)
+            .select_related('event')
+            .first()
+        )
         if not notification:
             return Response(envelope(success=False, message='Not found'), status=status.HTTP_404_NOT_FOUND)
         if not notification.is_read:
@@ -152,12 +156,15 @@ class NotificationMarkAllReadView(APIView):
 
     def patch(self, request):
         unread = Notification.objects.filter(recipient=request.user, is_read=False, is_archived=False)
-        updated = unread.count()
+        notification_ids = list(unread.values_list('pk', flat=True))
+        updated = len(notification_ids)
+        if not updated:
+            push_unread_count(request.user.pk)
+            return Response(envelope(success=True, message='All marked as read', data={'updated': 0}))
+
         now = timezone.now()
-        for notification in unread.iterator():
-            notification.is_read = True
-            notification.read_at = now
-            notification.save(update_fields=['is_read', 'read_at', 'updated_at'])
+        unread.update(is_read=True, read_at=now)
+        for notification in Notification.objects.filter(pk__in=notification_ids).iterator():
             record_notification_read(notification, actor=request.user)
         push_unread_count(request.user.pk)
         return Response(envelope(success=True, message='All marked as read', data={'updated': updated}))
@@ -167,7 +174,11 @@ class NotificationArchiveView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, notification_id: int):
-        notification = Notification.objects.filter(pk=notification_id, recipient=request.user).first()
+        notification = (
+            Notification.objects.filter(pk=notification_id, recipient=request.user)
+            .select_related('event')
+            .first()
+        )
         if not notification:
             return Response(envelope(success=False, message='Not found'), status=status.HTTP_404_NOT_FOUND)
         notification.is_archived = True
@@ -181,7 +192,11 @@ class NotificationClickView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, notification_id: int):
-        notification = Notification.objects.filter(pk=notification_id, recipient=request.user).first()
+        notification = (
+            Notification.objects.filter(pk=notification_id, recipient=request.user)
+            .select_related('event')
+            .first()
+        )
         if not notification:
             return Response(envelope(success=False, message='Not found'), status=status.HTTP_404_NOT_FOUND)
         record_notification_clicked(notification, actor=request.user)
@@ -202,15 +217,26 @@ class NotificationUserStatsView(APIView):
 
     def get(self, request):
         base = Notification.objects.filter(recipient=request.user)
+        counts = base.aggregate(
+            total=Count('id'),
+            unread=Count('id', filter=Q(is_read=False, is_archived=False)),
+            read=Count('id', filter=Q(is_read=True, is_archived=False)),
+            archived=Count('id', filter=Q(is_archived=True)),
+        )
+        action_required = sum(
+            1
+            for item in base.filter(is_archived=False, is_read=False).select_related('event')[:200]
+            if requires_action(item)
+        )
         return Response(envelope(
             success=True,
             message='User notification stats',
             data={
-                'total': base.count(),
-                'unread': base.filter(is_read=False, is_archived=False).count(),
-                'read': base.filter(is_read=True, is_archived=False).count(),
-                'archived': base.filter(is_archived=True).count(),
-                'action_required': sum(1 for item in base.filter(is_archived=False, is_read=False)[:200] if requires_action(item)),
+                'total': counts['total'],
+                'unread': counts['unread'],
+                'read': counts['read'],
+                'archived': counts['archived'],
+                'action_required': action_required,
             },
         ))
 
@@ -250,16 +276,17 @@ class NotificationPreferencesView(APIView):
         ))
 
     def _default_preferences(self, user):
-        defaults = []
-        for category in Category:
-            for channel in NotificationRecipient.Channel:
-                pref, _ = NotificationPreference.objects.get_or_create(
-                    user=user,
-                    category=category.value,
-                    channel=channel.value,
-                )
-                defaults.append(pref)
-        return defaults
+        rows = [
+            NotificationPreference(
+                user=user,
+                category=category.value,
+                channel=channel.value,
+            )
+            for category in Category
+            for channel in NotificationRecipient.Channel
+        ]
+        NotificationPreference.objects.bulk_create(rows, ignore_conflicts=True)
+        return list(NotificationPreference.objects.filter(user=user))
 
 
 class NotificationCategoriesView(APIView):

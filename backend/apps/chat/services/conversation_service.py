@@ -43,9 +43,9 @@ def get_or_create_contextual_conversation(
             context__module=module,
             context__entity_type=entity_type,
             context__entity_id=str(entity_id),
-            is_archived=False,
         )
         .select_related('context')
+        .order_by('-last_message_at', '-updated_at', '-id')
         .first()
     )
     if existing:
@@ -93,6 +93,28 @@ def get_or_create_contextual_conversation(
     return conv
 
 
+STUDENT_CHAT_MESSAGE_TYPES = (
+    Message.MessageType.TEXT,
+    Message.MessageType.FILE,
+    Message.MessageType.IMAGE,
+)
+
+
+def filter_offer_threads_with_student_messages(qs):
+    """Offer inbox threads only after the student asks or sends a message."""
+    return qs.filter(
+        messages__deleted_at__isnull=True,
+        messages__message_type__in=STUDENT_CHAT_MESSAGE_TYPES,
+        messages__sender__role=User.RoleChoices.STUDENT,
+    ).distinct()
+
+
+def should_filter_offer_threads_by_student_messages(user: User, *, module: str) -> bool:
+    if module != ConversationContext.Module.OFFERS:
+        return False
+    return user.role in (User.RoleChoices.ADMIN, User.RoleChoices.STUDENT) or user.is_superuser
+
+
 def list_module_conversations(
     user: User,
     *,
@@ -120,13 +142,24 @@ def list_module_conversations(
     ):
         qs = qs.exclude(metadata_json__contains={'admin_inbox_archived': True})
     if (
-        module == ConversationContext.Module.PLATFORM
-        and entity_type in ('student_desk', 'student_admin_dm')
+        not include_archived
+        and module in (ConversationContext.Module.DOCUMENTS, ConversationContext.Module.SRF)
         and user.role == User.RoleChoices.ADMIN
     ):
-        from .platform_chat_service import sync_student_admin_dms_for_admin
-
-        sync_student_admin_dms_for_admin(user)
+        qs = qs.exclude(metadata_json__contains={'admin_inbox_archived': True})
+    # SRF admin threads are created on demand (student/admin open chat or first message),
+    # not by syncing every financial account on each inbox list request.
+    if (
+        module == ConversationContext.Module.SRF
+        and user.role == User.RoleChoices.ADMIN
+    ):
+        qs = qs.filter(last_message_at__isnull=False)
+    # Offer threads are created when a student opens chat, but should only appear in
+    # inbox lists once the student has actually asked or commented.
+    if should_filter_offer_threads_by_student_messages(user, module=module):
+        qs = filter_offer_threads_with_student_messages(qs)
+    # Student↔admin platform desk threads are created on demand (open chat / first message),
+    # not by syncing every active student on each inbox list request.
     if (
         module == ConversationContext.Module.PLATFORM
         and entity_type in ('student_desk', 'student_admin_dm')
@@ -256,9 +289,15 @@ def apply_smart_action(
             ctx.save(update_fields=['workflow_state', 'updated_at'])
             offer_chat.resolve_offer_conversation(conversation, actor, meta.get('note', ''))
         elif action_code == 'archive_conversation':
-            offer_chat.archive_offer_conversation(conversation, actor)
+            if actor.role == User.RoleChoices.STUDENT:
+                offer_chat.archive_student_offer_conversation(conversation, actor)
+            else:
+                offer_chat.archive_offer_conversation(conversation, actor)
         elif action_code == 'unarchive_conversation':
-            offer_chat.unarchive_offer_conversation(conversation, actor)
+            if actor.role == User.RoleChoices.STUDENT:
+                offer_chat.unarchive_student_offer_conversation(conversation, actor)
+            else:
+                offer_chat.unarchive_offer_conversation(conversation, actor)
 
     if ctx and ctx.module == ConversationContext.Module.ANNOUNCEMENTS:
         from apps.announcements.services import chat_service as announcement_chat
@@ -281,16 +320,56 @@ def apply_smart_action(
     if ctx and ctx.module == ConversationContext.Module.PLATFORM:
         from .platform_chat_service import (
             archive_platform_desk_conversation,
+            archive_student_platform_desk_conversation,
             resolve_platform_desk_conversation,
             unarchive_platform_desk_conversation,
+            unarchive_student_platform_desk_conversation,
         )
 
         if action_code == 'mark_resolved':
             resolve_platform_desk_conversation(conversation, actor, meta.get('note', ''))
         elif action_code == 'archive_conversation':
-            archive_platform_desk_conversation(conversation, actor)
+            if actor.role == User.RoleChoices.STUDENT:
+                archive_student_platform_desk_conversation(conversation, actor)
+            else:
+                archive_platform_desk_conversation(conversation, actor)
         elif action_code == 'unarchive_conversation':
-            unarchive_platform_desk_conversation(conversation, actor)
+            if actor.role == User.RoleChoices.STUDENT:
+                unarchive_student_platform_desk_conversation(conversation, actor)
+            else:
+                unarchive_platform_desk_conversation(conversation, actor)
+
+    if ctx and ctx.module == ConversationContext.Module.DOCUMENTS:
+        from apps.documents.services import chat_service as document_chat
+
+        if action_code == 'mark_resolved':
+            document_chat.resolve_document_conversation(conversation, actor, meta.get('note', ''))
+        elif action_code == 'archive_conversation':
+            if actor.role == User.RoleChoices.STUDENT:
+                document_chat.archive_student_document_conversation(conversation, actor)
+            else:
+                document_chat.archive_document_conversation(conversation, actor)
+        elif action_code == 'unarchive_conversation':
+            if actor.role == User.RoleChoices.STUDENT:
+                document_chat.unarchive_student_document_conversation(conversation, actor)
+            else:
+                document_chat.unarchive_document_conversation(conversation, actor)
+
+    if ctx and ctx.module == ConversationContext.Module.SRF:
+        from apps.srf.services import chat_service as srf_chat
+
+        if action_code == 'mark_resolved':
+            srf_chat.resolve_srf_conversation(conversation, actor, meta.get('note', ''))
+        elif action_code == 'archive_conversation':
+            if actor.role == User.RoleChoices.STUDENT:
+                srf_chat.archive_student_srf_conversation(conversation, actor)
+            else:
+                srf_chat.archive_srf_conversation(conversation, actor)
+        elif action_code == 'unarchive_conversation':
+            if actor.role == User.RoleChoices.STUDENT:
+                srf_chat.unarchive_student_srf_conversation(conversation, actor)
+            else:
+                srf_chat.unarchive_srf_conversation(conversation, actor)
 
     record_chat_action(
         action_code=action_code,
@@ -322,4 +401,45 @@ def apply_smart_action(
 
     publish_conversation_updated(conversation.pk, {'action_code': action_code})
 
+    if action_code == 'mark_resolved':
+        _emit_conversation_resolved_notification(conversation, actor)
+
     return {'action_code': action_code, 'conversation_id': conversation.pk, 'status': 'applied'}
+
+
+def _emit_conversation_resolved_notification(conversation: Conversation, actor: User) -> None:
+    conv_id = conversation.pk
+    actor_id = actor.pk
+
+    def _emit() -> None:
+        try:
+            from apps.notifications.events.publisher import emit_event
+
+            from .message_service import _action_url_for_conversation
+
+            ctx = getattr(conversation, 'context', None)
+            recipient = None
+            if ctx and ctx.student_user_id and ctx.student_user_id != actor_id:
+                recipient = User.objects.filter(pk=ctx.student_user_id).first()
+
+            emit_event(
+                event_code='chat.conversation.resolved',
+                source_app='chat',
+                entity_type='conversation',
+                entity_id=conv_id,
+                payload={
+                    'conversation_id': conv_id,
+                    'title': 'Conversation résolue',
+                    'body': (
+                        'Votre demande a été marquée comme résolue. '
+                        "Vous pouvez toujours répondre à cette conversation si vous avez besoin "
+                        "d'une assistance supplémentaire."
+                    ),
+                    'action_url': _action_url_for_conversation(conversation, recipient) if recipient else '',
+                },
+                actor=actor,
+            )
+        except Exception:
+            pass
+
+    transaction.on_commit(_emit)

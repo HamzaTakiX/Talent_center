@@ -3,6 +3,7 @@
   import { data } from "$lib/state/index.svelte";
   import icons from "$lib/icons";
   import PreviewSectionAnnotation from "$lib/ai/PreviewSectionAnnotation.svelte";
+  import { cvT } from "$lib/i18n/cvTranslate.svelte";
 </script>
 
 <div class="text-center border-(y fg) py-6 -mt-3">
@@ -16,7 +17,7 @@
   class=" mt--3 [&>section]:(p3 pb5 pl0) grid-(~ cols-[.3fr_1fr]) rid-rows-4"
 >
   <section class="grid gap1 border-(b r fg)">
-    <h3 class="uppercase font-bold">Contact</h3>
+    <h3 class="uppercase font-bold">{cvT('cv.forms.template.contact')}</h3>
 
     <span class="frow">{@html icons.phone} {data.details.phone} </span>
     <span class="frow">{@html icons.mail} {data.details.email} </span>
@@ -37,13 +38,13 @@
 
   <section class="cv-preview-block border-(b fg) !pl5 relative" data-cv-preview-section="profile_summary">
     <PreviewSectionAnnotation sectionId="profile_summary" />
-    <h3 class="uppercase font-bold">Summary</h3>
+    <h3 class="uppercase font-bold">{cvT('cv.forms.steps.summary')}</h3>
     <p class="mt-2 text-sm">{data.details.about}</p>
   </section>
 
   <section class="cv-preview-block grid gap1 border-(b r fg) relative" data-cv-preview-section="education">
     <PreviewSectionAnnotation sectionId="education" />
-    <h3 class="uppercase font-bold">Education</h3>
+    <h3 class="uppercase font-bold">{cvT('cv.forms.steps.education')}</h3>
 
     <div class="space-y-4">
       {#each data.education as edu}
@@ -61,7 +62,7 @@
 
   <section class="cv-preview-block row-span-2 !pl5 flex flex-col gap3 relative" data-cv-preview-section="experience">
     <PreviewSectionAnnotation sectionId="experience" />
-    <h3 class="uppercase font-bold -mb-2">Work Experience</h3>
+    <h3 class="uppercase font-bold -mb-2">{cvT('cv.forms.steps.experience')}</h3>
     {#each data.workExp as work}
       <div>
         <div class="flex justify-between">
@@ -80,7 +81,7 @@
 
   <section class="cv-preview-block flex flex-col gap3 border-( r fg) relative" data-cv-preview-section="skills">
     <PreviewSectionAnnotation sectionId="skills" />
-    <h3 class="uppercase font-bold">Skills</h3>
+    <h3 class="uppercase font-bold">{cvT('cv.forms.steps.skills')}</h3>
 
     <ul class="frow flex-wrap">
       {#each data.skills as x}
@@ -95,12 +96,12 @@
   {#if data.projects.length > 0}
     <section class="cv-preview-block col-span-full pl5 relative" data-cv-preview-section="projects">
       <PreviewSectionAnnotation sectionId="projects" />
-      <h3 class="uppercase font-bold mb3">Projects</h3>
+      <h3 class="uppercase font-bold mb3">{cvT('cv.forms.steps.projects')}</h3>
       {#each data.projects as x}
         <div class="brd-fg p3 flex-col flex gap1">
           <div class="flex justify-between items-center">
             <p class="font-semibold">{x.name}</p>
-            <a href={x.link} target="_blank">Link</a>
+            <a href={x.link} target="_blank">{cvT('cv.forms.common.link')}</a>
           </div>
           <p class="text-sm">{x.desc}</p>
         </div>

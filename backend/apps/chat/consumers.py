@@ -17,7 +17,6 @@ from apps.chat.services.realtime import publish_typing
 class ChatConversationConsumer(AsyncJsonWebsocketConsumer):
     conversation_id: int
     conv_group: str
-    user_group: str
 
     async def connect(self):
         user = self.scope.get('user')
@@ -38,10 +37,8 @@ class ChatConversationConsumer(AsyncJsonWebsocketConsumer):
             return
 
         self.conv_group = f'chat_conv_{self.conversation_id}'
-        self.user_group = f'chat_user_{user.pk}'
 
         await self.channel_layer.group_add(self.conv_group, self.channel_name)
-        await self.channel_layer.group_add(self.user_group, self.channel_name)
         await self.accept()
         await self._set_online(user.pk)
         await self.send_json({'event_type': 'connected', 'conversation_id': self.conversation_id})
@@ -50,8 +47,6 @@ class ChatConversationConsumer(AsyncJsonWebsocketConsumer):
         user = self.scope.get('user')
         if hasattr(self, 'conv_group'):
             await self.channel_layer.group_discard(self.conv_group, self.channel_name)
-        if hasattr(self, 'user_group'):
-            await self.channel_layer.group_discard(self.user_group, self.channel_name)
         if user and not isinstance(user, AnonymousUser) and user.is_authenticated:
             await self._set_offline(user.pk)
 

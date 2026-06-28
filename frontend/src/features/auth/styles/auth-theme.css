@@ -253,3 +253,25 @@
 .auth-divider {
   background-color: var(--auth-border-strong);
 }
+
+.auth-form-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--auth-brand) transparent;
+}
+
+.auth-form-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.auth-form-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.auth-form-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--auth-brand) 75%, transparent);
+  border-radius: 9999px;
+}
+
+.auth-form-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--auth-brand);
+}

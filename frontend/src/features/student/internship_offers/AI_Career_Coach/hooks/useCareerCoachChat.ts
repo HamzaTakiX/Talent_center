@@ -19,6 +19,9 @@ import {
   type CareerCoachMessageDto,
   type CareerCoachSessionDto,
 } from '../api/careerCoachApi';
+import { resolveMediaUrl } from '../../../../../shared/api/mediaUrl';
+import { stageApi } from '../../../../shared/api/stageApi';
+import { resolveStageOfferLogoUrl } from '../../../../shared/utils/stageMappers';
 
 const EMPTY_CONTEXT: CoachContextData = {
   cvFileName: '',
@@ -35,11 +38,16 @@ const EMPTY_CONTEXT: CoachContextData = {
 const OFFER_CONTEXT_BY_SESSION_STORAGE_KEY = 'careerCoachOfferContextBySession';
 const OFFER_CONTEXT_BY_SESSION_LOCAL_STORAGE_KEY = 'careerCoachOfferContextBySessionLocal';
 const ACTIVE_SESSION_STORAGE_KEY = 'careerCoachActiveSessionId';
+const PENDING_SESSION_PREFIX = 'pending-';
 const OFFER_CONTEXT_BLOCK_REGEX = /\[OFFER_CONTEXT\][\s\S]*?\[\/OFFER_CONTEXT\]\s*/g;
 const OFFER_CONTEXT_CAPTURE_REGEX = /\[OFFER_CONTEXT\]([\s\S]*?)\[\/OFFER_CONTEXT\]/i;
 
 function normalizeSessionId(sessionId: string): string {
   return String(sessionId).trim();
+}
+
+function isPendingSessionId(sessionId: string): boolean {
+  return normalizeSessionId(sessionId).startsWith(PENDING_SESSION_PREFIX);
 }
 
 function readOfferContextBySessionFromStorage(): Record<string, CoachOfferContext> {
@@ -75,9 +83,11 @@ function readOfferContextBySessionFromStorage(): Record<string, CoachOfferContex
 
 function persistOfferContextForSession(sessionId: string, offerContext: CoachOfferContext | undefined): void {
   if (typeof window === 'undefined' || !offerContext) return;
+  const normalized = normalizeOfferContextLogo(offerContext);
+  if (!normalized) return;
   try {
     const map = readOfferContextBySessionFromStorage();
-    map[sessionId] = offerContext;
+    map[sessionId] = normalized;
     window.sessionStorage.setItem(OFFER_CONTEXT_BY_SESSION_STORAGE_KEY, JSON.stringify(map));
     window.localStorage.setItem(OFFER_CONTEXT_BY_SESSION_LOCAL_STORAGE_KEY, JSON.stringify(map));
   } catch {
@@ -120,8 +130,19 @@ function resolveOfferContextForSession(
   sessionId: string,
   offerContext?: CoachOfferContext,
 ): CoachOfferContext | undefined {
-  if (offerContext) return offerContext;
-  return readOfferContextBySessionFromStorage()[normalizeSessionId(sessionId)];
+  const resolved = offerContext ?? readOfferContextBySessionFromStorage()[normalizeSessionId(sessionId)];
+  return normalizeOfferContextLogo(resolved);
+}
+
+function normalizeOfferContextLogo(
+  offerContext?: CoachOfferContext,
+): CoachOfferContext | undefined {
+  if (!offerContext) return undefined;
+  const logo = offerContext.companyLogoUrl?.trim();
+  if (!logo) return offerContext;
+  const resolvedLogo = resolveMediaUrl(logo);
+  if (!resolvedLogo || resolvedLogo === logo) return offerContext;
+  return { ...offerContext, companyLogoUrl: resolvedLogo };
 }
 
 function stripOfferGroundingMessage(message: string | undefined | null): string {
@@ -172,7 +193,7 @@ function parseOfferContextFromMessage(message: string | undefined | null): Coach
   ) {
     return undefined;
   }
-  return fields;
+  return normalizeOfferContextLogo(fields);
 }
 
 function asString(value: unknown): string | undefined {
@@ -221,7 +242,7 @@ function parseOfferContextFromMetadata(metadata: Record<string, unknown> | undef
     return undefined;
   }
 
-  return parsed;
+  return normalizeOfferContextLogo(parsed);
 }
 
 function mapSessionDto(session: CareerCoachSessionDto): CoachConversation {
@@ -340,9 +361,11 @@ export function useCareerCoachChat(options?: { skipInitialHistory?: boolean }) {
   const [showArchived, setShowArchived] = useState(false);
   const [isSessionsLoading, setIsSessionsLoading] = useState(true);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [apiUnavailable, setApiUnavailable] = useState(false);
   const archivedLoadedRef = useRef(false);
   const historyLoadedRef = useRef<Set<string>>(new Set());
+  const creatingConversationRef = useRef(false);
 
   const activeConversation = useMemo(() => {
     const normalizedActiveId = normalizeSessionId(activeConversationId);
@@ -355,10 +378,10 @@ export function useCareerCoachChat(options?: { skipInitialHistory?: boolean }) {
 
   const activeOfferContext = useMemo(() => {
     const fromConversation = activeConversation?.offerContext;
-    if (fromConversation) return fromConversation;
+    if (fromConversation) return normalizeOfferContextLogo(fromConversation);
     const sessionId = normalizeSessionId(activeConversationId || activeConversation?.id || '');
     if (!sessionId) return undefined;
-    return readOfferContextBySessionFromStorage()[sessionId];
+    return resolveOfferContextForSession(sessionId);
   }, [activeConversation, activeConversationId]);
 
   const mode = activeConversation?.mode ?? 'career-coach';
@@ -493,6 +516,39 @@ export function useCareerCoachChat(options?: { skipInitialHistory?: boolean }) {
     },
     [],
   );
+
+  useEffect(() => {
+    const offerId = activeOfferContext?.offerId?.trim();
+    const existingLogo = activeOfferContext?.companyLogoUrl?.trim();
+    const sessionId = normalizeSessionId(activeConversationId || activeConversation?.id || '');
+    if (!offerId || existingLogo || !sessionId || isPendingSessionId(sessionId)) return;
+
+    let cancelled = false;
+    void stageApi
+      .detail(offerId)
+      .then((offer) => {
+        if (cancelled) return;
+        const companyLogoUrl = resolveStageOfferLogoUrl(offer);
+        if (!companyLogoUrl) return;
+        const resolvedLogo = resolveMediaUrl(companyLogoUrl);
+        if (!resolvedLogo) return;
+        const enriched = normalizeOfferContextLogo({
+          ...activeOfferContext,
+          companyLogoUrl: resolvedLogo,
+        });
+        if (!enriched) return;
+        updateConversationById(sessionId, (conversation) => ({
+          ...conversation,
+          offerContext: enriched,
+        }));
+        persistOfferContextForSession(sessionId, enriched);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeConversation?.id, activeConversationId, activeOfferContext, updateConversationById]);
 
   const resolveNextActiveId = useCallback(
     (remaining: CoachConversation[], removedId: string, currentActiveId: string) => {
@@ -655,6 +711,7 @@ export function useCareerCoachChat(options?: { skipInitialHistory?: boolean }) {
   const selectConversation = useCallback(
     (id: string) => {
       const sessionId = normalizeSessionId(id);
+      if (isPendingSessionId(sessionId)) return;
       const selectedConversation = conversations.find(
         (conversation) => normalizeSessionId(conversation.id) === sessionId,
       );
@@ -786,32 +843,70 @@ export function useCareerCoachChat(options?: { skipInitialHistory?: boolean }) {
   }, []);
 
   const startNewConversation = useCallback(async (offerContext?: CoachOfferContext) => {
+    if (creatingConversationRef.current) return undefined;
+
     setShowArchived(false);
     setChatInput('');
     setPendingAttachment(null);
 
+    const normalizedOfferContext = normalizeOfferContextLogo(offerContext);
+    const previousActiveId = activeConversationId;
+    const pendingId = `${PENDING_SESSION_PREFIX}${Date.now()}`;
+    const offerTitle = normalizedOfferContext?.title?.trim();
+    const optimisticConversation: CoachConversation = {
+      id: pendingId,
+      title: offerTitle || '',
+      preview: '',
+      messageCount: 0,
+      mode,
+      messages: [],
+      updatedAt: Date.now(),
+      archived: false,
+      offerContext: normalizedOfferContext,
+      isPending: true,
+    };
+
+    creatingConversationRef.current = true;
+    setIsCreatingConversation(true);
+    setConversations((prev) => [optimisticConversation, ...prev]);
+    setActiveConversationId(pendingId);
+
     try {
-      const offerTitle = offerContext?.title?.trim();
       const created = await createCareerCoachSession(mode, offerTitle || '');
       const mapped = {
         ...mapSessionDto(created),
         title: offerTitle || mapSessionDto(created).title,
-        offerContext,
+        offerContext: normalizedOfferContext,
       };
-      setConversations((prev) => [mapped, ...prev.filter((conversation) => conversation.id !== mapped.id)]);
       const createdSessionId = normalizeSessionId(created.session_id);
+      setConversations((prev) => [
+        mapped,
+        ...prev.filter(
+          (conversation) =>
+            conversation.id !== pendingId && normalizeSessionId(conversation.id) !== createdSessionId,
+        ),
+      ]);
       setActiveConversationId(createdSessionId);
       persistActiveSessionId(createdSessionId);
       historyLoadedRef.current.add(createdSessionId);
       setApiUnavailable(false);
-      persistOfferContextForSession(createdSessionId, offerContext);
+      persistOfferContextForSession(createdSessionId, normalizedOfferContext);
 
       return createdSessionId;
     } catch {
+      setConversations((prev) => prev.filter((conversation) => conversation.id !== pendingId));
+      const fallbackActiveId = isPendingSessionId(previousActiveId) ? '' : previousActiveId;
+      setActiveConversationId(fallbackActiveId);
+      if (fallbackActiveId) {
+        persistActiveSessionId(fallbackActiveId);
+      }
       setApiUnavailable(true);
       return undefined;
+    } finally {
+      creatingConversationRef.current = false;
+      setIsCreatingConversation(false);
     }
-  }, [mode]);
+  }, [activeConversationId, mode]);
 
   return {
     context,
@@ -847,6 +942,7 @@ export function useCareerCoachChat(options?: { skipInitialHistory?: boolean }) {
     setChatInput,
     isSessionsLoading,
     isHistoryLoading,
+    isCreatingConversation,
     isTyping: messages.some((message) => message.isStreaming && !message.text?.trim()),
     pendingAttachment,
     setPendingAttachment,

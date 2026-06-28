@@ -5,6 +5,9 @@ intelligence recomputation when platform data changes.
 
 from __future__ import annotations
 
+import threading
+
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -14,19 +17,43 @@ from .jobs.celery_tasks import schedule_student_recompute
 from .services import activity_tracking_service
 
 
-def _schedule(profile: StudentProfile) -> None:
-    schedule_student_recompute(profile.pk)
+def _run_profile_intelligence_side_effects(profile_id: int) -> None:
+    """Activity log + intelligence recompute — must not block HTTP onboarding paths."""
+    from apps.accounts_et_roles.models import StudentProfile as StudentProfileModel
+
+    try:
+        profile = StudentProfileModel.objects.get(pk=profile_id)
+    except StudentProfileModel.DoesNotExist:
+        return
+
+    activity_tracking_service.track_action(
+        student_profile=profile,
+        source_app='accounts_et_roles',
+        action_code='profile.updated',
+    )
+    schedule_student_recompute(profile_id)
+
+
+def _defer_profile_intelligence_side_effects(profile_id: int) -> None:
+    threading.Thread(
+        target=_run_profile_intelligence_side_effects,
+        args=(profile_id,),
+        name=f'profile-intel-{profile_id}',
+        daemon=True,
+    ).start()
+
+
+def _schedule_recompute(profile: StudentProfile) -> None:
+    profile_id = profile.pk
+    transaction.on_commit(lambda: schedule_student_recompute(profile_id))
 
 
 @receiver(post_save, sender=StudentProfile)
 def on_student_profile_updated(sender, instance: StudentProfile, created: bool, **kwargs):
-    if not created:
-        activity_tracking_service.track_action(
-            student_profile=instance,
-            source_app='accounts_et_roles',
-            action_code='profile.updated',
-        )
-        _schedule(instance)
+    if created:
+        return
+    profile_id = instance.pk
+    transaction.on_commit(lambda: _defer_profile_intelligence_side_effects(profile_id))
 
 
 def register_cross_app_hooks() -> None:
@@ -42,7 +69,7 @@ def register_cross_app_hooks() -> None:
                 action_code='application.submitted' if created else 'application.updated',
                 metadata={'application_id': instance.pk, 'status': instance.status},
             )
-            _schedule(instance.student_profile)
+            _schedule_recompute(instance.student_profile)
     except Exception:
         pass
 
@@ -61,7 +88,7 @@ def register_cross_app_hooks() -> None:
                         'global_score': instance.global_score,
                     },
                 )
-                _schedule(instance.student_profile)
+                _schedule_recompute(instance.student_profile)
     except Exception:
         pass
 
@@ -81,7 +108,7 @@ def register_cross_app_hooks() -> None:
                 action_code='coach.message',
                 metadata={'session_id': str(instance.session_id)},
             )
-            _schedule(profile)
+            _schedule_recompute(profile)
     except Exception:
         pass
 
@@ -98,6 +125,6 @@ def register_cross_app_hooks() -> None:
                 action_code=f'announcement.{instance.action_type.lower()}',
                 metadata={'announcement_id': instance.announcement_id},
             )
-            _schedule(instance.student_profile)
+            _schedule_recompute(instance.student_profile)
     except Exception:
         pass

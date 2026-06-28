@@ -49,6 +49,8 @@ const StudentInternshipSupportInbox: FunctionComponent = () => {
     sendMessage,
     peerTyping,
     notifyTyping,
+    archiveConversation,
+    unarchiveConversation,
   } = useInternshipSupportChat('student');
 
   useEffect(() => {
@@ -94,6 +96,7 @@ const StudentInternshipSupportInbox: FunctionComponent = () => {
           loading={loading}
           search={search}
           sidebarTitle={t('student.internshipOffers.chat.sidebarTitle')}
+          sidebarSubtitle={t('student.internshipOffers.chat.sidebarSubtitle')}
           searchPlaceholder={t('student.internshipOffers.chat.search')}
           onSetPrimary={setPrimaryFilter}
           onToggleFilter={toggleFilter}
@@ -110,9 +113,11 @@ const StudentInternshipSupportInbox: FunctionComponent = () => {
           messagesLoading={messagesLoading}
           conversationLoading={conversationLoading}
           statsLoading={loading}
-          onSend={(text) => void sendMessage(text)}
+          onSend={(text, files) => void sendMessage(text, files)}
           onBack={() => setMobileView('list')}
           onViewOffer={goOffer}
+          onArchive={() => selectedId && void archiveConversation(selectedId)}
+          onUnarchive={() => selectedId && void unarchiveConversation(selectedId)}
           peerTyping={peerTyping}
           onTyping={notifyTyping}
         />

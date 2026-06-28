@@ -10,6 +10,7 @@ that *writes* to its own tables.
 from __future__ import annotations
 
 from django.contrib.auth.signals import user_logged_in
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -43,7 +44,8 @@ def on_user_logged_in(sender, user, request, **kwargs):
             'auth_provider': getattr(user, 'auth_provider', ''),
         },
     )
-    schedule_student_recompute(profile.pk)
+    profile_id = profile.pk
+    transaction.on_commit(lambda: schedule_student_recompute(profile_id))
 
 
 # ---------------------------------------------------------------------------
@@ -120,7 +122,8 @@ def on_cv_saved(sender, instance: StudentCv, created: bool, **kwargs):
         action_code='cv.created' if created else 'cv.updated',
         metadata={'cv_id': instance.pk, 'status': instance.status},
     )
-    schedule_student_recompute(profile.pk)
+    profile_id = profile.pk
+    transaction.on_commit(lambda: schedule_student_recompute(profile_id))
 
 
 # ---------------------------------------------------------------------------

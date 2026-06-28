@@ -35,7 +35,7 @@ export const AuthFormColumn: FunctionComponent<AuthFormColumnProps> = ({
   children,
   maxWidth = '500px',
 }) => (
-  <div className="relative w-full flex-1 lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center px-5 sm:px-8 pb-12 pt-6 sm:pt-8 lg:pt-4 lg:p-4 box-border">
+  <div className="auth-form-scroll relative w-full flex-1 lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center px-5 sm:px-8 pb-12 pt-6 sm:pt-8 lg:pt-4 lg:p-4 box-border">
     <div
       className={`w-full flex flex-col relative m-auto py-6 lg:py-2 ${maxWidth === '576px' ? 'max-w-[576px]' : 'max-w-[500px]'}`}
     >

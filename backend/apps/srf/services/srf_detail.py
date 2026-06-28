@@ -51,7 +51,11 @@ def build_student_summary(student) -> dict[str, Any]:
     }
 
 
-def _installment_progress(account: FinancialAccount) -> dict[str, Any]:
+def _installment_progress(
+    account: FinancialAccount,
+    *,
+    can_take_exams: bool | None = None,
+) -> dict[str, Any]:
     year = account.current_academic_year or ''
     installments = list(
         account.installments.filter(academic_year=year).order_by('installment_number')
@@ -63,10 +67,13 @@ def _installment_progress(account: FinancialAccount) -> dict[str, Any]:
     total = len(installments)
     paid = sum(1 for i in installments if i.payment_status == Installment.PaymentStatus.PAID)
     overdue = sum(1 for i in installments if i.payment_status == Installment.PaymentStatus.OVERDUE)
+    # Under DUE_TRANCHES, future overdue tranches do not block exams — exclude them from risk/insights.
+    blocking_overdue = overdue if can_take_exams is False else 0
     return {
         'total_installments': total,
         'paid_installments': paid,
         'overdue_installments': overdue,
+        'blocking_overdue_installments': blocking_overdue,
         'completion_pct': round((paid / total) * 100, 1) if total else 0,
     }
 
@@ -111,7 +118,7 @@ def _build_audit_timeline(account: FinancialAccount, request) -> list[dict[str, 
 def build_student_financial_detail(account: FinancialAccount, request) -> dict[str, Any]:
     student = account.student_profile
     access = get_student_access(student)
-    progress = _installment_progress(account)
+    progress = _installment_progress(account, can_take_exams=access.get('can_take_exams'))
     holds = list(
         student.financial_holds.filter(is_active=True).values(
             'hold_type', 'reason', 'placed_at',
@@ -138,7 +145,8 @@ def build_student_financial_detail(account: FinancialAccount, request) -> dict[s
         'restrictions': {
             'active_holds': holds,
             'blocking_reasons': access.get('blocking_reasons') or [],
-            'is_overdue': account.financial_status in ('OVERDUE', 'AT_RISK', 'BLOCKED'),
+            'is_overdue': progress['blocking_overdue_installments'] > 0,
+            'is_access_blocked': not access.get('can_take_exams', False),
             'pending_proof_count': pending_proofs,
         },
         'payment_proofs': PaymentProofSubmissionSerializer(
@@ -203,12 +211,16 @@ def build_payment_proof_detail(proof_id: int, request) -> Optional[dict[str, Any
             'installment_number': installment.installment_number,
             'label': installment.label,
             'amount': str(installment.amount),
+            'paid_amount': str(installment.paid_amount or 0),
             'currency': installment.currency,
             'due_date': installment.due_date.isoformat(),
             'payment_status': installment.payment_status,
             'academic_year': installment.academic_year,
         } if installment else None,
-        'installment_progress': _installment_progress(account),
+        'installment_progress': _installment_progress(
+            account,
+            can_take_exams=access.get('can_take_exams'),
+        ),
         'linked_payment': {
             'id': proof.linked_payment.pk,
             'amount': str(proof.linked_payment.amount),

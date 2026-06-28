@@ -62,10 +62,19 @@ def _student_display_name(student: StudentProfile) -> str:
     return _user_display_name(student.user)
 
 
-def _student_avatar_url(student: StudentProfile) -> str | None:
-    from apps.stage.services.chat_service import _student_avatar_url
+def _student_avatar_url(student: StudentProfile, request=None) -> str | None:
+    from core.media_urls import resolve_student_profile_avatar_url
 
-    return _student_avatar_url(student, request=None)
+    return resolve_student_profile_avatar_url(student, request)
+
+
+def _admin_avatar_url(admin: User | None) -> str | None:
+    if not admin:
+        return None
+    profile = getattr(admin, 'profile', None)
+    if not profile or not profile.avatar:
+        return None
+    return profile.avatar.url
 
 
 def _dm_entity_id(left_id: int, right_id: int) -> str:
@@ -80,13 +89,14 @@ def _student_admin_dm_entity_id(student_user_id: int, admin_user_id: int) -> str
 def build_student_admin_dm_snapshot(
     student: StudentProfile,
     admin: User,
+    request=None,
 ) -> dict[str, Any]:
     student_user = student.user
     return {
         'student_user_id': student_user.pk if student_user else None,
         'student_name': _student_display_name(student),
         'student_email': student_user.email if student_user else '',
-        'student_avatar_url': _student_avatar_url(student),
+        'student_avatar_url': _student_avatar_url(student, request),
         'filiere_name': student.filiere.name if student.filiere else '',
         'class_code': student.class_group.code if student.class_group else '',
         'academic_level_name': (
@@ -95,6 +105,7 @@ def build_student_admin_dm_snapshot(
         'admin_user_id': admin.pk,
         'admin_name': _user_display_name(admin),
         'admin_email': admin.email,
+        'admin_avatar_url': _admin_avatar_url(admin),
         'admin_role_label': 'Administrateur',
     }
 
@@ -104,13 +115,44 @@ def build_admin_desk_snapshot(admin: User) -> dict[str, Any]:
         'admin_user_id': admin.pk,
         'admin_name': _user_display_name(admin),
         'admin_email': admin.email,
+        'admin_avatar_url': _admin_avatar_url(admin),
         'admin_role_label': 'Administrateur',
     }
+
+
+def _find_existing_student_admin_dm(student_user: User, admin: User) -> Conversation | None:
+    """Return the existing admin↔student desk thread, including archived rows."""
+    entity_id = _student_admin_dm_entity_id(student_user.pk, admin.pk)
+    conv = (
+        Conversation.objects.filter(
+            context__module=MODULE,
+            context__entity_type=STUDENT_ADMIN_DM,
+            context__entity_id=entity_id,
+        )
+        .select_related('context')
+        .order_by('-last_message_at', '-updated_at', '-id')
+        .first()
+    )
+    if conv:
+        return conv
+    return (
+        Conversation.objects.filter(
+            context__module=MODULE,
+            context__entity_type=STUDENT_ADMIN_DM,
+            context__student_user_id=student_user.pk,
+            participants__user_id=admin.pk,
+        )
+        .select_related('context')
+        .distinct()
+        .order_by('-last_message_at', '-updated_at', '-id')
+        .first()
+    )
 
 
 def ensure_student_admin_dm(
     student: StudentProfile,
     admin: User,
+    request=None,
 ) -> Conversation | None:
     student_user = student.user
     if not student_user or not student_user.is_active or not student_user.platform_access_granted:
@@ -122,7 +164,14 @@ def ensure_student_admin_dm(
 
     _ensure_chat_infrastructure()
     display_name = _student_display_name(student) or student_user.email
-    snapshot = build_student_admin_dm_snapshot(student, admin)
+    snapshot = build_student_admin_dm_snapshot(student, admin, request=request)
+
+    existing = _find_existing_student_admin_dm(student_user, admin)
+    if existing:
+        _refresh_context_snapshot(existing, snapshot)
+        ensure_conversation_participants(existing, [student_user, admin])
+        return existing
+
     conv = get_or_create_contextual_conversation(
         module=MODULE,
         entity_type=STUDENT_ADMIN_DM,
@@ -159,6 +208,7 @@ def ensure_admin_desk_dm(admin_a: User, admin_b: User) -> Conversation | None:
         'peer_admin_user_id': admin_b.pk,
         'peer_admin_name': _user_display_name(admin_b),
         'peer_admin_email': admin_b.email,
+        'peer_admin_avatar_url': _admin_avatar_url(admin_b),
     }
     conv = get_or_create_contextual_conversation(
         module=MODULE,
@@ -281,6 +331,32 @@ def unarchive_platform_desk_conversation(conversation: Conversation, actor: User
     conversation.metadata_json = meta
     conversation.is_archived = False
     conversation.save(update_fields=['metadata_json', 'is_archived', 'updated_at'])
+    return conversation
+
+
+def archive_student_platform_desk_conversation(conversation: Conversation, actor: User) -> Conversation:
+    """Archive a thread in the student inbox."""
+    meta = dict(conversation.metadata_json or {})
+    meta['student_archived_by'] = actor.pk
+    meta['student_archived_at'] = timezone.now().isoformat()
+    meta.pop('student_unarchived_by', None)
+    meta.pop('student_unarchived_at', None)
+    conversation.is_archived = True
+    conversation.metadata_json = meta
+    conversation.save(update_fields=['is_archived', 'metadata_json', 'updated_at'])
+    return conversation
+
+
+def unarchive_student_platform_desk_conversation(conversation: Conversation, actor: User) -> Conversation:
+    """Restore a thread to the active student inbox."""
+    meta = dict(conversation.metadata_json or {})
+    meta.pop('student_archived_by', None)
+    meta.pop('student_archived_at', None)
+    meta['student_unarchived_by'] = actor.pk
+    meta['student_unarchived_at'] = timezone.now().isoformat()
+    conversation.is_archived = False
+    conversation.metadata_json = meta
+    conversation.save(update_fields=['is_archived', 'metadata_json', 'updated_at'])
     return conversation
 
 

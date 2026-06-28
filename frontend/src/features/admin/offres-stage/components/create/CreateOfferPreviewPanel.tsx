@@ -12,6 +12,7 @@ import CreateOfferInsights from './CreateOfferInsights';
 
 import type { SmartInsight } from '../../types/createOfferWorkflow';
 import { SafeBadge, SafeClampText, SafeText } from '../../../../../design-system/safeContent';
+import OfferAvatarFallback from '../OfferAvatarFallback';
 
 const PREFIX = 'admin.forms.createOfferStudio.preview';
 const PREVIEW_TAG_LIMIT = 5;
@@ -132,15 +133,24 @@ const CreateOfferPreviewPanel: FunctionComponent<CreateOfferPreviewPanelProps> =
 
       >
 
-        <h3 className="offer-preview-card__title safe-card-title">
-          <SafeText as="span">{form.title || t(`${PREFIX}.placeholderTitle`)}</SafeText>
-        </h3>
-        <div className="offer-preview-card__meta">
-          <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          <SafeText className="text-[inherit]">{form.company || t(`${PREFIX}.placeholderCompany`)}</SafeText>
-          <span>•</span>
-          <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          <SafeText className="text-[inherit]">{form.location || t(`${PREFIX}.placeholderLocation`)}</SafeText>
+        <div className="offer-preview-card__header-row">
+          <OfferAvatarFallback
+            companyName={form.company}
+            size="card"
+            className="offer-preview-card__avatar"
+          />
+          <div className="offer-preview-card__header-text">
+            <h3 className="offer-preview-card__title safe-card-title">
+              <SafeText as="span">{form.title || t(`${PREFIX}.placeholderTitle`)}</SafeText>
+            </h3>
+            <div className="offer-preview-card__meta">
+              <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <SafeText className="text-[inherit]">{form.company || t(`${PREFIX}.placeholderCompany`)}</SafeText>
+              <span>•</span>
+              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <SafeText className="text-[inherit]">{form.location || t(`${PREFIX}.placeholderLocation`)}</SafeText>
+            </div>
+          </div>
         </div>
         {tags.length > 0 && (
           <div className="offer-preview-card__tags">

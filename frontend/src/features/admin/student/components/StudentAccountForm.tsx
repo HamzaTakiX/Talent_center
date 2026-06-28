@@ -1,6 +1,21 @@
 import { ChangeEvent, FormEvent, FunctionComponent, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, ImageIcon, ImagePlus, Loader2, Trash2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle,
+  Clock,
+  Copy,
+  Eye,
+  ImageIcon,
+  ImagePlus,
+  KeyRound,
+  Loader2,
+  LogIn,
+  RefreshCw,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
 import { adminStudentsApi } from '../../api/students';
 import type { AcademicHierarchyValue, AdminStudentDetail, AdminStudentRow } from '../../api/types';
 import ProfileAvatarUploader from '../../account/components/ProfileAvatarUploader';
@@ -76,6 +91,7 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [revealedPassword, setRevealedPassword] = useState<string | null>(null);
+  const [copiedPassword, setCopiedPassword] = useState(false);
   const [academic, setAcademic] = useState<AcademicHierarchyValue>(emptyAcademicHierarchy());
 
   const [email, setEmail] = useState('');
@@ -280,6 +296,17 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
       setError(t(`${FORM_PREFIX}.messages.revealError`));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyPassword = async () => {
+    if (!revealedPassword) return;
+    try {
+      await navigator.clipboard.writeText(revealedPassword);
+      setCopiedPassword(true);
+      setTimeout(() => setCopiedPassword(false), 2000);
+    } catch {
+      // clipboard not available — fail silently
     }
   };
 
@@ -498,54 +525,146 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
             title={t(`${FORM_PREFIX}.sections.credentials`)}
             description={t(`${FORM_PREFIX}.sections.credentialsHint`)}
           >
-            <div className="grid gap-2 text-sm text-[var(--admin-text-secondary)] sm:grid-cols-2">
-              <p>
-                {t(`${FORM_PREFIX}.credentials.firstLogin`)} :{' '}
-                <span className="text-[var(--admin-text)]">
-                  {student.first_login_completed ? t('admin.common.yes') : t('admin.common.no')}
-                </span>
-              </p>
-              <p>
-                {t(`${FORM_PREFIX}.credentials.onboarding`)} :{' '}
-                <span className="text-[var(--admin-text)]">{student.onboarding_percent}%</span>
-              </p>
-              <p className="sm:col-span-2">
-                {t(`${FORM_PREFIX}.credentials.lastLogin`)} :{' '}
-                <span className="text-[var(--admin-text)]">
-                  {student.last_login_at
-                    ? new Date(student.last_login_at).toLocaleString(dateLocale)
-                    : '—'}
-                </span>
-              </p>
+            {/* ── Stat cards ─────────────────────────────────────────── */}
+            <div className="cred-stats-row">
+
+              {/* First login */}
+              <div className="cred-stat-card">
+                <div className="cred-stat-card__icon cred-stat-card__icon--login">
+                  <LogIn className="h-4 w-4" aria-hidden strokeWidth={2} />
+                </div>
+                <div className="cred-stat-card__body">
+                  <span className="cred-stat-card__label">
+                    {t(`${FORM_PREFIX}.credentials.firstLogin`)}
+                  </span>
+                  <span className={`cred-stat-card__value ${student.first_login_completed ? 'cred-stat-card__value--yes' : 'cred-stat-card__value--no'}`}>
+                    {student.first_login_completed ? (
+                      <><CheckCircle className="h-3.5 w-3.5 shrink-0" aria-hidden strokeWidth={2} />{t('admin.common.yes')}</>
+                    ) : (
+                      <><XCircle className="h-3.5 w-3.5 shrink-0" aria-hidden strokeWidth={2} />{t('admin.common.no')}</>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              {/* Onboarding progress */}
+              <div className="cred-stat-card">
+                <div className="cred-stat-card__ring" aria-hidden>
+                  <svg viewBox="0 0 36 36" className="cred-stat-card__ring-svg">
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--admin-border)" strokeWidth="3.2" />
+                    <circle
+                      cx="18" cy="18" r="15.9"
+                      fill="none"
+                      stroke="var(--admin-brand)"
+                      strokeWidth="3.2"
+                      strokeDasharray={`${student.onboarding_percent} ${100 - student.onboarding_percent}`}
+                      strokeDashoffset="25"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <span className="cred-stat-card__ring-pct">{student.onboarding_percent}%</span>
+                </div>
+                <div className="cred-stat-card__body">
+                  <span className="cred-stat-card__label">
+                    {t(`${FORM_PREFIX}.credentials.onboarding`)}
+                  </span>
+                  <span className="cred-stat-card__value">
+                    {student.onboarding_percent}%
+                  </span>
+                  <div className="cred-onboarding-bar" aria-hidden>
+                    <div
+                      className="cred-onboarding-bar__fill"
+                      style={{ width: `${student.onboarding_percent}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Last login */}
+              <div className="cred-stat-card">
+                <div className="cred-stat-card__icon cred-stat-card__icon--clock">
+                  <Clock className="h-4 w-4" aria-hidden strokeWidth={2} />
+                </div>
+                <div className="cred-stat-card__body">
+                  <span className="cred-stat-card__label">
+                    {t(`${FORM_PREFIX}.credentials.lastLogin`)}
+                  </span>
+                  <span className="cred-stat-card__value cred-stat-card__value--date">
+                    {student.last_login_at
+                      ? new Date(student.last_login_at).toLocaleString(dateLocale)
+                      : '—'}
+                  </span>
+                </div>
+              </div>
             </div>
+
+            {/* ── Risk flags ─────────────────────────────────────────── */}
             {student.risk_flags.length > 0 && (
-              <p className="mt-2 text-xs font-medium text-amber-500">
-                {t(`${FORM_PREFIX}.credentials.alerts`)} : {student.risk_flags.join(', ')}
-              </p>
+              <div className="cred-risk-row">
+                <div className="cred-risk-row__header">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden strokeWidth={2} />
+                  <span>{t(`${FORM_PREFIX}.credentials.alerts`)}</span>
+                </div>
+                <div className="cred-risk-row__badges">
+                  {student.risk_flags.map((flag) => (
+                    <span key={flag} className="cred-risk-badge">{flag}</span>
+                  ))}
+                </div>
+              </div>
             )}
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+
+            {/* ── Divider ────────────────────────────────────────────── */}
+            <div className="cred-divider" aria-hidden />
+
+            {/* ── Actions ────────────────────────────────────────────── */}
+            <div className="cred-actions">
               <button
                 type="button"
-                className="admin-btn-secondary inline-flex h-9 items-center gap-2 rounded-admin-sm px-4 text-sm font-medium"
+                className="cred-action-btn cred-action-btn--primary"
                 onClick={handleRegenerate}
                 disabled={loading}
               >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+                ) : (
+                  <RefreshCw className="h-4 w-4 shrink-0" aria-hidden strokeWidth={2} />
+                )}
                 {t(`${FORM_PREFIX}.credentials.regeneratePassword`)}
               </button>
               <button
                 type="button"
-                className="admin-btn-outline inline-flex h-9 items-center gap-2 rounded-admin-sm px-4 text-sm font-medium"
+                className="cred-action-btn cred-action-btn--outline"
                 onClick={handleReveal}
                 disabled={loading}
               >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+                ) : (
+                  <Eye className="h-4 w-4 shrink-0" aria-hidden strokeWidth={2} />
+                )}
                 {t(`${FORM_PREFIX}.credentials.revealCredential`)}
               </button>
-              {revealedPassword && (
-                <code className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 font-mono text-sm text-emerald-400">
-                  {revealedPassword}
-                </code>
-              )}
             </div>
+
+            {/* ── Revealed password ──────────────────────────────────── */}
+            {revealedPassword && (
+              <div className="cred-password-reveal">
+                <KeyRound className="h-4 w-4 shrink-0 text-emerald-400" aria-hidden strokeWidth={2} />
+                <code className="cred-password-reveal__code">{revealedPassword}</code>
+                <button
+                  type="button"
+                  className="cred-password-reveal__copy"
+                  onClick={() => { void handleCopyPassword(); }}
+                  title="Copier le mot de passe"
+                >
+                  {copiedPassword ? (
+                    <Check className="h-4 w-4 text-emerald-400" aria-hidden />
+                  ) : (
+                    <Copy className="h-4 w-4" aria-hidden strokeWidth={2} />
+                  )}
+                </button>
+              </div>
+            )}
           </AdminFormSection>
         )}
         </div>

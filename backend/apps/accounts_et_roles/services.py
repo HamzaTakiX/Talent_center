@@ -62,63 +62,72 @@ def confirm_identity(user: User, data: dict) -> UserProfile:
     Returns:
         The updated UserProfile
     """
-    profile = ensure_user_profile(user)
+    with transaction.atomic():
+        profile = ensure_user_profile(user)
 
-    profile.first_name = data.get('first_name', profile.first_name)
-    profile.last_name = data.get('last_name', profile.last_name)
-    profile.date_of_birth = data.get('date_of_birth', profile.date_of_birth)
-    if 'phone' in data:
-        profile.phone = data['phone']
+        profile.first_name = data.get('first_name', profile.first_name)
+        profile.last_name = data.get('last_name', profile.last_name)
+        profile.date_of_birth = data.get('date_of_birth', profile.date_of_birth)
+        if 'phone' in data:
+            profile.phone = data['phone']
 
-    profile.save()
+        profile.save()
 
-    # Also mark the student's identity as confirmed if they have a student profile
-    if user.role == User.RoleChoices.STUDENT:
-        student_profile, _ = StudentProfile.objects.get_or_create(user=user)
-        student_profile.identity_confirmed = True
-        
-        # Save academic info if provided
-        if 'program_major' in data:
-            student_profile.program_major = data['program_major']
-        if 'current_class' in data:
-            student_profile.current_class = data['current_class']
-        if 'filiere_id' in data and data['filiere_id']:
-            from apps.admin_management.models import Filiere
-            filiere = Filiere.objects.filter(pk=data['filiere_id']).first()
-            if filiere:
-                student_profile.filiere = filiere
-                student_profile.program_major = filiere.name
-        if 'class_group_id' in data and data['class_group_id']:
-            from apps.admin_management.models import ClassGroup
-            cg = ClassGroup.objects.filter(pk=data['class_group_id']).select_related(
-                'filiere', 'academic_level', 'academic_sector', 'academic_year_ref',
-            ).first()
-            if cg:
-                student_profile.class_group = cg
-                student_profile.current_class = cg.name
-                if cg.filiere_id:
-                    student_profile.filiere = cg.filiere
-                    student_profile.program_major = cg.filiere.name
-                if cg.academic_year_ref_id:
-                    student_profile.academic_year = cg.academic_year_ref.code
-                elif getattr(cg, 'academic_year', None):
-                    student_profile.academic_year = cg.academic_year
-                if cg.academic_level_id:
-                    student_profile.academic_level = cg.academic_level
-                if cg.academic_sector_id:
-                    student_profile.academic_sector = cg.academic_sector
+        # Also mark the student's identity as confirmed if they have a student profile
+        if user.role == User.RoleChoices.STUDENT:
+            student_profile, _ = StudentProfile.objects.get_or_create(user=user)
+            student_profile.identity_confirmed = True
 
-        from apps.admin_management.services.internship_resolver import sync_student_internship_from_academics
+            # Save academic info if provided
+            if 'program_major' in data:
+                student_profile.program_major = data['program_major']
+            if 'current_class' in data:
+                student_profile.current_class = data['current_class']
+            if 'class_group_id' in data and data['class_group_id']:
+                from apps.admin_management.models import ClassGroup
+                cg = ClassGroup.objects.filter(pk=data['class_group_id']).select_related(
+                    'filiere', 'academic_level', 'academic_sector', 'academic_year_ref',
+                ).first()
+                if cg:
+                    student_profile.class_group = cg
+                    student_profile.current_class = cg.name
+                    if cg.filiere_id:
+                        student_profile.filiere = cg.filiere
+                        student_profile.program_major = cg.filiere.name
+                    if cg.academic_year_ref_id:
+                        student_profile.academic_year = cg.academic_year_ref.code
+                    elif getattr(cg, 'academic_year', None):
+                        student_profile.academic_year = cg.academic_year
+                    if cg.academic_level_id:
+                        student_profile.academic_level = cg.academic_level
+                    if cg.academic_sector_id:
+                        student_profile.academic_sector = cg.academic_sector
+            elif 'filiere_id' in data and data['filiere_id']:
+                from apps.admin_management.models import Filiere
+                filiere = Filiere.objects.filter(pk=data['filiere_id']).only('id', 'name').first()
+                if filiere:
+                    student_profile.filiere = filiere
+                    student_profile.program_major = filiere.name
 
-        sync_student_internship_from_academics(student_profile)
-        student_profile.save(
-            update_fields=[
-                'internship_type',
-                'internship_duration',
-                'internship_category',
-                'updated_at',
-            ],
-        )
+            from apps.admin_management.services.internship_resolver import sync_student_internship_from_academics
+
+            sync_student_internship_from_academics(student_profile)
+            student_profile.save(
+                update_fields=[
+                    'identity_confirmed',
+                    'program_major',
+                    'current_class',
+                    'filiere',
+                    'class_group',
+                    'academic_year',
+                    'academic_level',
+                    'academic_sector',
+                    'internship_type',
+                    'internship_duration',
+                    'internship_category',
+                    'updated_at',
+                ],
+            )
 
     return profile
 
@@ -143,7 +152,22 @@ def complete_student_profile(user: User, data: dict, cv_file=None) -> StudentPro
     profile.professional_summary = data.get('professional_summary', profile.professional_summary)
 
     # Career & Internship Preferences
-    profile.career_objective = data.get('career_objective', profile.career_objective)
+    internship_type_id = data.get('internship_type_id')
+    if internship_type_id:
+        from apps.admin_management.models import InternshipType
+
+        internship_type = InternshipType.objects.filter(
+            pk=internship_type_id,
+            is_active=True,
+            is_archived=False,
+        ).first()
+        if internship_type:
+            profile.internship_type = internship_type
+            if internship_type.duration_hint:
+                profile.internship_duration = internship_type.duration_hint
+            profile.career_objective = internship_type.name
+    elif 'career_objective' in data:
+        profile.career_objective = data.get('career_objective', profile.career_objective)
     profile.availability = data.get('availability', profile.availability)
     profile.start_date = data.get('start_date', profile.start_date)
     profile.city = data.get('city', profile.city)

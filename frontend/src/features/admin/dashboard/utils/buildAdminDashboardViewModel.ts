@@ -247,7 +247,7 @@ export function buildAdminDashboardViewModel(input: {
   });
 
   const chart = buildWeeklyChart(input.historyEvents);
-  const recentActivity: AdminDashboardActivityItem[] = input.historyEvents.slice(0, 5).map((event) => ({
+  const recentActivity: AdminDashboardActivityItem[] = input.historyEvents.slice(0, 7).map((event) => ({
     id: String(event.id),
     action: event.summary?.trim() || event.event_code,
     user: event.actor_name?.trim() || (event.is_automated ? 'System' : '—'),
@@ -282,3 +282,12 @@ export const STAT_COUNT_KEYS: Record<DashboardStatId, keyof AdminDashboardCounts
   documentsPending: 'documentsPending',
   studentsUnpaidSrf: 'studentsUnpaidSrf',
 };
+
+export function isAdminDashboardChartEmpty(chart: AdminDashboardChartData): boolean {
+  return (
+    chart.applications.every((v) => v === 0) &&
+    chart.documents.every((v) => v === 0) &&
+    chart.announcements.every((v) => v === 0) &&
+    chart.studentActivity.every((v) => v === 0)
+  );
+}

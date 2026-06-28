@@ -36,6 +36,18 @@ export const adminStudentsApi = {
     return response.data.data;
   },
 
+  openChat: async (id: number, message?: string): Promise<{ conversation_id: number }> => {
+    const response = await apiClient.post<ApiEnvelope<{ conversation_id: number }>>(
+      `/admin/students/${id}/chat/open`,
+      message ? { message } : {},
+    );
+    const body = response.data;
+    if (!body.success || !body.data?.conversation_id) {
+      throw new Error(body.message || 'Failed to open chat');
+    }
+    return body.data;
+  },
+
   create: async (payload: CreateStudentPayload): Promise<AdminStudentRow> => {
     const response = await apiClient.post<ApiEnvelope<AdminStudentRow>>('/admin/students', payload);
     return response.data.data;
@@ -86,7 +98,10 @@ export const adminStudentsApi = {
     const response = await apiClient.post<ApiEnvelope<StudentImportResult>>(
       '/admin/students/import',
       formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } },
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 300_000,
+      },
     );
     return response.data.data;
   },

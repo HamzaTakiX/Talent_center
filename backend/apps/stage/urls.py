@@ -12,6 +12,16 @@ urlpatterns = [
     path('internship-applications/<uuid:app_uuid>/detail', student_views.StudentApplicationDetailView.as_view(), name='stage-student-application-detail'),
     path('internship-offers', views.OfferListCreateView.as_view(), name='stage-offer-list'),
     path('internship-offers/import', views.OfferImportView.as_view(), name='stage-import'),
+    path(
+        'internship-offers/import/preview',
+        student_views.StudentOfferUrlPreviewView.as_view(),
+        name='stage-student-import-preview',
+    ),
+    path(
+        'internship-offers/interview-simulator/context',
+        student_views.StudentInterviewSimulatorContextView.as_view(),
+        name='stage-student-interview-sim-context',
+    ),
     path('internship-offers/import/<uuid:job_uuid>', views.OfferImportDetailView.as_view(), name='stage-import-detail'),
     path(
         'internship-offers/import/<uuid:job_uuid>/<str:action>',

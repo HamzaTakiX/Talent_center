@@ -7,11 +7,14 @@ import {
   markConversationRead,
   sendChatMessage,
 } from '../../../../shared/contextual-chat/api/chatApi';
+import { useChatUnread } from '../../../../shared/contextual-chat/context/ChatUnreadContext';
 import { useChatWebSocket } from '../../../../shared/contextual-chat/hooks/useChatWebSocket';
 import type { ConversationDto, MessageDto } from '../../../../shared/contextual-chat/types';
 import {
+  applyIncomingMessageUnreadPreview,
   patchConversationPreviewInList,
   sortConversationsByRecent,
+  zeroConversationUnreadInList,
 } from '../../../../admin/offres-stage/chat/utils/internshipChatConversationUtils';
 import { applyReadReceiptToMessages } from '../../../../admin/offres-stage/chat/utils/internshipChatReadUtils';
 import {
@@ -19,6 +22,7 @@ import {
   mergeServerMessages,
   withClientNonce,
 } from '../../../../admin/offres-stage/chat/utils/internshipChatMessageUtils';
+import { useAuth } from '../../../../auth/hooks/useAuth';
 import { studentAnnouncementsApi } from '../../api/studentAnnouncementsApi';
 import {
   EMPTY_STUDENT_ANNOUNCEMENT_FILTERS,
@@ -35,44 +39,18 @@ import {
 import {
   mapAnnouncementConversation,
   type StudentAnnouncementConversation,
-  type StudentAnnouncementMessage,
 } from '../utils/studentAnnouncementChatMappers';
-
-function mapStudentMessage(m: MessageDto): StudentAnnouncementMessage {
-  const otherReads = (m.read_by ?? []).filter(
-    (receipt) => m.sender_id == null || receipt.user_id !== m.sender_id,
-  );
-  const isRead = m.is_own && (m.delivery_status === 'read' || otherReads.length > 0);
-  const latestRead = [...otherReads].sort(
-    (a, b) => new Date(b.read_at).getTime() - new Date(a.read_at).getTime(),
-  )[0];
-  return {
-    id: String(m.id),
-    direction: m.is_own ? 'out' : 'in',
-    text: m.body,
-    time: new Intl.DateTimeFormat('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(new Date(m.created_at)),
-    deliveryStatus: m.is_own
-      ? isRead
-        ? 'read'
-        : m.delivery_status === 'sent'
-          ? 'sent'
-          : 'delivered'
-      : undefined,
-    seenTime: latestRead?.read_at
-      ? new Intl.DateTimeFormat('fr-FR', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }).format(new Date(latestRead.read_at))
-      : undefined,
-  };
-}
+import { mapAnnouncementMessages } from '../../../../admin/announcements-stage/chat/utils/announcementChatMappers';
+import {
+  buildOptimisticMessageAttachments,
+  resolveOptimisticMessageType,
+  revokeMessageAttachmentUrls,
+} from '../../../../shared/contextual-chat/utils/mapMessageAttachments';
 
 export function useStudentAnnouncementChat() {
+  const { user } = useAuth();
+  const { refresh: refreshChatUnread } = useChatUnread();
+  const currentUserId = user?.id ?? null;
   const [rawConversations, setRawConversations] = useState<ConversationDto[]>([]);
   const [messagesByConv, setMessagesByConv] = useState<Record<number, MessageDto[]>>({});
   const [selectedId, setSelectedId] = useState('');
@@ -97,6 +75,7 @@ export function useStudentAnnouncementChat() {
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
   const archiveOverridesRef = useRef<Map<number, boolean>>(new Map());
+  const seenWsMessageIdsRef = useRef<Set<number>>(new Set());
 
   const syncArchiveOverride = useCallback((conversationId: number, archived: boolean | null) => {
     if (archived === null) {
@@ -128,6 +107,7 @@ export function useStudentAnnouncementChat() {
         }),
       );
       setRawConversations(merged);
+      seenWsMessageIdsRef.current.clear();
     } catch (err) {
       if (!options?.silent) {
         setLoadError(err instanceof Error ? err.message : 'Erreur de chargement');
@@ -177,11 +157,12 @@ export function useStudentAnnouncementChat() {
         if (hasPendingOwn) return;
 
         if (typeof event.body === 'string' && event.body.trim()) {
-          const existing = rawConversationsRef.current.find((c) => c.id === convId);
           setRawConversations((prev) =>
-            patchConversationPreviewInList(prev, convId, event.body!, {
+            applyIncomingMessageUnreadPreview(prev, convId, event.body!, {
+              isActiveConv,
               isOwn: false,
-              unreadCount: isActiveConv ? 0 : (existing?.unread_count ?? 0) + 1,
+              messageId: messageId != null ? Number(messageId) : null,
+              seenMessageIds: seenWsMessageIdsRef.current,
             }),
           );
         }
@@ -190,8 +171,11 @@ export function useStudentAnnouncementChat() {
           void refreshMessagesRef.current(convId, { silent: true });
         }
         if (isActiveConv && messageId != null && Number.isFinite(Number(messageId))) {
-          void markConversationRead(convId, Number(messageId));
+          void markConversationRead(convId, Number(messageId)).then(() => {
+            void refreshChatUnread();
+          });
         }
+        scheduleSilentReload();
         return;
       }
       if (
@@ -219,6 +203,10 @@ export function useStudentAnnouncementChat() {
         const readAt =
           typeof event.read_at === 'string' ? event.read_at : new Date().toISOString();
         if (!Number.isFinite(readerUserId) || !Number.isFinite(lastReadMessageId)) return;
+
+        if (currentUserId != null && readerUserId === currentUserId) {
+          setRawConversations((prev) => zeroConversationUnreadInList(prev, convId));
+        }
 
         setMessagesByConv((prev) => {
           const existing = prev[convId] ?? [];
@@ -274,9 +262,8 @@ export function useStudentAnnouncementChat() {
       const last = msgs[msgs.length - 1];
       if (last) {
         await markConversationRead(conversationId, last.id);
-        setRawConversations((prev) =>
-          prev.map((c) => (c.id === conversationId ? { ...c, unread_count: 0 } : c)),
-        );
+        setRawConversations((prev) => zeroConversationUnreadInList(prev, conversationId));
+        void refreshChatUnread();
       }
     } finally {
       if (!options?.silent && !hasCached) {
@@ -333,10 +320,11 @@ export function useStudentAnnouncementChat() {
   );
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, files?: File[]) => {
       const numId = Number(selectedId);
-      if (!Number.isFinite(numId) || !text.trim()) return;
+      if (!Number.isFinite(numId) || (!text.trim() && !files?.length)) return;
 
+      const trimmed = text.trim();
       const optimisticId = `local-${Date.now()}`;
       const optimistic: MessageDto = withClientNonce(
         {
@@ -344,12 +332,13 @@ export function useStudentAnnouncementChat() {
           conversation_id: numId,
           sender_id: null,
           sender_name: '',
-          body: text.trim(),
-          message_type: 'TEXT',
+          body: trimmed || (files?.[0] ? `📎 ${files[0].name}` : ''),
+          message_type: resolveOptimisticMessageType(files ?? [], trimmed),
           created_at: new Date().toISOString(),
           tags: [],
           is_own: true,
           metadata_json: {},
+          attachments: files?.length ? buildOptimisticMessageAttachments(files) : undefined,
         },
         optimisticId,
       );
@@ -363,7 +352,7 @@ export function useStudentAnnouncementChat() {
       sendWsTyping(false);
 
       try {
-        const saved = await sendChatMessage(numId, text.trim());
+        const saved = await sendChatMessage(numId, trimmed, undefined, files);
         if (!saved) return;
         setMessagesByConv((prev) => {
           const existing = prev[numId] ?? [];
@@ -376,6 +365,7 @@ export function useStudentAnnouncementChat() {
           const savedWithNonce = withClientNonce(saved, optimisticId);
           let nextList: MessageDto[];
           if (pendingIndex >= 0) {
+            revokeMessageAttachmentUrls(existing[pendingIndex]);
             nextList = [...existing];
             nextList[pendingIndex] = savedWithNonce;
           } else if (existing.some((message) => message.id === saved.id)) {
@@ -396,18 +386,20 @@ export function useStudentAnnouncementChat() {
             at: saved.created_at,
           }),
         );
-        void markConversationRead(numId, saved.id);
+        void markConversationRead(numId, saved.id).then(() => {
+          void refreshChatUnread();
+        });
       } catch {
         setMessagesByConv((prev) => {
           const next = {
             ...prev,
-            [numId]: (prev[numId] ?? []).filter(
-              (message) =>
-                !(
-                  isPendingLocalMessage(message) &&
-                  message.metadata_json?.client_nonce === optimisticId
-                ),
-            ),
+            [numId]: (prev[numId] ?? []).filter((message) => {
+              const isTarget =
+                isPendingLocalMessage(message) &&
+                message.metadata_json?.client_nonce === optimisticId;
+              if (isTarget) revokeMessageAttachmentUrls(message);
+              return !isTarget;
+            }),
           };
           messagesByConvRef.current = next;
           return next;
@@ -434,11 +426,11 @@ export function useStudentAnnouncementChat() {
   const conversations: StudentAnnouncementConversation[] = useMemo(() => {
     return rawConversations
       .map((dto) => {
+        const studentUserId = dto.context?.student_user_id ?? currentUserId;
         const msgs = (messagesByConv[Number(dto.id)] ?? [])
-          .filter((m) => m.message_type !== 'EVENT' && m.message_type !== 'SYSTEM')
-          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-          .map(mapStudentMessage);
-        const conv = mapAnnouncementConversation(dto, msgs);
+          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        const mappedMsgs = mapAnnouncementMessages(msgs, studentUserId, 'student');
+        const conv = mapAnnouncementConversation(dto, mappedMsgs);
         const override = archiveOverridesRef.current.get(Number(dto.id));
         if (override === undefined) return conv;
         return { ...conv, archived: override };
@@ -448,7 +440,7 @@ export function useStudentAnnouncementChat() {
         const bMs = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
         return bMs - aMs;
       });
-  }, [archiveOverrideVersion, messagesByConv, rawConversations]);
+  }, [archiveOverrideVersion, currentUserId, messagesByConv, rawConversations]);
 
   const primaryFilterCounts = useMemo(
     () => computeStudentAnnouncementPrimaryFilterCounts(conversations),
@@ -487,7 +479,10 @@ export function useStudentAnnouncementChat() {
   );
 
   const unreadTotal = useMemo(
-    () => conversations.reduce((sum, c) => sum + c.unreadCount, 0),
+    () =>
+      conversations
+        .filter((c) => !c.archived)
+        .reduce((sum, c) => sum + c.unreadCount, 0),
     [conversations],
   );
 
@@ -537,8 +532,9 @@ export function useStudentAnnouncementChat() {
         rawConversationsRef.current = next;
         return next;
       });
-      setSelectedId((prev) => (prev === id ? '' : prev));
-      setMobileView('list');
+      if (filtersRef.current.primary !== 'archived') {
+        setFilters((prev) => ({ ...prev, primary: 'archived' }));
+      }
 
       try {
         await applySmartAction(conversationId, 'archive_conversation');

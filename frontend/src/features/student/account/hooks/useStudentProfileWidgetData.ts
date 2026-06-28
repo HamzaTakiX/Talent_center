@@ -47,7 +47,7 @@ function buildOnboardingChecklist(sp: StudentProfile | undefined): ProfileWidget
 
 function buildPreferencesChecklist(sp: StudentProfile | undefined): ProfileWidgetChecklistItem[] {
   return [
-    { key: 'career', done: Boolean(text(sp?.career_objective)) },
+    { key: 'career', done: Boolean(text(sp?.internship_type_name) || text(sp?.career_objective)) },
     { key: 'availability', done: Boolean(text(sp?.availability)) },
     { key: 'location', done: Boolean(text(sp?.city)) },
     { key: 'mobility', done: Boolean(sp?.mobility?.length) },

@@ -22,7 +22,7 @@ export const App = () => {
       <AuthThemeProvider>
         <Auth0ProviderWithNavigate onRedirectCallback={onRedirectCallback}>
           <AuthProvider>
-            <RouterProvider router={router} />
+            <RouterProvider router={router} future={{ v7_startTransition: true }} />
           </AuthProvider>
         </Auth0ProviderWithNavigate>
       </AuthThemeProvider>

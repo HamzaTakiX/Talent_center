@@ -1,6 +1,6 @@
 export type SrfFeeTabId = 'all' | 'unpaid' | 'partial' | 'paid' | 'late';
 
-export type SrfFeeRowStatus = 'paid' | 'unpaid';
+export type SrfFeeRowStatus = 'paid' | 'unpaid' | 'pending' | 'partial' | 'late';
 
 export interface SrfFeeTab {
   id: SrfFeeTabId;
@@ -10,21 +10,24 @@ export interface SrfFeeTab {
 
 export interface SrfFeeRow {
   id: string;
+  installmentId?: number;
   feeType: string;
   dueDate: string;
   amountExpected: number;
   amountPaid: number;
   amountRemaining: number;
   status: SrfFeeRowStatus;
+  canPay: boolean;
 }
 
 export interface SrfPaymentHistoryRow {
   id: string;
   date: string;
-  type: 'Paiement' | 'Validation';
+  sortAt: number;
+  type: 'payment' | 'verification';
   description: string;
   amount: number;
-  status: 'Validé' | 'Approuvé';
+  status: 'pending' | 'approved' | 'rejected' | 'correction' | 'validated';
 }
 
 export interface SrfUpcomingDeadline {

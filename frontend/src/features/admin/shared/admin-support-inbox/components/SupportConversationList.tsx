@@ -1,14 +1,22 @@
 import { FunctionComponent, ReactNode, useState } from 'react';
-import { Archive, Filter, MessageSquare, Search, X } from 'lucide-react';
+import { Archive, MessageSquare, Search, X } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useInternshipInboxCopy } from '../../../offres-stage/hooks/useOffersListLabels';
 import InternshipSidebarEmptyState from '../../../offres-stage/chat/components/InternshipSidebarEmptyState';
+import { InternshipChatSidebarSkeleton } from '../../../offres-stage/chat/components/InternshipChatLoadingSkeletons';
+import ChatSidebarHeader from '../../../../shared/chat-design-system/components/ChatSidebarHeader';
+import ChatToolbarActions from '../../../../shared/chat-design-system/components/ChatToolbarActions';
 import type { PrimaryDeskFilter, PrimaryFilterCounts, SupportConversationListItem } from '../types/supportInboxTypes';
 import SupportConversationCard from './SupportConversationCard';
 import SupportSearchField from './SupportSearchField';
 
 interface Props {
   title?: string;
+  subtitle?: string;
+  icon?: LucideIcon;
   items: SupportConversationListItem[];
+  loading?: boolean;
+  loadError?: string | null;
   selectedId: string;
   search: string;
   hasActiveFilters?: boolean;
@@ -25,7 +33,11 @@ interface Props {
 
 const SupportConversationList: FunctionComponent<Props> = ({
   title = 'Conversations',
+  subtitle,
+  icon: SidebarIcon = MessageSquare,
   items,
+  loading = false,
+  loadError,
   selectedId,
   search,
   hasActiveFilters = false,
@@ -45,46 +57,37 @@ const SupportConversationList: FunctionComponent<Props> = ({
   const { t } = useInternshipInboxCopy();
   const viewingArchived = primaryFilter === 'archived';
 
+  if (loading && items.length === 0) {
+    return <InternshipChatSidebarSkeleton />;
+  }
+
   return (
     <aside className="isi-sidebar">
-      <div className="isi-sidebar-head">
-        <div className="isi-sidebar-title-wrap">
-          <MessageSquare className="isi-sidebar-title-icon" strokeWidth={2} aria-hidden />
-          <h2 className="isi-sidebar-title">{title}</h2>
-        </div>
+      <ChatSidebarHeader
+        title={title}
+        subtitle={subtitle}
+        icon={SidebarIcon}
+        actions={
+          <ChatToolbarActions
+            viewingArchived={viewingArchived}
+            archivedCount={primaryFilterCounts?.archived}
+            hasActiveFilters={hasActiveFilters}
+            filtersOpen={filtersOpen}
+            showArchive={showArchiveToggle}
+            showFilter={showFilters}
+            onToggleArchive={
+              showArchiveToggle ? () => onSetPrimaryFilter!(viewingArchived ? 'all' : 'archived') : undefined
+            }
+            onToggleFilters={showFilters ? () => setFiltersOpen((v) => !v) : undefined}
+          />
+        }
+      />
 
-        <div className="isi-sidebar-actions">
-          {showArchiveToggle ? (
-            <button
-              type="button"
-              onClick={() => onSetPrimaryFilter!(viewingArchived ? 'all' : 'archived')}
-              className={`isi-filter-toggle ${viewingArchived ? 'isi-filter-toggle--active' : ''}`}
-              aria-label={viewingArchived ? t('backToActiveConversations') : t('viewArchivedAria')}
-              title={viewingArchived ? t('backToActiveConversations') : t('primaryChips.archived')}
-            >
-              <Archive className="size-4" strokeWidth={2} />
-              {!viewingArchived && primaryFilterCounts!.archived > 0 ? (
-                <span className="isi-sidebar-action-badge">
-                  {primaryFilterCounts!.archived > 99 ? '99+' : primaryFilterCounts!.archived}
-                </span>
-              ) : null}
-            </button>
-          ) : null}
-
-          {showFilters ? (
-            <button
-              type="button"
-              onClick={() => setFiltersOpen((v) => !v)}
-              className={`isi-filter-toggle ${filtersOpen || hasActiveFilters ? 'isi-filter-toggle--active' : ''}`}
-              aria-expanded={filtersOpen}
-              aria-label={t('filters')}
-            >
-              <Filter className="size-4" strokeWidth={2} />
-              {hasActiveFilters ? <span className="isi-filter-dot" /> : null}
-            </button>
-          ) : null}
-        </div>
-      </div>
+      {loadError ? (
+        <p className="isi-load-error px-4 py-2 text-sm text-[var(--admin-danger,#dc2626)]" role="alert">
+          {loadError}
+        </p>
+      ) : null}
 
       {viewingArchived ? (
         <div className="isi-archived-strip">

@@ -292,6 +292,64 @@ export function computeStudentProfileCompletionPercent(user: User | null | undef
   return Math.round((done / checks.length) * 100);
 }
 
+/**
+ * Compute "Préparation stage" score from the 9-criteria weighted formula.
+ *
+ * Weights:
+ *   CV complété                          20 %
+ *   Profil étudiant complété             15 %
+ *   Compétences renseignées              10 %
+ *   Career Coach IA utilisé              10 %  (not available client-side → 0 unless provided)
+ *   CV analysé par l'IA                  10 %  (not available client-side → 0 unless provided)
+ *   Simulation d'entretien terminée      15 %  (not available client-side → 0 unless provided)
+ *   Au moins une candidature envoyée     10 %
+ *   Documents obligatoires prêts (CV,LM) 5  %
+ *   Préférences de stage complétées      5  %
+ *   Total                               100 %
+ *
+ * Pass `serverScore` (from `internship_readiness_score` in the journey API) whenever
+ * available — it is computed by the backend with full signal access and is authoritative.
+ */
+export function computeStageReadiness(
+  user: User | null | undefined,
+  options: {
+    serverScore?: number | null;
+    applicationsCount?: number;
+    cvAnalyzed?: boolean;
+    careerCoachUsed?: boolean;
+    simulationDone?: boolean;
+  } = {},
+): number {
+  if (options.serverScore != null && options.serverScore >= 0) {
+    return options.serverScore;
+  }
+
+  const sp = user?.student_profile;
+  if (!sp) return 0;
+
+  const hasCv = Boolean(text(sp.cv_file));
+  const profileCompleted = Boolean(sp.profile_completed);
+  const hasSkills = Boolean(sp.skills?.length);
+  const hasApplication = (options.applicationsCount ?? 0) > 0;
+  const cvAnalyzed = options.cvAnalyzed ?? false;
+  const careerCoachUsed = options.careerCoachUsed ?? false;
+  const simulationDone = options.simulationDone ?? false;
+  const hasPreferences = Boolean(text(sp.availability) && text(sp.city));
+
+  const score =
+    (hasCv ? 20 : 0) +
+    (profileCompleted ? 15 : 0) +
+    (hasSkills ? 10 : 0) +
+    (careerCoachUsed ? 10 : 0) +
+    (cvAnalyzed ? 10 : 0) +
+    (simulationDone ? 15 : 0) +
+    (hasApplication ? 10 : 0) +
+    (hasCv ? 5 : 0) +
+    (hasPreferences ? 5 : 0);
+
+  return Math.min(100, score);
+}
+
 export function buildCvAnalysisStudentProfileFromUser(
   user: User | null | undefined,
 ): CvAnalysisStudentProfile | null {

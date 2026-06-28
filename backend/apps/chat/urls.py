@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    ChatAttachmentDownloadView,
     ChatChannelListView,
     ChatContextPanelView,
     ChatConversationDetailView,
@@ -28,6 +29,7 @@ urlpatterns = [
     path('conversations/<int:conversation_id>/context-panel', ChatContextPanelView.as_view()),
     path('conversations/<int:conversation_id>/export', ChatConversationExportView.as_view()),
     path('conversations/<int:conversation_id>/messages', ChatMessageListView.as_view()),
+    path('attachments/<int:attachment_id>/download', ChatAttachmentDownloadView.as_view()),
     path('conversations/<int:conversation_id>/read', ChatMarkReadView.as_view()),
     path('conversations/<int:conversation_id>/typing', ChatTypingView.as_view()),
     path('conversations/<int:conversation_id>/actions', ChatSmartActionView.as_view()),

@@ -9,13 +9,17 @@ import {
   sendChatMessage,
 } from '../../../../shared/contextual-chat/api/chatApi';
 import type { ChatMetricsDto } from '../../../../shared/contextual-chat/api/chatApi';
+import { useChatUnread } from '../../../../shared/contextual-chat/context/ChatUnreadContext';
 import { useChatWebSocket } from '../../../../shared/contextual-chat/hooks/useChatWebSocket';
 import type { ConversationDto, MessageDto } from '../../../../shared/contextual-chat/types';
+import { useAuth } from '../../../../auth/hooks/useAuth';
 import { useStudentAcademicChatFilterState } from '../../../shared/chat-filters/useStudentAcademicChatFilterState';
 import {
+  applyIncomingMessageUnreadPreview,
   mergeFetchedConversations,
   patchConversationArchiveState,
   patchConversationPreviewInList,
+  zeroConversationUnreadInList,
 } from '../../../offres-stage/chat/utils/internshipChatConversationUtils';
 import { applyReadReceiptToMessages } from '../../../offres-stage/chat/utils/internshipChatReadUtils';
 import {
@@ -82,6 +86,9 @@ function computeStats(conversations: AnnouncementConversation[]): InboxStats {
 
 export function useAnnouncementSupportChat() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { refresh: refreshChatUnread } = useChatUnread();
+  const currentUserId = user?.id ?? null;
   const [rawConversations, setRawConversations] = useState<ConversationDto[]>([]);
   const [messagesByConv, setMessagesByConv] = useState<Record<number, MessageDto[]>>({});
   const [inboxMetrics, setInboxMetrics] = useState<ChatMetricsDto | null>(null);
@@ -112,6 +119,7 @@ export function useAnnouncementSupportChat() {
   const loadConversationsDebounceRef = useRef<number | null>(null);
   const moduleFiltersRef = useRef(moduleFilters);
   moduleFiltersRef.current = moduleFilters;
+  const seenWsMessageIdsRef = useRef<Set<number>>(new Set());
 
   const selectedConversationId = selectedId ? Number(selectedId) : null;
 
@@ -162,6 +170,7 @@ export function useAnnouncementSupportChat() {
         }),
       );
       setInboxMetrics(metrics);
+      seenWsMessageIdsRef.current.clear();
     } catch (err) {
       if (!options?.silent) {
         setLoadError(err instanceof Error ? err.message : t('admin.modules.announcements.inbox.loadError', 'Erreur de chargement'));
@@ -204,11 +213,12 @@ export function useAnnouncementSupportChat() {
         if (hasPendingOwn) return;
 
         if (typeof event.body === 'string' && event.body.trim()) {
-          const existing = rawConversationsRef.current.find((c) => c.id === convId);
           setRawConversations((prev) =>
-            patchConversationPreviewInList(prev, convId, event.body!, {
+            applyIncomingMessageUnreadPreview(prev, convId, event.body!, {
+              isActiveConv,
               isOwn: false,
-              unreadCount: isActiveConv ? 0 : (existing?.unread_count ?? 0) + 1,
+              messageId: messageId != null ? Number(messageId) : null,
+              seenMessageIds: seenWsMessageIdsRef.current,
             }),
           );
         }
@@ -222,8 +232,11 @@ export function useAnnouncementSupportChat() {
           );
         }
         if (isActiveConv && messageId != null && Number.isFinite(Number(messageId))) {
-          void markConversationRead(convId, Number(messageId));
+          void markConversationRead(convId, Number(messageId)).then(() => {
+            void refreshChatUnread();
+          });
         }
+        scheduleSilentReload();
         return;
       }
       if (
@@ -258,6 +271,10 @@ export function useAnnouncementSupportChat() {
         const readAt =
           typeof event.read_at === 'string' ? event.read_at : new Date().toISOString();
         if (!Number.isFinite(readerUserId) || !Number.isFinite(lastReadMessageId)) return;
+
+        if (currentUserId != null && readerUserId === currentUserId) {
+          setRawConversations((prev) => zeroConversationUnreadInList(prev, convId));
+        }
 
         setMessagesByConv((prev) => {
           const existing = prev[convId] ?? [];
@@ -404,9 +421,8 @@ export function useAnnouncementSupportChat() {
         const last = msgs[msgs.length - 1];
         if (last) {
           await markConversationRead(conversationId, last.id);
-          setRawConversations((prev) =>
-            prev.map((c) => (c.id === conversationId ? { ...c, unread_count: 0 } : c)),
-          );
+          setRawConversations((prev) => zeroConversationUnreadInList(prev, conversationId));
+          void refreshChatUnread();
         }
       } finally {
         if (!options?.silent && !hasCached) {
@@ -414,7 +430,7 @@ export function useAnnouncementSupportChat() {
         }
       }
     },
-    [],
+    [refreshChatUnread],
   );
 
   useEffect(() => {
@@ -541,7 +557,10 @@ export function useAnnouncementSupportChat() {
             at: saved.created_at,
           }),
         );
-        void markConversationRead(conversationId, saved.id);
+        void markConversationRead(conversationId, saved.id).then(() => {
+          void refreshChatUnread();
+        });
+        scheduleSilentReload();
       } catch {
         setMessagesByConv((prev) => {
           const next = {
@@ -559,7 +578,7 @@ export function useAnnouncementSupportChat() {
         });
       }
     },
-    [selectedId, sendWsTyping],
+    [selectedId, sendWsTyping, scheduleSilentReload],
   );
 
   const notifyTyping = useCallback(
@@ -597,8 +616,9 @@ export function useAnnouncementSupportChat() {
         rawConversationsRef.current = next;
         return next;
       });
-      setSelectedId((prev) => (prev === id ? '' : prev));
-      setMobileView('list');
+      if (moduleFiltersRef.current.primary !== 'archived') {
+        setModuleFilters((prev) => ({ ...prev, primary: 'archived' }));
+      }
 
       try {
         await applySmartAction(conversationId, 'archive_conversation');

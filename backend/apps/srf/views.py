@@ -40,6 +40,7 @@ from apps.srf.services.financial_profile import (
 from apps.srf.services.payment_validation import review_payment_proof, submit_payment_proof
 from apps.srf.services.srf_detail import build_payment_proof_detail, build_student_financial_detail
 from apps.srf.services.risk_detection import scan_exam_period_risks, scan_overdue_installments
+from apps.srf.services import chat_service as srf_chat_service
 
 
 class SrfFinancePermission(EffectiveHasPermission):
@@ -158,6 +159,107 @@ class SrfStudentFinancialDetailView(APIView):
         return Response(envelope(True, 'OK', data=data))
 
 
+class SrfMyFinancialDetailView(APIView):
+    """Student-facing SRF detail for the authenticated account."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not hasattr(request.user, 'student_profile'):
+            return Response(envelope(False, 'Students only'), status=status.HTTP_403_FORBIDDEN)
+
+        student = request.user.student_profile
+        account = ensure_financial_account(student)
+        account = FinancialAccount.objects.select_related(
+            'student_profile__user',
+            'student_profile__user__profile',
+            'student_profile__class_group',
+            'student_profile__filiere',
+            'student_profile__academic_level',
+        ).prefetch_related(
+            'installments',
+            'payment_proofs',
+            'payments',
+        ).get(pk=account.pk)
+
+        data = build_student_financial_detail(account, request)
+        return Response(envelope(True, 'OK', data=data))
+
+
+class SrfStudentChatView(APIView):
+    """Open or continue the student's SRF financial support thread."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not hasattr(request.user, 'student_profile'):
+            return Response(envelope(False, 'Students only'), status=status.HTTP_403_FORBIDDEN)
+
+        student = request.user.student_profile
+        conv = srf_chat_service.get_or_create_srf_conversation(
+            student=student,
+            created_by=request.user,
+            request=request,
+        )
+        message_body = (request.data.get('message') or '').strip()
+        if message_body:
+            srf_chat_service.send_srf_message(
+                conversation=conv,
+                sender=request.user,
+                body=message_body,
+            )
+        return Response(
+            envelope(True, 'Conversation ready', data={'conversation_id': conv.pk}),
+            status=status.HTTP_200_OK,
+        )
+
+
+class SrfAdminChatOpenView(APIView):
+    """Open or continue an admin ↔ student SRF financial support thread."""
+
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, SrfFinancePermission]
+
+    def post(self, request, account_id: int):
+        account = (
+            FinancialAccount.objects.select_related('student_profile__user')
+            .filter(pk=account_id)
+            .first()
+        )
+        if account is None:
+            return Response(envelope(False, 'Account not found'), status=status.HTTP_404_NOT_FOUND)
+
+        student = account.student_profile
+        if not student or not student.user_id:
+            return Response(
+                envelope(False, 'Student profile not found'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        conv = srf_chat_service.get_or_create_srf_conversation(
+            student=student,
+            admin_users=[request.user],
+            created_by=request.user,
+            request=request,
+        )
+        meta = conv.metadata_json or {}
+        if meta.get('admin_inbox_archived'):
+            srf_chat_service.unarchive_srf_conversation(conv, request.user)
+        if conv.is_archived:
+            srf_chat_service.unarchive_student_srf_conversation(conv, request.user)
+
+        message_body = (request.data.get('message') or '').strip()
+        if message_body:
+            srf_chat_service.send_srf_message(
+                conversation=conv,
+                sender=request.user,
+                body=message_body,
+            )
+        return Response(
+            envelope(True, 'Conversation ready', data={'conversation_id': conv.pk}),
+            status=status.HTTP_200_OK,
+        )
+
+
 # ---------------------------------------------------------------------------
 # Payment validation queue
 # ---------------------------------------------------------------------------
@@ -215,6 +317,7 @@ class SrfPaymentProofReviewView(APIView):
                 new_status=ser.validated_data['status'],
                 rejection_reason=ser.validated_data.get('rejection_reason', ''),
                 admin_notes=ser.validated_data.get('admin_notes', ''),
+                approved_amount=ser.validated_data.get('approved_amount'),
             )
         except ValueError as exc:
             return Response(envelope(False, str(exc)), status=status.HTTP_400_BAD_REQUEST)
@@ -256,14 +359,18 @@ class SrfPaymentProofSubmitView(APIView):
         if inst_id:
             installment = account.installments.filter(pk=inst_id).first()
 
-        submission = submit_payment_proof(
-            account,
-            submitted_by=request.user,
-            amount=ser.validated_data['amount'],
-            proof_file=ser.validated_data['proof_file'],
-            reference_number=ser.validated_data.get('reference_number', ''),
-            installment=installment,
-        )
+        try:
+            submission = submit_payment_proof(
+                account,
+                submitted_by=request.user,
+                amount=ser.validated_data['amount'],
+                proof_file=ser.validated_data['proof_file'],
+                reference_number=ser.validated_data.get('reference_number', ''),
+                installment=installment,
+            )
+        except ValueError as exc:
+            return Response(envelope(False, str(exc)), status=status.HTTP_400_BAD_REQUEST)
+
         return Response(
             envelope(
                 True,

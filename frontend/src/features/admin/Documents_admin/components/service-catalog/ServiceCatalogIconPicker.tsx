@@ -2,20 +2,16 @@ import { FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { resolveServiceIcon } from './serviceCatalogIcons';
-import { COLOR_THEME_OPTIONS, SERVICE_ICON_OPTIONS } from './serviceCatalogStudioSteps';
+import { SERVICE_ICON_OPTIONS } from './serviceCatalogStudioSteps';
 
 interface Props {
   iconKey: string;
-  colorTheme: string;
   onIconChange: (key: string) => void;
-  onThemeChange: (theme: string) => void;
 }
 
 const ServiceCatalogIconPicker: FunctionComponent<Props> = ({
   iconKey,
-  colorTheme,
   onIconChange,
-  onThemeChange,
 }) => {
   const { t } = useTranslation();
   const P = 'admin.documentsModule.catalog.form.studio';
@@ -46,23 +42,6 @@ const ServiceCatalogIconPicker: FunctionComponent<Props> = ({
           );
         })}
       </motion.div>
-
-      <p className="admin-doc-studio-icon-picker__label mt-4">{t(`${P}.themeLabel`)}</p>
-      <div className="admin-doc-studio-theme-grid">
-        {COLOR_THEME_OPTIONS.map((theme) => (
-          <button
-            key={theme}
-            type="button"
-            className={`admin-doc-studio-theme-swatch admin-doc-studio-theme-swatch--${theme} ${colorTheme === theme ? 'is-selected' : ''}`}
-            onClick={() => onThemeChange(theme)}
-            aria-pressed={colorTheme === theme}
-            title={t(`${P}.colorThemes.${theme}`)}
-          >
-            <span className="admin-doc-studio-theme-swatch__dot" aria-hidden />
-            <span>{t(`${P}.colorThemes.${theme}`)}</span>
-          </button>
-        ))}
-      </div>
     </motion.div>
   );
 };

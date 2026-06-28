@@ -1,6 +1,7 @@
 import type { HistoryEventDto } from '../../../admin/api/history';
 import type { CvAnalysisDashboardData } from '../../internship_offers/CV_Analyse/types/cvAnalysisDashboard';
 import type { InternshipJourneyDashboard } from '../../internship_offers/types/journeyTypes';
+import { applicationStatusLabelKey } from '../../internship_offers/utils/applicationStatus';
 import type { StudentStatItem } from '../data/studentDashboardMock';
 import type {
   StudentDashboardActivityItem,
@@ -147,8 +148,18 @@ export function buildStudentDashboardViewModel(input: {
   cvDashboard: CvAnalysisDashboardData | null;
   formatRelativeTime: (iso: string) => string;
   translateAction: (titleKey: string, offerTitle?: string) => string;
+  translateEventSummary: (event: HistoryEventDto) => string;
+  translateApplicationStatus: (status: string) => string;
 }): StudentDashboardViewModel {
-  const { journey, historyEvents, cvDashboard, formatRelativeTime, translateAction } = input;
+  const {
+    journey,
+    historyEvents,
+    cvDashboard,
+    formatRelativeTime,
+    translateAction,
+    translateEventSummary,
+    translateApplicationStatus,
+  } = input;
 
   const profilePercent = journey.profile_completion.percent;
   const profileChecks = journey.profile_completion.checks;
@@ -195,7 +206,7 @@ export function buildStudentDashboardViewModel(input: {
   const recentActivity: StudentDashboardActivityItem[] = historyEvents.slice(0, 5).map((event) => ({
     id: String(event.id),
     iconKey: resolveActivityIcon(event),
-    action: event.summary || event.event_code,
+    action: translateEventSummary(event),
     time: formatRelativeTime(event.occurred_at),
   }));
 
@@ -204,7 +215,7 @@ export function buildStudentDashboardViewModel(input: {
       recentActivity.push({
         id: update.application_uuid,
         iconKey: 'application',
-        action: `${update.offer_title} — ${update.status}`,
+        action: `${update.offer_title} — ${translateApplicationStatus(update.status)}`,
         time: formatRelativeTime(update.changed_at),
       });
     }

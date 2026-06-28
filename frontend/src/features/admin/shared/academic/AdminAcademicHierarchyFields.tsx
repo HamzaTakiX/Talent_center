@@ -1,5 +1,6 @@
-import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
+import { type FunctionComponent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Loader2, Sparkles, Zap } from 'lucide-react';
 import { academicReferenceApi } from '../../api/reference';
 import type {
   AcademicHierarchyValue,
@@ -14,6 +15,21 @@ import AdminSelect from '../../account/components/AdminSelect';
 import { adminFormGridClass } from '../forms/adminFormClasses';
 
 const PREFIX = 'admin.forms.academicHierarchy';
+
+/** Wrapper that overlays a subtle brand spinner on a field while its data is loading. */
+const CascadeField: FunctionComponent<{ loading: boolean; children: ReactNode }> = ({
+  loading,
+  children,
+}) => (
+  <div className={`acad-cascade-field${loading ? ' acad-cascade-field--loading' : ''}`}>
+    {children}
+    {loading && (
+      <div className="acad-cascade-field__spinner" aria-hidden>
+        <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
+      </div>
+    )}
+  </div>
+);
 
 export interface AcademicHierarchyPinnedSelection {
   id: number;
@@ -386,66 +402,99 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
 
   return (
     <div className={adminFormGridClass}>
-      <AdminSelect
-        id={`${idPrefix}-filiere`}
-        label={t(`${PREFIX}.program`)}
-        value={value.filiereId}
-        onChange={onFiliereChange}
-        options={filiereOptions}
-        searchable={filieres.length > 4}
-        disabled={loadingFilieres}
-      />
-
-      <AdminSelect
-        id={`${idPrefix}-level`}
-        label={t(`${PREFIX}.level`)}
-        value={value.levelId}
-        onChange={onLevelChange}
-        options={levelOptions}
-        disabled={!value.filiereId || loadingLevels}
-        searchable={levels.length > 4}
-      />
-
-      {showSector ? (
+      {/* Programme / Filière */}
+      <CascadeField loading={loadingFilieres}>
         <AdminSelect
-          id={`${idPrefix}-sector`}
-          label={t(`${PREFIX}.sector`)}
-          value={value.sectorId}
-          onChange={(sectorId) => patch({ sectorId, internshipTypeId: '', classGroupId: '' })}
-          options={sectorOptions}
-          disabled={!value.levelId || loadingSectors}
-          searchable={sectors.length > 4}
+          id={`${idPrefix}-filiere`}
+          label={t(`${PREFIX}.program`)}
+          value={value.filiereId}
+          onChange={onFiliereChange}
+          options={filiereOptions}
+          searchable={filieres.length > 4}
+          disabled={loadingFilieres}
         />
+      </CascadeField>
+
+      {/* Niveau */}
+      <CascadeField loading={loadingLevels}>
+        <AdminSelect
+          id={`${idPrefix}-level`}
+          label={t(`${PREFIX}.level`)}
+          value={value.levelId}
+          onChange={onLevelChange}
+          options={levelOptions}
+          disabled={!value.filiereId || loadingLevels}
+          searchable={levels.length > 4}
+        />
+      </CascadeField>
+
+      {/* Secteur (conditionnel) */}
+      {showSector ? (
+        <CascadeField loading={loadingSectors}>
+          <AdminSelect
+            id={`${idPrefix}-sector`}
+            label={t(`${PREFIX}.sector`)}
+            value={value.sectorId}
+            onChange={(sectorId) => patch({ sectorId, internshipTypeId: '', classGroupId: '' })}
+            options={sectorOptions}
+            disabled={!value.levelId || loadingSectors}
+            searchable={sectors.length > 4}
+          />
+        </CascadeField>
       ) : null}
 
+      {/* Type de stage — auto-résolu ou select manuel */}
       {autoResolveInternship ? (
         <div className="admin-form-field">
-          <label className="admin-form-field__label" htmlFor={`${idPrefix}-internship-auto`}>
-            {t(`${PREFIX}.internshipType`)}
-          </label>
-          <p className="admin-form-field__hint mb-1">{t(`${PREFIX}.internshipAutoHint`)}</p>
-          <div
-            id={`${idPrefix}-internship-auto`}
-            className="admin-form-field__readonly-value min-h-[2.75rem] flex items-center rounded-lg border border-[color:var(--admin-border)] bg-[color:var(--admin-surface-muted)] px-3 text-sm text-[color:var(--admin-text)]"
-            aria-live="polite"
-          >
-            {loadingInternships
-              ? t(`${PREFIX}.internshipResolving`)
-              : resolvedInternshipLabel || '—'}
+          <div className="acad-internship-auto__label-row">
+            <label
+              className="admin-form-label text-sm font-semibold text-[var(--admin-text)]"
+              htmlFor={`${idPrefix}-internship-auto`}
+            >
+              {t(`${PREFIX}.internshipType`)}
+            </label>
+            <span className="acad-internship-auto__badge" aria-hidden>
+              <Sparkles className="h-2.5 w-2.5 shrink-0" strokeWidth={2.5} />
+              Auto
+            </span>
+          </div>
+
+          <div className="acad-internship-auto__card">
+            <p className="acad-internship-auto__hint">{t(`${PREFIX}.internshipAutoHint`)}</p>
+            <div
+              id={`${idPrefix}-internship-auto`}
+              className="acad-internship-auto__value"
+              aria-live="polite"
+            >
+              {loadingInternships ? (
+                <>
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden strokeWidth={2} />
+                  <span>{t(`${PREFIX}.internshipResolving`)}</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="h-3.5 w-3.5 shrink-0" aria-hidden strokeWidth={2} />
+                  <span>{resolvedInternshipLabel || '—'}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
       ) : (
-        <AdminSelect
-          id={`${idPrefix}-internship`}
-          label={t(`${PREFIX}.internshipType`)}
-          value={value.internshipTypeId}
-          onChange={(internshipTypeId) => patch({ internshipTypeId })}
-          options={internshipOptions}
-          disabled={!value.levelId || loadingInternships}
-          searchable={internshipTypes.length > 4}
-        />
+        <CascadeField loading={loadingInternships}>
+          <AdminSelect
+            id={`${idPrefix}-internship`}
+            label={t(`${PREFIX}.internshipType`)}
+            value={value.internshipTypeId}
+            onChange={(internshipTypeId) => patch({ internshipTypeId })}
+            options={internshipOptions}
+            disabled={!value.levelId || loadingInternships}
+            searchable={internshipTypes.length > 4}
+          />
+        </CascadeField>
       )}
 
+      {/* Année académique */}
       <AdminSelect
         id={`${idPrefix}-year`}
         label={t(`${PREFIX}.academicYear`)}
@@ -456,16 +505,19 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
         searchable={years.length > 6}
       />
 
+      {/* Classe / groupe */}
       {showClassGroup ? (
-        <AdminSelect
-          id={`${idPrefix}-class`}
-          label={t(`${PREFIX}.classGroup`)}
-          value={value.classGroupId}
-          onChange={(classGroupId) => patch({ classGroupId })}
-          options={classOptions}
-          disabled={!value.filiereId || loadingClasses}
-          searchable={classGroups.length > 6}
-        />
+        <CascadeField loading={loadingClasses}>
+          <AdminSelect
+            id={`${idPrefix}-class`}
+            label={t(`${PREFIX}.classGroup`)}
+            value={value.classGroupId}
+            onChange={(classGroupId) => patch({ classGroupId })}
+            options={classOptions}
+            disabled={!value.filiereId || loadingClasses}
+            searchable={classGroups.length > 6}
+          />
+        </CascadeField>
       ) : null}
     </div>
   );

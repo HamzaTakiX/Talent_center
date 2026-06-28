@@ -1,7 +1,7 @@
 import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Download } from 'lucide-react';
-import { srfPaymentHistoryRows } from '../data/srfMock';
+import { Download, ReceiptText } from 'lucide-react';
+import type { SrfPaymentHistoryRow } from '../types';
 import { SRF_OUTLINE_BTN } from '../constants/srfStyles';
 import { SRF_SURFACE_CARD } from '../constants/srfLayout';
 import {
@@ -9,10 +9,19 @@ import {
   SRF_HISTORY_TYPE_BADGE,
 } from '../constants/srfBadgeStyles';
 import { formatMad } from '../utils/formatMad';
+import SrfEmptyState from './SrfEmptyState';
 
 const historyHeaderKeys = ['date', 'type', 'description', 'amount', 'status'] as const;
 
-const SrfPaymentHistorySection: FunctionComponent = () => {
+interface SrfPaymentHistorySectionProps {
+  rows: SrfPaymentHistoryRow[];
+  loading?: boolean;
+}
+
+const SrfPaymentHistorySection: FunctionComponent<SrfPaymentHistorySectionProps> = ({
+  rows,
+  loading = false,
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -48,51 +57,84 @@ const SrfPaymentHistorySection: FunctionComponent = () => {
             </tr>
           </thead>
           <tbody>
-            {srfPaymentHistoryRows.map((row) => (
+            {loading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <tr key={`history-skeleton-${index}`} className="border-b border-solid border-[var(--admin-border)]">
+                  {historyHeaderKeys.map((key) => (
+                    <td key={`${index}-${key}`} className="px-4 py-4 first:pl-6 sm:px-5">
+                      <div className="h-5 w-full animate-pulse rounded bg-[var(--admin-surface-muted)]" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : rows.length === 0 ? (
+              <tr>
+                <td colSpan={historyHeaderKeys.length} className="p-0">
+                  <SrfEmptyState icon={ReceiptText} title={t('student.srf.table.empty')} />
+                </td>
+              </tr>
+            ) : (
+              rows.map((row) => (
               <tr
                 key={row.id}
                 className="border-b border-solid border-[var(--admin-border)] last:border-b-0"
               >
                 <td className="px-4 py-4 text-sm leading-5 text-[var(--admin-text)] first:pl-6 sm:px-5">{row.date}</td>
                 <td className="px-4 py-4 sm:px-5">
-                  <span className={SRF_HISTORY_TYPE_BADGE}>{row.type}</span>
+                  <span className={SRF_HISTORY_TYPE_BADGE}>
+                    {t(`student.srf.paymentHistory.types.${row.type}`)}
+                  </span>
                 </td>
                 <td className="px-4 py-4 text-sm leading-5 text-[var(--admin-text)] sm:px-5">{row.description}</td>
                 <td className="px-4 py-4 text-sm font-medium tabular-nums leading-5 text-[var(--admin-text)] sm:px-5">
                   {formatMad(row.amount)}
                 </td>
                 <td className="px-4 py-4 last:pr-6 sm:px-5">
-                  <span className={SRF_HISTORY_STATUS_BADGE[row.status] ?? SRF_HISTORY_STATUS_BADGE.Validé}>
-                    {row.status}
+                  <span className={SRF_HISTORY_STATUS_BADGE[row.status] ?? SRF_HISTORY_STATUS_BADGE.pending}>
+                    {t(`student.srf.paymentHistory.statuses.${row.status}`)}
                   </span>
                 </td>
               </tr>
-            ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       <div className="flex flex-col gap-3 px-4 pb-5 pt-3 sm:px-5 lg:hidden">
-        {srfPaymentHistoryRows.map((row) => (
+        {loading ? (
+          Array.from({ length: 2 }).map((_, index) => (
+            <div
+              key={`history-mobile-skeleton-${index}`}
+              className="h-24 animate-pulse rounded-[12px] border border-solid border-[var(--admin-border)] bg-[var(--admin-surface-muted)]"
+            />
+          ))
+        ) : rows.length === 0 ? (
+          <SrfEmptyState icon={ReceiptText} title={t('student.srf.table.empty')} />
+        ) : (
+          rows.map((row) => (
           <article
             key={row.id}
             className="flex min-w-0 flex-col gap-2 rounded-[12px] border border-solid border-[var(--admin-border)] bg-[var(--admin-surface-muted)] p-3.5"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-sm font-medium leading-5 text-[var(--admin-text)]">{row.date}</span>
-              <span className={SRF_HISTORY_TYPE_BADGE}>{row.type}</span>
+              <span className={SRF_HISTORY_TYPE_BADGE}>
+                {t(`student.srf.paymentHistory.types.${row.type}`)}
+              </span>
             </div>
             <p className="m-0 text-sm leading-5 text-[var(--admin-text)]">{row.description}</p>
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-medium tabular-nums leading-5 text-[var(--admin-text)]">
                 {formatMad(row.amount)}
               </span>
-              <span className={SRF_HISTORY_STATUS_BADGE[row.status] ?? SRF_HISTORY_STATUS_BADGE.Validé}>
-                {row.status}
+              <span className={SRF_HISTORY_STATUS_BADGE[row.status] ?? SRF_HISTORY_STATUS_BADGE.pending}>
+                {t(`student.srf.paymentHistory.statuses.${row.status}`)}
               </span>
             </div>
           </article>
-        ))}
+          ))
+        )}
       </div>
     </section>
   );

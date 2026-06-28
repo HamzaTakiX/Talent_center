@@ -132,7 +132,8 @@ def _prepare_response_context(
 
     if not use_context:
         with perf.track('prompt_construction'):
-            return {}, [], build_minimal_system_prompt(mode), False
+            lang_hint = detect_language_hint(message)
+            return {}, [], build_minimal_system_prompt(mode, language_hint=lang_hint), False
 
     with perf.track('context_retrieval'):
         context = build_student_context(student, offer_uuid=offer_uuid)
@@ -148,7 +149,8 @@ def _prepare_response_context(
             retrieved = retrieve_context(student.pk, message)
 
     with perf.track('prompt_construction'):
-        system_prompt = build_system_prompt(mode, context_text, retrieved)
+        lang_hint = detect_language_hint(message)
+        system_prompt = build_system_prompt(mode, context_text, retrieved, language_hint=lang_hint)
 
     return context, retrieved, system_prompt, True
 

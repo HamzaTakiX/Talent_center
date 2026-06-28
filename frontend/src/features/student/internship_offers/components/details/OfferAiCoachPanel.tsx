@@ -12,11 +12,7 @@ const OfferAiCoachPanel: FunctionComponent<OfferAiCoachPanelProps> = ({ offer })
   return (
     <div id="student-offer-ai-coach" className={DETAILS_MATCH_ZONE}>
       <OfferCvMatchSection offer={offer} />
-      <OfferInterviewSimulationSection
-        offerId={offer.id}
-        offerTitle={offer.title}
-        company={offer.company}
-      />
+      <OfferInterviewSimulationSection offer={offer} />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import type {
   StageImportListResponse,
   StageMatchScore,
   StageOfferDetail,
+  StageOfferImportPreview,
   StageOfferListParams,
   StageOfferWritePayload,
   StagePipelineBoard,
@@ -131,6 +132,13 @@ export const stageApi = {
 
   startImport: async (sourceUrl: string): Promise<StageImportJob> => {
     const res = await apiClient.post<ApiEnvelope<StageImportJob>>(`${BASE}/import`, { source_url: sourceUrl });
+    return res.data.data!;
+  },
+
+  previewOfferImport: async (sourceUrl: string): Promise<StageOfferImportPreview> => {
+    const res = await apiClient.post<ApiEnvelope<StageOfferImportPreview>>(`${BASE}/import/preview`, {
+      source_url: sourceUrl,
+    });
     return res.data.data!;
   },
 

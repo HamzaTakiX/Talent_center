@@ -57,7 +57,7 @@ const InternshipOffersTable: FunctionComponent = () => {
 
   return (
     <AdminModulePanel
-      className="admin-offers-module-panel admin-offers-module-panel--offers"
+      className="admin-offers-module-panel admin-offers-module-panel--offers gap-4 lg:gap-6"
       header={
         <InternshipOffersSectionHeader
           variant="offers"
@@ -85,7 +85,7 @@ const InternshipOffersTable: FunctionComponent = () => {
           {error}
         </p>
       )}
-      <div className="space-y-3 px-4 pb-6 sm:px-6 lg:hidden">
+      <div className="admin-offers-mobile-list space-y-3 px-3 pb-5 sm:px-6 sm:pb-6">
         {loading ? (
           <AdminMobileTableSkeleton count={4} />
         ) : offers.length === 0 ? (
@@ -94,10 +94,13 @@ const InternshipOffersTable: FunctionComponent = () => {
           offers.map((offer) => (
             <AdminMobileRowCard
               key={offer.id}
+              className="admin-offers-mobile-card"
               title={
-                <span className="flex items-center gap-3">
+                <span className="admin-offers-mobile-card__title-row">
                   <OfferCompanyLogo url={offer.companyLogoUrl} companyName={offer.company} size="card" />
-                  <SafeText as="span">{offer.title}</SafeText>
+                  <SafeText as="span" className="admin-offers-mobile-card__title-text">
+                    {offer.title}
+                  </SafeText>
                 </span>
               }
               badges={
@@ -116,17 +119,13 @@ const InternshipOffersTable: FunctionComponent = () => {
                 },
                 { label: tableColumn('deadline'), value: offer.deadline },
               ]}
-              actions={
-                <div className="flex justify-end">
-                  <InternshipOfferActions offer={offer} />
-                </div>
-              }
+              actions={<InternshipOfferActions offer={offer} />}
             />
           ))
         )}
       </div>
 
-      <div className="admin-module-table-wrap admin-offers-table-wrap hidden px-4 pb-6 lg:block lg:px-6">
+      <div className="admin-module-table-wrap admin-offers-table-wrap admin-offers-table-wrap--desktop-only px-4 pb-6 lg:px-6">
         <AdminTableScroll className="admin-table-scroll--panel admin-table-scroll--fit">
           <thead className="admin-offers-table__head">
             <tr>

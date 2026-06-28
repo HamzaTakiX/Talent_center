@@ -60,6 +60,9 @@ export const DEFAULT_SERVICE_CONFIG: DocumentServiceConfig = {
     multiStep: false,
     serviceApprovalRequired: true,
     srfClearanceRequired: false,
+    internshipRequired: false,
+    activeStudentRequired: true,
+    registrationCompleteRequired: false,
   },
   workflow: {
     steps: [
@@ -67,8 +70,8 @@ export const DEFAULT_SERVICE_CONFIG: DocumentServiceConfig = {
       { code: 'under_verification', labelKey: 'admin.documentsModule.workflow.verify', enabled: true },
       { code: 'waiting_reservation', labelKey: 'admin.documentsModule.workflow.reserve', enabled: false },
       { code: 'validated', labelKey: 'admin.documentsModule.workflow.generate', enabled: true },
-      { code: 'ready', labelKey: 'admin.documentsModule.workflow.deliver', enabled: true },
-      { code: 'delivered', labelKey: 'admin.documentsModule.workflow.deliver', enabled: true },
+      { code: 'ready', labelKey: 'admin.documentsModule.workflow.ready', enabled: true },
+      { code: 'delivered', labelKey: 'admin.documentsModule.workflow.delivered', enabled: true },
     ],
   },
   automation: {
@@ -158,7 +161,16 @@ export const SERVICE_CATALOG_MOCK: DocumentServiceCatalogItem[] = [
       ...DEFAULT_SERVICE_CONFIG,
       availability: { ...DEFAULT_SERVICE_CONFIG.availability, autoGenerateEnabled: true },
       processing: { ...DEFAULT_SERVICE_CONFIG.processing, estimatedHours: 24, slaHours: 24 },
-      validation: { automatic: true, manual: false, multiStep: false, serviceApprovalRequired: false, srfClearanceRequired: false },
+      validation: {
+        automatic: true,
+        manual: false,
+        multiStep: false,
+        serviceApprovalRequired: false,
+        srfClearanceRequired: false,
+        internshipRequired: false,
+        activeStudentRequired: true,
+        registrationCompleteRequired: false,
+      },
     },
     slaHours: 24,
     estimatedHours: 24,

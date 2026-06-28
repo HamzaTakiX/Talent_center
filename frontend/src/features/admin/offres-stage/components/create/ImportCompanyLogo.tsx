@@ -1,5 +1,5 @@
 import { FunctionComponent, useState } from 'react';
-import { Building2 } from 'lucide-react';
+import OfferAvatarFallback from '../OfferAvatarFallback';
 
 interface ImportCompanyLogoProps {
   url?: string;
@@ -22,9 +22,11 @@ const ImportCompanyLogo: FunctionComponent<ImportCompanyLogoProps> = ({ url, com
           referrerPolicy="no-referrer"
         />
       ) : (
-        <div className="offer-import-company-logo__fallback">
-          <Building2 className="h-6 w-6" strokeWidth={1.75} />
-        </div>
+        <OfferAvatarFallback
+          companyName={companyName}
+          size="import"
+          className="offer-avatar--fill"
+        />
       )}
     </div>
   );

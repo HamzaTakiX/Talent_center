@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import type { DocumentServiceWritePayload, ServiceCatalogFormTab } from '../../types/documentServiceCatalog';
-import { STUDIO_STEPS, isStudioStepComplete } from './serviceCatalogStudioSteps';
+import { isStudioStepComplete } from './serviceCatalogStudioSteps';
+import { getVisibleSteps } from './serviceCatalogStepVisibility';
 
 interface Props {
   active: ServiceCatalogFormTab;
@@ -20,7 +21,7 @@ const ServiceCatalogStudioStepsNav: FunctionComponent<Props> = ({ active, value,
         {t('admin.documentsModule.catalog.form.studio.navigation')}
       </p>
       <ul className="admin-doc-studio-steps__list">
-        {STUDIO_STEPS.map((step, index) => {
+        {getVisibleSteps(value).map((step, index) => {
           const done = isStudioStepComplete(step.key, value);
           const isActive = active === step.key;
           const Icon = step.icon;

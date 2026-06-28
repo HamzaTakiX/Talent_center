@@ -15,6 +15,8 @@ from apps.srf.compliance_models import (
 from apps.srf.models import FinancialAccount
 from apps.srf.services.financial_profile import ensure_financial_account, sync_account_amounts
 from apps.srf.services.installments import (
+    exam_date_for_account,
+    installments_due_before_exam_paid,
     required_semester_for_access,
     semester_installments_paid,
 )
@@ -43,33 +45,51 @@ def recompute_academic_access(
 def compute_access_flags(account: FinancialAccount) -> dict[str, Any]:
     """
     Core business rules:
-    - Semester 1 installments must be paid for exams & conventions.
-    - BLOCKED / OVERDUE → no exams, no convention, no internship.
-    - CLEAR or fully paid FULL plan → full access.
+    - An admin BLOCKED hold or a pending validation always blocks access.
+    - Installment plans are gated by the policy ``exam_gate_mode``:
+        * DUE_TRANCHES → only tranches due on/before the exam must be paid
+          (the full year does NOT need to be settled to sit the exam).
+        * FULL_CLEARANCE → the whole semester / year must be cleared.
+    - FULL-payment plans require the balance to be settled.
     """
+    from apps.srf.config_models import SrfRestrictionPolicy
+    from apps.srf.services.config_engine import get_or_create_restriction_policy
+
     student = account.student_profile
     academic_year = account.current_academic_year or student.academic_year or ''
     semester = required_semester_for_access()
     blocking: list[str] = []
 
     status = account.financial_status
-    if status in (FinancialComplianceStatus.BLOCKED, FinancialComplianceStatus.OVERDUE):
-        blocking.append('financial_status_blocked_or_overdue')
+    is_installments = account.payment_plan_type == PaymentPlanType.INSTALLMENTS
+    gate_mode = get_or_create_restriction_policy().exam_gate_mode
 
-    if account.payment_plan_type == PaymentPlanType.INSTALLMENTS:
-        if not semester_installments_paid(account, semester, academic_year):
-            blocking.append(f'semester_{semester}_installments_unpaid')
-    elif account.remaining_amount > 0:
-        blocking.append('full_payment_incomplete')
-
+    if status == FinancialComplianceStatus.BLOCKED:
+        blocking.append('financial_status_blocked')
     if status == FinancialComplianceStatus.PENDING_VALIDATION:
         blocking.append('payment_pending_validation')
 
-    has_blocks = len(blocking) > 0
-    financially_clear = status == FinancialComplianceStatus.CLEAR
+    if is_installments and gate_mode == SrfRestrictionPolicy.ExamGateMode.DUE_TRANCHES:
+        exam_date = exam_date_for_account(account)
+        if exam_date is not None:
+            if not installments_due_before_exam_paid(account, exam_date):
+                blocking.append('tranches_due_before_exam_unpaid')
+        elif not semester_installments_paid(account, semester, academic_year):
+            # No exam scheduled yet — fall back to the semester gate.
+            blocking.append(f'semester_{semester}_installments_unpaid')
+    elif is_installments:
+        if not semester_installments_paid(account, semester, academic_year):
+            blocking.append(f'semester_{semester}_installments_unpaid')
+        if status == FinancialComplianceStatus.OVERDUE:
+            blocking.append('financial_status_overdue')
+    else:
+        if account.remaining_amount > 0:
+            blocking.append('full_payment_incomplete')
+        if status == FinancialComplianceStatus.OVERDUE:
+            blocking.append('financial_status_overdue')
 
-    fully_settled = financially_clear or account.remaining_amount <= 0
-    allowed = not has_blocks and fully_settled
+    allowed = len(blocking) == 0
+    fully_settled = status == FinancialComplianceStatus.CLEAR or account.remaining_amount <= 0
 
     return {
         'can_take_exams': allowed,

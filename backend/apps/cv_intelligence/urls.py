@@ -36,4 +36,39 @@ urlpatterns = [
         views.CvIntelligenceOfferInterviewEvaluateView.as_view(),
         name='offer-interview-evaluate',
     ),
+    path(
+        'interviews/sessions/start/',
+        views.InterviewSessionStartView.as_view(),
+        name='interview-session-start',
+    ),
+    path(
+        'interviews/sessions/',
+        views.InterviewSessionListView.as_view(),
+        name='interview-session-list',
+    ),
+    path(
+        'interviews/sessions/hub-stats/',
+        views.InterviewSessionHubStatsView.as_view(),
+        name='interview-session-hub-stats',
+    ),
+    path(
+        'interviews/sessions/<uuid:session_uuid>/',
+        views.InterviewSessionDetailView.as_view(),
+        name='interview-session-detail',
+    ),
+    path(
+        'interviews/sessions/<uuid:session_uuid>/answer/',
+        views.InterviewSessionAnswerView.as_view(),
+        name='interview-session-answer',
+    ),
+    path(
+        'interviews/sessions/<uuid:session_uuid>/complete/',
+        views.InterviewSessionCompleteView.as_view(),
+        name='interview-session-complete',
+    ),
+    path(
+        'interviews/stt/transcribe/',
+        views.InterviewAudioTranscribeView.as_view(),
+        name='interview-audio-transcribe',
+    ),
 ]

@@ -8,11 +8,17 @@ from rest_framework.views import APIView
 from apps.admin_management.permissions import IsPlatformAdmin
 from apps.authentication.utils import envelope
 from apps.srf.compliance_models import ProgramExamPeriod
-from apps.srf.config_models import SrfConfigAuditLog, SrfNotificationTemplate, SrfWarningTier
+from apps.srf.config_models import (
+    SrfConfigAuditLog,
+    SrfInstallmentPlanTemplate,
+    SrfNotificationTemplate,
+    SrfWarningTier,
+)
 from apps.srf.config_serializers import (
     ProgramExamPeriodConfigSerializer,
     SimulationSerializer,
     SrfConfigAuditLogSerializer,
+    SrfInstallmentPlanTemplateSerializer,
     SrfNotificationTemplateSerializer,
     SrfRestrictionPolicySerializer,
     SrfWarningTierSerializer,
@@ -23,11 +29,18 @@ from apps.srf.services.config_engine import (
     build_workspace_analytics,
     get_or_create_restriction_policy,
     render_template,
+    seed_default_installment_template,
     seed_default_templates,
     seed_default_warning_tiers,
     simulate_warning_flow,
 )
 from apps.srf.views import SrfFinancePermission
+
+
+def _plan_templates_qs():
+    return SrfInstallmentPlanTemplate.objects.select_related(
+        'filiere', 'academic_year', 'academic_level',
+    ).prefetch_related('tranches')
 
 
 def _audit(request, *, action: str, entity_type: str, entity_id='', message='', before=None, after=None):
@@ -51,6 +64,7 @@ class SrfConfigWorkspaceView(APIView):
     def get(self, request):
         seed_default_warning_tiers()
         seed_default_templates()
+        seed_default_installment_template()
         policy = get_or_create_restriction_policy()
         periods = ProgramExamPeriod.objects.select_related(
             'filiere', 'academic_year', 'academic_level',
@@ -71,6 +85,10 @@ class SrfConfigWorkspaceView(APIView):
                         many=True,
                     ).data,
                     'exam_periods': ProgramExamPeriodConfigSerializer(periods, many=True).data,
+                    'installment_plans': SrfInstallmentPlanTemplateSerializer(
+                        _plan_templates_qs().all(),
+                        many=True,
+                    ).data,
                 },
             ),
         )
@@ -304,6 +322,83 @@ class SrfConfigExamPeriodDetailView(APIView):
             entity_type='exam_period',
             entity_id=period_id,
             message='Deleted exam period',
+            before=before,
+        )
+        return Response(envelope(True, 'Deleted'))
+
+
+class SrfConfigInstallmentPlanListCreateView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, SrfFinancePermission]
+
+    def get(self, request):
+        data = SrfInstallmentPlanTemplateSerializer(_plan_templates_qs().all(), many=True).data
+        return Response(envelope(True, 'OK', data=data))
+
+    def post(self, request):
+        ser = SrfInstallmentPlanTemplateSerializer(data=request.data)
+        if not ser.is_valid():
+            return Response(
+                envelope(False, 'Invalid data', errors=ser.errors),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        template = ser.save()
+        template = _plan_templates_qs().get(pk=template.pk)
+        data = SrfInstallmentPlanTemplateSerializer(template).data
+        _audit(
+            request,
+            action='CREATE',
+            entity_type='installment_plan_template',
+            entity_id=template.pk,
+            message=f'Created installment plan template {template.name}',
+            after=data,
+        )
+        return Response(envelope(True, 'Created', data=data), status=status.HTTP_201_CREATED)
+
+
+class SrfConfigInstallmentPlanDetailView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, SrfFinancePermission]
+
+    def patch(self, request, template_id: int):
+        try:
+            template = _plan_templates_qs().get(pk=template_id)
+        except SrfInstallmentPlanTemplate.DoesNotExist:
+            return Response(envelope(False, 'Not found'), status=status.HTTP_404_NOT_FOUND)
+        before = SrfInstallmentPlanTemplateSerializer(template).data
+        ser = SrfInstallmentPlanTemplateSerializer(template, data=request.data, partial=True)
+        if not ser.is_valid():
+            return Response(
+                envelope(False, 'Invalid data', errors=ser.errors),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        template = ser.save()
+        data = SrfInstallmentPlanTemplateSerializer(_plan_templates_qs().get(pk=template.pk)).data
+        _audit(
+            request,
+            action='UPDATE',
+            entity_type='installment_plan_template',
+            entity_id=template.pk,
+            message=f'Updated installment plan template {template.name}',
+            before=before,
+            after=data,
+        )
+        return Response(envelope(True, 'Updated', data=data))
+
+    def delete(self, request, template_id: int):
+        try:
+            template = SrfInstallmentPlanTemplate.objects.get(pk=template_id)
+        except SrfInstallmentPlanTemplate.DoesNotExist:
+            return Response(envelope(False, 'Not found'), status=status.HTTP_404_NOT_FOUND)
+        before = SrfInstallmentPlanTemplateSerializer(
+            _plan_templates_qs().get(pk=template_id),
+        ).data
+        name = template.name
+        template.delete()
+        _audit(
+            request,
+            action='DELETE',
+            entity_type='installment_plan_template',
+            entity_id=template_id,
+            message=f'Deleted installment plan template {name}',
             before=before,
         )
         return Response(envelope(True, 'Deleted'))

@@ -1,7 +1,8 @@
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Eye } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Eye, MessageSquare } from 'lucide-react';
 import SrfValidateButton from './student-detail/SrfValidateButton';
 import { srfRoutes } from '../../api/srf';
 import { useAdminCopy, useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
@@ -11,30 +12,25 @@ import type {
   StudentFinancialTableRow,
 } from '../../api/srf';
 import AdminMobileRowCard from '../../shared/AdminMobileRowCard';
-import AdminBadge, { type AdminBadgeVariant } from '../../ui/AdminBadge';
 import { useAdminPagination } from '../../shared/hooks/useAdminPagination';
-import {
-  AdminListToolbar,
-  AdminModuleHeader,
-  AdminPagination,
-  AdminSearchEmptyState,
-  AdminTableEmptyState,
-  AdminTableScroll,
-} from '../../ui';
+import { AdminListToolbar, AdminPagination } from '../../ui';
 import { AdminMobileTableSkeleton, AdminTableSkeletonRows } from '../../ui/AdminTableSkeleton';
-import { SrfEmptyState } from './SrfModuleStates';
+import { SrfEmptyState, SrfSearchEmptyState, SrfTableEmptyState } from './SrfModuleStates';
+import SrfSectionHeader from './SrfSectionHeader';
+import SrfToolbarSkeleton from './SrfToolbarSkeleton';
 import { SafeText, ADMIN_TABLE_COL } from '../../../../design-system/safeContent';
 import { adminTableBtn, adminTableBtnMobile } from '../../ui/adminTableButtons';
+import { easePremium } from '../../dashboard/ui/animations';
 
-const statusBadgeVariant: Record<StudentFinancialRowStatus, AdminBadgeVariant> = {
-  Paid: 'success',
-  Unpaid: 'danger',
-  'Partially Paid': 'warning',
-  'Pending Validation': 'info',
-  Late: 'danger',
+const STATUS_BADGE_CLASS: Record<StudentFinancialRowStatus, string> = {
+  Paid: 'admin-srf-status-badge admin-srf-status-badge--paid',
+  Unpaid: 'admin-srf-status-badge admin-srf-status-badge--unpaid',
+  'Partially Paid': 'admin-srf-status-badge admin-srf-status-badge--partial',
+  'Pending Validation': 'admin-srf-status-badge admin-srf-status-badge--pending',
+  Late: 'admin-srf-status-badge admin-srf-status-badge--late',
 };
 
-const mad = (n: number) => `${n} MAD`;
+const mad = (n: number) => `${n.toLocaleString()} MAD`;
 
 interface StudentFinancialStatusTableProps {
   rows: StudentFinancialTableRow[];
@@ -71,13 +67,11 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
       { value: 'Pending Validation', label: srfPaymentStatus('Pending Validation') },
       { value: 'Late', label: srfPaymentStatus('Late') },
     ],
-    [filterLabel, srfPaymentStatus]
+    [filterLabel, srfPaymentStatus],
   );
 
   const StatusBadge: FunctionComponent<{ status: StudentFinancialRowStatus }> = ({ status }) => (
-    <AdminBadge variant={statusBadgeVariant[status]} className="rounded-full px-2.5 py-1 font-semibold">
-      {srfPaymentStatus(status)}
-    </AdminBadge>
+    <span className={STATUS_BADGE_CLASS[status]}>{srfPaymentStatus(status)}</span>
   );
 
   const filteredRows = useMemo(() => {
@@ -112,132 +106,186 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
   const isSearchEmpty = !loading && rows.length > 0 && filteredRows.length === 0;
   const showPagination = !loading && !isEmpty && !isSearchEmpty;
 
+  const toolbar = loading ? (
+    <SrfToolbarSkeleton />
+  ) : (
+    <AdminListToolbar
+      controlsLayout="grouped"
+      searchValue={query}
+      onSearchChange={onQueryChange}
+      searchPlaceholder={searchPh}
+      toolbarAriaLabel={filterLabel('filterSrfToolbar')}
+      filter1={{
+        value: statusFilter,
+        onChange: setStatusFilter,
+        options: statusFilterOptions,
+        ariaLabel: filterLabel('filterByPaymentStatus'),
+      }}
+    />
+  );
+
+  const handleOpenChat = (accountId: string) => {
+    navigate(srfRoutes.chat({ account: accountId, opening: true }));
+  };
+
   return (
-    <div className="box-border flex w-full min-w-0 flex-col admin-module-panel text-start font-inter shadow-sm">
-      <AdminModuleHeader
-        layout="toolbar"
+    <section className="admin-srf-table-section" data-admin-search-id="srf-table">
+      <SrfSectionHeader
         title={t('admin.modules.srf.title')}
         subtitle={t('admin.modules.srf.subtitle')}
-        actions={
-          <AdminListToolbar
-            controlsLayout="grouped"
-            searchValue={query}
-            onSearchChange={onQueryChange}
-            searchPlaceholder={searchPh}
-            toolbarAriaLabel={filterLabel('filterSrfToolbar')}
-            filter1={{
-              value: statusFilter,
-              onChange: setStatusFilter,
-              options: statusFilterOptions,
-              ariaLabel: filterLabel('filterByPaymentStatus'),
-            }}
-          />
-        }
+        liveCount={loading ? undefined : rows.length}
+        loading={loading}
+        actions={toolbar}
       />
 
-      <div className="space-y-3 px-4 pb-6 pt-3 sm:px-6 lg:hidden">
-        {loading ? (
-          <AdminMobileTableSkeleton count={4} />
-        ) : isEmpty ? (
-          <SrfEmptyState titleKey={emptyTitleKey} descriptionKey={emptyDescriptionKey} />
-        ) : isSearchEmpty ? (
-          <AdminSearchEmptyState
-            variant="panel"
-            titleKey={searchEmptyTitleKey}
-            descriptionKey="admin.empty.tryAdjusting"
-          />
-        ) : (
-          paginatedItems.map((row) => (
-            <AdminMobileRowCard
-              key={row.id}
-              title={row.studentName}
-              badges={<StatusBadge status={row.status} />}
-              fields={[
-                { label: tableColumn('class'), value: row.className },
-                { label: tableColumn('amountDue'), value: <span className="tabular-nums">{mad(row.amountDue)}</span> },
-                { label: tableColumn('amountPaid'), value: <span className="tabular-nums">{mad(row.amountPaid)}</span> },
-              ]}
-              actions={
-                <>
-                  <button
-                    type="button"
-                    className={adminTableBtnMobile}
-                    onClick={() => navigate(srfRoutes.student(row.id))}
-                  >
-                    <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                    {t('admin.common.actions.viewDetails')}
-                  </button>
-                  {row.status === 'Pending Validation' ? (
-                    <SrfValidateButton pendingProofId={row.pendingProofId} size="sm" />
-                  ) : null}
-                </>
-              }
-            />
-          ))
-        )}
-      </div>
+      <div className="admin-srf-table-section__body">
+        <div className="admin-srf-table-section__mobile lg:hidden">
+          {loading ? (
+            <AdminMobileTableSkeleton count={6} />
+          ) : isEmpty ? (
+            <SrfEmptyState titleKey={emptyTitleKey} descriptionKey={emptyDescriptionKey} />
+          ) : isSearchEmpty ? (
+            <SrfSearchEmptyState variant="panel" titleKey={searchEmptyTitleKey} />
+          ) : (
+            <motion.div
+              className="space-y-3"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.04, ease: easePremium } },
+              }}
+            >
+              {paginatedItems.map((row, index) => (
+                <motion.div
+                  key={row.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 6 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: easePremium } },
+                  }}
+                >
+                  <AdminMobileRowCard
+                    title={row.studentName}
+                    badges={<StatusBadge status={row.status} />}
+                    fields={[
+                      { label: tableColumn('class'), value: row.className },
+                      {
+                        label: tableColumn('amountDue'),
+                        value: <span className="tabular-nums">{mad(row.amountDue)}</span>,
+                      },
+                      {
+                        label: tableColumn('amountPaid'),
+                        value: <span className="tabular-nums">{mad(row.amountPaid)}</span>,
+                      },
+                    ]}
+                    actions={
+                      <>
+                        <button
+                          type="button"
+                          className={adminTableBtnMobile}
+                          onClick={() => handleOpenChat(row.id)}
+                        >
+                          <MessageSquare className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                          {t('admin.common.detailModal.student.sendMessage')}
+                        </button>
+                        <button
+                          type="button"
+                          className={adminTableBtnMobile}
+                          onClick={() => navigate(srfRoutes.student(row.id))}
+                        >
+                          <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                          {t('admin.common.actions.viewDetails')}
+                        </button>
+                        {row.status === 'Pending Validation' ? (
+                          <SrfValidateButton pendingProofId={row.pendingProofId} size="sm" />
+                        ) : null}
+                      </>
+                    }
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </div>
 
-      <div className="admin-module-table-wrap hidden px-4 pb-6 lg:block lg:px-6">
-        <AdminTableScroll minWidth="880px" className="admin-table-scroll--panel">
-          <thead>
-            <tr>
-              <th className={ADMIN_TABLE_COL.name}>{tableColumn('studentName')}</th>
-              <th className={ADMIN_TABLE_COL.text}>{tableColumn('class')}</th>
-              <th className={ADMIN_TABLE_COL.text}>{tableColumn('amountDue')}</th>
-              <th className={ADMIN_TABLE_COL.text}>{tableColumn('amountPaid')}</th>
-              <th className={ADMIN_TABLE_COL.status}>{tableColumn('status')}</th>
-              <th className={`text-end ${ADMIN_TABLE_COL.actions}`}>{tableColumn('actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <AdminTableSkeletonRows colSpan={6} rows={8} />
-            ) : isEmpty ? (
-              <tr>
-                <td colSpan={6} className="admin-table-empty-cell p-0">
-                  <SrfEmptyState titleKey={emptyTitleKey} descriptionKey={emptyDescriptionKey} />
-                </td>
-              </tr>
-            ) : isSearchEmpty ? (
-              <AdminTableEmptyState
-                colSpan={6}
-                titleKey={searchEmptyTitleKey}
-                descriptionKey="admin.empty.tryAdjusting"
-              />
-            ) : (
-              paginatedItems.map((row) => (
-                <tr key={row.id}>
-                  <td className="font-medium text-[var(--admin-text)]"><SafeText>{row.studentName}</SafeText></td>
-                  <td><SafeText>{row.className}</SafeText></td>
-                  <td className="tabular-nums">{mad(row.amountDue)}</td>
-                  <td className="tabular-nums">{mad(row.amountPaid)}</td>
-                  <td>
-                    <StatusBadge status={row.status} />
-                  </td>
-                  <td className="text-end">
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        className={adminTableBtn}
-                        onClick={() => navigate(srfRoutes.student(row.id))}
+        <div className="admin-srf-table-section__desktop hidden lg:block">
+          <div className="admin-module-table-wrap">
+            <div className="admin-table-scroll admin-table-scroll--panel admin-srf-table-scroll">
+              <table className="admin-table admin-table--safe" style={{ minWidth: '880px' }}>
+                <thead>
+                  <tr>
+                    <th className={ADMIN_TABLE_COL.name}>{tableColumn('studentName')}</th>
+                    <th className={ADMIN_TABLE_COL.text}>{tableColumn('class')}</th>
+                    <th className={ADMIN_TABLE_COL.text}>{tableColumn('amountDue')}</th>
+                    <th className={ADMIN_TABLE_COL.text}>{tableColumn('amountPaid')}</th>
+                    <th className={ADMIN_TABLE_COL.status}>{tableColumn('status')}</th>
+                    <th className={`text-end ${ADMIN_TABLE_COL.actions}`}>{tableColumn('actions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <AdminTableSkeletonRows colSpan={6} rows={7} />
+                  ) : isEmpty ? (
+                    <SrfTableEmptyState
+                      colSpan={6}
+                      titleKey={emptyTitleKey}
+                      descriptionKey={emptyDescriptionKey}
+                    />
+                  ) : isSearchEmpty ? (
+                    <SrfSearchEmptyState colSpan={6} titleKey={searchEmptyTitleKey} />
+                  ) : (
+                    paginatedItems.map((row, index) => (
+                      <motion.tr
+                        key={row.id}
+                        className="admin-srf-data-row"
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, delay: index * 0.03, ease: easePremium }}
                       >
-                        <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                        {t('admin.common.actions.viewDetails')}
-                      </button>
-                      {row.status === 'Pending Validation' ? (
-                        <SrfValidateButton pendingProofId={row.pendingProofId} size="sm" />
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </AdminTableScroll>
-      </div>
+                        <td className="font-medium text-[var(--admin-text)]">
+                          <SafeText>{row.studentName}</SafeText>
+                        </td>
+                        <td>
+                          <SafeText>{row.className}</SafeText>
+                        </td>
+                        <td className="tabular-nums">{mad(row.amountDue)}</td>
+                        <td className="tabular-nums">{mad(row.amountPaid)}</td>
+                        <td>
+                          <StatusBadge status={row.status} />
+                        </td>
+                        <td className="text-end">
+                          <div className="flex flex-wrap items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              className={adminTableBtn}
+                              onClick={() => handleOpenChat(row.id)}
+                            >
+                              <MessageSquare className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                              {t('admin.common.detailModal.student.sendMessage')}
+                            </button>
+                            <button
+                              type="button"
+                              className={adminTableBtn}
+                              onClick={() => navigate(srfRoutes.student(row.id))}
+                            >
+                              <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                              {t('admin.common.actions.viewDetails')}
+                            </button>
+                            {row.status === 'Pending Validation' ? (
+                              <SrfValidateButton pendingProofId={row.pendingProofId} size="sm" />
+                            ) : null}
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-      {showPagination ? (
-        <div className="px-4 pb-6 sm:px-6 lg:px-6">
+        {showPagination ? (
           <AdminPagination
             page={page}
             totalPages={totalPages}
@@ -246,11 +294,10 @@ const StudentFinancialStatusTable: FunctionComponent<StudentFinancialStatusTable
             onPageChange={setPage}
             itemLabel={t('admin.pagination.srfAccounts', { defaultValue: 'comptes' })}
           />
-        </div>
-      ) : null}
-    </div>
+        ) : null}
+      </div>
+    </section>
   );
 };
 
 export default StudentFinancialStatusTable;
-

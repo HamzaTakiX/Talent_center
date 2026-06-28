@@ -86,6 +86,8 @@ export interface PaymentProofSubmission {
 
   created_at: string;
 
+  reviewed_at?: string | null;
+
   linked_payment_id?: number | null;
 
   audit_timeline?: SrfAuditEvent[];
@@ -204,6 +206,8 @@ export interface SrfInstallment {
 
   payment_status: string;
 
+  paid_amount?: string;
+
 }
 
 
@@ -237,6 +241,8 @@ export interface SrfInstallmentProgress {
   paid_installments: number;
 
   overdue_installments: number;
+
+  blocking_overdue_installments?: number;
 
   completion_pct: number;
 
@@ -283,6 +289,8 @@ export interface SrfStudentFinancialDetail {
     blocking_reasons: string[];
 
     is_overdue: boolean;
+
+    is_access_blocked?: boolean;
 
     pending_proof_count: number;
 
@@ -337,6 +345,8 @@ export interface SrfPaymentProofDetail {
     label: string;
 
     amount: string;
+
+    paid_amount?: string;
 
     currency: string;
 
@@ -401,6 +411,15 @@ export const srfRoutes = {
   student: (accountId: string | number) => `/admin/srf/student/${accountId}`,
 
   validation: (proofId: string | number) => `/admin/srf/validation/${proofId}`,
+
+  chat: (params?: { account?: string | number; conversation?: string | number; opening?: boolean }) => {
+    const search = new URLSearchParams();
+    if (params?.account != null) search.set('account', String(params.account));
+    if (params?.conversation != null) search.set('conversation', String(params.conversation));
+    if (params?.opening) search.set('opening', '1');
+    const qs = search.toString();
+    return qs ? `/admin/srf/chat?${qs}` : '/admin/srf/chat';
+  },
 
 };
 
@@ -534,7 +553,7 @@ export const srfApi = {
 
     proofId: number,
 
-    payload: { status: string; rejection_reason?: string; admin_notes?: string },
+    payload: { status: string; rejection_reason?: string; admin_notes?: string; approved_amount?: number },
 
   ): Promise<SrfPaymentProofDetail | PaymentProofSubmission> => {
 
@@ -570,6 +589,21 @@ export const srfApi = {
 
     return response.data.data;
 
+  },
+
+  openChat: async (
+    accountId: number,
+    message?: string,
+  ): Promise<{ conversation_id: number }> => {
+    const response = await apiClient.post<ApiEnvelope<{ conversation_id: number }>>(
+      `/srf/students/${accountId}/chat/open`,
+      message ? { message } : {},
+    );
+    const body = response.data;
+    if (!body.success || !body.data?.conversation_id) {
+      throw new Error(body.message || 'Failed to open SRF chat');
+    }
+    return body.data;
   },
 
 };

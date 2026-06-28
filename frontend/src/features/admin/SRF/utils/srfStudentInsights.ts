@@ -11,10 +11,13 @@ export interface SrfInsight {
 
 export function buildSrfInsights(detail: SrfStudentFinancialDetail, t: TFunction): SrfInsight[] {
   const insights: SrfInsight[] = [];
-  const { account, academic_access: access, restrictions, installment_progress: prog } = detail;
+  const { account, academic_access: access, installment_progress: prog, restrictions } = detail;
   const remaining = parseFloat(account.remaining_amount) || 0;
   const total = parseFloat(account.total_amount) || 0;
   const paidPct = total > 0 ? ((parseFloat(account.paid_amount) || 0) / total) * 100 : 0;
+  const blockingOverdue =
+    prog.blocking_overdue_installments ??
+    (access.can_take_exams ? 0 : prog.overdue_installments);
 
   if (!access.can_take_exams) {
     insights.push({
@@ -22,7 +25,7 @@ export function buildSrfInsights(detail: SrfStudentFinancialDetail, t: TFunction
       tone: 'danger',
       message: t('admin.modules.srf.detail.insights.examsBlocked'),
     });
-  } else if (remaining > 0 && paidPct < 100) {
+  } else if (remaining > 0 && paidPct < 100 && !access.can_take_exams) {
     insights.push({
       id: 'exams-risk',
       tone: 'warning',
@@ -46,11 +49,15 @@ export function buildSrfInsights(detail: SrfStudentFinancialDetail, t: TFunction
     });
   }
 
-  if (restrictions.is_overdue || prog.overdue_installments > 0) {
+  if (blockingOverdue > 0) {
     insights.push({
       id: 'overdue',
-      tone: 'danger',
-      message: t('admin.modules.srf.detail.insights.overdue', { count: prog.overdue_installments }),
+      tone: access.can_take_exams ? 'warning' : 'danger',
+      message: access.can_take_exams
+        ? t('admin.modules.srf.detail.insights.overdueNonBlocking', {
+            count: blockingOverdue,
+          })
+        : t('admin.modules.srf.detail.insights.overdue', { count: blockingOverdue }),
     });
   }
 
@@ -88,11 +95,15 @@ export function buildSrfInsights(detail: SrfStudentFinancialDetail, t: TFunction
 
 export function computeRiskScore(detail: SrfStudentFinancialDetail): number {
   let score = 0;
-  if (detail.restrictions.is_overdue) score += 35;
+  const access = detail.academic_access;
+  const blockingOverdue =
+    detail.installment_progress.blocking_overdue_installments ??
+    (access.can_take_exams ? 0 : detail.installment_progress.overdue_installments);
+
+  if (!access.can_take_exams) score += 40;
   score += Math.min(detail.risk_alerts.length * 12, 36);
   score += detail.restrictions.pending_proof_count * 8;
-  score += detail.installment_progress.overdue_installments * 10;
-  if (!detail.academic_access.can_take_exams) score += 15;
+  score += blockingOverdue * 12;
   return Math.min(100, score);
 }
 

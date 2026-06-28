@@ -1,34 +1,46 @@
 import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Download, Pencil, Store } from 'lucide-react';
+import { Calendar, Clock, Download, Eye, Pencil, Store } from 'lucide-react';
 import type { DocumentServiceCatalogItem } from '../../types/documentServiceCatalog';
 import { resolveServiceIcon } from './serviceCatalogIcons';
+import { isCustomServiceColor, serviceAccentStyle } from './serviceCatalogColor';
 
 interface Props {
   service: DocumentServiceCatalogItem;
   /** Aperçu studio — masque l’action d’édition */
   preview?: boolean;
+  /** Portail étudiant — icône voir en haut à droite (comme l’édition admin) */
+  onView?: (id: string) => void;
+  viewAriaLabel?: string;
 }
 
-const ServiceCatalogCard: FunctionComponent<Props> = ({ service, preview = false }) => {
+const ServiceCatalogCard: FunctionComponent<Props> = ({
+  service,
+  preview = false,
+  onView,
+  viewAriaLabel,
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const Icon = resolveServiceIcon(service.iconKey);
+  const customColor = isCustomServiceColor(service.colorTheme);
+  const showAdminEdit = !preview && !onView;
+  const showStudentView = !preview && Boolean(onView);
 
   return (
     <article
-      className={`admin-doc-svc-card admin-doc-svc-card--${service.colorTheme} ${!service.isActive ? 'admin-doc-svc-card--inactive' : ''}`}
+      className={`admin-doc-svc-card ${customColor ? '' : `admin-doc-svc-card--${service.colorTheme}`} ${!service.isActive ? 'admin-doc-svc-card--inactive' : ''}`}
     >
       <div className="admin-doc-svc-card__head">
-        <span className="admin-doc-svc-card__icon" aria-hidden>
+        <span className="admin-doc-svc-card__icon" style={serviceAccentStyle(service.colorTheme)} aria-hidden>
           <Icon className="h-6 w-6" strokeWidth={1.5} />
         </span>
         <div className="admin-doc-svc-card__meta">
           <h3 className="admin-doc-svc-card__title">{service.name}</h3>
           <code className="admin-doc-svc-card__code">{service.code}</code>
         </div>
-        {!preview ? (
+        {showAdminEdit ? (
           <button
             type="button"
             className="admin-doc-svc-card__edit"
@@ -36,6 +48,16 @@ const ServiceCatalogCard: FunctionComponent<Props> = ({ service, preview = false
             aria-label={t('admin.documentsModule.catalog.actions.edit')}
           >
             <Pencil className="h-4 w-4" />
+          </button>
+        ) : null}
+        {showStudentView ? (
+          <button
+            type="button"
+            className="admin-doc-svc-card__edit"
+            onClick={() => onView?.(service.id)}
+            aria-label={viewAriaLabel ?? t('student.documents.viewAria')}
+          >
+            <Eye className="h-4 w-4" />
           </button>
         ) : null}
       </div>
@@ -66,6 +88,21 @@ const ServiceCatalogCard: FunctionComponent<Props> = ({ service, preview = false
             {t('admin.documentsModule.catalog.badges.autoGen')}
           </span>
         )}
+        {showStudentView && service.studentRequest?.mode !== 'auto_generate' && service.studentRequest?.isPending ? (
+          <span className="admin-doc-svc-badge admin-doc-svc-badge--pending">
+            {t('student.documents.requestStatus.badgePending')}
+          </span>
+        ) : null}
+        {showStudentView && service.studentRequest?.mode !== 'auto_generate' && service.studentRequest?.hasRequest && !service.studentRequest.isPending ? (
+          <span className="admin-doc-svc-badge admin-doc-svc-badge--requested">
+            {t('student.documents.requestStatus.badgeSubmitted')}
+          </span>
+        ) : null}
+        {showStudentView && service.studentRequest?.mode === 'auto_generate' && service.studentRequest?.hasGeneratedOutput ? (
+          <span className="admin-doc-svc-badge admin-doc-svc-badge--ready">
+            {t('student.documents.generate.badgeReady')}
+          </span>
+        ) : null}
       </div>
 
       <footer className="admin-doc-svc-card__footer">
@@ -75,9 +112,7 @@ const ServiceCatalogCard: FunctionComponent<Props> = ({ service, preview = false
             hours: service.estimatedHours,
           })}
         </span>
-        <span className="admin-doc-svc-card__sla-hint">
-          SLA {service.slaHours}h
-        </span>
+        <span className="admin-doc-svc-card__sla-hint">SLA {service.slaHours}h</span>
       </footer>
     </article>
   );

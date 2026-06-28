@@ -213,6 +213,29 @@ class ImportUrlSerializer(serializers.Serializer):
     source_url = serializers.URLField()
 
 
+class InterviewSimulatorContextRequestSerializer(serializers.Serializer):
+    """Payload for building an interview simulation context bundle.
+
+    - offer_uuid: offer inside the platform
+    - source_url: external offer URL to extract/preview
+    """
+
+    offer_uuid = serializers.UUIDField(required=False, allow_null=True)
+    source_url = serializers.URLField(required=False, allow_blank=True, allow_null=True)
+
+    def validate(self, attrs):
+        offer_uuid = attrs.get('offer_uuid')
+        source_url = (attrs.get('source_url') or '').strip()
+        if not offer_uuid and not source_url:
+            # It's allowed to run without an offer, but we need an explicit empty payload.
+            # Keep this strict to avoid accidental client bugs.
+            raise serializers.ValidationError(
+                'Provide at least one of: offer_uuid or source_url.',
+            )
+        attrs['source_url'] = source_url
+        return attrs
+
+
 class ImportApproveSerializer(serializers.Serializer):
     overrides = serializers.DictField(required=False, default=dict)
 

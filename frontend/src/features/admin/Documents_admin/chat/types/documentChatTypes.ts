@@ -18,6 +18,8 @@ export type DocumentPriority = 'Low' | 'Normal' | 'High' | 'Urgent';
 
 export type DeliveryMethod = 'Digital' | 'Pickup' | 'Mail' | 'Signature';
 
+import type { ChatAttachmentView } from '../../../../shared/contextual-chat/utils/chatAttachmentUtils';
+
 export type DocumentMessage = {
   id: string;
   direction: 'in' | 'out';
@@ -25,15 +27,27 @@ export type DocumentMessage = {
   time: string;
   separatorBefore?: string;
   read?: boolean;
+  messageType?: string;
   attachmentName?: string;
+  attachments?: ChatAttachmentView[];
 };
 
 import type { StudentAcademicFields } from '../../../shared/chat-filters/studentAcademicChatFilterTypes';
 
+export type PrimaryDocumentFilter = 'all' | 'archived';
+
 export type DocumentConversation = StudentAcademicFields & {
   id: string;
+  conversationId: number;
+  studentUserId: number | null;
   studentName: string;
   studentInitials: string;
+  studentEmail?: string;
+  studentAvatarUrl?: string;
+  serviceId: string;
+  serviceCode: string;
+  iconKey: string;
+  colorTheme: string;
   documentTitle: string;
   documentCategory: DocumentCategory;
   reference: string;
@@ -45,12 +59,12 @@ export type DocumentConversation = StudentAcademicFields & {
   serviceName: string;
   lastMessage: string;
   timeLabel: string;
+  lastMessageAt?: string | null;
   unreadCount: number;
   urgent: boolean;
   resolved: boolean;
   archived: boolean;
   messages: DocumentMessage[];
-  studentEmail?: string;
   requestNotes?: string;
   workflowStep?: string;
 };
@@ -61,22 +75,27 @@ import {
 } from '../../../shared/chat-filters/studentAcademicChatFilterTypes';
 
 export type DocumentInboxFilters = StudentAcademicChatFilters & {
+  primary: PrimaryDocumentFilter;
   categories: DocumentCategory[];
   statuses: DocumentRequestStatus[];
   priorities: DocumentPriority[];
   unread: boolean;
   urgent: boolean;
-  archived: boolean;
 };
 
 export const EMPTY_DOCUMENT_FILTERS: DocumentInboxFilters = {
   ...EMPTY_STUDENT_ACADEMIC_CHAT_FILTERS,
+  primary: 'all',
   categories: [],
   statuses: [],
   priorities: [],
   unread: false,
   urgent: false,
-  archived: false,
+};
+
+export type PrimaryFilterCounts = {
+  all: number;
+  archived: number;
 };
 
 export type InboxStats = {

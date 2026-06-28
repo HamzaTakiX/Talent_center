@@ -9,11 +9,10 @@ import DashboardPageHero from '../components/DashboardPageHero';
 import { AdminDashboardProvider, useAdminDashboardContext } from '../context/AdminDashboardContext';
 import { useAdminPreferences } from '../../account/context/AdminPreferencesContext';
 import { useDashboardLayout, type DashboardSectionId } from '../../account/hooks/useDashboardLayout';
-import { DashboardPageSkeleton } from '../ui/DashboardSkeleton';
 import { staggerContainer } from '../ui/animations';
 
 const AdminDashboardContent: FunctionComponent = () => {
-  const { loading } = useAdminDashboardContext();
+  const { error } = useAdminDashboardContext();
   const { preferences } = useAdminPreferences();
   const { sectionOrder } = useDashboardLayout();
 
@@ -36,21 +35,27 @@ const AdminDashboardContent: FunctionComponent = () => {
 
   return (
     <AdminLayout>
-      {loading ? (
-        <DashboardPageSkeleton />
-      ) : (
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className={`mx-auto w-full min-w-0 max-w-[1680px] ${pageSpacing} ${
-            preferences.dashboardPersonalization ? 'admin-dashboard-personalized' : ''
-          }`}
-        >
-          <DashboardPageHero />
-          {sectionOrder.map((id) => sectionNodes[id])}
-        </motion.div>
-      )}
+      <motion.div
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+        className={`mx-auto w-full min-w-0 max-w-[1680px] ${pageSpacing} ${
+          preferences.dashboardPersonalization ? 'admin-dashboard-personalized' : ''
+        }`}
+      >
+        <DashboardPageHero />
+
+        {error ? (
+          <div
+            role="alert"
+            className="rounded-admin-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-300"
+          >
+            {error}
+          </div>
+        ) : null}
+
+        {sectionOrder.map((id) => sectionNodes[id])}
+      </motion.div>
     </AdminLayout>
   );
 };

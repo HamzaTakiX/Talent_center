@@ -111,6 +111,8 @@ def validate_row(
 
         for n in range(1, 5):
             inst_status = str(mapped.get(f'installment_{n}_status') or '').strip().upper()
+            if inst_status in {'1', '0', 'OUI', 'NON', 'YES', 'NO', 'PAYE', 'PAYÉ'}:
+                continue
             if inst_status and inst_status not in VALID_INSTALLMENT_STATUSES:
                 errors.append(f'Statut tranche {n} invalide : {inst_status}')
 

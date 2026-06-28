@@ -7,7 +7,16 @@
   import { demoState, ui } from '$lib/state/index.svelte';
   import { generatePDF } from '$lib/utils';
   import { runPremiumCvAnalysis, initCvAiSectionFocusListener } from '$lib/ai/runAnalysis';
-  import { loadCvDraft, saveCvDraft } from '$lib/state/cvDraftStorage';
+  import { initViewportListeners } from '$lib/state/viewport.svelte';
+  import { initCvI18n, getCvI18nTick } from '$lib/i18n/cvTranslate.svelte';
+  import {
+    loadCvDraft,
+    saveCvDraft,
+    hasUserCvContent,
+    markCvDraftAutosaveReady,
+    scheduleCvDraftAutosave,
+  } from '$lib/state/cvDraftStorage';
+  import { getCvSnapshot } from '$lib/state/index.svelte';
 
   const themes = {
     default: Default,
@@ -56,14 +65,23 @@
     syncSplitOverflow();
   });
 
+  $effect(() => {
+    getCvSnapshot();
+    scheduleCvDraftAutosave();
+  });
+
   onMount(() => {
+    const removeViewport = initViewportListeners();
+    const removeI18n = initCvI18n();
     const fromUrl = new URLSearchParams(window.location.search).get('theme');
     if (fromUrl && fromUrl in themes) {
       themeKey = fromUrl as ThemeKey;
     }
-    if (!loadCvDraft()) {
+    const hadDraft = loadCvDraft();
+    if (!hadDraft && !hasUserCvContent()) {
       demoState.fill();
     }
+    markCvDraftAutosaveReady();
     rootEl?.classList.remove('dark');
     syncSplitOverflow();
 
@@ -76,6 +94,8 @@
     const removeFocusListener = initCvAiSectionFocusListener();
 
     return () => {
+      removeViewport();
+      removeI18n();
       removeFocusListener();
       window.removeEventListener('quickcv:mode', onMode);
       window.removeEventListener('quickcv:viewScale', onScale);
@@ -89,8 +109,10 @@
 
 <div bind:this={rootEl} class="quickcv-root quickcv-admin flex h-full min-h-0 w-full flex-col">
   <div class="min-h-0 flex-1 overflow-hidden">
-    <Ui>
-      <Component />
-    </Ui>
+    {#key getCvI18nTick()}
+      <Ui>
+        <Component />
+      </Ui>
+    {/key}
   </div>
 </div>

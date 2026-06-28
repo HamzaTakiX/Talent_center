@@ -17,10 +17,18 @@ function polar(cx: number, cy: number, r: number, angleDeg: number) {
 }
 
 function arcPath(cx: number, cy: number, r: number, startAngle: number, endAngle: number): string {
-  if (endAngle - startAngle <= 0.01) return '';
+  const sweep = endAngle - startAngle;
+  if (sweep <= 0.01) return '';
+
+  // SVG arcs cannot render a full ring in one command (start/end coincide).
+  if (sweep >= 359.99) {
+    const mid = startAngle + 180;
+    return `${arcPath(cx, cy, r, startAngle, mid)} ${arcPath(cx, cy, r, mid, startAngle + 360)}`.trim();
+  }
+
   const start = polar(cx, cy, r, endAngle);
   const end = polar(cx, cy, r, startAngle);
-  const large = endAngle - startAngle <= 180 ? 0 : 1;
+  const large = sweep <= 180 ? 0 : 1;
   return `M ${start.x} ${start.y} A ${r} ${r} 0 ${large} 0 ${end.x} ${end.y}`;
 }
 

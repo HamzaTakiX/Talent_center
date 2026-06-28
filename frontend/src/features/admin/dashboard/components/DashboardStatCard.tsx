@@ -67,6 +67,8 @@ const DashboardStatCard: FunctionComponent<DashboardStatCardProps> = ({
     <motion.button
       type="button"
       variants={staggerItem}
+      initial="initial"
+      animate="animate"
       custom={index}
       onClick={onClick}
       data-tone={tone}

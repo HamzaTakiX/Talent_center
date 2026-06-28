@@ -11,6 +11,7 @@ export interface SrfConfigAnalytics {
   open_alerts_by_severity: Record<string, number>;
   active_exam_periods: number;
   active_warning_tiers: number;
+  active_installment_plans: number;
 }
 
 export interface SrfWarningTier {
@@ -28,6 +29,8 @@ export interface SrfWarningTier {
   is_active: boolean;
 }
 
+export type SrfExamGateMode = 'FULL_CLEARANCE' | 'DUE_TRANCHES';
+
 export interface SrfRestrictionPolicy {
   id: number;
   singleton_key: string;
@@ -39,7 +42,37 @@ export interface SrfRestrictionPolicy {
   enable_critical_alerts: boolean;
   unpaid_blocks_exams: boolean;
   unpaid_blocks_convention: boolean;
+  exam_gate_mode: SrfExamGateMode;
   notes: string;
+}
+
+export interface SrfInstallmentPlanTranche {
+  id?: number;
+  tranche_number: number;
+  label: string;
+  percentage: string | number;
+  due_date: string;
+  semester: number;
+}
+
+export interface SrfInstallmentPlanTemplate {
+  id: number;
+  name: string;
+  description: string;
+  filiere: number | null;
+  filiere_name: string | null;
+  academic_level: number | null;
+  academic_level_label: string | null;
+  academic_year: number | null;
+  academic_year_code: string | null;
+  number_of_tranches: number;
+  split_mode: 'EQUAL' | 'CUSTOM';
+  currency: string;
+  is_mandatory: boolean;
+  is_active: boolean;
+  notes: string;
+  tranches: SrfInstallmentPlanTranche[];
+  total_percentage: number;
 }
 
 export interface SrfNotificationTemplate {
@@ -89,6 +122,7 @@ export interface SrfConfigWorkspace {
   warning_tiers: SrfWarningTier[];
   templates: SrfNotificationTemplate[];
   exam_periods: SrfExamPeriodConfig[];
+  installment_plans: SrfInstallmentPlanTemplate[];
 }
 
 export interface SimulationResult {
@@ -148,6 +182,31 @@ export const srfConfigApi = {
 
   deleteExamPeriod: async (id: number): Promise<void> => {
     await apiClient.delete(`/srf/config/exam-periods/${id}`);
+  },
+
+  createInstallmentPlan: async (
+    payload: Record<string, unknown>,
+  ): Promise<SrfInstallmentPlanTemplate> => {
+    const res = await apiClient.post<ApiEnvelope<SrfInstallmentPlanTemplate>>(
+      '/srf/config/installment-plans',
+      payload,
+    );
+    return res.data.data;
+  },
+
+  updateInstallmentPlan: async (
+    id: number,
+    payload: Record<string, unknown>,
+  ): Promise<SrfInstallmentPlanTemplate> => {
+    const res = await apiClient.patch<ApiEnvelope<SrfInstallmentPlanTemplate>>(
+      `/srf/config/installment-plans/${id}`,
+      payload,
+    );
+    return res.data.data;
+  },
+
+  deleteInstallmentPlan: async (id: number): Promise<void> => {
+    await apiClient.delete(`/srf/config/installment-plans/${id}`);
   },
 
   updateTemplate: async (id: number, payload: Partial<SrfNotificationTemplate>): Promise<SrfNotificationTemplate> => {

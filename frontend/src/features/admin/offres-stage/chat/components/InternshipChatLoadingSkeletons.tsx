@@ -14,9 +14,18 @@ export const InternshipChatSidebarSkeleton: FunctionComponent = () => {
 
   return (
     <aside className="isi-sidebar" aria-busy="true" aria-live="polite">
-      <div className="isi-sidebar-head">
-        <Shimmer className="h-[0.9375rem] w-36" />
-        <Shimmer className="h-8 w-8 rounded-lg" />
+      <div className="isi-sidebar-head isi-sidebar-head--brand">
+        <div className="isi-sidebar-brand">
+          <Shimmer className="isi-sidebar-brand-icon !rounded-[0.75rem]" />
+          <div className="isi-sidebar-brand-copy min-w-0 flex-1 space-y-1.5">
+            <Shimmer className="h-[0.9375rem] w-28" />
+            <Shimmer className="h-2.5 w-20" />
+          </div>
+        </div>
+        <div className="isi-sidebar-actions flex gap-1">
+          <Shimmer className="h-8 w-8 rounded-lg" />
+          <Shimmer className="h-8 w-8 rounded-lg" />
+        </div>
       </div>
 
       <div className="isi-search-wrap">
@@ -122,7 +131,6 @@ export const InternshipChatContextPanelSkeleton: FunctionComponent = () => {
     <aside className="isi-inspector" aria-busy="true" aria-live="polite">
       <header className="isi-inspector-head">
         <Shimmer className="h-3.5 w-20" />
-        <Shimmer className="h-5 w-12" />
       </header>
 
       <Shimmer className="mx-4 mb-3 h-2.5 w-24" />

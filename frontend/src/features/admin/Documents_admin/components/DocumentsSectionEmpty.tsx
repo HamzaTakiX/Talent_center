@@ -2,12 +2,18 @@ import { FunctionComponent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Ban,
+  BarChart3,
   Calendar,
   FileStack,
+  FileText,
+  Inbox,
   LayoutGrid,
   PieChart,
+  SearchX,
+  Users,
 } from 'lucide-react';
 import AdminSectionEmptyState from '../../ui/AdminSectionEmptyState';
+import DocumentsCompactEmpty from './DocumentsCompactEmpty';
 import type { AdminSectionEmptyIconPreset } from '../../ui';
 
 export type DocumentsEmptySection =
@@ -24,11 +30,20 @@ export type DocumentsEmptySection =
 
 interface Props {
   section: DocumentsEmptySection;
-  variant?: 'panel' | 'inline';
+  /** panel = full section ; inline = chart inset ; compact = hub-optimized footprint */
+  variant?: 'panel' | 'inline' | 'compact';
   className?: string;
 }
 
-const iconProps = { className: 'h-6 w-6', strokeWidth: 1.75, 'aria-hidden': true as const };
+const iconProps = { className: 'h-5 w-5', strokeWidth: 1.75, 'aria-hidden': true as const };
+
+const PRESET_ICONS: Record<AdminSectionEmptyIconPreset, ReactNode> = {
+  search: <SearchX {...iconProps} />,
+  inbox: <Inbox {...iconProps} />,
+  reports: <FileText {...iconProps} />,
+  users: <Users {...iconProps} />,
+  chart: <BarChart3 {...iconProps} />,
+};
 
 const SECTION_CONFIG: Record<
   DocumentsEmptySection,
@@ -49,6 +64,11 @@ const SECTION_CONFIG: Record<
   },
 };
 
+function resolveIcon(config: (typeof SECTION_CONFIG)[DocumentsEmptySection]): ReactNode {
+  if (config.icon) return config.icon;
+  return PRESET_ICONS[config.iconPreset ?? 'inbox'];
+}
+
 const DocumentsSectionEmpty: FunctionComponent<Props> = ({
   section,
   variant = 'panel',
@@ -57,15 +77,30 @@ const DocumentsSectionEmpty: FunctionComponent<Props> = ({
   const { t } = useTranslation();
   const config = SECTION_CONFIG[section];
   const base = `admin.documentsModule.empty.${config.i18nPath}`;
+  const title = t(`${base}.title`);
+  const description = t(`${base}.subtitle`);
+  const icon = resolveIcon(config);
+
+  if (variant === 'compact') {
+    return (
+      <DocumentsCompactEmpty
+        title={title}
+        description={description}
+        icon={icon}
+        tone={section === 'requests' ? 'panel' : 'chart'}
+        className={className}
+      />
+    );
+  }
 
   return (
     <AdminSectionEmptyState
-      variant={variant}
+      variant={variant === 'inline' ? 'inline' : 'panel'}
       className={className}
       icon={config.icon}
       iconPreset={config.iconPreset}
-      title={t(`${base}.title`)}
-      description={t(`${base}.subtitle`)}
+      title={title}
+      description={description}
     />
   );
 };

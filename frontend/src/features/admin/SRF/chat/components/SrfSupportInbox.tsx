@@ -1,14 +1,24 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 
-import { useChatEmptyState } from '../../../i18n/useAdminCopy';
+import { CircleDollarSign } from 'lucide-react';
 
-import SupportChatWorkspace from '../../../shared/admin-support-inbox/components/SupportChatWorkspace';
+import { useTranslation } from 'react-i18next';
+
+import { useSearchParams } from 'react-router-dom';
+
+import { srfApi } from '../../../api/srf';
+
+import { useOptionalAdminToast } from '../../../dashboard/context/AdminToastContext';
+
+import { InternshipChatContextPanelSkeleton } from '../../../offres-stage/chat/components/InternshipChatLoadingSkeletons';
 
 import SupportConversationList from '../../../shared/admin-support-inbox/components/SupportConversationList';
 
 import SupportInboxShell from '../../../shared/admin-support-inbox/components/SupportInboxShell';
 
-import { useAdminSrfChat } from '../hooks/useAdminSrfChat';
+import { useSrfSupportChat } from '../hooks/useAdminSrfChat';
+
+import AdminSrfChatThread from './AdminSrfChatThread';
 
 import SrfFinancialContextPanel from './SrfFinancialContextPanel';
 
@@ -18,13 +28,33 @@ import SrfStudentFilterPanel from './SrfStudentFilterPanel';
 
 const SrfSupportInbox: FunctionComponent = () => {
 
-  const emptyState = useChatEmptyState('srf');
+  const { t } = useTranslation();
+
+  const toast = useOptionalAdminToast();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const conversationFromUrl = searchParams.get('conversation') ?? '';
+
+  const accountFromUrl = searchParams.get('account') ?? '';
+
+  const isOpeningFromAccount =
+
+    searchParams.get('opening') === '1' && accountFromUrl.trim() !== '';
+
+  const [openingAccountChat, setOpeningAccountChat] = useState(false);
+
+  const openingAttemptRef = useRef<string | null>(null);
+
+  const handledInitialConversationRef = useRef<string | null>(null);
+
+  const autoSelectedRef = useRef(false);
+
+
 
   const {
 
     listItems,
-
-    activeThread,
 
     selected,
 
@@ -35,6 +65,14 @@ const SrfSupportInbox: FunctionComponent = () => {
     mobileView,
 
     inboxStats,
+
+    loading,
+
+    conversationLoading,
+
+    messagesLoading,
+
+    loadError,
 
     studentAcademicFilters,
 
@@ -48,9 +86,15 @@ const SrfSupportInbox: FunctionComponent = () => {
 
     hasActiveFilters,
 
+    primaryFilter,
+
+    primaryFilterCounts,
+
     setSidebarSearch,
 
     setMobileView,
+
+    setPrimaryFilter,
 
     selectConversation,
 
@@ -60,7 +104,219 @@ const SrfSupportInbox: FunctionComponent = () => {
 
     clearStudentAcademicFilters,
 
-  } = useAdminSrfChat();
+    archiveConversation,
+
+    unarchiveConversation,
+
+    reloadConversations,
+
+  } = useSrfSupportChat();
+
+
+
+  useEffect(() => {
+
+    const accountParam = searchParams.get('account')?.trim() ?? '';
+
+    const shouldOpen = searchParams.get('opening') === '1' && accountParam !== '';
+
+
+
+    if (!shouldOpen) {
+
+      openingAttemptRef.current = null;
+
+      return;
+
+    }
+
+
+
+    if (openingAttemptRef.current === accountParam) return;
+
+    openingAttemptRef.current = accountParam;
+
+
+
+    const accountId = Number(accountParam);
+
+    if (!Number.isFinite(accountId)) {
+
+      const next = new URLSearchParams(searchParams);
+
+      next.delete('account');
+
+      next.delete('opening');
+
+      setSearchParams(next, { replace: true });
+
+      return;
+
+    }
+
+
+
+    let cancelled = false;
+
+    setOpeningAccountChat(true);
+
+
+
+    void srfApi
+
+      .openChat(accountId)
+
+      .then(async ({ conversation_id }) => {
+
+        if (cancelled) return;
+
+        const next = new URLSearchParams(searchParams);
+
+        next.delete('account');
+
+        next.delete('opening');
+
+        next.set('conversation', String(conversation_id));
+
+        setSearchParams(next, { replace: true });
+
+        await selectConversation(String(conversation_id));
+
+        void reloadConversations({ silent: true });
+
+      })
+
+      .catch(() => {
+
+        if (cancelled) return;
+
+        openingAttemptRef.current = null;
+
+        toast.showToast(t('admin.common.detailModal.student.chatOpenError'), 'error');
+
+        const next = new URLSearchParams(searchParams);
+
+        next.delete('account');
+
+        next.delete('opening');
+
+        setSearchParams(next, { replace: true });
+
+      })
+
+      .finally(() => {
+
+        if (!cancelled) setOpeningAccountChat(false);
+
+      });
+
+
+
+    return () => {
+
+      cancelled = true;
+
+    };
+
+  }, [searchParams, setSearchParams, selectConversation, reloadConversations, t, toast]);
+
+
+
+  useEffect(() => {
+
+    const conversationId = conversationFromUrl.trim();
+
+    if (!conversationId) return;
+
+    if (handledInitialConversationRef.current === conversationId) return;
+
+    if (selectedId === conversationId && selected) return;
+
+
+
+    handledInitialConversationRef.current = conversationId;
+
+    autoSelectedRef.current = true;
+
+    void selectConversation(conversationId);
+
+  }, [conversationFromUrl, selectConversation, selected, selectedId]);
+
+
+
+  useEffect(() => {
+
+    if (loading || selectedId || autoSelectedRef.current) return;
+
+    if (conversationFromUrl.trim() || isOpeningFromAccount) return;
+
+    if (listItems.length === 0) return;
+
+
+
+    autoSelectedRef.current = true;
+
+    void selectConversation(listItems[0].id);
+
+  }, [
+
+    loading,
+
+    selectedId,
+
+    conversationFromUrl,
+
+    isOpeningFromAccount,
+
+    listItems,
+
+    selectConversation,
+
+  ]);
+
+
+
+  const handleArchive = () => {
+
+    if (!selectedId) return;
+
+    void archiveConversation(selectedId).then(() => {
+
+      toast.showToast('Conversation archivée', 'info');
+
+    });
+
+  };
+
+
+
+  const handleUnarchive = () => {
+
+    if (!selectedId) return;
+
+    void unarchiveConversation(selectedId).then(() => {
+
+      toast.showToast('Conversation restaurée', 'success');
+
+    });
+
+  };
+
+
+
+  const isOpeningConversation =
+
+    openingAccountChat ||
+
+    isOpeningFromAccount ||
+
+    (loading && !selectedId) ||
+
+    (conversationLoading && !selected);
+
+
+
+  const hasSelection = Boolean(selectedId) || isOpeningConversation;
 
 
 
@@ -68,7 +324,7 @@ const SrfSupportInbox: FunctionComponent = () => {
 
     <SupportInboxShell
 
-      hasSelection={Boolean(selected)}
+      hasSelection={hasSelection}
 
       mobileView={mobileView}
 
@@ -76,7 +332,21 @@ const SrfSupportInbox: FunctionComponent = () => {
 
         <SupportConversationList
 
+          title={t('admin.chat.conversations', { defaultValue: 'Conversations' })}
+
+          subtitle={t('student.srf.chat.sidebarSubtitle', {
+
+            defaultValue: 'SRF — Suivi financier',
+
+          })}
+
+          icon={CircleDollarSign}
+
           items={listItems}
+
+          loading={loading && listItems.length === 0}
+
+          loadError={loadError}
 
           selectedId={selectedId}
 
@@ -84,13 +354,21 @@ const SrfSupportInbox: FunctionComponent = () => {
 
           hasActiveFilters={hasActiveFilters}
 
-          searchPlaceholder="Rechercher un étudiant…"
+          searchPlaceholder={t('admin.modules.srf.chat.searchPlaceholder', {
+
+            defaultValue: 'Rechercher un étudiant…',
+
+          })}
 
           onSearchChange={setSidebarSearch}
 
-          onSelect={selectConversation}
+          onSelect={(id) => void selectConversation(id)}
 
-          emptyMessage="Aucun étudiant trouvé"
+          primaryFilter={primaryFilter}
+
+          primaryFilterCounts={primaryFilterCounts}
+
+          onSetPrimaryFilter={setPrimaryFilter}
 
           filtersSlot={
 
@@ -122,33 +400,43 @@ const SrfSupportInbox: FunctionComponent = () => {
 
       workspace={
 
-        <SupportChatWorkspace
+        <AdminSrfChatThread
 
-          thread={activeThread}
+          conversation={selected}
 
-          emptyState={emptyState}
+          stats={inboxStats}
 
-          stats={{
+          statsLoading={loading}
 
-            unread: inboxStats.unread ?? 0,
+          conversationLoading={isOpeningConversation}
 
-            pending: inboxStats.pending ?? 0,
+          messagesLoading={messagesLoading}
 
-            resolved: inboxStats.resolved ?? 0,
-
-          }}
-
-          onSend={sendMessage}
+          onSend={(text) => void sendMessage(text)}
 
           onBack={() => setMobileView('list')}
 
-          composerPlaceholder="Enregistrer une note trésorerie…"
+          onArchive={handleArchive}
+
+          onUnarchive={handleUnarchive}
 
         />
 
       }
 
-      contextPanel={selected ? <SrfFinancialContextPanel conversation={selected} /> : undefined}
+      contextPanel={
+
+        selected ? (
+
+          <SrfFinancialContextPanel conversation={selected} />
+
+        ) : isOpeningConversation ? (
+
+          <InternshipChatContextPanelSkeleton />
+
+        ) : undefined
+
+      }
 
     />
 
@@ -159,5 +447,4 @@ const SrfSupportInbox: FunctionComponent = () => {
 
 
 export default SrfSupportInbox;
-
 

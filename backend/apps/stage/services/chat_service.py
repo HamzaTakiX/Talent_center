@@ -164,13 +164,9 @@ def resolve_student_display_name_for_context(
 
 
 def _student_avatar_url(student: StudentProfile, request=None) -> str | None:
-    profile = getattr(student.user, 'profile', None)
-    if not profile or not profile.avatar:
-        return None
-    url = profile.avatar.url
-    if request:
-        return request.build_absolute_uri(url)
-    return url
+    from core.media_urls import resolve_student_profile_avatar_url
+
+    return resolve_student_profile_avatar_url(student, request)
 
 
 def _offer_company_logo_url(offer: InternshipOffer, request=None) -> str | None:
@@ -491,6 +487,32 @@ def unarchive_offer_conversation(conversation: Conversation, actor: User) -> Con
     meta['admin_inbox_unarchived_at'] = timezone.now().isoformat()
     conversation.metadata_json = meta
     conversation.is_archived = False
+    conversation.save(update_fields=['is_archived', 'metadata_json', 'updated_at'])
+    return conversation
+
+
+def archive_student_offer_conversation(conversation: Conversation, actor: User) -> Conversation:
+    """Archive a thread in the student inbox."""
+    meta = dict(conversation.metadata_json or {})
+    meta['student_archived_by'] = actor.pk
+    meta['student_archived_at'] = timezone.now().isoformat()
+    meta.pop('student_unarchived_by', None)
+    meta.pop('student_unarchived_at', None)
+    conversation.is_archived = True
+    conversation.metadata_json = meta
+    conversation.save(update_fields=['is_archived', 'metadata_json', 'updated_at'])
+    return conversation
+
+
+def unarchive_student_offer_conversation(conversation: Conversation, actor: User) -> Conversation:
+    """Restore a thread to the active student inbox."""
+    meta = dict(conversation.metadata_json or {})
+    meta.pop('student_archived_by', None)
+    meta.pop('student_archived_at', None)
+    meta['student_unarchived_by'] = actor.pk
+    meta['student_unarchived_at'] = timezone.now().isoformat()
+    conversation.is_archived = False
+    conversation.metadata_json = meta
     conversation.save(update_fields=['is_archived', 'metadata_json', 'updated_at'])
     return conversation
 

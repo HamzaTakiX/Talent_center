@@ -471,8 +471,8 @@
 
 .offer-method-select__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(0.85rem, 1.5vh, 1.35rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.25vw, 1.15rem);
   flex: 1;
   min-height: 0;
   align-items: stretch;
@@ -481,11 +481,11 @@
 .offer-method-card--modern {
   position: relative;
   overflow: hidden;
-  padding: clamp(0.85rem, 1.6vh, 1.35rem) clamp(0.9rem, 1.8vw, 1.35rem)
-    clamp(0.75rem, 1.3vh, 1.1rem);
+  padding: clamp(0.85rem, 1.5vh, 1.2rem) clamp(0.85rem, 1.5vw, 1.2rem)
+    clamp(0.7rem, 1.2vh, 1rem);
   min-height: 0;
   height: 100%;
-  gap: clamp(0.45rem, 0.9vh, 0.75rem);
+  gap: clamp(0.4rem, 0.85vh, 0.7rem);
   border-radius: calc(var(--admin-radius-lg) + 2px);
   border: 1px solid var(--admin-border);
   background: color-mix(in srgb, var(--admin-bg-elevated) 88%, var(--admin-surface));
@@ -547,6 +547,15 @@
   );
 }
 
+.offer-method-card--text .offer-method-card__icon {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #7c3aed 18%, transparent),
+    color-mix(in srgb, var(--admin-brand) 10%, transparent)
+  );
+  color: #a78bfa;
+}
+
 .offer-method-card__badge {
   align-self: flex-start;
   padding: 0.28rem 0.65rem;
@@ -573,18 +582,18 @@
 
 .offer-method-card--modern .offer-method-card__icon {
   flex-shrink: 0;
-  width: clamp(2.75rem, 5vh, 3.5rem);
-  height: clamp(2.75rem, 5vh, 3.5rem);
+  width: clamp(2.5rem, 4.5vh, 3.1rem);
+  height: clamp(2.5rem, 4.5vh, 3.1rem);
   border-radius: var(--admin-radius-md);
 }
 
 .offer-method-card--modern .offer-method-card__icon svg {
-  width: clamp(1.25rem, 2.4vh, 1.65rem);
-  height: clamp(1.25rem, 2.4vh, 1.65rem);
+  width: clamp(1.1rem, 2.1vh, 1.45rem);
+  height: clamp(1.1rem, 2.1vh, 1.45rem);
 }
 
 .offer-method-card--modern .offer-method-card__title {
-  font-size: clamp(1rem, 1.9vh, 1.2rem);
+  font-size: clamp(0.9rem, 1.7vh, 1.1rem);
   letter-spacing: -0.02em;
 }
 
@@ -679,10 +688,15 @@
   gap: 0.55rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1080px) {
+  .offer-method-select__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
   .offer-method-select__grid {
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1357,6 +1371,30 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+/* Avatar + title row in preview panel */
+.offer-preview-card__header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.offer-preview-card__avatar {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--admin-radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.offer-preview-card__header-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .offer-preview-card__title {
@@ -2929,7 +2967,7 @@
   min-width: 0;
 }
 
-.offer-extracted-card .admin-form-input,
+.offer-extracted-card .admin-form-input:not(.admin-form-input--date),
 .offer-extracted-card .admin-form-textarea,
 .offer-extracted-card textarea {
   box-sizing: border-box;
@@ -2946,10 +2984,39 @@
   transition: none;
 }
 
-.offer-extracted-card .admin-form-input {
+.offer-extracted-card .admin-form-input:not(.admin-form-input--date) {
   height: auto;
   min-height: 1.75rem;
   padding: 0.15rem 0 !important;
+}
+
+/* Date inputs inside extracted cards get a full standalone style */
+.offer-extracted-card .admin-form-date {
+  width: 100%;
+}
+
+.offer-extracted-card .admin-form-input--date {
+  width: 100%;
+  height: 2.35rem;
+  min-height: 2.35rem !important;
+  padding: 0.4rem 2.6rem 0.4rem 0.65rem !important;
+  border: 1px solid var(--admin-border) !important;
+  background: var(--admin-input-bg) !important;
+  border-radius: var(--admin-radius-sm) !important;
+  box-shadow: none !important;
+  font-size: 0.875rem;
+  color: var(--admin-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.offer-extracted-card .admin-form-input--date:hover {
+  border-color: var(--admin-border-strong) !important;
+}
+
+.offer-extracted-card .admin-form-input--date:focus {
+  outline: none !important;
+  border-color: var(--admin-brand) !important;
+  box-shadow: 0 0 0 3px var(--admin-brand-muted) !important;
 }
 
 .offer-extracted-card .admin-form-input--with-icon {
@@ -2967,7 +3034,7 @@
   resize: vertical;
 }
 
-.offer-extracted-card .admin-form-input:focus,
+.offer-extracted-card .admin-form-input:not(.admin-form-input--date):focus,
 .offer-extracted-card .admin-form-textarea:focus,
 .offer-extracted-card textarea:focus {
   outline: none !important;
@@ -3057,4 +3124,506 @@
   background: transparent;
   border: none;
   box-shadow: none;
+}
+
+/* ── Text Parse Method ── */
+.offer-text-input {
+  min-height: 200px;
+  line-height: 1.6;
+  background: var(--admin-input-bg);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  padding: 0.625rem 0.75rem;
+  transition: border-color 0.15s;
+}
+
+.offer-text-input:focus {
+  outline: none;
+  border-color: var(--admin-brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-brand) 15%, transparent);
+}
+
+.offer-text-format-hint summary::-webkit-details-marker {
+  display: none;
+}
+
+.offer-text-format-hint summary {
+  list-style: none;
+}
+
+.offer-text-format-hint pre {
+  font-family: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 1.65;
+  color: var(--admin-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   METHOD-SELECT ENTRY SKELETON
+   ═══════════════════════════════════════════════════════════════ */
+
+.offer-ms-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 2vh, 1.5rem);
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
+  min-height: 0;
+  padding: clamp(1rem, 2vh, 1.5rem) clamp(1.25rem, 2.5vw, 2rem)
+    clamp(0.75rem, 1.5vh, 1.125rem);
+  border-radius: var(--admin-radius-lg);
+  border: 1px solid var(--admin-border);
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      color-mix(in srgb, var(--admin-brand) 10%, transparent),
+      transparent 70%
+    ),
+    var(--admin-surface);
+  box-shadow: var(--admin-shadow-md);
+  overflow: hidden;
+}
+
+/* ── Three animated pulsing dots at the top ── */
+.offer-ms-skeleton__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.offer-ms-skeleton__brand-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--admin-brand);
+  opacity: 0.9;
+  animation: offer-ms-dot-bounce 1.2s ease-in-out infinite;
+}
+
+.offer-ms-skeleton__brand-dot:nth-child(2) {
+  animation-delay: 0.18s;
+  opacity: 0.65;
+}
+
+.offer-ms-skeleton__brand-dot:nth-child(3) {
+  animation-delay: 0.36s;
+  opacity: 0.4;
+}
+
+@keyframes offer-ms-dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40%            { transform: translateY(-5px); }
+}
+
+/* ── Hero shimmer blocks ── */
+.offer-ms-skeleton__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 36rem;
+}
+
+.offer-ms-skeleton__eyebrow {
+  width: 9rem;
+  height: 0.75rem;
+  border-radius: 999px;
+}
+
+.offer-ms-skeleton__title {
+  width: clamp(16rem, 55%, 26rem);
+  height: clamp(1.6rem, 3.5vh, 2.25rem);
+  border-radius: var(--admin-radius-md);
+}
+
+.offer-ms-skeleton__subtitle {
+  width: clamp(14rem, 45%, 22rem);
+  height: 1rem;
+  border-radius: 999px;
+  opacity: 0.7;
+}
+
+/* ── Status message ── */
+.offer-ms-skeleton__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.offer-ms-skeleton__status-text {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--admin-brand);
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+}
+
+/* ── 3-card grid ── */
+.offer-ms-skeleton__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.25vw, 1.15rem);
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+  width: 100%;
+}
+
+@media (max-width: 1080px) {
+  .offer-ms-skeleton__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .offer-ms-skeleton__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Individual skeleton card ── */
+.offer-ms-skeleton__card {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1vh, 0.85rem);
+  padding: clamp(0.85rem, 1.5vh, 1.2rem) clamp(0.85rem, 1.5vw, 1.2rem)
+    clamp(0.7rem, 1.2vh, 1rem);
+  border-radius: calc(var(--admin-radius-lg) + 2px);
+  border: 1px solid var(--admin-border);
+  background: color-mix(in srgb, var(--admin-bg-elevated) 88%, var(--admin-surface));
+  min-height: 0;
+  overflow: hidden;
+}
+
+.offer-ms-skeleton__card-head {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.4rem, 0.85vh, 0.7rem);
+}
+
+.offer-ms-skeleton__card-badge {
+  width: 5rem;
+  height: 1.35rem;
+  border-radius: 999px;
+}
+
+.offer-ms-skeleton__card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.offer-ms-skeleton__card-icon {
+  flex-shrink: 0;
+  width: clamp(2.5rem, 4.5vh, 3.1rem);
+  height: clamp(2.5rem, 4.5vh, 3.1rem);
+  border-radius: var(--admin-radius-md);
+}
+
+.offer-ms-skeleton__card-headings {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.offer-ms-skeleton__card-title {
+  height: 1.1rem;
+  width: 75%;
+  border-radius: var(--admin-radius-sm);
+}
+
+.offer-ms-skeleton__card-desc {
+  height: 0.85rem;
+  width: 90%;
+  border-radius: var(--admin-radius-sm);
+  opacity: 0.7;
+}
+
+.offer-ms-skeleton__card-longdesc {
+  height: 2rem;
+  width: 100%;
+  border-radius: var(--admin-radius-sm);
+  opacity: 0.6;
+}
+
+/* ── Benefit rows ── */
+.offer-ms-skeleton__card-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.offer-ms-skeleton__card-benefit {
+  height: 0.8rem;
+  border-radius: 999px;
+}
+
+.offer-ms-skeleton__card-benefit:nth-child(1) { width: 88%; }
+.offer-ms-skeleton__card-benefit:nth-child(2) { width: 72%; }
+.offer-ms-skeleton__card-benefit:nth-child(3) { width: 80%; }
+.offer-ms-skeleton__card-benefit:nth-child(4) { width: 65%; opacity: 0.5; }
+
+/* ── Card footer ── */
+.offer-ms-skeleton__card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: clamp(0.45rem, 0.8vh, 0.65rem);
+  border-top: 1px solid var(--admin-border);
+  flex-shrink: 0;
+}
+
+.offer-ms-skeleton__card-bestfor {
+  height: 0.75rem;
+  width: 55%;
+  border-radius: 999px;
+  opacity: 0.6;
+}
+
+.offer-ms-skeleton__card-cta {
+  height: 0.85rem;
+  width: 30%;
+  border-radius: 999px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OVERALL PAGE POLISH — hero, panel, footer, method select
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Sharper hero gradient & glow */
+.offer-studio-hero {
+  background: linear-gradient(
+    130deg,
+    color-mix(in srgb, var(--admin-brand) 8%, var(--admin-surface)) 0%,
+    var(--admin-surface) 45%,
+    color-mix(in srgb, #4ba3c7 5%, var(--admin-surface)) 100%
+  );
+  box-shadow:
+    var(--admin-shadow-md),
+    0 1px 0 color-mix(in srgb, var(--admin-brand) 10%, transparent) inset;
+}
+
+/* Stronger glow behind brand icon */
+.offer-studio-hero__glow {
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--admin-brand) 18%, transparent) 0%,
+    transparent 65%
+  );
+}
+
+/* Panel subtle inner border accent */
+.offer-studio-panel {
+  box-shadow:
+    var(--admin-shadow-sm),
+    0 0 0 1px color-mix(in srgb, var(--admin-brand) 6%, transparent) inset;
+}
+
+/* Footer bar — glass effect */
+.offer-studio-footer {
+  background: color-mix(in srgb, var(--admin-surface) 85%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  padding: 0.75rem 1rem;
+}
+
+/* Method select — deeper ambient glow */
+.offer-method-select {
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 50% -5%,
+      color-mix(in srgb, var(--admin-brand) 16%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 90% 100%,
+      color-mix(in srgb, #4ba3c7 8%, transparent),
+      transparent 60%
+    ),
+    var(--admin-surface);
+  box-shadow:
+    var(--admin-shadow-md),
+    0 0 0 1px color-mix(in srgb, var(--admin-brand) 8%, transparent) inset;
+}
+
+/* Card shimmer accent line at top */
+.offer-method-card--modern::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--admin-brand) 30%, transparent),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.offer-method-card--modern:hover::after,
+.offer-method-card--modern.offer-method-card--selected::after {
+  opacity: 1;
+}
+
+/* Selected card ring */
+.offer-method-card--modern.offer-method-card--selected {
+  border-color: color-mix(in srgb, var(--admin-brand) 70%, transparent);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--admin-brand) 20%, transparent),
+    0 20px 56px color-mix(in srgb, var(--admin-brand) 18%, transparent);
+}
+
+/* Review bar polish */
+.offer-review-publish-bar {
+  box-shadow: var(--admin-shadow-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STUDIO EYEBROW BADGE  —  animated pill with bot + offer icons
+   ═══════════════════════════════════════════════════════════════ */
+
+.offer-studio-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  margin-bottom: clamp(0.4rem, 0.9vh, 0.7rem);
+  padding: 0.32rem 0.85rem 0.32rem 0.42rem;
+  border-radius: 999px;
+
+  /* layered gradient border via box-shadow + background-clip trick */
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--admin-brand) 16%, var(--admin-surface)),
+    color-mix(in srgb, #4ba3c7 10%, var(--admin-surface))
+  );
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 32%, transparent);
+
+  /* ambient glow */
+  box-shadow:
+    0 0 18px color-mix(in srgb, var(--admin-brand) 22%, transparent),
+    0 0 4px  color-mix(in srgb, var(--admin-brand) 12%, transparent) inset;
+
+  cursor: default;
+  user-select: none;
+}
+
+/* Outermost rotating ring */
+.offer-studio-badge__orbit {
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  border-top-color: color-mix(in srgb, var(--admin-brand) 55%, transparent);
+  border-right-color: color-mix(in srgb, var(--admin-brand) 20%, transparent);
+  animation: studio-badge-orbit 2.8s linear infinite;
+  pointer-events: none;
+}
+
+/* Bright dot that travels around the orbit */
+.offer-studio-badge__orbit-dot {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--admin-brand);
+  box-shadow: 0 0 6px 2px color-mix(in srgb, var(--admin-brand) 70%, transparent);
+  transform: translateX(-50%);
+}
+
+@keyframes studio-badge-orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Bot icon wrapper — breathing pulse */
+.offer-studio-badge__bot {
+  display: grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--admin-brand) 30%, transparent),
+    color-mix(in srgb, #4ba3c7 18%, transparent)
+  );
+  flex-shrink: 0;
+  animation: studio-badge-breathe 2.6s ease-in-out infinite;
+}
+
+.offer-studio-badge__bot-icon {
+  width: 0.92rem;
+  height: 0.92rem;
+  color: var(--admin-brand);
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--admin-brand) 60%, transparent));
+}
+
+@keyframes studio-badge-breathe {
+  0%, 100% { box-shadow: 0 0 0 0   color-mix(in srgb, var(--admin-brand) 0%, transparent); }
+  50%       { box-shadow: 0 0 0 5px color-mix(in srgb, var(--admin-brand) 22%, transparent); }
+}
+
+/* Separator dot */
+.offer-studio-badge__sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--admin-brand) 45%, transparent);
+  flex-shrink: 0;
+}
+
+/* BriefcaseBusiness icon */
+.offer-studio-badge__offer-icon {
+  width: 0.78rem;
+  height: 0.78rem;
+  color: color-mix(in srgb, var(--admin-brand) 75%, #fff);
+  flex-shrink: 0;
+}
+
+/* Label text */
+.offer-studio-badge__label {
+  font-size: clamp(0.6rem, 1vh, 0.68rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--admin-brand);
+  filter: brightness(1.15);
+}
+
+/* Trailing sparkle — twinkle */
+.offer-studio-badge__sparkle {
+  width: 0.78rem;
+  height: 0.78rem;
+  color: color-mix(in srgb, var(--admin-brand) 60%, #fff);
+  flex-shrink: 0;
+  animation: studio-badge-twinkle 2s ease-in-out infinite;
+}
+
+@keyframes studio-badge-twinkle {
+  0%, 100% { opacity: 0.4; transform: scale(1)    rotate(0deg); }
+  30%       { opacity: 1;   transform: scale(1.25) rotate(15deg); }
+  60%       { opacity: 0.6; transform: scale(0.9)  rotate(-8deg); }
 }

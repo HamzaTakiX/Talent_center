@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { Briefcase, ClipboardList, FileText, MessagesSquare, ScanSearch, Sparkles } from 'lucide-react';
+import { Briefcase, ClipboardList, FileText, MessagesSquare, PanelLeft, ScanSearch, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { CoachMode } from '../types/careerCoach';
 
@@ -18,6 +18,8 @@ interface CareerCoachMessagesHeaderProps {
   summaryOpen: boolean;
   summaryHasNewContent: boolean;
   onSummaryToggle: () => void;
+  mobileSidebarOpen?: boolean;
+  onMobileSidebarToggle?: () => void;
 }
 
 const CareerCoachMessagesHeader: FunctionComponent<CareerCoachMessagesHeaderProps> = ({
@@ -27,6 +29,8 @@ const CareerCoachMessagesHeader: FunctionComponent<CareerCoachMessagesHeaderProp
   summaryOpen,
   summaryHasNewContent,
   onSummaryToggle,
+  mobileSidebarOpen = false,
+  onMobileSidebarToggle,
 }) => {
   const { t } = useTranslation();
   const ModeIcon = MODE_ICONS[mode];
@@ -36,6 +40,16 @@ const CareerCoachMessagesHeader: FunctionComponent<CareerCoachMessagesHeaderProp
     <header className="sr-acc-chat-panel__toolbar">
       <div className="sr-acc-chat-panel__toolbar-inner">
         <div className="sr-acc-chat-panel__toolbar-brand">
+          <button
+            type="button"
+            className="sr-acc-chat-panel__sidebar-toggle"
+            onClick={onMobileSidebarToggle}
+            aria-expanded={mobileSidebarOpen}
+            aria-controls="sr-acc-conversations-sidebar"
+            aria-label={t('student.internshipOffers.careerCoach.history.openSidebar')}
+          >
+            <PanelLeft size={18} strokeWidth={2} aria-hidden />
+          </button>
           <span className="sr-acc-chat-panel__toolbar-icon" aria-hidden>
             <ModeIcon size={14} strokeWidth={2.25} />
           </span>

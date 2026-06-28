@@ -4,7 +4,7 @@ import CvBuilderWorkspace from '../components/CvBuilderWorkspace';
 import { CV_BUILDER_PAGE_ROOT } from '../constants/cvBuilderLayout';
 
 const CvBuilderPage: FunctionComponent = () => (
-  <StudentLayout mainFillHeight>
+  <StudentLayout mainFillHeight contentFlush>
     <div id="student-cv-builder-root" className={CV_BUILDER_PAGE_ROOT}>
       <CvBuilderWorkspace />
     </div>

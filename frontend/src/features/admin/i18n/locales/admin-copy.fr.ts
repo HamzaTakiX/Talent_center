@@ -13,6 +13,12 @@ export const adminCopyFr = {
     "panelEmpty": "Sélectionnez un fil pour voir le contexte métier",
     "panelWorkflow": "Statut workflow",
     "panelNoStatus": "Non défini",
+    "supportStatus": {
+      "open": "Ouvert",
+      "pending": "En attente",
+      "resolved": "Résolu",
+      "closed": "Fermé"
+    },
     "panelDeadline": "Échéance",
     "panelParticipants": "Participants",
     "panelFiles": "Fichiers liés",
@@ -678,7 +684,10 @@ export const adminCopyFr = {
         "title": "Chargement de l'offre",
         "retrieving": "Récupération des informations de l'offre…",
         "preparing": "Préparation de l'espace d'édition…",
-        "subtitle": "Veuillez patienter pendant la préparation de l'espace de travail."
+        "subtitle": "Veuillez patienter pendant la préparation de l'espace de travail.",
+        "setting_up": "Initialisation du studio d'offre…",
+        "loading_options": "Chargement des options de création…",
+        "almost_ready": "Presque prêt…"
       },
       "saveStatus": {
         "idle": "Toutes les modifications sont synchronisées",
@@ -713,7 +722,7 @@ export const adminCopyFr = {
       "method": {
         "eyebrow": "Studio offre de stage",
         "stepTitle": "Comment souhaitez-vous créer cette offre ?",
-        "stepDesc": "Choisissez le parcours adapté à votre workflow. Les deux options incluent l'aperçu en direct, le ciblage étudiant et la publication en un clic.",
+        "stepDesc": "Choisissez le parcours adapté à votre workflow. Les trois options incluent l'aperçu en direct, le ciblage étudiant et la publication en un clic.",
         "hint": "Sélectionnez une méthode pour commencer.",
         "compareNote": "Vous pourrez enregistrer en brouillon ou publier à tout moment après avoir choisi une méthode.",
         "manual": {
@@ -743,6 +752,20 @@ export const adminCopyFr = {
           ],
           "bestFor": "Idéal pour annonces existantes et délais courts",
           "cta": "Importer depuis un lien"
+        },
+        "text": {
+          "title": "Coller depuis un texte",
+          "badge": "Flexible",
+          "description": "Collez ou importez un fichier texte — nous extrayons les détails de l'offre.",
+          "longDesc": "Vous avez une offre dans un document, un e-mail ou des notes ? Collez le texte ou importez un fichier .txt. Le système lit les titres de sections et remplit les champs automatiquement.",
+          "benefits": [
+            "Compatible avec tout texte brut ou copier-coller de document",
+            "Importer un fichier .txt ou saisir directement",
+            "Aperçu modifiable avant publication",
+            "Formats structurés français & anglais supportés"
+          ],
+          "bestFor": "Idéal pour offres issues d'e-mails, PDF ou documents",
+          "cta": "Coller le texte de l'offre"
         }
       },
       "steps": {
@@ -1099,6 +1122,27 @@ export const adminCopyFr = {
           "normalizingContent": "Normalisation du contenu…",
           "generatingPreview": "Génération de l'aperçu…"
         }
+      },
+      "text": {
+        "title": "Coller le texte de l'offre",
+        "desc": "Collez le texte de l'offre ou importez un fichier .txt. Nous détecterons les sections et remplirons les champs automatiquement.",
+        "pasteLabel": "Texte de l'offre",
+        "pastePlaceholder": "Collez le texte de l'offre ici…\n\nExemple :\nTitre : Développeur Full Stack — Stage PFE\nEntreprise : TechCorp Maroc\nVille : Casablanca\nType : PFE\n\nDescription :\nNous recherchons un stagiaire motivé…\n\nCompétences requises :\nReact, Node.js, Python\n\nDate limite : 31/12/2025",
+        "uploadFile": "Importer un fichier .txt",
+        "uploadHint": "Accepte les fichiers texte brut (.txt)",
+        "parse": "Extraire les informations",
+        "parsing": "Lecture et extraction des informations de l'offre…",
+        "reset": "Coller un nouveau texte",
+        "extractedSummary": "{{count}} champs extraits avec succès",
+        "extractedHint": "Vérifiez les champs extraits ci-dessous, modifiez si nécessaire, puis enregistrez en brouillon ou publiez.",
+        "viewOriginalText": "Voir le texte original",
+        "formatHintTitle": "Format attendu (cliquer pour afficher)",
+        "formatHint": "Titre : [Titre de l'offre]\nEntreprise : [Nom de l'entreprise]\nVille : [Ville, Pays]\nType : [PFE / Stage / Alternance…]\n\nDescription :\n[Description générale du poste]\n\nMissions / Responsabilités :\n[Liste des tâches]\n\nProfil requis :\n[Qualifications requises]\n\nCompétences / Technologies :\n[Liste séparée par virgules ou lignes]\n\nLangues : Français, Anglais\n\nAvantages :\n[Ce que le stagiaire va apprendre]\n\nDate limite : JJ/MM/AAAA",
+        "errors": {
+          "title": "Impossible d'extraire les informations de l'offre",
+          "no_fields_extracted": "Aucune section reconnue. Assurez-vous que le texte contient des sections étiquetées (ex. « Titre : », « Description : », « Compétences : »).",
+          "parse_failed": "Une erreur est survenue lors de la lecture du texte. Veuillez réessayer."
+        }
       }
     },
     "createStudent": {
@@ -1229,7 +1273,8 @@ export const adminCopyFr = {
         },
         "errors": {
           "noFile": "Sélectionnez un fichier CSV ou Excel (.xlsx).",
-          "generic": "L'import a échoué. Vérifiez le fichier et réessayez."
+          "generic": "L'import a échoué. Vérifiez le fichier et réessayez.",
+          "timeout": "L'import prend trop de temps. Rechargez la page — les étudiants ont peut-être quand même été créés."
         },
         "result": {
           "summary": "{{success}} / {{total}} étudiant(s) créé(s), {{errors}} erreur(s).",
@@ -1781,6 +1826,7 @@ export const adminCopyFr = {
           "archive_conversation": "Conversation archivée dans votre boîte de réception",
           "unarchive_conversation": "Conversation restaurée dans votre boîte de réception",
           "mark_resolved": "Conversation marquée comme résolue",
+          "auto_reopen": "Conversation réouverte automatiquement",
           "mark_urgent": "Conversation marquée comme urgente",
           "assign_admin": "Conversation assignée à un administrateur",
           "add_internal_note": "Note interne ajoutée",
@@ -1868,6 +1914,20 @@ export const adminCopyFr = {
     "srf": {
       "title": "SRF",
       "subtitle": "Suivre et gérer le statut de paiement des étudiants",
+      "dashboard": {
+        "liveStatus": "{{count}} comptes suivis",
+        "kpi": {
+          "students": "Étudiants",
+          "pendingPayments": "Paiements en attente",
+          "paid": "Payés",
+          "overdue": "En retard",
+          "outstandingAmount": "Montant restant dû",
+          "averagePaymentRate": "Taux de paiement moyen"
+        },
+        "empty": {
+          "importData": "Importer des données financières"
+        }
+      },
       "importCenter": {
         "title": "Centre d'import des données financières",
         "subtitle": "Synchronisez les exports ERP, comptabilité ou fichiers Excel avec validation, aperçu et rollback.",
@@ -1882,6 +1942,8 @@ export const adminCopyFr = {
         "browse": "Parcourir",
         "mappingTitle": "Correspondance des colonnes",
         "mappingHint": "Associez chaque colonne importée à un champ financier SRF.",
+        "mappingProgress": "{{mapped}} sur {{total}} colonnes mappées",
+        "mappingRequired": "{{mapped}} sur {{total}} champs obligatoires",
         "rowCount": "{{count}} lignes",
         "sourceCol": "Colonne source",
         "targetField": "Champ SRF",
@@ -2080,6 +2142,7 @@ export const adminCopyFr = {
           "conventionBlocked": "Téléchargement de la convention désactivé.",
           "internshipBlocked": "Éligibilité au stage non confirmée financièrement.",
           "overdue": "{{count}} tranche(s) en retard — risque de blocage.",
+          "overdueNonBlocking": "{{count}} tranche(s) en retard — accès examens maintenu.",
           "pendingProof": "{{count}} preuve(s) en attente de validation.",
           "clear": "Situation financière régularisée. Accès académiques ouverts."
         }
@@ -2107,6 +2170,10 @@ export const adminCopyFr = {
         "requestCorrection": "Demander une correction",
         "reject": "Rejeter",
         "approve": "Approuver",
+        "approvedAmount": "Montant reçu (MAD)",
+        "approvedAmountHint": "Montant déclaré par l'étudiant : {{submitted}}. Saisissez le montant réellement reçu si différent.",
+        "approvedAmountRequired": "Le montant reçu est obligatoire pour approuver.",
+        "installmentRemaining": "Reste sur la tranche : {{amount}}",
         "rejectionRequired": "Le motif de rejet est obligatoire.",
         "submitFailed": "Impossible d'enregistrer la décision.",
         "alreadyReviewed": "Cette preuve a déjà été traitée.",
@@ -2163,6 +2230,45 @@ export const adminCopyFr = {
           "notes": "Notes",
           "cancel": "Annuler",
           "save": "Enregistrer"
+        },
+        "installmentPlans": {
+          "title": "Plans de paiement (tranches)",
+          "subtitle": "Répartissez les frais annuels en tranches, chacune avec sa propre échéance.",
+          "addPlan": "Ajouter un plan",
+          "editPlan": "Modifier le plan",
+          "name": "Nom du plan",
+          "program": "Programme",
+          "level": "Niveau",
+          "academicYear": "Année académique",
+          "allPrograms": "Tous les programmes",
+          "allLevels": "Tous les niveaux",
+          "allYears": "Toutes les années",
+          "splitMode": "Mode de répartition",
+          "splitEqual": "Répartition égale",
+          "splitCustom": "Pourcentages personnalisés",
+          "currency": "Devise",
+          "tranches": "Tranches",
+          "trancheLabel": "Libellé",
+          "percentage": "Pourcentage",
+          "dueDate": "Échéance",
+          "semester": "Semestre",
+          "addTranche": "Ajouter une tranche",
+          "totalPct": "Total : {{pct}} %",
+          "trancheCount": "{{count}} tranches",
+          "mandatory": "Obligatoire",
+          "active": "Actif",
+          "inactive": "Inactif",
+          "emptyTitle": "Aucun plan de paiement",
+          "emptyDesc": "Créez un plan en tranches pour répartir les frais et conditionner l'accès aux examens aux tranches échues.",
+          "cancel": "Annuler",
+          "save": "Enregistrer",
+          "saving": "Enregistrement…",
+          "gate": {
+            "title": "Règle d'accès aux examens",
+            "desc": "Choisissez ce qui doit être payé pour que les étudiants en plan de tranches passent leurs examens.",
+            "dueTranches": "Payer les tranches échues avant l'examen (recommandé)",
+            "fullClearance": "Payer l'année complète avant les examens"
+          }
         },
         "warningTiers": {
           "title": "Règles d'alerte & fréquence",
@@ -2591,7 +2697,11 @@ export const adminCopyFr = {
         "title": "Détails administrateur"
       },
       "student": {
-        "title": "Détails étudiant"
+        "title": "Détails étudiant",
+        "sendMessage": "Envoyer un message",
+        "openingChat": "Ouverture…",
+        "chatUnavailable": "Disponible uniquement pour les comptes étudiants actifs.",
+        "chatOpenError": "Impossible d'ouvrir la conversation. Réessayez."
       },
       "encadrant": {
         "title": "Détails encadrant"
@@ -2901,6 +3011,36 @@ export const adminCopyFr = {
       "STUDENT": "Étudiant",
       "SUPERVISOR": "Encadrant",
       "SYSTEM": "Système"
+    },
+    "summaries": {
+      "auth_token_refreshed": "Jeton actualisé",
+      "auth_login_success": "Connexion réussie",
+      "auth_login_failed": "Tentative de connexion échouée",
+      "auth_logout": "Déconnexion",
+      "auth_logout_all": "Déconnexion de toutes les sessions",
+      "auth_password_reset_requested": "Réinitialisation du mot de passe demandée",
+      "auth_password_reset_completed": "Réinitialisation du mot de passe terminée",
+      "auth_password_changed": "Mot de passe modifié",
+      "auth_account_activated": "Compte activé",
+      "auth_account_locked": "Compte verrouillé",
+      "auth_session_revoked": "Session révoquée",
+      "auth_suspicious_lockout": "Verrouillage suspect",
+      "auth_provider_linked": "Fournisseur lié",
+      "student_password_reset": "Réinitialisation mot de passe étudiant",
+      "cv_analysis_completed": "Analyse CV terminée",
+      "cv_score_updated": "Score CV mis à jour",
+      "internship_application_submitted": "Candidature stage envoyée",
+      "internship_application_withdrawn": "Candidature stage retirée",
+      "internship_application_offer_accepted": "Offre de stage acceptée",
+      "internship_application_offer_declined": "Offre de stage refusée",
+      "internship_offer_published": "Offre de stage publiée",
+      "documents_uploaded": "Document téléversé",
+      "documents_approved": "Document approuvé",
+      "notification_created": "Nouvelle notification",
+      "notification_read": "Notification lue",
+      "chat_message_sent": "Message envoyé",
+      "interview_simulation_completed": "Simulation d'entretien terminée",
+      "report_submitted": "Rapport soumis"
     },
     "relative": {
       "justNow": "à l'instant",

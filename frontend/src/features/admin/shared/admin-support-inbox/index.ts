@@ -3,7 +3,6 @@ export { default as SupportConversationList } from './components/SupportConversa
 export { default as SupportConversationCard } from './components/SupportConversationCard';
 export { default as SupportChatWorkspace } from './components/SupportChatWorkspace';
 export { default as SupportChatHeader } from './components/SupportChatHeader';
-export type { SupportChatHeaderMenuItem } from './components/SupportChatHeader';
 export { default as SupportMessageThread } from './components/SupportMessageThread';
 export { default as SupportMessageComposer } from './components/SupportMessageComposer';
 export { default as SupportContextPanel } from './components/SupportContextPanel';

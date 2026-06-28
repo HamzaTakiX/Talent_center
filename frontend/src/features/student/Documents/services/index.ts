@@ -1,1 +1,1 @@
-/** Services — Student Documents (placeholder). */
+export { studentDocumentsApi } from '../api/studentDocumentsApi';

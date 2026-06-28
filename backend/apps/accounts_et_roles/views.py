@@ -19,6 +19,7 @@ from .services import (
     update_internship_status,
 )
 from .models import User
+from apps.authentication.user_queries import prefetch_user_for_serialization
 
 
 def envelope(success: bool, message: str = '', data=None, errors=None):
@@ -77,18 +78,13 @@ class ConfirmIdentityApiView(APIView):
             # Process identity confirmation
             confirm_identity(user=request.user, data=serializer.validated_data)
 
-            # Refresh user from DB to get updated profile data
-            request.user.refresh_from_db()
-            if hasattr(request.user, 'profile'):
-                request.user.profile.refresh_from_db()
-            if hasattr(request.user, 'student_profile'):
-                request.user.student_profile.refresh_from_db()
+            user = prefetch_user_for_serialization(request.user)
 
             return Response(
                 envelope(
                     success=True,
                     message='Identity confirmed successfully.',
-                    data=UserSerializer(request.user).data
+                    data=UserSerializer(user).data
                 ),
                 status=status.HTTP_200_OK
             )
@@ -136,7 +132,10 @@ class CompleteProfileApiView(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            serializer = CompleteStudentProfileSerializer(data=request.data)
+            serializer = CompleteStudentProfileSerializer(
+                data=request.data,
+                context={'request': request},
+            )
             serializer.is_valid(raise_exception=True)
             complete_student_profile(
                 user=request.user,

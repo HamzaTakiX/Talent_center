@@ -2,6 +2,7 @@
   import { formatUrl, textAreaFormat } from "$lib/utils";
   import { data } from "$lib/state/index.svelte";
   import PreviewSectionAnnotation from "$lib/ai/PreviewSectionAnnotation.svelte";
+  import { cvT } from "$lib/i18n/cvTranslate.svelte";
 </script>
 
 <div class="cv-preview-block cv-preview-block--header" data-cv-preview-section="profile_summary">
@@ -15,14 +16,14 @@
       Github: @{data.details.github}
     </a>
   </div>
-  <h2>Summary</h2>
+  <h2>{cvT('cv.forms.steps.summary')}</h2>
   <hr class="brd-fg mt--2" />
   <p>{data.details.about}</p>
 </div>
 
 <div class="cv-preview-block" data-cv-preview-section="experience">
   <PreviewSectionAnnotation sectionId="experience" />
-  <h2>Work Experience</h2>
+  <h2>{cvT('cv.forms.steps.experience')}</h2>
   <hr class="brd-fg mt--2" />
   {#each data.workExp as work}
     <div>
@@ -42,7 +43,7 @@
 
 <div class="cv-preview-block" data-cv-preview-section="education">
   <PreviewSectionAnnotation sectionId="education" />
-  <h2>Education</h2>
+  <h2>{cvT('cv.forms.steps.education')}</h2>
   <hr class="brd-fg mt--2" />
   {#each data.education as edu}
     <div>
@@ -57,20 +58,20 @@
 
 <div class="cv-preview-block" data-cv-preview-section="skills">
   <PreviewSectionAnnotation sectionId="skills" />
-  <h2>Skills</h2>
+  <h2>{cvT('cv.forms.steps.skills')}</h2>
   <hr class="brd-fg mt--2" />
   <p>{data.skills.map((s) => s.name).join(", ")}</p>
 </div>
 
 <div class="cv-preview-block" data-cv-preview-section="projects">
   <PreviewSectionAnnotation sectionId="projects" />
-  <h2>Projects</h2>
+  <h2>{cvT('cv.forms.steps.projects')}</h2>
   <hr class="brd-fg mt--2" />
   {#if data.projects.length > 0}
     {#each data.projects as x}
       <div>
         <h4 class="frow">
-          {x.name} <a class="ml-auto" href={x.link} target="_blank">Link</a>
+          {x.name} <a class="ml-auto" href={x.link} target="_blank">{cvT('cv.forms.common.link')}</a>
         </h4>
         <p>{x.desc}</p>
       </div>

@@ -65,4 +65,7 @@ export const adminFormBtnSecondaryClass =
 export const adminFormBtnPrimaryClass =
   'admin-btn-primary admin-form-btn inline-flex h-11 w-full items-center justify-center gap-2 rounded-admin-sm text-sm font-semibold text-white';
 
+export const adminFormBtnDangerClass =
+  'admin-btn-danger admin-form-btn inline-flex h-11 w-full items-center justify-center gap-2 rounded-admin-sm text-sm font-semibold';
+
 export const adminFormFieldClass = 'admin-form-field flex flex-col gap-1.5';

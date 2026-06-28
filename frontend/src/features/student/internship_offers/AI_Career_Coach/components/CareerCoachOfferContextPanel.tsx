@@ -85,7 +85,6 @@ const CareerCoachOfferContextPanel: FunctionComponent<CareerCoachOfferContextPan
     <aside className="isi-inspector isi-inspector--student sr-acc-chat-panel__offer-context">
       <header className="isi-inspector-head">
         <span className="isi-inspector-head-title">{t('student.internshipOffers.chat.contextTitle')}</span>
-        <span className="isi-inspector-head-badge">{internshipType}</span>
       </header>
 
       <div className="isi-inspector-offer-card">

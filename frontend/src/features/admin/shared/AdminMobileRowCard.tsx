@@ -28,7 +28,7 @@ const AdminMobileRowCard: FunctionComponent<AdminMobileRowCardProps> = ({
       <div className="min-w-0 space-y-2">
         {badges && <div className="flex flex-wrap items-center gap-2">{badges}</div>}
         {title != null && title !== '' && (
-          <p className="break-words text-sm font-semibold leading-5 text-[var(--admin-text)]">{title}</p>
+          <div className="min-w-0 break-words text-sm font-semibold leading-5 text-[var(--admin-text)]">{title}</div>
         )}
         {meta != null && meta !== '' && (
           <p className="text-xs leading-4 text-[var(--admin-text-secondary)]">{meta}</p>
@@ -57,7 +57,7 @@ const AdminMobileRowCard: FunctionComponent<AdminMobileRowCardProps> = ({
     )}
 
     {actions != null && (
-      <div className="flex w-full min-w-0 flex-col gap-2 border-t border-[var(--admin-border)] pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 sm:border-t-0 sm:pt-0">
+      <div className="admin-mobile-card__actions flex w-full min-w-0 flex-col gap-2 border-t border-[var(--admin-border)] pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 sm:border-t-0 sm:pt-0">
         {actions}
       </div>
     )}

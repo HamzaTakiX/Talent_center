@@ -1,6 +1,6 @@
 import { FunctionComponent, useMemo, useState } from 'react';
 
-import { Archive, Filter, MessageSquare, Search, X } from 'lucide-react';
+import { Archive, Briefcase, ChevronDown, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { FilterCounts, InboxFilters, InternshipConversation, PrimaryFilterCounts } from '../types/internshipChatTypes';
@@ -16,6 +16,8 @@ import InternshipStudentAvatar from './InternshipStudentAvatar';
 import { groupConversationsByStudent, resolveConversationPreview } from '../utils/internshipChatDisplayUtils';
 import { useInternshipInboxCopy } from '../../hooks/useOffersListLabels';
 import InternshipSidebarEmptyState from './InternshipSidebarEmptyState';
+import SupportInboxSidebarBrandHeader from '../../../shared/admin-support-inbox/components/SupportInboxSidebarBrandHeader';
+import ChatToolbarActions from '../../../../shared/chat-design-system/components/ChatToolbarActions';
 
 
 
@@ -50,6 +52,8 @@ type Props = {
   variant?: 'admin' | 'student';
 
   sidebarTitle?: string;
+
+  sidebarSubtitle?: string;
 
   searchPlaceholder?: string;
 
@@ -94,6 +98,10 @@ const AdminStudentGroup: FunctionComponent<AdminStudentGroupProps> = ({ group, s
   const hasActive = group.conversations.some((conv) => conv.id === selectedId);
 
   const singleActive = soleConversation?.id === selectedId;
+
+  const [offersOpen, setOffersOpen] = useState(true);
+
+  const offersPanelId = `isi-student-offers-${group.key}`;
 
 
 
@@ -169,7 +177,9 @@ const AdminStudentGroup: FunctionComponent<AdminStudentGroupProps> = ({ group, s
 
   return (
 
-    <div className={`isi-student-group isi-student-group--multi ${hasActive ? 'isi-student-group--active' : ''}`}>
+    <div
+      className={`isi-student-group isi-student-group--multi ${hasActive ? 'isi-student-group--active' : ''} ${offersOpen ? '' : 'isi-student-group--collapsed'}`}
+    >
 
       <div className="isi-student-group-head">
 
@@ -193,11 +203,25 @@ const AdminStudentGroup: FunctionComponent<AdminStudentGroupProps> = ({ group, s
 
             <span className="isi-student-group-name">{group.studentName}</span>
 
-            {group.totalUnread > 0 ? (
-
-              <span className="isi-unread">{group.totalUnread > 99 ? '99+' : group.totalUnread}</span>
-
-            ) : null}
+            <span className="isi-student-group-meta">
+              {group.totalUnread > 0 ? (
+                <span className="isi-unread">{group.totalUnread > 99 ? '99+' : group.totalUnread}</span>
+              ) : null}
+              <button
+                type="button"
+                className="isi-student-group-toggle"
+                aria-expanded={offersOpen}
+                aria-controls={offersPanelId}
+                aria-label={offersOpen ? 'Masquer les offres' : 'Afficher les offres'}
+                onClick={() => setOffersOpen((open) => !open)}
+              >
+                <ChevronDown
+                  className={`isi-student-group-toggle-icon ${offersOpen ? '' : 'isi-student-group-toggle-icon--collapsed'}`}
+                  strokeWidth={2.25}
+                  aria-hidden
+                />
+              </button>
+            </span>
 
           </div>
 
@@ -215,7 +239,8 @@ const AdminStudentGroup: FunctionComponent<AdminStudentGroupProps> = ({ group, s
 
 
 
-      <div className="isi-student-group-offers" role="list">
+      {offersOpen ? (
+      <div className="isi-student-group-offers" id={offersPanelId} role="list">
 
         {group.conversations.map((conv) => {
 
@@ -258,6 +283,7 @@ const AdminStudentGroup: FunctionComponent<AdminStudentGroupProps> = ({ group, s
         })}
 
       </div>
+      ) : null}
 
     </div>
 
@@ -298,6 +324,8 @@ const InternshipConversationList: FunctionComponent<Props> = ({
   variant = 'admin',
 
   sidebarTitle = 'Conversations',
+
+  sidebarSubtitle,
 
   searchPlaceholder = 'Rechercher une offre ou un étudiant…',
 
@@ -343,42 +371,21 @@ const InternshipConversationList: FunctionComponent<Props> = ({
 
     <aside className="isi-sidebar">
 
-      <div className="isi-sidebar-head">
-        <div className="isi-sidebar-title-wrap">
-          <MessageSquare className="isi-sidebar-title-icon" strokeWidth={2} aria-hidden />
-          <h2 className="isi-sidebar-title">{sidebarTitle}</h2>
-        </div>
-
-        <div className="isi-sidebar-actions">
-          {!isStudent ? (
-            <button
-              type="button"
-              onClick={() => onSetPrimary(viewingArchived ? 'all' : 'archived')}
-              className={`isi-filter-toggle ${viewingArchived ? 'isi-filter-toggle--active' : ''}`}
-              aria-label={viewingArchived ? t('backToActiveConversations') : t('viewArchivedAria')}
-              title={viewingArchived ? t('backToActiveConversations') : t('primaryChips.archived')}
-            >
-              <Archive className="size-4" strokeWidth={2} />
-              {!viewingArchived && primaryFilterCounts.archived > 0 ? (
-                <span className="isi-sidebar-action-badge">
-                  {primaryFilterCounts.archived > 99 ? '99+' : primaryFilterCounts.archived}
-                </span>
-              ) : null}
-            </button>
-          ) : null}
-
-          <button
-            type="button"
-            onClick={() => setFiltersOpen((v) => !v)}
-            className={`isi-filter-toggle ${filtersOpen || hasActiveFilters ? 'isi-filter-toggle--active' : ''}`}
-            aria-expanded={filtersOpen}
-            aria-label={t('filters')}
-          >
-            <Filter className="size-4" strokeWidth={2} />
-            {hasActiveFilters ? <span className="isi-filter-dot" /> : null}
-          </button>
-        </div>
-      </div>
+      <SupportInboxSidebarBrandHeader
+        title={sidebarTitle}
+        subtitle={sidebarSubtitle}
+        icon={Briefcase}
+        actions={
+          <ChatToolbarActions
+            viewingArchived={viewingArchived}
+            archivedCount={primaryFilterCounts.archived}
+            hasActiveFilters={hasActiveFilters}
+            filtersOpen={filtersOpen}
+            onToggleArchive={() => onSetPrimary(viewingArchived ? 'all' : 'archived')}
+            onToggleFilters={() => setFiltersOpen((v) => !v)}
+          />
+        }
+      />
 
       {loadError ? (
         <p className="isi-load-error px-4 py-2 text-sm text-[var(--admin-danger,#dc2626)]" role="alert">
@@ -386,7 +393,7 @@ const InternshipConversationList: FunctionComponent<Props> = ({
         </p>
       ) : null}
 
-      {!isStudent && viewingArchived ? (
+      {viewingArchived ? (
         <div className="isi-archived-strip">
           <Archive className="isi-archived-strip-icon" strokeWidth={2} aria-hidden />
           <span className="isi-archived-strip-label">{t('archivedBanner')}</span>

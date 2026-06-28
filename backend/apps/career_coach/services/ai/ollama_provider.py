@@ -88,10 +88,16 @@ class OllamaProvider(AIProvider):
                 return candidate
         return available[0]
 
+    @staticmethod
+    def _model_uses_reasoning_tokens(model: str) -> bool:
+        lowered = model.lower()
+        return 'qwen3' in lowered or ':thinking' in lowered
+
     def _build_payload(
         self,
         messages: list[ChatMessage],
         *,
+        model: str,
         temperature: float,
         system_prompt: str | None,
         stream: bool,
@@ -105,12 +111,17 @@ class OllamaProvider(AIProvider):
         options: dict[str, Any] = {'temperature': temperature}
         if num_predict is not None:
             options['num_predict'] = num_predict
-        return {
-            'model': self._resolve_model(self.model),
+        payload: dict[str, Any] = {
+            'model': model,
             'messages': ollama_messages,
             'stream': stream,
             'options': options,
         }
+        # Qwen3 defaults to "thinking" mode and can spend the full token budget
+        # in the reasoning field, leaving message.content empty for chat UIs.
+        if self._model_uses_reasoning_tokens(model):
+            payload['think'] = False
+        return payload
 
     @staticmethod
     def _strip_thinking(content: str) -> str:
@@ -121,11 +132,6 @@ class OllamaProvider(AIProvider):
         elif _THINK_START.lower() in lower:
             cleaned = ''
         return cleaned.strip()
-
-    def _qwen_no_think_suffix(self, model: str) -> str:
-        if 'qwen3' in model.lower():
-            return ' /no_think'
-        return ''
 
     def chat(
         self,
@@ -138,29 +144,40 @@ class OllamaProvider(AIProvider):
         model = self._resolve_model(self.model)
         payload = self._build_payload(
             messages,
+            model=model,
             temperature=temperature,
             system_prompt=system_prompt,
             stream=False,
             num_predict=num_predict,
         )
-        payload['model'] = model
-        if payload['messages'] and payload['messages'][-1]['role'] == 'user':
-            payload['messages'][-1]['content'] += self._qwen_no_think_suffix(model)
         try:
             resp = requests.post(f'{self.base_url}/api/chat', json=payload, timeout=self.timeout)
             resp.raise_for_status()
-            content = self._strip_thinking(resp.json().get('message', {}).get('content', ''))
+            message = resp.json().get('message', {})
+            content = self._strip_thinking(message.get('content', ''))
+            if not content and message.get('thinking'):
+                logger.warning(
+                    'Ollama model %s returned reasoning-only output (content empty); '
+                    'check think=false support',
+                    model,
+                )
             return ChatResponse(content=content, model=model, provider=self.name)
         except requests.RequestException as exc:
             if model != self.fallback_model:
                 logger.warning('Ollama primary model failed, trying fallback: %s', exc)
-                payload['model'] = self._resolve_model(self.fallback_model)
-                if payload['messages'] and payload['messages'][-1]['role'] == 'user':
-                    payload['messages'][-1]['content'] += self._qwen_no_think_suffix(payload['model'])
+                fallback = self._resolve_model(self.fallback_model)
+                payload = self._build_payload(
+                    messages,
+                    model=fallback,
+                    temperature=temperature,
+                    system_prompt=system_prompt,
+                    stream=False,
+                    num_predict=num_predict,
+                )
                 resp = requests.post(f'{self.base_url}/api/chat', json=payload, timeout=self.timeout)
                 resp.raise_for_status()
                 content = self._strip_thinking(resp.json().get('message', {}).get('content', ''))
-                return ChatResponse(content=content.strip(), model=payload['model'], provider=self.name)
+                return ChatResponse(content=content.strip(), model=fallback, provider=self.name)
             raise
 
     def chat_stream(
@@ -174,14 +191,12 @@ class OllamaProvider(AIProvider):
         model = self._resolve_model(self.model)
         payload = self._build_payload(
             messages,
+            model=model,
             temperature=temperature,
             system_prompt=system_prompt,
             stream=True,
             num_predict=num_predict,
         )
-        payload['model'] = model
-        if payload['messages'] and payload['messages'][-1]['role'] == 'user':
-            payload['messages'][-1]['content'] += self._qwen_no_think_suffix(model)
         stream_buffer = ''
         try:
             with requests.post(

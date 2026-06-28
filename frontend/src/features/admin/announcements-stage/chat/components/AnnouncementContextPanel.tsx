@@ -66,7 +66,6 @@ const AnnouncementContextPanel: FunctionComponent<Props> = ({
     <aside className="isi-inspector">
       <header className="isi-inspector-head">
         <span className="isi-inspector-head-title">Contexte annonce</span>
-        <span className="isi-inspector-head-badge">{conversation.category}</span>
       </header>
 
       <div className="isi-inspector-section-title">Étudiant</div>

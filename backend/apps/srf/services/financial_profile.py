@@ -46,10 +46,7 @@ def sync_account_amounts(account: FinancialAccount) -> FinancialAccount:
         if not installments.exists():
             installments = account.installments.all()
         total = sum((i.amount for i in installments), Decimal('0'))
-        paid = sum(
-            (i.amount for i in installments if i.payment_status == Installment.PaymentStatus.PAID),
-            Decimal('0'),
-        )
+        paid = sum((i.paid_amount or Decimal('0') for i in installments), Decimal('0'))
     else:
         charges = account.lines.filter(line_type='CHARGE')
         if charges.exists():
@@ -73,8 +70,19 @@ def sync_account_amounts(account: FinancialAccount) -> FinancialAccount:
     return account
 
 
+def _installments_for_status(account: FinancialAccount):
+    """Installments scoped to the account's current academic year when possible."""
+    year = account.current_academic_year or ''
+    if year:
+        scoped = account.installments.filter(academic_year=year)
+        if scoped.exists():
+            return scoped
+    return account.installments.all()
+
+
 def _derive_compliance_status(account: FinancialAccount) -> str:
     from apps.srf.models import PaymentProofSubmission
+    from apps.srf.services.academic_access import compute_access_flags
 
     pending_proofs = account.payment_proofs.filter(
         status__in=[
@@ -85,20 +93,25 @@ def _derive_compliance_status(account: FinancialAccount) -> str:
     if pending_proofs:
         return FinancialComplianceStatus.PENDING_VALIDATION
 
-    if account.student_profile.financial_holds.filter(is_active=True).exists():
-        return FinancialComplianceStatus.BLOCKED
-
     if account.remaining_amount <= 0:
         return FinancialComplianceStatus.CLEAR
 
     if account.payment_plan_type == PaymentPlanType.INSTALLMENTS:
-        overdue = account.installments.filter(
+        has_overdue = _installments_for_status(account).filter(
             payment_status=Installment.PaymentStatus.OVERDUE,
         ).exists()
-        if overdue:
-            return FinancialComplianceStatus.OVERDUE
+        access_flags = compute_access_flags(account)
+
+        # Overdue tranches that do not block exams/conventions stay PARTIAL, not OVERDUE.
+        if not access_flags['can_take_exams']:
+            if has_overdue or account.paid_amount <= 0:
+                return FinancialComplianceStatus.OVERDUE
+            return FinancialComplianceStatus.BLOCKED
+
         if account.paid_amount > 0:
             return FinancialComplianceStatus.PARTIAL
+        if has_overdue:
+            return FinancialComplianceStatus.OVERDUE
         return FinancialComplianceStatus.OVERDUE
 
     if account.paid_amount > 0:
@@ -116,6 +129,7 @@ def refresh_student_financial_state(student: StudentProfile) -> FinancialAccount
     mark_overdue_installments(account)
     sync_account_amounts(account)
     _sync_financial_holds(account)
+    sync_account_amounts(account)
     recompute_academic_access(student)
     return account
 
@@ -170,13 +184,12 @@ def refresh_student_financial_state_after_rollback(
 
 
 def _sync_financial_holds(account: FinancialAccount) -> None:
-    """Activate or release payment holds based on compliance status."""
+    """Activate or release payment holds based on academic access rules."""
+    from apps.srf.services.academic_access import compute_access_flags
+
     student = account.student_profile
-    blocked_statuses = {
-        FinancialComplianceStatus.OVERDUE,
-        FinancialComplianceStatus.BLOCKED,
-    }
-    should_block = account.financial_status in blocked_statuses
+    access_flags = compute_access_flags(account)
+    should_block = not access_flags['can_take_exams']
 
     active_payment_hold = FinancialHold.objects.filter(
         student_profile=student,
@@ -197,7 +210,13 @@ def _sync_financial_holds(account: FinancialAccount) -> None:
         active_payment_hold.released_at = timezone.now()
         active_payment_hold.save(update_fields=['is_active', 'released_at', 'updated_at'])
 
-    if account.financial_status == FinancialComplianceStatus.BLOCKED:
+    if not should_block:
+        FinancialHold.objects.filter(
+            student_profile=student,
+            hold_type=FinancialHold.HoldType.DOCUMENT,
+            is_active=True,
+        ).update(is_active=False, released_at=timezone.now())
+    else:
         FinancialHold.objects.get_or_create(
             student_profile=student,
             hold_type=FinancialHold.HoldType.DOCUMENT,
@@ -206,12 +225,6 @@ def _sync_financial_holds(account: FinancialAccount) -> None:
                 'reason': 'Convention de stage blocked — financial clearance required.',
             },
         )
-    else:
-        FinancialHold.objects.filter(
-            student_profile=student,
-            hold_type=FinancialHold.HoldType.DOCUMENT,
-            is_active=True,
-        ).update(is_active=False, released_at=timezone.now())
 
 
 def set_account_at_risk(account: FinancialAccount) -> None:

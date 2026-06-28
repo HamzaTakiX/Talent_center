@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 
 from apps.admin_management.services.admins import get_admin_effective_permissions
 from apps.admin_management.services.scopes import is_super_admin
@@ -13,9 +14,28 @@ from apps.stage.services.matching_service import top_matches_for_offer
 
 User = get_user_model()
 
+_INTERN_ADMINS_CACHE_KEY = 'internship:admin_user_ids'
+_INTERN_ADMINS_CACHE_TTL = 120
+
+
+def invalidate_internship_admin_users_cache() -> None:
+    cache.delete(_INTERN_ADMINS_CACHE_KEY)
+
 
 def internship_admin_users() -> list[User]:
-    admins = User.objects.filter(role=User.RoleChoices.ADMIN, is_active=True)
+    cached_ids = cache.get(_INTERN_ADMINS_CACHE_KEY)
+    if cached_ids is not None:
+        return list(
+            User.objects.filter(pk__in=cached_ids)
+            .select_related('admin_profile')
+            .prefetch_related('role_assignments__role__role_permissions__permission')
+        )
+
+    admins = (
+        User.objects.filter(role=User.RoleChoices.ADMIN, is_active=True)
+        .select_related('admin_profile')
+        .prefetch_related('role_assignments__role__role_permissions__permission')
+    )
     result = []
     for admin in admins:
         if is_super_admin(admin):
@@ -23,6 +43,7 @@ def internship_admin_users() -> list[User]:
             continue
         if 'internship.manage' in get_admin_effective_permissions(admin):
             result.append(admin)
+    cache.set(_INTERN_ADMINS_CACHE_KEY, [u.pk for u in result], _INTERN_ADMINS_CACHE_TTL)
     return result
 
 

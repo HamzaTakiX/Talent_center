@@ -136,7 +136,11 @@ const ExamPlanningSection: FunctionComponent<Props> = ({ periods, saving, onSave
       title={t(`${PREFIX}.title`)}
       subtitle={t(`${PREFIX}.subtitle`)}
       action={
-        <button type="button" className={SRF_CONFIG_BTN_PRIMARY} onClick={openCreate}>
+        <button
+          type="button"
+          onClick={openCreate}
+          className="admin-btn-primary admin-form-btn inline-flex h-9 !w-auto items-center gap-2 rounded-xl px-4 text-sm font-semibold text-white transition-all duration-200"
+        >
           <CalendarPlus className="h-4 w-4" />
           {t(`${PREFIX}.addPeriod`)}
         </button>
@@ -147,12 +151,6 @@ const ExamPlanningSection: FunctionComponent<Props> = ({ periods, saving, onSave
           icon={Calendar}
           title={t(`${PREFIX}.emptyTitle`)}
           description={t(`${PREFIX}.emptyDesc`)}
-          action={
-            <button type="button" className={SRF_CONFIG_BTN_PRIMARY} onClick={openCreate}>
-              <CalendarPlus className="h-4 w-4" />
-              {t(`${PREFIX}.addPeriod`)}
-            </button>
-          }
         />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -312,7 +310,12 @@ const ExamPlanningSection: FunctionComponent<Props> = ({ periods, saving, onSave
           <button type="button" className={`${adminFormBtnSecondaryClass} w-auto px-4`} onClick={() => setModalOpen(false)}>
             {t(`${PREFIX}.cancel`)}
           </button>
-          <button type="button" className={SRF_CONFIG_BTN_PRIMARY} disabled={saving || !form.filiere} onClick={() => void submit()}>
+          <button
+            type="button"
+            disabled={saving || !form.filiere}
+            onClick={() => void submit()}
+            className="admin-btn-primary admin-form-btn inline-flex h-10 !w-auto items-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+          >
             {t(`${PREFIX}.save`)}
           </button>
         </div>

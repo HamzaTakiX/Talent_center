@@ -17,7 +17,7 @@ class InstallmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Installment
         fields = [
-            'id', 'installment_number', 'label', 'amount', 'currency',
+            'id', 'installment_number', 'label', 'amount', 'paid_amount', 'currency',
             'due_date', 'semester', 'academic_year', 'payment_status',
             'validated_at', 'validated_by', 'uploaded_receipt',
         ]
@@ -112,6 +112,12 @@ class PaymentProofReviewSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=PaymentProofSubmission.Status.choices)
     rejection_reason = serializers.CharField(required=False, allow_blank=True, default='')
     admin_notes = serializers.CharField(required=False, allow_blank=True, default='')
+    approved_amount = serializers.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        required=False,
+        allow_null=True,
+    )
 
     def validate(self, attrs):
         status = attrs.get('status')
@@ -120,6 +126,12 @@ class PaymentProofReviewSerializer(serializers.Serializer):
             if not reason:
                 raise serializers.ValidationError({
                     'rejection_reason': 'Rejection reason is required when rejecting a payment.',
+                })
+        if status == PaymentProofSubmission.Status.APPROVED:
+            approved = attrs.get('approved_amount')
+            if approved is not None and approved <= 0:
+                raise serializers.ValidationError({
+                    'approved_amount': 'Approved amount must be greater than zero.',
                 })
         return attrs
 

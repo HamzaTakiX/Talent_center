@@ -9,10 +9,16 @@ interface AuthInfoBannerProps {
 const AuthInfoBanner: FunctionComponent<AuthInfoBannerProps> = ({ children }) => (
   <div
     role="note"
-    className="auth-alert-info flex w-full items-start gap-3 rounded-[10px] px-4 py-3 text-sm font-inter"
+    className="auth-alert-info w-full rounded-[10px] px-4 py-3 text-sm font-inter"
   >
-    <Star className="auth-alert-info__icon mt-0.5 h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
-    <p className="min-w-0 flex-1 text-sm leading-5">{children}</p>
+    <p className="m-0 text-sm leading-5">
+      <Star
+        className="auth-alert-info__icon me-2 inline-block h-4 w-4 shrink-0 align-middle"
+        strokeWidth={2}
+        aria-hidden
+      />
+      {children}
+    </p>
   </div>
 );
 

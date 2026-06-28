@@ -21,7 +21,7 @@ type Props = {
     value: DocumentInboxFilters[K][number]
   ) => void;
   onToggleStudentAcademic: (key: keyof import('../../../shared/chat-filters/studentAcademicChatFilterTypes').StudentAcademicChatFilters, value: string) => void;
-  onToggleQuick: (key: 'unread' | 'urgent' | 'archived') => void;
+  onToggleQuick: (key: 'unread' | 'urgent') => void;
   onClear: () => void;
 };
 
@@ -103,13 +103,6 @@ const DocumentFilterAccordion: FunctionComponent<Props> = ({
         className={`isi-quick-filter ${filters.urgent ? 'isi-quick-filter--active' : ''}`}
       >
         Urgent
-      </button>
-      <button
-        type="button"
-        onClick={() => onToggleQuick('archived')}
-        className={`isi-quick-filter ${filters.archived ? 'isi-quick-filter--active' : ''}`}
-      >
-        Archivées
       </button>
     </div>
 

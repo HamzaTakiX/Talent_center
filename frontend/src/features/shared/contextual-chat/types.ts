@@ -69,6 +69,17 @@ export interface MessageDto {
   metadata_json: Record<string, unknown>;
   read_by?: MessageReadReceiptDto[];
   delivery_status?: MessageDeliveryStatus;
+  attachments?: MessageAttachmentDto[];
+}
+
+export interface MessageAttachmentDto {
+  id: number;
+  attachment_type: 'FILE' | 'IMAGE' | 'VIDEO' | 'AUDIO';
+  original_filename: string;
+  file_size_bytes: number;
+  mime_type: string;
+  file_url: string;
+  created_at: string;
 }
 
 export interface ContextualChatFilters {

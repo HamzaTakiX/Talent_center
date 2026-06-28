@@ -7,6 +7,7 @@ import microsoftIcon from '../assets/icons/login/microsoft.svg';
 import loginCover from '../assets/images/login/DSCF1339 (1).webp';
 import { useAuth } from '../hooks/useAuth';
 import { authApi } from '../api';
+import { getLoginErrorMessage } from '../utils/loginErrors';
 import { validateEmail } from '../utils/validation';
 import { AuthHeader } from '../components/AuthHeader';
 import { AuthFooter } from '../components/AuthFooter';
@@ -43,54 +44,6 @@ const LoginPage: FunctionComponent = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const getErrorMessage = (err: any): string => {
-    if (!err.response) {
-      return t('auth.login.errors.connectionMessage');
-    }
-
-    const status = err.response.status;
-    const data = err.response.data;
-    const backendMessage = data?.message || data?.detail || '';
-
-    switch (status) {
-      case 400:
-        if (data?.errors) {
-          const fieldErrors = Object.entries(data.errors)
-            .map(([, msgs]) => `${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
-            .join('; ');
-          return fieldErrors || t('auth.login.errors.validationMessage');
-        }
-        return backendMessage || t('auth.login.errors.validationMessage');
-
-      case 401:
-        return t('auth.login.errors.authMessage');
-
-      case 403:
-        if (backendMessage.toLowerCase().includes('suspended')) {
-          return t('auth.login.errors.suspendedMessage');
-        }
-        if (backendMessage.toLowerCase().includes('pending')) {
-          return t('auth.login.errors.pendingMessage');
-        }
-        return backendMessage || t('auth.login.errors.deniedMessage');
-
-      case 423:
-        return t('auth.login.errors.lockedMessage');
-
-      case 429:
-        return t('auth.login.errors.rateLimitMessage');
-
-      case 500:
-      case 502:
-      case 503:
-      case 504:
-        return t('auth.login.errors.serverMessage');
-
-      default:
-        return backendMessage || t('auth.login.errors.failedMessage');
-    }
-  };
-
   const handleLogin = async () => {
     // Frontend validation - only basic checks
     if (!email.trim()) {
@@ -114,7 +67,7 @@ const LoginPage: FunctionComponent = () => {
         legacyLogin(response.access, response.user, response.refresh);
       }
     } catch (err: any) {
-      setError(getErrorMessage(err));
+      setError(getLoginErrorMessage(err, t));
     } finally {
       setLoading(false);
     }

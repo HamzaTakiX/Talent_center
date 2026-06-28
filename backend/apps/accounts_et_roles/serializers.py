@@ -237,6 +237,7 @@ class CompleteStudentProfileSerializer(serializers.Serializer):
     # cv_file handled separately via multipart upload
 
     # Career & Internship Preferences
+    internship_type_id = serializers.IntegerField(required=True)
     career_objective = serializers.CharField(required=False, allow_blank=True)
     skills = serializers.CharField(required=False, allow_blank=True)  # Comma-separated string
     availability = serializers.CharField(max_length=50, required=False, allow_blank=True)
@@ -244,6 +245,33 @@ class CompleteStudentProfileSerializer(serializers.Serializer):
     city = serializers.CharField(max_length=100, required=False, allow_blank=True)
     mobility = serializers.CharField(required=False, allow_blank=True)  # Comma-separated string
     has_applied = serializers.BooleanField(required=False, allow_null=True)
+
+    def validate_internship_type_id(self, value: int) -> int:
+        from apps.admin_management.services.academic_reference import active_internship_types
+
+        request = self.context.get('request')
+        if request is None:
+            return value
+
+        student_profile = getattr(request.user, 'student_profile', None)
+        if student_profile is None:
+            raise serializers.ValidationError('Student profile is required.')
+
+        level_id = student_profile.academic_level_id
+        if not level_id:
+            raise serializers.ValidationError(
+                'Academic level is not set. Confirm your identity (program and class) first.',
+            )
+
+        allowed = active_internship_types(
+            level_ids=[level_id],
+            sector_id=student_profile.academic_sector_id,
+        )
+        if not allowed.filter(pk=value).exists():
+            raise serializers.ValidationError(
+                'This internship type is not available for your program and class.',
+            )
+        return value
 
 
 class UpdateInternshipStatusSerializer(serializers.Serializer):

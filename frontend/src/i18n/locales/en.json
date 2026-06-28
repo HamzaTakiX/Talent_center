@@ -164,15 +164,16 @@
         "title": "Critical alerts",
         "subtitle": "Immediate attention required",
         "empty": "No alerts at the moment",
+        "emptyDesc": "Everything looks good — no critical issues require your attention right now.",
         "priority": {
           "high": "High",
           "medium": "Medium"
         },
         "messages": {
-          "unpaidSrf": "23 students have unpaid SRF fees",
-          "documentsPending": "45 documents awaiting validation",
-          "noInternship": "156 students without an assigned internship",
-          "offersExpiring": "12 internship offers expiring this week"
+          "unpaidSrf": "{{count}} students have unpaid SRF fees",
+          "documentsPending": "{{count}} documents awaiting validation",
+          "noInternship": "{{count}} students without an assigned internship",
+          "offersExpiring": "{{count}} internship offers expiring this week"
         },
         "analytics": {
           "active": "active",
@@ -186,6 +187,9 @@
       "activity": {
         "title": "Recent activity",
         "subtitle": "Latest actions on the platform",
+        "empty": "No recent activity",
+        "emptyDesc": "Platform actions from the history module will appear here as they occur.",
+        "viewHistory": "Open history",
         "actions": {
           "newApplication": "New internship application",
           "documentValidated": "Document validated",
@@ -202,6 +206,8 @@
       "chart": {
         "title": "Activity overview",
         "subtitle": "Last 7 days · platform",
+        "empty": "No activity this week",
+        "emptyDesc": "Events recorded in the history module will populate this chart over time.",
         "legend": {
           "applications": "Applications",
           "documents": "Documents",
@@ -346,6 +352,28 @@
       "noConversations": "No conversations found",
       "noConversationsHint": "Try a different search or filter",
       "searchInConversation": "Search in conversation…",
+      "searchInConversationLabel": "Search in conversation",
+      "sharedAttachments": "Shared files",
+      "conversationHistory": "History",
+      "archiveConversation": "Archive",
+      "unarchiveConversation": "Restore",
+      "archiveConversationHint": "Hide from active inbox",
+      "unarchiveConversationHint": "Return to active inbox",
+      "conversationArchivedNotice": "This conversation is archived",
+      "menuSectionExplore": "Explore",
+      "menuSectionInbox": "Inbox",
+      "searchResults": "{{current}} of {{total}}",
+      "searchNavigatePrev": "Previous result",
+      "searchNavigateNext": "Next result",
+      "closeSearch": "Close search",
+      "closePanel": "Close panel",
+      "noAttachments": "No shared attachments",
+      "noHistory": "No history for this conversation",
+      "firstMessage": "First message",
+      "historyEvent": "Event",
+      "you": "You",
+      "otherParticipant": "Contact",
+      "downloadAttachment": "Download {{name}}",
       "noMessages": "No matching messages",
       "openSearch": "Search in conversation",
       "moreActions": "More actions",
@@ -362,7 +390,24 @@
       "sendMessage": "Send message",
       "voiceNote": "Voice note",
       "composerHint": "Enter to send · Shift+Enter for new line",
-      "unreadCount": "{{count}} unread"
+      "unreadCount": "{{count}} unread",
+      "typingIndicator": "Typing…",
+      "systemEvents": {
+        "archive_conversation": "Conversation archived in your inbox",
+        "unarchive_conversation": "Conversation restored to your inbox",
+        "mark_resolved": "Conversation marked as resolved",
+        "auto_reopen": "Conversation automatically reopened",
+        "mark_urgent": "Conversation marked as urgent",
+        "assign_admin": "Conversation assigned to an administrator",
+        "add_internal_note": "Internal note added",
+        "set_priority": "Priority updated",
+        "notify_admin": "Administrators notified",
+        "escalate": "Conversation escalated",
+        "validate": "Item validated",
+        "request_correction": "Correction requested",
+        "create_task": "Task created",
+        "create_meeting": "Meeting scheduled"
+      }
     },
     "chatEmpty": {
       "stats": {
@@ -542,7 +587,15 @@
         "suspendedTitle": "Account suspended",
         "suspendedMessage": "Your account has been suspended. Please contact the administrator.",
         "pendingTitle": "Account pending",
-        "pendingMessage": "Your account is pending approval. You will receive an email once approved.",
+        "pendingMessage": "Your account is pending administrator authorization. Please contact your school administrator.",
+        "platformAccessTitle": "Access not granted",
+        "platformAccessMessage": "Platform access has not been granted yet. Please contact your administrator.",
+        "blockedTitle": "Account blocked",
+        "blockedMessage": "Your account has been blocked. Please contact the administrator.",
+        "archivedTitle": "Account archived",
+        "archivedMessage": "Your account has been archived. Please contact the administrator.",
+        "disabledTitle": "Account disabled",
+        "disabledMessage": "Your account is disabled. Please contact the administrator.",
         "deniedTitle": "Access denied",
         "deniedMessage": "Your account does not have access. Please contact support.",
         "lockedTitle": "Account locked",
@@ -638,6 +691,7 @@
         "linkedin": "LinkedIn profile URL",
         "professionalSummary": "Short professional summary",
         "careerObjective": "Type of internship you're looking for",
+        "internshipType": "Type of internship you're looking for",
         "skills": "Select your skills",
         "whenStart": "When can you start?",
         "startDate": "Start date",
@@ -649,6 +703,8 @@
         "linkedin": "https://linkedin.com/in/your-profile",
         "professionalSummary": "Share a brief overview of your academic background, skills, and career goals…",
         "careerObjective": "e.g., Marketing internship in a multinational company, focusing on digital strategy…",
+        "selectInternshipType": "Select your internship type",
+        "loadingInternshipTypes": "Loading internship types…",
         "city": "e.g., Casablanca"
       },
       "availability": {
@@ -682,7 +738,12 @@
       },
       "yes": "Yes",
       "no": "No",
+      "hints": {
+        "selectInternshipTypeForSkills": "Select your internship type first to see the ESCA competencies for your program."
+      },
       "save": "Save and continue",
+      "saving": "Saving…",
+      "redirecting": "Redirecting…",
       "success": "Profile saved! You will be redirected to the CV builder to prepare your CV before the dashboard.",
       "loginRecapTitle": "Your login credentials",
       "loginRecapHint": "Redirecting you to the CV builder…",
@@ -697,7 +758,10 @@
         "missingFields": "Please fill in the following required fields: {{fields}}",
         "linkedinInvalid": "Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-name)",
         "linkedinInvalidField": "LinkedIn URL must be a valid LinkedIn profile (e.g., https://linkedin.com/in/your-name)",
-        "submitFailed": "Failed to complete profile. Please try again."
+        "submitFailed": "Failed to complete profile. Please try again.",
+        "internshipTypesNeedIdentity": "Confirm your identity (program and class) first to see ESCA internship types.",
+        "noInternshipTypesForProgram": "No internship type found for your program and class. Contact administration or verify your enrollment.",
+        "noCompetenciesForProgram": "No catalog competencies for this internship type."
       }
     },
     "loading": {
@@ -830,7 +894,7 @@
       "panelTitle": "Build your CV",
       "panelSubtitle": "Structured forms · Live preview",
       "nav": { "label": "CV sections" },
-      "mobile": { "form": "Form", "preview": "Preview" },
+      "mobile": { "form": "Form", "preview": "Preview", "livePreview": "Live preview", "editorTab": "Editor", "viewerTab": "Preview" },
       "wizard": { "prev": "Previous", "next": "Next" },
       "empty": {
         "description": "Add at least one section (experience, education, skills…) using the form."
@@ -853,6 +917,8 @@
       "personal": {
         "fullName": "Full name",
         "headline": "Professional title",
+        "about": "About",
+        "role": "Role",
         "email": "Email",
         "phone": "Phone",
         "location": "Location"
@@ -869,11 +935,12 @@
         "website": "Website",
         "portfolio": "Portfolio"
       },
-      "common": { "start": "Start", "end": "End", "date": "Date" },
+      "common": { "start": "Start", "end": "End", "date": "Date", "delete": "Delete", "link": "Link" },
       "education": {
         "add": "Add education",
         "new": "New education",
-        "degree": "Degree",
+        "degree": "Qualification",
+        "institution": "Institution",
         "school": "School",
         "location": "Location",
         "description": "Description"
@@ -884,17 +951,18 @@
         "title": "Job title",
         "company": "Company",
         "location": "Location",
+        "description": "Description",
         "bullets": "Achievements",
         "addBullet": "Add bullet"
       },
-      "skills": { "add": "Add skill", "new": "Skill", "name": "Name", "level": "Level" },
+      "skills": { "add": "Add skill", "new": "Skill", "name": "Skill name", "iconUrl": "SVG icon URL", "level": "Level" },
       "languages": { "add": "Add language", "new": "Language", "name": "Language", "level": "Level" },
       "projects": {
         "add": "Add project",
         "new": "Project",
-        "name": "Name",
+        "name": "Project name",
         "tech": "Technologies",
-        "url": "URL",
+        "url": "Link",
         "description": "Description"
       },
       "certifications": {
@@ -913,6 +981,7 @@
       "custom": { "add": "Add section", "new": "Section", "title": "Title", "content": "Content" },
       "template": {
         "pick": "Choose a premium template",
+        "contact": "Contact",
         "desc": {
           "executive": "Modern balanced columns — tech & business",
           "minimal": "Ultra-readable, ATS parsing optimized",
@@ -920,6 +989,23 @@
           "elegant": "Authoritative & sober — leadership roles",
           "corporate": "Compact dense layout — max info per page"
         }
+      },
+      "placeholders": {
+        "about": "Short professional summary",
+        "role": "e.g. Software Engineering Intern",
+        "companyExample": "Khan Academy",
+        "dateRange": "Jun 2022 – Present",
+        "experienceDesc": "Describe your responsibilities and achievements",
+        "skillIcon": "Icon URL from Iconify",
+        "institutionExample": "Cornell University",
+        "dateExample": "May 2018",
+        "qualificationExample": "Bachelor of Science in Computer Engineering",
+        "projectLink": "Project URL",
+        "projectDesc": "Short project description",
+        "languageExample": "French, English…",
+        "languageLevel": "Native, B2, Professional…",
+        "githubUrl": "GitHub username or URL",
+        "linkedinUrl": "LinkedIn profile URL"
       }
     },
     "ai": {

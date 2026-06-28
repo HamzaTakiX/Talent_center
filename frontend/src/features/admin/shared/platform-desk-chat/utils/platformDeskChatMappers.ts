@@ -1,11 +1,18 @@
 import type { ConversationContextDto, ConversationDto, MessageDto } from '../../../../shared/contextual-chat/types';
+import { resolveMediaUrl } from '../../../../../shared/api/mediaUrl';
 import { getMessageStableKey } from '../../../offres-stage/chat/utils/internshipChatMessageUtils';
+import {
+  parseSmartActionCode,
+  shouldHideSmartActionForInbox,
+} from '../../../offres-stage/chat/utils/internshipChatSystemMessageUtils';
+import { mapMessageAttachments } from '../../../../shared/contextual-chat/utils/mapMessageAttachments';
 import type {
   PlatformDeskConversation,
   PlatformDeskEntityType,
   PlatformDeskMessage,
   PlatformDeskViewerRole,
 } from '../types/platformDeskChatTypes';
+import { visibleSupportStatus } from './platformDeskSupportStatus';
 
 type Snapshot = Record<string, unknown>;
 
@@ -17,6 +24,14 @@ function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   return (parts[0]?.slice(0, 2) ?? '??').toUpperCase();
+}
+
+function resolveSnapshotAvatar(...paths: unknown[]): string | undefined {
+  for (const path of paths) {
+    const resolved = resolveMediaUrl(typeof path === 'string' ? path : null);
+    if (resolved) return resolved;
+  }
+  return undefined;
 }
 
 function formatRelative(iso: string | null | undefined): string {
@@ -41,7 +56,8 @@ function formatTime(iso: string): string {
   }).format(d);
 }
 
-function isConversationArchived(dto: ConversationDto): boolean {
+function isConversationArchived(dto: ConversationDto, viewerRole: PlatformDeskViewerRole): boolean {
+  if (viewerRole === 'student') return Boolean(dto.is_archived);
   const meta = (dto.metadata_json ?? {}) as Snapshot;
   if (Object.prototype.hasOwnProperty.call(meta, 'admin_inbox_archived')) {
     return meta.admin_inbox_archived === true;
@@ -84,10 +100,7 @@ function resolveCounterparty(
     return {
       displayName,
       email: str(snap.student_email) || undefined,
-      avatarUrl:
-        (typeof ctx?.student_avatar_url === 'string' && ctx.student_avatar_url.trim()) ||
-        str(snap.student_avatar_url) ||
-        undefined,
+      avatarUrl: resolveSnapshotAvatar(ctx?.student_avatar_url, snap.student_avatar_url),
       userId: ctx?.student_user_id ?? (snap.student_user_id as number | null) ?? null,
     };
   }
@@ -96,6 +109,7 @@ function resolveCounterparty(
     return {
       displayName: str(snap.admin_name) || dto.title || 'Administrateur',
       email: str(snap.admin_email) || undefined,
+      avatarUrl: resolveSnapshotAvatar(snap.admin_avatar_url),
       userId: (snap.admin_user_id as number | null) ?? null,
       roleLabel: str(snap.admin_role_label) || 'Administrateur',
     };
@@ -109,6 +123,7 @@ function resolveCounterparty(
     return {
       displayName: peerName || participant?.full_name || dto.title || 'Administrateur',
       email: peerEmail || participant?.email || undefined,
+      avatarUrl: resolveSnapshotAvatar(snap.peer_admin_avatar_url, snap.admin_avatar_url),
       userId: peerId ?? participant?.user_id ?? null,
       roleLabel: str(snap.admin_role_label) || participant?.role || 'Administrateur',
     };
@@ -154,23 +169,37 @@ export function mapPlatformDeskMessages(
 ): PlatformDeskMessage[] {
   return [...dtos]
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-    .filter((m) => m.message_type !== 'EVENT' && m.message_type !== 'SYSTEM')
+    .filter((m) => {
+      const isSystem = m.message_type === 'EVENT' || m.message_type === 'SYSTEM';
+      if (!isSystem) return true;
+      const actionCode = parseSmartActionCode(m.body, m.metadata_json);
+      return !shouldHideSmartActionForInbox(actionCode, viewerRole === 'student' ? 'student' : 'admin');
+    })
     .map((m) => {
       const isStudentSender = studentUserId != null && m.sender_id === studentUserId;
-      const direction: 'in' | 'out' = m.is_own
-        ? 'out'
-        : viewerRole === 'student'
-          ? !isStudentSender
-            ? 'in'
-            : 'out'
-          : isStudentSender
-            ? 'in'
-            : 'out';
+      const isSystem = m.message_type === 'EVENT' || m.message_type === 'SYSTEM';
+      const smartActionCode = parseSmartActionCode(m.body, m.metadata_json) ?? undefined;
+      const direction: 'in' | 'out' = isSystem
+        ? 'in'
+        : m.is_own
+          ? 'out'
+          : viewerRole === 'student'
+            ? !isStudentSender
+              ? 'in'
+              : 'out'
+            : isStudentSender
+              ? 'in'
+              : 'out';
       return {
         id: getMessageStableKey(m),
         direction,
         text: m.body,
         time: formatTime(m.created_at),
+        messageType: m.message_type,
+        smartActionCode,
+        createdAt: m.created_at,
+        attachmentName: m.attachments?.[0]?.original_filename,
+        attachments: mapMessageAttachments(m),
         ...mapOwnMessageReadState(m),
       };
     });
@@ -213,22 +242,23 @@ export function mapPlatformDeskConversationDto(
     unreadCount: dto.unread_count ?? 0,
     urgent: urgency === 'HIGH' || urgency === 'CRITICAL',
     resolved: isConversationResolved(dto, ctx),
-    archived: isConversationArchived(dto),
+    archived: isConversationArchived(dto, viewerRole),
     messages,
   };
 }
 
 export function toDeskConversationRecord(conversation: PlatformDeskConversation) {
+  const supportStatus = visibleSupportStatus(conversation, 'admin');
   return {
     id: conversation.id,
     avatarInitials: conversation.initials,
     title: conversation.title,
-    meta: conversation.entityLabel ?? conversation.workflowStatus,
+    meta: conversation.entityLabel ?? undefined,
     preview: conversation.lastMessage,
     timeLabel: conversation.timeLabel,
     unreadCount: conversation.unreadCount,
     contextLine: conversation.entityLabel,
-    statusLabel: conversation.workflowStatus,
+    statusLabel: supportStatus ?? undefined,
     subtitle: conversation.entityLabel,
     program: conversation.program,
     academicLevel: conversation.academicLevel,

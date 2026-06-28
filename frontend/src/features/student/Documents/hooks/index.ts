@@ -1,1 +1,1 @@
-/** Hooks — Student Documents (placeholder). */
+export { useStudentDocuments } from './useStudentDocuments';

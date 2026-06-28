@@ -1,6 +1,6 @@
 import type { AdminSrfConversation } from '../types/adminSrfChatTypes';
 
-export const adminSrfConversations: AdminSrfConversation[] = [
+const rawAdminSrfConversations = [
   {
     id: 'srf-sarah',
     studentName: 'Sarah Amrani',
@@ -211,3 +211,13 @@ export const adminSrfConversations: AdminSrfConversation[] = [
     ],
   },
 ];
+
+export const adminSrfConversations = rawAdminSrfConversations.map(
+  (conversation, index) => ({
+    ...conversation,
+    conversationId: index + 1,
+    studentUserId: null,
+    resolved: false,
+    archived: false,
+  }),
+) as AdminSrfConversation[];

@@ -4,9 +4,6 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 import { adminAdministratorsApi } from '../../api/administrators';
 import type { AdminAccountStatus, AdminAdministratorRow } from '../../api/types';
 import AdminSelect from '../../account/components/AdminSelect';
-import AdminAcademicScopeFields, {
-  type AcademicScopeState,
-} from './AdminAcademicScopeFields';
 import { useAdminToast } from '../../dashboard/context/AdminToastContext';
 import {
   AdminFormField,
@@ -46,16 +43,6 @@ interface AdministratorAccountFormProps {
   hidePanelHeader?: boolean;
 }
 
-const emptyAcademicScope = (): AcademicScopeState => ({
-  filiereIds: [],
-  yearFilter: '',
-  classGroupIds: [],
-  levelIds: [],
-  sectorIds: [],
-  levels: [],
-  academicYears: [],
-});
-
 const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps> = ({
   mode,
   administrator,
@@ -73,7 +60,6 @@ const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps>
   const [email, setEmail] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<CreateAdminRoleValue[]>([]);
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
-  const [academicScope, setAcademicScope] = useState<AcademicScopeState>(emptyAcademicScope);
   const [ssoEnabled, setSsoEnabled] = useState(false);
   const [grantAccess, setGrantAccess] = useState(false);
   const [accountStatus, setAccountStatus] = useState('PENDING');
@@ -86,7 +72,6 @@ const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps>
       setEmail('');
       setSelectedRoles([]);
       setPermissions({});
-      setAcademicScope(emptyAcademicScope());
       setSsoEnabled(false);
       setGrantAccess(false);
       setAccountStatus('PENDING');
@@ -102,16 +87,6 @@ const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps>
         permMap[k] = true;
       });
       setPermissions(permMap);
-      const scopeYears = administrator.scopes?.academic_years ?? [];
-      setAcademicScope({
-        filiereIds: administrator.scopes?.filiere_ids ?? [],
-        yearFilter: scopeYears[0] ?? '',
-        classGroupIds: administrator.scopes?.class_group_ids ?? [],
-        levelIds: administrator.scopes?.level_ids ?? [],
-        sectorIds: administrator.scopes?.sector_ids ?? [],
-        levels: administrator.scopes?.levels ?? [],
-        academicYears: scopeYears,
-      });
       setSsoEnabled(administrator.sso_enabled);
       setGrantAccess(administrator.platform_access_granted);
       setAccountStatus(administrator.account_status);
@@ -168,12 +143,6 @@ const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps>
       email: email.trim(),
       role_slugs: selectedRoles,
       permission_keys,
-      filiere_ids: academicScope.filiereIds,
-      class_group_ids: academicScope.classGroupIds,
-      levels: academicScope.levels,
-      level_ids: academicScope.levelIds,
-      sector_ids: academicScope.sectorIds,
-      academic_years: academicScope.academicYears,
       sso_enabled: ssoEnabled,
       account_status: accountStatus as AdminAccountStatus,
       grant_access: grantAccess,
@@ -289,14 +258,6 @@ const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps>
                 ))}
               </div>
             </div>
-          </AdminFormSection>
-
-          <AdminFormSection
-            sectionKey="academic"
-            title={t(`${FORM_PREFIX}.sections.academicScope`)}
-            description={t(`${FORM_PREFIX}.sections.academicScopeHint`)}
-          >
-            <AdminAcademicScopeFields value={academicScope} onChange={setAcademicScope} />
           </AdminFormSection>
 
           <AdminFormSection

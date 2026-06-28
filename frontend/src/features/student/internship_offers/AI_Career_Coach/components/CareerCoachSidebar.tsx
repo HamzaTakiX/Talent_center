@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { Archive, MessageSquarePlus } from 'lucide-react';
+import { Archive, Loader2, MessageSquarePlus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import InternshipAssistantBot from '../../components/InternshipAssistantBot';
 import type { CoachConversation } from '../types/careerCoach';
@@ -13,6 +13,9 @@ interface CareerCoachSidebarProps {
   showArchived: boolean;
   activeConversationId: string;
   isLoading?: boolean;
+  isCreatingConversation?: boolean;
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
   onSelectConversation: (id: string) => void;
   onRenameConversation: (id: string, title: string) => void;
   onArchiveConversation: (id: string) => void;
@@ -55,6 +58,9 @@ const CareerCoachSidebar: FunctionComponent<CareerCoachSidebarProps> = ({
   showArchived,
   activeConversationId,
   isLoading = false,
+  isCreatingConversation = false,
+  isMobileOpen = false,
+  onMobileClose,
   onSelectConversation,
   onRenameConversation,
   onArchiveConversation,
@@ -65,12 +71,14 @@ const CareerCoachSidebar: FunctionComponent<CareerCoachSidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const newConversationLabel = t('student.internshipOffers.careerCoach.history.newConversation');
+  const creatingLabel = t('student.internshipOffers.careerCoach.history.creating');
   const visibleConversations = showArchived ? archivedConversations : conversations;
   const archiveCount = archivedConversations.length;
 
   return (
     <aside
-      className="sr-acc-sidebar"
+      id="sr-acc-conversations-sidebar"
+      className={`sr-acc-sidebar${isMobileOpen ? ' sr-acc-sidebar--mobile-open' : ''}`}
       aria-label={t('student.internshipOffers.careerCoach.history.aria')}
       aria-busy={isLoading}
     >
@@ -86,6 +94,14 @@ const CareerCoachSidebar: FunctionComponent<CareerCoachSidebarProps> = ({
           <span className="sr-acc-sidebar__title">
             {t('student.internshipOffers.careerCoach.header.title')}
           </span>
+          <button
+            type="button"
+            className="sr-acc-sidebar__close-btn"
+            onClick={onMobileClose}
+            aria-label={t('student.internshipOffers.careerCoach.history.closeSidebar')}
+          >
+            <X size={16} aria-hidden />
+          </button>
           <button
             type="button"
             className={`sr-acc-sidebar__archive-btn${showArchived ? ' sr-acc-sidebar__archive-btn--active' : ''}`}
@@ -134,11 +150,14 @@ const CareerCoachSidebar: FunctionComponent<CareerCoachSidebarProps> = ({
               <CareerCoachSidebarEmpty
                 variant={showArchived ? 'archived' : 'active'}
                 onNewConversation={showArchived ? undefined : onNewConversation}
+                isCreatingConversation={isCreatingConversation}
               />
             ) : (
               visibleConversations.map((conversation) => {
                 const isActive = conversation.id === activeConversationId;
-                const preview = getConversationPreview(conversation, newConversationLabel);
+                const preview = conversation.isPending
+                  ? creatingLabel
+                  : getConversationPreview(conversation, newConversationLabel);
 
                 return (
                   <CareerCoachConversationItem
@@ -164,12 +183,19 @@ const CareerCoachSidebar: FunctionComponent<CareerCoachSidebarProps> = ({
         <footer className="sr-acc-sidebar__footer">
           <button
             type="button"
-            className="sr-acc-sidebar__new-btn"
+            className={`sr-acc-sidebar__new-btn${isCreatingConversation ? ' sr-acc-sidebar__new-btn--loading' : ''}`}
             onClick={onNewConversation}
-            disabled={isLoading}
+            disabled={isLoading || isCreatingConversation}
+            aria-busy={isCreatingConversation}
           >
-            <MessageSquarePlus size={18} aria-hidden />
-            {t('student.internshipOffers.careerCoach.history.new')}
+            {isCreatingConversation ? (
+              <Loader2 size={18} className="sr-acc-sidebar__new-btn-spinner" aria-hidden />
+            ) : (
+              <MessageSquarePlus size={18} aria-hidden />
+            )}
+            {isCreatingConversation
+              ? t('student.internshipOffers.careerCoach.history.creating')
+              : t('student.internshipOffers.careerCoach.history.new')}
           </button>
         </footer>
       ) : null}

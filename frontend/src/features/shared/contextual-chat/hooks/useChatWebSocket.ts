@@ -47,12 +47,26 @@ export function useChatWebSocket({
   const [peerTyping, setPeerTyping] = useState(false);
   const [peerOnline, setPeerOnline] = useState<boolean | null>(null);
   const convSocketRef = useRef<WebSocket | null>(null);
-  const presenceSocketRef = useRef<WebSocket | null>(null);
   const typingTimerRef = useRef<number | null>(null);
   const onEventRef = useRef(onEvent);
   onEventRef.current = onEvent;
 
+  const subscribedConvIdRef = useRef<number | null>(null);
+  subscribedConvIdRef.current = conversationId ?? null;
+
   const handleEvent = useCallback((event: ChatWsEvent) => {
+    const subscribedId = subscribedConvIdRef.current;
+    if (
+      subscribedId != null &&
+      event.conversation_id != null &&
+      Number(event.conversation_id) !== Number(subscribedId) &&
+      (event.event_type === 'message.created' ||
+        event.event_type === 'inbox.updated' ||
+        event.event_type === 'conversation.updated')
+    ) {
+      return;
+    }
+
     if (event.event_type === 'typing') {
       setPeerTyping(Boolean(event.is_typing));
       if (event.is_typing && typingTimerRef.current) {
@@ -69,39 +83,16 @@ export function useChatWebSocket({
   }, []);
 
   useEffect(() => {
-    if (!enabled) return undefined;
-
-    const presence = new WebSocket(wsUrl('/ws/chat/presence/'));
-    presenceSocketRef.current = presence;
-    presence.onopen = () => setConnected(true);
-    presence.onclose = () => setConnected(false);
-    presence.onmessage = (raw) => {
-      try {
-        handleEvent(JSON.parse(raw.data as string) as ChatWsEvent);
-      } catch {
-        /* ignore */
-      }
-    };
-
-    const ping = window.setInterval(() => {
-      if (presence.readyState === WebSocket.OPEN) {
-        presence.send(JSON.stringify({ type: 'ping' }));
-      }
-    }, 25000);
-
-    return () => {
-      window.clearInterval(ping);
-      presence.close();
-      presenceSocketRef.current = null;
-    };
-  }, [enabled, handleEvent]);
-
-  useEffect(() => {
-    if (!enabled || !conversationId) return undefined;
+    if (!enabled || !conversationId) {
+      setConnected(false);
+      return undefined;
+    }
 
     const socket = new WebSocket(wsUrl(`/ws/chat/conversations/${conversationId}/`));
     convSocketRef.current = socket;
 
+    socket.onopen = () => setConnected(true);
+    socket.onclose = () => setConnected(false);
     socket.onmessage = (raw) => {
       try {
         handleEvent(JSON.parse(raw.data as string) as ChatWsEvent);
@@ -120,6 +111,7 @@ export function useChatWebSocket({
       window.clearInterval(ping);
       socket.close();
       convSocketRef.current = null;
+      setConnected(false);
       setPeerTyping(false);
     };
   }, [conversationId, enabled, handleEvent]);

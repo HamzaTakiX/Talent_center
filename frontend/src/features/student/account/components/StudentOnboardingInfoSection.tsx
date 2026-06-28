@@ -141,7 +141,7 @@ const StudentOnboardingInfoSection: FunctionComponent = () => {
         label: t('auth.completeProfile.fields.careerObjective'),
         value: (
           <span className="whitespace-pre-wrap">
-            {displayText(profile.career_objective, emptyLabel)}
+            {displayText(profile.internship_type_name || profile.career_objective, emptyLabel)}
           </span>
         ),
         fieldKey: 'offerTitle' as const,

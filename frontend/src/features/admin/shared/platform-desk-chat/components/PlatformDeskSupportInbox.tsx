@@ -1,5 +1,6 @@
-import { FunctionComponent, ReactNode, useState } from 'react';
+import { FunctionComponent, ReactNode, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
 import { useOptionalAdminToast } from '../../../dashboard/context/AdminToastContext';
 import { useAdminChatChannel } from '../../../i18n/useAdminCopy';
 import type { AdminChatChannel } from '../../../i18n/useAdminCopy';
@@ -25,6 +26,14 @@ type Props = {
   showAcademicFilters?: boolean;
   Layout?: React.ComponentType<SupportInboxLayoutProps>;
   enableAdminActions?: boolean;
+  enableArchive?: boolean;
+  sidebarTitle?: string;
+  sidebarSubtitle?: string;
+  sidebarIcon?: LucideIcon;
+  initialConversationId?: string;
+  onInitialConversationHandled?: () => void;
+  /** Show workspace loading while a student conversation is being created from URL params. */
+  forceOpeningConversation?: boolean;
 };
 
 const PlatformDeskSupportInbox: FunctionComponent<Props> = ({
@@ -35,14 +44,23 @@ const PlatformDeskSupportInbox: FunctionComponent<Props> = ({
   showAcademicFilters = true,
   Layout,
   enableAdminActions = true,
+  enableArchive,
+  sidebarTitle,
+  sidebarSubtitle,
+  sidebarIcon,
+  initialConversationId = '',
+  onInitialConversationHandled,
+  forceOpeningConversation = false,
 }) => {
   const toast = useOptionalAdminToast();
   const navigate = useNavigate();
   const chatCopy = useAdminChatChannel(channel);
   const [viewStudentUserId, setViewStudentUserId] = useState<number | null>(null);
+  const handledInitialConversationRef = useRef<string | null>(null);
   const isStudentViewer = viewerRole === 'student';
   const isStudentDm =
     entityType === 'student_admin_dm' || entityType === 'student_desk';
+  const canArchive = enableArchive ?? enableAdminActions;
 
   const {
     filtered,
@@ -77,7 +95,19 @@ const PlatformDeskSupportInbox: FunctionComponent<Props> = ({
     setPrimaryFilter,
   } = usePlatformDeskSupportChat(entityType, viewerRole);
 
-  const isOpeningConversation = conversationLoading && !selected;
+  useEffect(() => {
+    const conversationId = initialConversationId.trim();
+    if (!conversationId) return;
+    if (handledInitialConversationRef.current === conversationId) return;
+
+    handledInitialConversationRef.current = conversationId;
+    void selectConversation(conversationId).finally(() => {
+      onInitialConversationHandled?.();
+    });
+  }, [initialConversationId, onInitialConversationHandled, selectConversation]);
+
+  const isOpeningConversation =
+    forceOpeningConversation || (conversationLoading && !selected);
 
   const openProfile = () => {
     if (!selected?.userId) return;
@@ -97,15 +127,19 @@ const PlatformDeskSupportInbox: FunctionComponent<Props> = ({
   };
 
   const handleArchive = () => {
-    if (!selectedId || !enableAdminActions) return;
+    if (!selectedId || !canArchive) return;
     void archiveConversation(selectedId);
-    toast.showToast('Conversation archivée', 'info');
+    if (!isStudentViewer) {
+      toast.showToast('Conversation archivée', 'info');
+    }
   };
 
   const handleUnarchive = () => {
-    if (!selectedId || !enableAdminActions) return;
+    if (!selectedId || !canArchive) return;
     void unarchiveConversation(selectedId);
-    toast.showToast('Conversation restaurée', 'success');
+    if (!isStudentViewer) {
+      toast.showToast('Conversation restaurée', 'success');
+    }
   };
 
   return (
@@ -151,7 +185,11 @@ const PlatformDeskSupportInbox: FunctionComponent<Props> = ({
             academicLevelOptions={academicLevelOptions}
             search={search}
             searchPlaceholder={chatCopy.searchPlaceholder}
+            sidebarTitle={sidebarTitle}
+            sidebarSubtitle={sidebarSubtitle}
+            sidebarIcon={sidebarIcon}
             showAcademicFilters={showAcademicFilters && viewerRole === 'admin'}
+            viewerRole={viewerRole}
             onSetPrimary={setPrimaryFilter}
             onToggleStudentAcademicFilter={toggleStudentAcademicFilter}
             onToggleQuickFilter={toggleQuickFilter}
@@ -169,18 +207,15 @@ const PlatformDeskSupportInbox: FunctionComponent<Props> = ({
             conversationLoading={conversationLoading}
             statsLoading={loading}
             peerTyping={peerTyping}
-            onSend={(text) => void sendMessage(text)}
+            onSend={(text, files) => void sendMessage(text, files)}
             onTyping={notifyTyping}
             onBack={() => setMobileView('list')}
-            onOpenProfile={
-              selected?.userId && (viewerRole === 'admin' || isStudentViewer)
-                ? openProfile
-                : undefined
-            }
             onMarkResolved={enableAdminActions ? handleResolved : () => undefined}
-            onArchive={enableAdminActions ? handleArchive : () => undefined}
-            onUnarchive={enableAdminActions ? handleUnarchive : () => undefined}
+            onArchive={canArchive ? handleArchive : () => undefined}
+            onUnarchive={canArchive ? handleUnarchive : () => undefined}
             showAdminActions={enableAdminActions}
+            showArchiveActions={canArchive}
+            viewerRole={viewerRole}
           />
         }
         contextPanel={

@@ -1,6 +1,7 @@
 <script lang="ts">
   import Delete from "./delete.svelte";
   import { addCard, data } from "$lib/state/index.svelte";
+  import { cvT } from "$lib/i18n/cvTranslate.svelte";
 
   const addWorkexp = () => addCard("workExp");
 </script>
@@ -9,38 +10,38 @@
   <div class="grid-(~ cols-2 gap5) relative">
     <Delete {index} type="workExp" />
 
-    <label for="company" class="col-span-2">Company</label>
+    <label for="company-{index}" class="col-span-2">{cvT('cv.forms.experience.company')}</label>
     <input
-      id="company"
+      id="company-{index}"
       type="text"
-      placeholder="Khan Academy"
+      placeholder={cvT('cv.forms.placeholders.companyExample')}
       class="col-span-2 input"
       bind:value={data.workExp[index].company}
     />
 
-    <label for="title">Job Title</label>
-    <label for="date">Date</label>
+    <label for="title-{index}">{cvT('cv.forms.experience.title')}</label>
+    <label for="date-{index}">{cvT('cv.forms.common.date')}</label>
 
     <input
-      id="title"
+      id="title-{index}"
       type="text"
       class="input"
-      placeholder="Software Engineer"
+      placeholder={cvT('cv.preview.placeholders.jobTitle')}
       bind:value={data.workExp[index].title}
     />
 
     <input
-      id="date"
+      id="date-{index}"
       type="text"
       class="input"
-      placeholder="Jun 2022 - Present"
+      placeholder={cvT('cv.forms.placeholders.dateRange')}
       bind:value={data.workExp[index].date}
     />
 
-    <label for="description" class="col-span-2">Description</label>
+    <label for="description-{index}" class="col-span-2">{cvT('cv.forms.experience.description')}</label>
     <textarea
-      id="description"
-      placeholder="Enter description of your job"
+      id="description-{index}"
+      placeholder={cvT('cv.forms.placeholders.experienceDesc')}
       class="input col-span-2 min-h-[6rem]"
       bind:value={data.workExp[index].desc}
     ></textarea>
@@ -49,7 +50,7 @@
 
 <div class="grid gap5">
   <strong class="frow">
-    <i class="i-tabler:briefcase"></i> Work Experience
+    <i class="i-tabler:briefcase"></i> {cvT('cv.forms.steps.experience')}
   </strong>
 
   {#each data.workExp as work, index}
@@ -60,5 +61,5 @@
     {@render card(index)}
   {/each}
 
-  <button type="button" class="quickcv-add-btn ml-auto" onclick={addWorkexp}>Add Work</button>
+  <button type="button" class="quickcv-add-btn ml-auto" onclick={addWorkexp}>{cvT('cv.forms.experience.add')}</button>
 </div>

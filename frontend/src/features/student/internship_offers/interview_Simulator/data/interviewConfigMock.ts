@@ -1,4 +1,4 @@
-import type { InterviewDifficulty, InterviewLanguage, InterviewLength } from '../types/interviewSimulatorDashboard';
+import type { InterviewDifficulty, InterviewLanguage, InterviewLength, SimulationBasis } from '../types/interviewSimulatorDashboard';
 
 export interface RoleCardOption {
   id: string;
@@ -133,6 +133,46 @@ export const CONFIG_SKILL_KEYS = [
   'student.internshipOffers.interviewSim.config.sidebar.skills.confidence',
   'student.internshipOffers.interviewSim.config.sidebar.skills.leadership',
 ] as const;
+
+export interface BasisSidebarPreview {
+  readinessScore: number;
+  captionKey: string;
+  skills: { labelKey: (typeof CONFIG_SKILL_KEYS)[number]; score: number }[];
+}
+
+export const BASIS_SIDEBAR_PREVIEW: Record<SimulationBasis, BasisSidebarPreview> = {
+  personal: {
+    readinessScore: 74,
+    captionKey: 'student.internshipOffers.interviewSim.config.sidebar.readinessCaptionPersonal',
+    skills: [
+      { labelKey: CONFIG_SKILL_KEYS[2], score: 86 },
+      { labelKey: CONFIG_SKILL_KEYS[1], score: 80 },
+      { labelKey: CONFIG_SKILL_KEYS[0], score: 76 },
+      { labelKey: CONFIG_SKILL_KEYS[3], score: 68 },
+      { labelKey: CONFIG_SKILL_KEYS[4], score: 62 },
+    ],
+  },
+  offer: {
+    readinessScore: 82,
+    captionKey: 'student.internshipOffers.interviewSim.config.sidebar.readinessCaptionOffer',
+    skills: [
+      { labelKey: CONFIG_SKILL_KEYS[0], score: 88 },
+      { labelKey: CONFIG_SKILL_KEYS[3], score: 84 },
+      { labelKey: CONFIG_SKILL_KEYS[1], score: 79 },
+      { labelKey: CONFIG_SKILL_KEYS[2], score: 72 },
+      { labelKey: CONFIG_SKILL_KEYS[4], score: 70 },
+    ],
+  },
+};
+
+export const DEFAULT_SIDEBAR_PREVIEW: BasisSidebarPreview = {
+  readinessScore: 72,
+  captionKey: 'student.internshipOffers.interviewSim.config.sidebar.readinessCaption',
+  skills: CONFIG_SKILL_KEYS.map((labelKey, index) => ({
+    labelKey,
+    score: [82, 74, 78, 85, 70][index] ?? 72,
+  })),
+};
 
 export const CONFIG_TIP_KEYS = [
   'student.internshipOffers.interviewSim.config.sidebar.tips.star',

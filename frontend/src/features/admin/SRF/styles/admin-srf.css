@@ -1,0 +1,409 @@
+/* SRF — Student Financial Status module styles */
+
+.admin-srf-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+/* ── Quick actions nav strip ── */
+.admin-srf-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.admin-srf-quick-actions__tile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  background: var(--admin-bg-elevated);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
+  cursor: pointer;
+}
+
+.admin-srf-quick-actions__tile:hover {
+  border-color: color-mix(in srgb, var(--admin-brand) 35%, var(--admin-border));
+  color: var(--admin-brand);
+  background: color-mix(in srgb, var(--admin-brand) 5%, var(--admin-bg-elevated));
+}
+
+.admin-srf-quick-actions__icon {
+  display: grid;
+  place-items: center;
+  color: var(--admin-brand);
+  opacity: 0.9;
+}
+
+.admin-srf-quick-actions__label {
+  white-space: nowrap;
+}
+
+/* ── Toolbar loading skeleton ── */
+.admin-srf-toolbar-skeleton {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-srf-toolbar-skeleton__search {
+  height: 2.25rem;
+  width: min(11rem, 100%);
+}
+
+.admin-srf-toolbar-skeleton__filter {
+  height: 2.25rem;
+  width: 8.75rem;
+}
+
+/* ── Live status badge ── */
+.admin-srf-section-header__badge-row {
+  margin-top: 0.5rem;
+}
+
+.admin-srf-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--admin-brand);
+  background: color-mix(in srgb, var(--admin-brand) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 18%, var(--admin-border));
+}
+
+.admin-srf-live-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #22c55e 25%, transparent);
+}
+
+.admin-srf-live-badge--loading {
+  display: inline-block;
+  width: 7.5rem;
+  height: 1.375rem;
+  border-radius: 999px;
+}
+
+/* ── Table section ── */
+.admin-srf-table-section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  background: var(--admin-bg-elevated);
+  box-shadow: var(--admin-shadow-sm);
+  overflow: hidden;
+}
+
+.admin-srf-table-section__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.admin-srf-table-section__mobile,
+.admin-srf-table-section__desktop {
+  min-width: 0;
+}
+
+.admin-srf-table-section__mobile {
+  padding: 1rem;
+}
+
+.admin-srf-table-scroll {
+  border-radius: 0;
+}
+
+.admin-srf-data-row:hover td {
+  background: color-mix(in srgb, var(--admin-brand) 4%, var(--admin-bg-elevated));
+}
+
+/* ── Payment status badges ── */
+.admin-srf-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.admin-srf-status-badge--paid {
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.admin-srf-status-badge--unpaid {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+.admin-srf-status-badge--partial {
+  color: #c2410c;
+  background: rgba(249, 115, 22, 0.12);
+  border-color: rgba(249, 115, 22, 0.22);
+}
+
+.admin-srf-status-badge--pending {
+  color: #a16207;
+  background: rgba(234, 179, 8, 0.14);
+  border-color: rgba(234, 179, 8, 0.24);
+}
+
+.admin-srf-status-badge--late {
+  color: #be123c;
+  background: rgba(244, 63, 94, 0.12);
+  border-color: rgba(244, 63, 94, 0.22);
+}
+
+[data-admin-theme='dark'] .admin-srf-status-badge--paid {
+  color: #86efac;
+}
+
+[data-admin-theme='dark'] .admin-srf-status-badge--unpaid {
+  color: #fca5a5;
+}
+
+[data-admin-theme='dark'] .admin-srf-status-badge--partial {
+  color: #fdba74;
+}
+
+[data-admin-theme='dark'] .admin-srf-status-badge--pending {
+  color: #fde047;
+}
+
+[data-admin-theme='dark'] .admin-srf-status-badge--late {
+  color: #fda4af;
+}
+
+/* ── Empty states ── */
+.admin-srf-mobile-empty {
+  padding: 1rem 0;
+}
+
+.admin-srf-table-empty-row:hover,
+.admin-srf-table-empty-row:hover td {
+  background: transparent !important;
+}
+
+.admin-srf-table-empty-cell {
+  padding: 0 !important;
+  border-bottom: none !important;
+  vertical-align: middle;
+}
+
+.admin-srf-table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+.admin-srf-table-empty__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 0%,
+    color-mix(in srgb, var(--admin-brand) 12%, transparent),
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+.admin-srf-table-empty__icon-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1rem;
+  color: var(--admin-brand);
+  background: color-mix(in srgb, var(--admin-brand) 12%, var(--admin-bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 18%, var(--admin-border));
+}
+
+.admin-srf-table-empty__title {
+  position: relative;
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--admin-text);
+}
+
+.admin-srf-table-empty__desc {
+  position: relative;
+  margin: 0;
+  max-width: 22rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--admin-text-secondary);
+}
+
+.admin-srf-table-empty__actions {
+  position: relative;
+  margin-top: 0.75rem;
+}
+
+/* ── Payment validation page ── */
+.admin-srf-validation-hero__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  color: var(--admin-brand);
+  background: color-mix(in srgb, var(--admin-brand) 14%, var(--admin-bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 22%, var(--admin-border));
+  box-shadow: 0 0 24px color-mix(in srgb, var(--admin-brand) 18%, transparent);
+}
+
+.admin-srf-validation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-srf-validation-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.admin-srf-validation-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.admin-srf-validation-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.admin-srf-validation-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--admin-brand) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.admin-srf-validation-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.admin-srf-validation-btn--neutral {
+  color: var(--admin-text);
+  background: var(--admin-bg-elevated);
+  border-color: var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.admin-srf-validation-btn--neutral:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--admin-brand) 30%, var(--admin-border));
+  background: color-mix(in srgb, var(--admin-brand) 4%, var(--admin-bg-elevated));
+}
+
+.admin-srf-validation-btn--warning {
+  color: #92400e;
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.22);
+}
+
+.admin-srf-validation-btn--warning:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.32);
+}
+
+.admin-srf-validation-btn--danger {
+  color: #fff;
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  border-color: rgba(220, 38, 38, 0.45);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.24);
+}
+
+.admin-srf-validation-btn--danger:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.34);
+}
+
+.admin-srf-validation-btn--success {
+  color: #fff;
+  background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+  border-color: rgba(22, 163, 74, 0.45);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.24);
+}
+
+.admin-srf-validation-btn--success:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(34, 197, 94, 0.34);
+}
+
+[data-admin-theme='dark'] .admin-srf-validation-btn--warning {
+  color: #fef3c7;
+}
+
+@media (max-width: 640px) {
+  .admin-srf-workspace {
+    gap: 1.25rem;
+  }
+
+  .admin-srf-quick-actions {
+    justify-content: stretch;
+  }
+
+  .admin-srf-quick-actions__tile {
+    flex: 1 1 calc(50% - 0.25rem);
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .admin-srf-quick-actions__label {
+    white-space: normal;
+    text-align: start;
+  }
+}

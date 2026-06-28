@@ -1,7 +1,7 @@
 import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Bot, BriefcaseBusiness, Check, Sparkles } from 'lucide-react';
 import BackButtonRow from '../../../../../shared/navigation/BackButtonRow';
 import { useBackNavigation } from '../../../../../shared/navigation/useBackNavigation';
 import { CREATION_METHOD_CARDS } from '../../constants/createOfferWorkflow';
@@ -9,6 +9,41 @@ import type { CreationMethod } from '../../types/createOfferWorkflow';
 import { OFFER_STUDIO_BTN_SECONDARY } from './offerStudioClasses';
 
 const PREFIX = 'admin.forms.createOfferStudio.method';
+
+/* ── Animated studio eyebrow badge ── */
+const StudioBadge: FunctionComponent<{ label: string }> = ({ label }) => (
+  <motion.div
+    className="offer-studio-badge"
+    initial={{ opacity: 0, scale: 0.88, y: -6 }}
+    animate={{ opacity: 1, scale: 1, y: 0 }}
+    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    aria-hidden
+  >
+    {/* Orbital ring that spins around the bot icon */}
+    <span className="offer-studio-badge__orbit" aria-hidden>
+      <span className="offer-studio-badge__orbit-dot" />
+    </span>
+
+    {/* Bot icon with breathing pulse */}
+    <span className="offer-studio-badge__bot" aria-hidden>
+      <Bot className="offer-studio-badge__bot-icon" strokeWidth={1.6} />
+    </span>
+
+    {/* Separator dot */}
+    <span className="offer-studio-badge__sep" aria-hidden />
+
+    {/* Label */}
+    <BriefcaseBusiness
+      className="offer-studio-badge__offer-icon"
+      strokeWidth={1.65}
+      aria-hidden
+    />
+    <span className="offer-studio-badge__label">{label}</span>
+
+    {/* Trailing sparkle */}
+    <Sparkles className="offer-studio-badge__sparkle" strokeWidth={1.5} aria-hidden />
+  </motion.div>
+);
 
 interface CreationMethodSelectionProps {
   selected: CreationMethod;
@@ -36,7 +71,8 @@ const CreationMethodSelection: FunctionComponent<CreationMethodSelectionProps> =
         </button>
       </BackButtonRow>
 
-      <div className="offer-method-select__hero">        <p className="offer-method-select__eyebrow">{t(`${PREFIX}.eyebrow`)}</p>
+      <div className="offer-method-select__hero">
+        <StudioBadge label={t(`${PREFIX}.eyebrow`)} />
         <h1 id="offer-method-select-title" className="offer-method-select__title">
           {t(`${PREFIX}.stepTitle`)}
         </h1>

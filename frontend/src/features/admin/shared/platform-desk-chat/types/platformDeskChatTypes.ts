@@ -1,4 +1,4 @@
-import type { SupportMessage } from '../../admin/shared/admin-support-inbox/types/supportInboxTypes';
+import type { SupportMessage } from '../../admin-support-inbox/types/supportInboxTypes';
 
 export type PlatformDeskEntityType = 'student_admin_dm' | 'student_desk' | 'admin_desk';
 
@@ -32,6 +32,9 @@ export const EMPTY_PLATFORM_DESK_FILTERS: PlatformDeskInboxFilters = {
 export interface PlatformDeskMessage extends SupportMessage {
   deliveryStatus?: 'sent' | 'delivered' | 'read';
   seenTime?: string;
+  messageType?: 'TEXT' | 'FILE' | 'IMAGE' | 'SYSTEM' | 'EVENT';
+  smartActionCode?: string;
+  createdAt?: string;
 }
 
 export interface PlatformDeskConversation {

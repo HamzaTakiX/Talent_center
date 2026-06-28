@@ -16,6 +16,7 @@ interface CareerCoachConversationProps {
   messages: CoachMessage[];
   isTyping: boolean;
   isMessagesLoading?: boolean;
+  isComposerDisabled?: boolean;
   chatInput: string;
   onChatInputChange: (value: string) => void;
   pendingAttachment: File | null;
@@ -54,6 +55,8 @@ interface CareerCoachConversationProps {
     appliedDate?: string;
     interviewDate?: string;
   };
+  mobileSidebarOpen?: boolean;
+  onMobileSidebarToggle?: () => void;
 }
 
 const CareerCoachConversation: FunctionComponent<CareerCoachConversationProps> = ({
@@ -62,6 +65,7 @@ const CareerCoachConversation: FunctionComponent<CareerCoachConversationProps> =
   messages,
   isTyping,
   isMessagesLoading = false,
+  isComposerDisabled = false,
   chatInput,
   onChatInputChange,
   pendingAttachment,
@@ -90,6 +94,8 @@ const CareerCoachConversation: FunctionComponent<CareerCoachConversationProps> =
   isMessagePinned,
   onTogglePinMessage,
   offerContext,
+  mobileSidebarOpen = false,
+  onMobileSidebarToggle,
 }) => {
   const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -129,6 +135,8 @@ const CareerCoachConversation: FunctionComponent<CareerCoachConversationProps> =
           summaryOpen={summaryOpen}
           summaryHasNewContent={summaryHasNewContent}
           onSummaryToggle={onSummaryToggle}
+          mobileSidebarOpen={mobileSidebarOpen}
+          onMobileSidebarToggle={onMobileSidebarToggle}
         />
 
         <div
@@ -175,6 +183,7 @@ const CareerCoachConversation: FunctionComponent<CareerCoachConversationProps> =
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={onDrop}
+          disabled={isComposerDisabled}
         />
       </div>
 

@@ -54,11 +54,29 @@ export async function fetchMessages(conversationId: number): Promise<MessageDto[
 export async function sendChatMessage(
   conversationId: number,
   body: string,
-  tagCodes?: string[]
+  tagCodes?: string[],
+  files?: File[],
 ): Promise<MessageDto | null> {
+  if (files?.length) {
+    const form = new FormData();
+    form.append('body', body);
+    if (tagCodes?.length) {
+      form.append('tag_codes', JSON.stringify(tagCodes));
+    }
+    for (const file of files) {
+      form.append('files', file);
+    }
+    const { data } = await apiClient.post<ApiEnvelope<MessageDto>>(
+      `${BASE}/conversations/${conversationId}/messages`,
+      form,
+    );
+    if (!data.success || !data.data) return null;
+    return data.data;
+  }
+
   const { data } = await apiClient.post<ApiEnvelope<MessageDto>>(
     `${BASE}/conversations/${conversationId}/messages`,
-    { body, tag_codes: tagCodes ?? [] }
+    { body, tag_codes: tagCodes ?? [] },
   );
   if (!data.success || !data.data) return null;
   return data.data;

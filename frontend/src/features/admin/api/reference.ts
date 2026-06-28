@@ -21,6 +21,8 @@ const withLang = (lang?: string) => (lang ? { lang } : {});
 
 const classGroupsResultCache = new Map<string, ClassGroupOption[]>();
 const classGroupsInflight = new Map<string, Promise<ClassGroupOption[]>>();
+const filieresResultCache = new Map<string, FiliereOption[]>();
+const filieresInflight = new Map<string, Promise<FiliereOption[]>>();
 
 function buildQuery(entries: Record<string, string | undefined>): Record<string, string> {
   const query: Record<string, string> = {};
@@ -40,14 +42,31 @@ export const academicReferenceApi = {
     /** When true, only official ESCA catalog filières (PGE, LME, IBA, Masters). */
     student_catalog?: boolean;
   }): Promise<FiliereOption[]> => {
-    const response = await apiClient.get<ApiEnvelope<FiliereOption[]>>('/admin/filieres', {
-      params: {
-        ...withLang(params?.lang),
-        program_family: params?.program_family,
-        student_catalog: params?.student_catalog ? 'true' : undefined,
-      },
+    const query = buildQuery({
+      ...withLang(params?.lang),
+      program_family: params?.program_family,
+      student_catalog: params?.student_catalog ? 'true' : undefined,
     });
-    return response.data.data;
+    const cacheKey = JSON.stringify(query);
+    const cached = filieresResultCache.get(cacheKey);
+    if (cached) return cached;
+
+    const inflight = filieresInflight.get(cacheKey);
+    if (inflight) return inflight;
+
+    const promise = apiClient
+      .get<ApiEnvelope<FiliereOption[]>>('/admin/filieres', { params: query })
+      .then((response) => {
+        const data = response.data.data;
+        filieresResultCache.set(cacheKey, data);
+        return data;
+      })
+      .finally(() => {
+        filieresInflight.delete(cacheKey);
+      });
+
+    filieresInflight.set(cacheKey, promise);
+    return promise;
   },
 
   listAcademicYears: async (params?: { structured?: boolean; lang?: string }): Promise<string[] | AcademicYearOption[]> => {

@@ -62,6 +62,10 @@ class SrfWarningTier(TimestampedModel):
 class SrfRestrictionPolicy(TimestampedModel):
     """Singleton-style global restriction & automation policy."""
 
+    class ExamGateMode(models.TextChoices):
+        FULL_CLEARANCE = 'FULL_CLEARANCE', _('Full clearance — entire year must be paid')
+        DUE_TRANCHES = 'DUE_TRANCHES', _('Due tranches — only tranches due before the exam must be paid')
+
     singleton_key = models.CharField(max_length=32, unique=True, default='default')
     stop_reminders_on_payment = models.BooleanField(default=True)
     mark_at_risk_on_warning = models.BooleanField(default=True)
@@ -71,6 +75,16 @@ class SrfRestrictionPolicy(TimestampedModel):
     enable_critical_alerts = models.BooleanField(default=True)
     unpaid_blocks_exams = models.BooleanField(default=True)
     unpaid_blocks_convention = models.BooleanField(default=True)
+    exam_gate_mode = models.CharField(
+        max_length=16,
+        choices=ExamGateMode.choices,
+        default=ExamGateMode.DUE_TRANCHES,
+        help_text=_(
+            'Rule used to grant exam access for installment-plan students. '
+            'DUE_TRANCHES lets a student sit exams once the tranches due on or before '
+            'the exam date are paid, even if the full year is not yet settled.'
+        ),
+    )
     notes = models.TextField(blank=True, default='')
 
     class Meta(TimestampedModel.Meta):
@@ -110,6 +124,108 @@ class SrfNotificationTemplate(TimestampedModel):
 
     def __str__(self) -> str:
         return f'SrfNotificationTemplate<{self.code}>'
+
+
+class SrfInstallmentPlanTemplate(TimestampedModel):
+    """
+    Reusable tranche schedule (ESCA-style) that splits a year's total fees
+    into N installments, each with its own deadline.
+
+    Optionally scoped to a program / level / academic year — the most specific
+    active template wins, with an unscoped template acting as a global default.
+    """
+
+    class SplitMode(models.TextChoices):
+        EQUAL = 'EQUAL', _('Equal split')
+        CUSTOM = 'CUSTOM', _('Custom percentages')
+
+    name = models.CharField(max_length=128)
+    description = models.TextField(blank=True, default='')
+    filiere = models.ForeignKey(
+        'admin_management.Filiere',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='srf_installment_templates',
+        help_text=_('Optional — when empty, the template applies to every program.'),
+    )
+    academic_level = models.ForeignKey(
+        AcademicLevel,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='srf_installment_templates',
+        help_text=_('Optional — when empty, applies to all levels in the program.'),
+    )
+    academic_year = models.ForeignKey(
+        'admin_management.AcademicYear',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='srf_installment_templates',
+        help_text=_('Optional — when empty, applies to every academic year.'),
+    )
+    number_of_tranches = models.PositiveSmallIntegerField(
+        default=3,
+        help_text=_('How many installments the yearly total is split into (usually 3 or 4).'),
+    )
+    split_mode = models.CharField(
+        max_length=16,
+        choices=SplitMode.choices,
+        default=SplitMode.EQUAL,
+    )
+    currency = models.CharField(max_length=8, default='MAD')
+    is_mandatory = models.BooleanField(
+        default=True,
+        help_text=_('When true, students in scope must follow this installment plan.'),
+    )
+    is_active = models.BooleanField(default=True, db_index=True)
+    notes = models.TextField(blank=True, default='')
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['filiere', '-is_active', 'name']
+        verbose_name = _('SRF installment plan template')
+
+    def __str__(self) -> str:
+        return f'SrfInstallmentPlanTemplate<{self.name}>'
+
+    @property
+    def total_percentage(self):
+        from decimal import Decimal
+
+        return sum((t.percentage for t in self.tranches.all()), Decimal('0'))
+
+
+class SrfInstallmentPlanTranche(TimestampedModel):
+    """A single tranche of an installment plan template."""
+
+    template = models.ForeignKey(
+        SrfInstallmentPlanTemplate,
+        on_delete=models.CASCADE,
+        related_name='tranches',
+    )
+    tranche_number = models.PositiveSmallIntegerField(db_index=True)
+    label = models.CharField(max_length=64, help_text=_('e.g. Tranche 1'))
+    percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        help_text=_('Share of the yearly total for this tranche (used for custom splits).'),
+    )
+    due_date = models.DateField(help_text=_('Deadline by which this tranche must be paid.'))
+    semester = models.PositiveSmallIntegerField(default=1)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['template', 'tranche_number']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['template', 'tranche_number'],
+                name='uniq_tranche_per_template',
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f'SrfInstallmentPlanTranche<{self.template_id} #{self.tranche_number}>'
 
 
 class SrfConfigAuditLog(models.Model):

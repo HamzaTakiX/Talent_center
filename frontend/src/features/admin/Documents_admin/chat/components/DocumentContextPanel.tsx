@@ -1,23 +1,25 @@
-import { FunctionComponent, type ReactNode } from 'react';
+import { FunctionComponent } from 'react';
 import {
   ChevronRight,
   CircleDot,
   Clock,
   ExternalLink,
   FileText,
-  GitBranch,
   Hash,
-  Package,
+  Tag,
   User,
 } from 'lucide-react';
+import InternshipInspectorRow from '../../../offres-stage/chat/components/InternshipInspectorRow';
+import DocumentServiceChatIcon from '../../components/service-catalog/DocumentServiceChatIcon';
 import type { DocumentConversation, DocumentRequestStatus } from '../types/documentChatTypes';
 
 type Props = {
   conversation: DocumentConversation | null;
-  onOpenRequest: () => void;
+  onOpenService: () => void;
   onOpenStudent: () => void;
-  onOpenWorkflow: () => void;
 };
+
+const ICON = { className: 'size-4', strokeWidth: 2.25 };
 
 const STATUS_LABEL: Record<DocumentRequestStatus, string> = {
   Submitted: 'Soumise',
@@ -28,45 +30,10 @@ const STATUS_LABEL: Record<DocumentRequestStatus, string> = {
   Pending: 'En attente',
 };
 
-function InspectorRow({
-  icon,
-  label,
-  children,
-}: {
-  icon: ReactNode;
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="isi-inspector-row">
-      <div className="isi-inspector-row-icon" aria-hidden>
-        {icon}
-      </div>
-      <div className="isi-inspector-row-content">
-        <span className="isi-inspector-row-label">{label}</span>
-        <div className="isi-inspector-row-value">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function statusClass(status: DocumentRequestStatus): string {
-  const map: Record<DocumentRequestStatus, string> = {
-    Submitted: 'submitted',
-    'Under Review': 'under-review',
-    Validated: 'validated',
-    Rejected: 'rejected',
-    'Correction Required': 'correction-required',
-    Pending: 'pending',
-  };
-  return `isi-status-pill--${map[status]}`;
-}
-
 const DocumentContextPanel: FunctionComponent<Props> = ({
   conversation,
-  onOpenRequest,
+  onOpenService,
   onOpenStudent,
-  onOpenWorkflow,
 }) => {
   if (!conversation) return null;
 
@@ -75,59 +42,58 @@ const DocumentContextPanel: FunctionComponent<Props> = ({
   return (
     <aside className="isi-inspector">
       <header className="isi-inspector-head">
-        <span className="isi-inspector-head-title">Détails</span>
-        <span className="isi-inspector-head-badge">{conversation.documentCategory}</span>
+        <span className="isi-inspector-head-title">Contexte</span>
       </header>
 
-      <div className="isi-inspector-fields">
-        <InspectorRow icon={<FileText className="size-3.5" />} label="Document">
+      <div className="isi-inspector-section-title">Document</div>
+      <div className="isi-inspector-offer-card">
+        <DocumentServiceChatIcon
+          iconKey={conversation.iconKey}
+          colorTheme={conversation.colorTheme}
+          size="panel"
+        />
+        <div className="isi-inspector-offer-card-copy min-w-0">
+          <p className="isi-inspector-offer-card-title">{conversation.documentTitle}</p>
+        </div>
+      </div>
+
+      <div className="isi-inspector-fields isi-inspector-fields--card">
+        <InternshipInspectorRow icon={<FileText {...ICON} />} label="Titre">
           <span>{conversation.documentTitle}</span>
-        </InspectorRow>
-
-        <InspectorRow icon={<Hash className="size-3.5" />} label="Référence">
-          <span>{conversation.reference}</span>
-        </InspectorRow>
-
-        <InspectorRow icon={<CircleDot className="size-3.5" />} label="Statut">
-          <span className={`isi-status-pill ${statusClass(status)}`}>
-            {STATUS_LABEL[status]}
-          </span>
-        </InspectorRow>
-
-        <InspectorRow icon={<Clock className="size-3.5" />} label="Date de soumission">
-          <span>{conversation.submittedDate}</span>
-        </InspectorRow>
-
-        <InspectorRow icon={<Clock className="size-3.5" />} label="Échéance SLA">
+        </InternshipInspectorRow>
+        <InternshipInspectorRow icon={<Hash {...ICON} />} label="Code">
+          <span>{conversation.serviceCode || conversation.reference}</span>
+        </InternshipInspectorRow>
+        <InternshipInspectorRow icon={<Tag {...ICON} />} label="Catégorie">
+          <span>{conversation.documentCategory}</span>
+        </InternshipInspectorRow>
+        <InternshipInspectorRow icon={<CircleDot {...ICON} />} label="Statut">
+          <span className="isi-status-pill">{STATUS_LABEL[status]}</span>
+        </InternshipInspectorRow>
+        <InternshipInspectorRow icon={<Clock {...ICON} />} label="Délai SLA">
           <span>{conversation.slaDeadline}</span>
-        </InspectorRow>
-
-        <InspectorRow icon={<Package className="size-3.5" />} label="Livraison">
-          <span>{conversation.deliveryMethod}</span>
-        </InspectorRow>
+        </InternshipInspectorRow>
       </div>
 
       <div className="isi-inspector-divider" />
 
       <div className="isi-inspector-actions">
         <span className="isi-inspector-actions-title">Actions rapides</span>
-        <button type="button" onClick={onOpenRequest} className="isi-inspector-action">
+        <button
+          type="button"
+          className="isi-inspector-action isi-inspector-action--primary"
+          onClick={onOpenService}
+          disabled={!conversation.serviceId}
+        >
           <span className="isi-inspector-action-icon">
-            <ExternalLink className="size-3.5" />
+            <ExternalLink {...ICON} />
           </span>
-          <span className="isi-inspector-action-text">Voir la demande</span>
-          <ChevronRight className="isi-inspector-action-chevron size-3.5" />
+          <span className="isi-inspector-action-text">Voir le service</span>
+          <ChevronRight className="isi-inspector-action-chevron size-4" strokeWidth={2.25} />
         </button>
-        <button type="button" onClick={onOpenWorkflow} className="isi-inspector-action">
+        <button type="button" className="isi-inspector-action" onClick={onOpenStudent}>
           <span className="isi-inspector-action-icon">
-            <GitBranch className="size-3.5" />
-          </span>
-          <span className="isi-inspector-action-text">Workflow</span>
-          <ChevronRight className="isi-inspector-action-chevron size-3.5" />
-        </button>
-        <button type="button" onClick={onOpenStudent} className="isi-inspector-action">
-          <span className="isi-inspector-action-icon">
-            <User className="size-3.5" />
+            <User {...ICON} />
           </span>
           <span className="isi-inspector-action-text">Profil étudiant</span>
           <ChevronRight className="isi-inspector-action-chevron size-3.5" />

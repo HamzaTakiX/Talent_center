@@ -1,4 +1,5 @@
 import { FunctionComponent } from 'react';
+import ChatUnreadBadge from '../../../../shared/chat-design-system/components/ChatUnreadBadge';
 import type { SupportConversationListItem } from '../types/supportInboxTypes';
 
 interface Props {
@@ -23,9 +24,7 @@ const SupportConversationCard: FunctionComponent<Props> = ({ item, active, onSel
       <p className="isi-conv-preview">{item.preview}</p>
       {item.statusLabel ? <span className="isi-status-text">{item.statusLabel}</span> : null}
     </div>
-    {item.unreadCount > 0 ? (
-      <span className="isi-unread">{item.unreadCount > 99 ? '99+' : item.unreadCount}</span>
-    ) : null}
+    <ChatUnreadBadge count={item.unreadCount} />
   </button>
 );
 

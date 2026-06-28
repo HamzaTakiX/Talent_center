@@ -1,10 +1,11 @@
-import { FunctionComponent, useMemo, useState } from 'react';
+import { ChangeEvent, FunctionComponent, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Upload } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { adminStudentsApi } from '../../api/students';
+import { useAdminToast } from '../../dashboard/context/AdminToastContext';
 import { useAdminCopy, useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
-import type { AdminStudentRow } from '../../api/types';
+import type { AdminStudentRow, StudentImportResult } from '../../api/types';
 import { useAdminTableDeleteFlow } from '../../shared/hooks/useAdminTableDeleteFlow';
 import {
   AdminListToolbar,
@@ -17,11 +18,44 @@ import {
 import { programTableLabel } from '../../shared/utils/programDisplay';
 import AdminDeleteConfirmModal from '../../ui/AdminDeleteConfirmModal';
 import AdminToolbarDeleteControl from '../../ui/AdminToolbarDeleteControl';
-import StudentsImportModal from './StudentsImportModal';
 import StudentActions from './StudentActions';
 import StudentTableIdentityCell from './StudentTableIdentityCell';
 import { platformAccountStatusTableBadge } from '../../ui/adminStatusBadges';
 import { SafeText, ADMIN_TABLE_COL } from '../../../../design-system/safeContent';
+
+const IMPORT_PREFIX = 'admin.modules.students.import';
+const IMPORT_ACCEPT =
+  '.csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv';
+
+function buildImportToastMessage(
+  data: StudentImportResult,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string {
+  const summary = t(`${IMPORT_PREFIX}.result.summary`, {
+    success: data.success_rows,
+    total: data.total_rows,
+    errors: data.error_rows,
+  });
+  if (data.errors.length === 0) return summary;
+
+  const rowDetails = data.errors
+    .slice(0, 3)
+    .map((err) =>
+      t(`${IMPORT_PREFIX}.result.rowError`, {
+        row: err.row,
+        email: err.email || '—',
+        message: err.message,
+      }),
+    )
+    .join(' · ');
+
+  const tail =
+    data.errors.length > 3
+      ? ` · ${t(`${IMPORT_PREFIX}.result.moreErrors`, { count: data.errors.length - 3 })}`
+      : '';
+
+  return `${summary} ${rowDetails}${tail}`;
+}
 
 interface StudentsDashboardTableProps {
   students: AdminStudentRow[];
@@ -62,7 +96,48 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
   const { tableColumn, emptyState, createLabel, filterLabel } = useAdminCopy();
   const { accountStatus } = useAdminTableValues();
   const searchPh = useAdminSearchPlaceholder('students');
-  const [importOpen, setImportOpen] = useState(false);
+  const toast = useAdminToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importLoading, setImportLoading] = useState(false);
+
+  const handleImportClick = () => {
+    if (importLoading) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setImportLoading(true);
+    try {
+      const data = await adminStudentsApi.importFromFile(file);
+      const message = buildImportToastMessage(data, t);
+      if (data.success_rows === 0) {
+        toast.error(message);
+      } else if (data.error_rows > 0) {
+        toast.warning(message);
+      } else {
+        toast.success(message);
+      }
+      if (data.success_rows > 0) {
+        void onRefresh();
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as {
+        code?: string;
+        response?: { data?: { message?: string } };
+      };
+      if (axiosErr.code === 'ECONNABORTED') {
+        toast.error(t(`${IMPORT_PREFIX}.errors.timeout`));
+      } else {
+        toast.error(axiosErr.response?.data?.message || t(`${IMPORT_PREFIX}.errors.generic`));
+      }
+    } finally {
+      setImportLoading(false);
+    }
+  };
 
   const {
     selectionMode,
@@ -99,10 +174,13 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
 
   return (
     <>
-      <StudentsImportModal
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-        onImported={onRefresh}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={IMPORT_ACCEPT}
+        className="sr-only"
+        aria-label={t('admin.common.actions.importExcel')}
+        onChange={handleImportFileChange}
       />
       <AdminDeleteConfirmModal
         open={deleteDialog != null}
@@ -135,9 +213,14 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
                 <button
                   type="button"
                   className="admin-module-toolbar__btn"
-                  onClick={() => setImportOpen(true)}
+                  onClick={handleImportClick}
+                  disabled={importLoading}
                 >
-                  <Upload className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                  {importLoading ? (
+                    <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+                  ) : (
+                    <Upload className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                  )}
                   <span>{t('admin.common.actions.importExcel')}</span>
                 </button>
               }

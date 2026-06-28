@@ -138,8 +138,6 @@ const AnnouncementSupportInbox: FunctionComponent = () => {
             onSend={(text) => void sendMessage(text)}
             onTyping={notifyTyping}
             onBack={() => setMobileView('list')}
-            onOpenAnnouncement={openAnnouncementView}
-            onOpenStudent={openStudentModal}
             onMarkResolved={handleResolved}
             onArchive={handleArchive}
             onUnarchive={handleUnarchive}

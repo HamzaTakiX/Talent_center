@@ -3,10 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { adminHistoryApi } from '../../../admin/api/history';
 import { parseAdminApiError } from '../../../admin/shared/utils/parseAdminApiError';
 import { formatRelativeTime } from '../../../admin/main_history/utils/formatRelativeTime';
+import { translateHistoryEventSummary } from '../../../admin/main_history/utils/translateHistoryEventSummary';
 import { fetchCvIntelligenceDashboardSafe } from '../../../cv/api/cvIntelligenceApi';
 import { stageApi } from '../../../shared/api/stageApi';
 import type { StudentDashboardViewModel } from '../types/studentDashboardData';
 import { buildStudentDashboardViewModel } from '../utils/buildStudentDashboardViewModel';
+import { applicationStatusLabelKey } from '../../internship_offers/utils/applicationStatus';
 import {
   studentActivityChartData,
   studentDashboardStats,
@@ -82,6 +84,16 @@ export function useStudentDashboard() {
     [t],
   );
 
+  const translateEventSummary = useCallback(
+    (event: HistoryEventDto) => translateHistoryEventSummary(event, (key, opts) => t(key, opts ?? {})),
+    [t],
+  );
+
+  const translateApplicationStatus = useCallback(
+    (status: string) => t(applicationStatusLabelKey(status)),
+    [t],
+  );
+
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -117,8 +129,10 @@ export function useStudentDashboard() {
       cvDashboard,
       formatRelativeTime: formatTime,
       translateAction,
+      translateEventSummary,
+      translateApplicationStatus,
     });
-  }, [journey, historyEvents, cvDashboard, formatTime, translateAction]);
+  }, [journey, historyEvents, cvDashboard, formatTime, translateAction, translateEventSummary, translateApplicationStatus]);
 
   return { data, loading, error, refresh };
 }

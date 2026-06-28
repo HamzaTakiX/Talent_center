@@ -41,7 +41,6 @@ const StudentInternshipContextPanel: FunctionComponent<Props> = ({ conversation 
         <span className="isi-inspector-head-title">
           {t('student.internshipOffers.chat.contextTitle')}
         </span>
-        <span className="isi-inspector-head-badge">{conversation.internshipType}</span>
       </header>
 
       <div className="isi-inspector-offer-card">

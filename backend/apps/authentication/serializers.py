@@ -71,12 +71,28 @@ class MeSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_role_codes(self, obj) -> list[str]:
+        cache = getattr(obj, '_prefetched_objects_cache', None)
+        if cache and 'role_assignments' in cache:
+            return [
+                assignment.role.code
+                for assignment in obj.role_assignments.all()
+                if assignment.is_active
+            ]
         return obj.active_role_codes()
 
     def get_permission_codes(self, obj) -> list[str]:
         if obj.role == obj.RoleChoices.ADMIN:
             from apps.admin_management.services.admins import get_admin_effective_permissions
             return sorted(get_admin_effective_permissions(obj))
+        cache = getattr(obj, '_prefetched_objects_cache', None)
+        if cache and 'role_assignments' in cache:
+            codes: set[str] = set()
+            for assignment in obj.role_assignments.all():
+                if not assignment.is_active:
+                    continue
+                for role_perm in assignment.role.role_permissions.all():
+                    codes.add(role_perm.permission.code)
+            return sorted(codes)
         return sorted(obj.permission_codes())
 
     def get_admin_level(self, obj) -> str | None:

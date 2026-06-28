@@ -97,12 +97,6 @@ import DeliveryMonitoringPage from '../../features/admin/Documents_admin/pages/D
 import WorkloadBoardPage from '../../features/admin/Documents_admin/pages/WorkloadBoardPage';
 import ServiceCatalogPage from '../../features/admin/Documents_admin/pages/ServiceCatalogPage';
 import ServiceCatalogFormPage from '../../features/admin/Documents_admin/pages/ServiceCatalogFormPage';
-import TotalStudentsListPage from '../../features/admin/student/student_cards/total_students/pages/TotalStudentsListPage';
-import ActiveStudentsListPage from '../../features/admin/student/student_cards/active_students/pages/ActiveStudentsListPage';
-import InactiveStudentsListPage from '../../features/admin/student/student_cards/inactive_students/pages/InactiveStudentsListPage';
-import WithoutInternshipListPage from '../../features/admin/student/student_cards/without_internship/pages/WithoutInternshipListPage';
-import WithInternshipListPage from '../../features/admin/student/student_cards/with_internship/pages/WithInternshipListPage';
-import EngagementLevelListPage from '../../features/admin/student/student_cards/engagement_level/pages/EngagementLevelListPage';
 import AllEncadrantsPage from '../../features/admin/pages/AllEncadrantsPage';
 import AddEncadrantPage from '../../features/admin/encadrant/pages/AddEncadrantPage';
 import AllEncadrantsListPage from '../../features/admin/encadrant/encadrant_cards/all-encadrants/pages/AllEncadrantsListPage';
@@ -168,6 +162,7 @@ import {
 import ViewStudentAnnouncementPage from '../../features/student/Annoucements/pages/ViewStudentAnnouncementPage';
 import { MainHistoryPage as StudentMainHistoryPage } from '../../features/student/main_history';
 import {
+  DocumentServiceDetailPage,
   DocumentsChatPage as StudentDocumentsChatPage,
   DocumentsPage as StudentDocumentsPage,
 } from '../../features/student/Documents';
@@ -313,6 +308,10 @@ export const router = createBrowserRouter(
       {
         path: '/student/documents/chat',
         element: <StudentDocumentsChatPage />
+      },
+      {
+        path: '/student/documents/:id',
+        element: <DocumentServiceDetailPage />
       },
       {
         path: '/student/srf',
@@ -859,30 +858,6 @@ export const router = createBrowserRouter(
         element: <ViewInternshipOfferPage />
       },
       {
-        path: '/admin/students/total-students',
-        element: <TotalStudentsListPage />
-      },
-      {
-        path: '/admin/students/active-students',
-        element: <ActiveStudentsListPage />
-      },
-      {
-        path: '/admin/students/inactive-students',
-        element: <InactiveStudentsListPage />
-      },
-      {
-        path: '/admin/students/without-internship',
-        element: <WithoutInternshipListPage />
-      },
-      {
-        path: '/admin/students/with-internship',
-        element: <WithInternshipListPage />
-      },
-      {
-        path: '/admin/students/engagement-level',
-        element: <EngagementLevelListPage />
-      },
-      {
         path: '/admin/students/create',
         element: <CreateStudentPage />
       },
@@ -1014,7 +989,5 @@ export const router = createBrowserRouter(
   }
 ],
 {
-  future: {
-    v7_startTransition: true,
-  },
+  future: {},
 });

@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import os
 from collections import Counter
 from datetime import timedelta
 
 from django.db.models import Count, Q
 from django.utils import timezone
+
+from core.media_urls import build_absolute_media_url
 
 from apps.documents.models import (
     AdministrativeResource,
@@ -57,7 +60,7 @@ LIST_SELECT_RELATED = (
 )
 
 
-def dashboard_payload() -> dict:
+def dashboard_payload(request=None) -> dict:
     qs = DocumentRequest.objects.all()
     active = qs.exclude(status__in=TERMINAL_STATUSES).count()
     pending = qs.filter(status__in=PENDING_STATUSES).count()
@@ -85,18 +88,18 @@ def dashboard_payload() -> dict:
         'reservationOccupancy': reservation_occupancy_payload(today),
         'rejectionCauses': _rejection_causes(qs),
         'insights': _dashboard_insights(qs, pending),
-        'recentRequests': paginate_requests({'page': 1, 'page_size': 6})['items'],
+        'recentRequests': paginate_requests({'page': 1, 'page_size': 6}, request=request)['items'],
     }
 
 
-def paginate_requests(params: dict | None = None) -> dict:
+def paginate_requests(params: dict | None = None, request=None) -> dict:
     params = params or {}
     qs = _filter_requests(params)
     page = max(1, int(params.get('page') or 1))
     page_size = max(1, min(100, int(params.get('page_size') or 15)))
     total = qs.count()
     start = (page - 1) * page_size
-    items = [_serialize_list_item(r) for r in qs[start:start + page_size]]
+    items = [_serialize_list_item(r, request) for r in qs[start:start + page_size]]
     return {
         'items': items,
         'page': page,
@@ -106,13 +109,22 @@ def paginate_requests(params: dict | None = None) -> dict:
     }
 
 
-def detail_payload(req: DocumentRequest) -> dict:
-    item = _serialize_list_item(req)
+def detail_payload(req: DocumentRequest, request=None) -> dict:
+    item = _serialize_list_item(req, request)
     meta = req.metadata_json or {}
     reservation = _reservation_from_metadata(meta)
+    document_type = req.document_type
+    service_config = document_type.service_config_json or {}
+    availability = service_config.get('availability') or {}
+    auto_generate_enabled = bool(availability.get('autoGenerateEnabled', False))
 
     item.update({
         'reason': req.reason,
+        'documentTypeId': str(document_type.pk),
+        'autoGenerateEnabled': auto_generate_enabled,
+        'templatePreview': _template_preview_for_type(document_type, request)
+        if auto_generate_enabled
+        else None,
         'fields': [
             {
                 'name': f.field_name,
@@ -132,15 +144,7 @@ def detail_payload(req: DocumentRequest) -> dict:
         ],
         'workflowSteps': _workflow_steps(req),
         'validationHistory': _validation_history(req),
-        'generatedOutputs': [
-            {
-                'id': str(o.pk),
-                'format': o.format.lower(),
-                'generatedAt': o.generated_at.isoformat(),
-                'signed': o.is_signed,
-            }
-            for o in req.outputs.all()
-        ],
+        'generatedOutputs': [_serialize_generated_output(o, request) for o in req.outputs.all()],
         'insights': _detail_insights(req),
         'rejectionReason': req.rejection_reason or None,
         'reservation': reservation,
@@ -152,6 +156,7 @@ def detail_payload(req: DocumentRequest) -> dict:
 def perform_request_action(req: DocumentRequest, action: str, user, payload: dict | None = None) -> dict:
     payload = payload or {}
     action = (action or '').strip().lower()
+    req._history_actor = user
 
     if action == 'approve':
         if req.status not in PENDING_STATUSES:
@@ -327,7 +332,58 @@ def _apply_search(qs, search: str):
     )
 
 
-def _serialize_list_item(req: DocumentRequest) -> dict:
+def _template_preview_for_type(document_type: DocumentType, request=None) -> dict | None:
+    tpl = (
+        document_type.templates.filter(is_default=True, is_active=True)
+        .exclude(file_template='')
+        .first()
+        or document_type.templates.filter(is_active=True).exclude(file_template='').first()
+    )
+    if not tpl or not tpl.file_template:
+        return None
+
+    name = os.path.basename(tpl.file_template.name)
+    ext = name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+    try:
+        file_url = build_absolute_media_url(tpl.file_template.url, request)
+    except (ValueError, AttributeError):
+        file_url = None
+
+    return {
+        'templateId': str(tpl.pk),
+        'fileName': name,
+        'fileType': ext if ext in ('pdf', 'docx') else 'pdf',
+        'fileUrl': file_url,
+    }
+
+
+def _serialize_generated_output(output, request=None) -> dict:
+    file_name = None
+    file_url = None
+    if output.file:
+        file_name = os.path.basename(output.file.name)
+        try:
+            file_url = build_absolute_media_url(output.file.url, request)
+        except (ValueError, AttributeError):
+            file_url = None
+
+    return {
+        'id': str(output.pk),
+        'format': output.format.lower(),
+        'generatedAt': output.generated_at.isoformat(),
+        'signed': output.is_signed,
+        'fileName': file_name or f'document.{output.format.lower()}',
+        'fileUrl': file_url,
+    }
+
+
+def _student_avatar_url(profile, request=None) -> str | None:
+    from core.media_urls import resolve_student_profile_avatar_url
+
+    return resolve_student_profile_avatar_url(profile, request)
+
+
+def _serialize_list_item(req: DocumentRequest, request=None) -> dict:
     profile = req.target_student_profile
     user = profile.user if profile else req.requested_by
     name = user.full_name if user else '—'
@@ -360,6 +416,7 @@ def _serialize_list_item(req: DocumentRequest) -> dict:
             'academicYear': academic_year,
             'classGroup': class_group,
             'avatarInitials': ''.join(n[0] for n in str(name).split()[:2]).upper()[:2] or '?',
+            'avatarUrl': _student_avatar_url(profile, request),
             'srfClearance': meta.get('srfClearance', True),
         },
         'status': _map_status(req.status),

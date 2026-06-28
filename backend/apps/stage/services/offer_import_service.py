@@ -188,7 +188,11 @@ def run_import_extraction(job: OfferImportJob, *, actor) -> OfferImportJob:
             {'parser': extracted.parser_used, 'fields_found': list(k for k, v in extracted_dict.items() if v)},
         )
 
-        normalized = _normalize_from_extracted(extracted_dict, job)
+        normalized = _normalize_from_extracted(
+            extracted_dict,
+            source_url=job.source_url,
+            detected_platform=job.detected_platform,
+        )
         job.normalized_data = normalized
         append_history(job, OfferImportHistory.Step.DATA_NORMALIZED, 'Offer draft normalized')
 
@@ -243,7 +247,57 @@ def _fail_import(job: OfferImportJob, *, actor, message: str, code: str) -> Offe
     raise StageServiceError(message, code=code)
 
 
-def _normalize_from_extracted(extracted: dict[str, Any], job: OfferImportJob) -> dict[str, Any]:
+def preview_offer_from_url(source_url: str) -> dict[str, Any]:
+    """Extract offer fields from a URL for student-facing preview (no import job)."""
+    try:
+        validate_url_format(source_url)
+        final_url = check_url_reachable(source_url)
+    except HtmlFetchError as exc:
+        raise StageServiceError(str(exc), code=getattr(exc, 'code', 'invalid_url')) from exc
+
+    platform_key = detect_platform(final_url)
+    try:
+        detected_platform = OfferImportJob.Platform(platform_key)
+    except ValueError:
+        detected_platform = OfferImportJob.Platform.UNKNOWN
+
+    if detected_platform not in SUPPORTED_PLATFORMS:
+        raise StageServiceError('Unsupported website.', code='unsupported_website')
+
+    try:
+        extracted = extract_offer_from_url(final_url)
+        extracted_dict = extracted.to_dict()
+    except HtmlFetchError as exc:
+        raise StageServiceError(str(exc), code=getattr(exc, 'code', 'extraction_failed')) from exc
+    except Exception as exc:
+        raise StageServiceError('Could not extract offer from this URL.', code='extraction_failed') from exc
+
+    normalized = _normalize_from_extracted(
+        extracted_dict,
+        source_url=final_url,
+        detected_platform=detected_platform,
+    )
+    return {
+        'title': normalized.get('title', ''),
+        'company_name': normalized.get('company_name', ''),
+        'description': normalized.get('description', ''),
+        'requirements': normalized.get('requirements', ''),
+        'benefits': normalized.get('benefits', ''),
+        'location_city': normalized.get('location_city', ''),
+        'required_skills': normalized.get('required_skills', []),
+        'company_logo': normalized.get('company_logo', ''),
+        'source_platform': normalized.get('source_platform', ''),
+        'parser_used': normalized.get('parser_used', ''),
+        'source_url': final_url,
+    }
+
+
+def _normalize_from_extracted(
+    extracted: dict[str, Any],
+    *,
+    source_url: str,
+    detected_platform: str,
+) -> dict[str, Any]:
     skills = extracted.get('skills') or []
     if isinstance(skills, str):
         skills = [s.strip() for s in skills.split(',') if s.strip()]
@@ -266,12 +320,12 @@ def _normalize_from_extracted(extracted: dict[str, Any], job: OfferImportJob) ->
         'required_languages': [],
         'offer_type': offer_type,
         'application_deadline': extracted.get('application_deadline') or None,
-        'external_url': job.source_url,
-        'external_source': job.detected_platform,
-        'external_id': external_id_from_url(job.source_url),
+        'external_url': source_url,
+        'external_source': detected_platform,
+        'external_id': external_id_from_url(source_url),
         'company_logo': extracted.get('company_logo') or '',
         'parser_used': extracted.get('parser_used') or '',
-        'source_platform': extracted.get('source_platform') or job.detected_platform,
+        'source_platform': extracted.get('source_platform') or detected_platform,
         'import_metadata': {
             'import_date': timezone.now().isoformat(),
             'employment_type': extracted.get('employment_type') or '',

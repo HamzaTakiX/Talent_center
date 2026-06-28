@@ -381,6 +381,35 @@ TEMPLATE_DEFINITIONS = [
             },
         },
     },
+    {
+        'code': 'chat_conversation_resolved',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.CHAT,
+        'html_file': 'email/generic.html',
+        'translations': {
+            'en': {
+                'subject': '{{ title }}',
+                'body_html': '<p>{{ body }}</p>',
+                'body_text': '{{ body }}',
+                'in_app_title': 'Conversation resolved',
+                'in_app_body': (
+                    'Your request has been marked as resolved. '
+                    'You can still reply to this conversation if you need further assistance.'
+                ),
+            },
+            'fr': {
+                'subject': '{{ title }}',
+                'body_html': '<p>{{ body }}</p>',
+                'body_text': '{{ body }}',
+                'in_app_title': 'Conversation résolue',
+                'in_app_body': (
+                    'Votre demande a été marquée comme résolue. '
+                    'Vous pouvez toujours répondre à cette conversation si vous avez besoin '
+                    "d'une assistance supplémentaire."
+                ),
+            },
+        },
+    },
 ]
 
 # IN_APP variants for feed rendering

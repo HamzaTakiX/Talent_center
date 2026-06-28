@@ -164,15 +164,16 @@
         "title": "تنبيهات حرجة",
         "subtitle": "يتطلب اهتمامًا فوريًا",
         "empty": "لا توجد تنبيهات حاليًا",
+        "emptyDesc": "كل شيء على ما يرام — لا توجد مشكلات حرجة تتطلب اهتمامك الآن.",
         "priority": {
           "high": "عالية",
           "medium": "متوسطة"
         },
         "messages": {
-          "unpaidSrf": "23 طالبًا لديهم رسوم SRF غير مدفوعة",
-          "documentsPending": "45 مستندًا في انتظار التحقق",
-          "noInternship": "156 طالبًا بدون تدريب معيّن",
-          "offersExpiring": "12 عرض تدريب تنتهي هذا الأسبوع"
+          "unpaidSrf": "{{count}} طالبًا لديهم رسوم SRF غير مدفوعة",
+          "documentsPending": "{{count}} مستندًا في انتظار التحقق",
+          "noInternship": "{{count}} طالبًا بدون تدريب معيّن",
+          "offersExpiring": "{{count}} عرض تدريب تنتهي هذا الأسبوع"
         },
         "analytics": {
           "active": "نشطة",
@@ -186,6 +187,9 @@
       "activity": {
         "title": "النشاط الأخير",
         "subtitle": "آخر الإجراءات على المنصة",
+        "empty": "لا يوجد نشاط حديث",
+        "emptyDesc": "ستظهر هنا الإجراءات المسجّلة في وحدة السجل عند حدوثها.",
+        "viewHistory": "فتح السجل",
         "actions": {
           "newApplication": "طلب تدريب جديد",
           "documentValidated": "تم التحقق من مستند",
@@ -202,6 +206,8 @@
       "chart": {
         "title": "نظرة على النشاط",
         "subtitle": "آخر 7 أيام · المنصة",
+        "empty": "لا يوجد نشاط هذا الأسبوع",
+        "emptyDesc": "ستملأ أحداث وحدة السجل هذا المخطط مع مرور الوقت.",
         "legend": {
           "applications": "الطلبات",
           "documents": "المستندات",
@@ -341,6 +347,28 @@
       "noConversations": "لا توجد محادثات",
       "noConversationsHint": "جرّب بحثاً أو فلتراً آخر",
       "searchInConversation": "البحث في المحادثة…",
+      "searchInConversationLabel": "البحث في المحادثة",
+      "sharedAttachments": "المرفقات",
+      "conversationHistory": "السجل",
+      "archiveConversation": "أرشفة",
+      "unarchiveConversation": "استعادة",
+      "archiveConversationHint": "إخفاء من البريد النشط",
+      "unarchiveConversationHint": "العودة إلى البريد النشط",
+      "conversationArchivedNotice": "هذه المحادثة مؤرشفة",
+      "menuSectionExplore": "استكشاف",
+      "menuSectionInbox": "صندوق الوارد",
+      "searchResults": "{{current}} من {{total}}",
+      "searchNavigatePrev": "النتيجة السابقة",
+      "searchNavigateNext": "النتيجة التالية",
+      "closeSearch": "إغلاق البحث",
+      "closePanel": "إغلاق اللوحة",
+      "noAttachments": "لا توجد مرفقات مشتركة",
+      "noHistory": "لا يوجد سجل لهذه المحادثة",
+      "firstMessage": "أول رسالة",
+      "historyEvent": "حدث",
+      "you": "أنت",
+      "otherParticipant": "المحاور",
+      "downloadAttachment": "تنزيل {{name}}",
       "noMessages": "لا توجد رسائل مطابقة",
       "openSearch": "البحث في المحادثة",
       "moreActions": "المزيد من الإجراءات",
@@ -357,7 +385,24 @@
       "sendMessage": "إرسال الرسالة",
       "voiceNote": "ملاحظة صوتية",
       "composerHint": "Enter للإرسال · Shift+Enter لسطر جديد",
-      "unreadCount": "{{count}} غير مقروء"
+      "unreadCount": "{{count}} غير مقروء",
+      "typingIndicator": "يكتب…",
+      "systemEvents": {
+        "archive_conversation": "تم أرشفة المحادثة في صندوق الوارد",
+        "unarchive_conversation": "تمت استعادة المحادثة في صندوق الوارد",
+        "mark_resolved": "تم وضع علامة على المحادثة كمحلولة",
+        "auto_reopen": "تم إعادة فتح المحادثة تلقائياً",
+        "mark_urgent": "تم وضع علامة على المحادثة كعاجلة",
+        "assign_admin": "تم تعيين المحادثة إلى مسؤول",
+        "add_internal_note": "تمت إضافة ملاحظة داخلية",
+        "set_priority": "تم تحديث الأولوية",
+        "notify_admin": "تم إخطار المسؤولين",
+        "escalate": "تم تصعيد المحادثة",
+        "validate": "تم التحقق من العنصر",
+        "request_correction": "تم طلب تصحيح",
+        "create_task": "تم إنشاء مهمة",
+        "create_meeting": "تم جدولة اجتماع"
+      }
     },
     "chatEmpty": {
       "stats": {
@@ -537,7 +582,15 @@
         "suspendedTitle": "حساب موقوف",
         "suspendedMessage": "تم إيقاف حسابك. تواصل مع المسؤول.",
         "pendingTitle": "حساب قيد الانتظار",
-        "pendingMessage": "حسابك بانتظار الموافقة. ستصلك رسالة عند القبول.",
+        "pendingMessage": "حسابك بانتظار موافقة المسؤول. تواصل مع إدارة المدرسة.",
+        "platformAccessTitle": "الوصول غير ممنوح",
+        "platformAccessMessage": "لم يُمنح بعد الوصول إلى المنصة. تواصل مع المسؤول.",
+        "blockedTitle": "حساب محظور",
+        "blockedMessage": "تم حظر حسابك. تواصل مع المسؤول.",
+        "archivedTitle": "حساب مؤرشف",
+        "archivedMessage": "تم أرشفة حسابك. تواصل مع المسؤول.",
+        "disabledTitle": "حساب معطل",
+        "disabledMessage": "حسابك معطل. تواصل مع المسؤول.",
         "deniedTitle": "الوصول مرفوض",
         "deniedMessage": "لا يملك حسابك صلاحية الوصول. تواصل مع الدعم.",
         "lockedTitle": "حساب مقفل",
@@ -633,6 +686,7 @@
         "linkedin": "رابط ملف LinkedIn",
         "professionalSummary": "ملخص مهني قصير",
         "careerObjective": "نوع التدريب الذي تبحث عنه",
+        "internshipType": "نوع التدريب الذي تبحث عنه",
         "skills": "اختر مهاراتك",
         "whenStart": "متى يمكنك البدء؟",
         "startDate": "تاريخ البدء",
@@ -644,6 +698,8 @@
         "linkedin": "https://linkedin.com/in/your-profile",
         "professionalSummary": "عرّف بإيجاز مسارك الأكاديمي ومهاراتك وأهدافك المهنية…",
         "careerObjective": "مثال: تدريب في التسويق بشركة متعددة الجنسيات، مع التركيز على الاستراتيجية الرقمية…",
+        "selectInternshipType": "اختر نوع التدريب",
+        "loadingInternshipTypes": "جاري تحميل أنواع التدريب…",
         "city": "مثال: الدار البيضاء"
       },
       "availability": {
@@ -677,7 +733,12 @@
       },
       "yes": "نعم",
       "no": "لا",
+      "hints": {
+        "selectInternshipTypeForSkills": "اختر نوع التدريب أولاً لعرض كفاءات برنامجك في ESCA."
+      },
       "save": "حفظ ومتابعة",
+      "saving": "جاري الحفظ…",
+      "redirecting": "جاري التحويل…",
       "success": "تم إكمال الملف الشخصي! سيتم توجيهك إلى منشئ السيرة الذاتية قبل لوحة التحكم.",
       "loginRecapTitle": "بيانات تسجيل الدخول",
       "loginRecapHint": "جاري التحويل إلى منشئ السيرة الذاتية…",
@@ -692,7 +753,10 @@
         "missingFields": "يرجى تعبئة الحقول الإلزامية التالية: {{fields}}",
         "linkedinInvalid": "يرجى إدخال رابط LinkedIn صالح (مثال: https://linkedin.com/in/your-name)",
         "linkedinInvalidField": "يجب أن يكون رابط LinkedIn ملفاً شخصياً صالحاً (مثال: https://linkedin.com/in/your-name)",
-        "submitFailed": "تعذر إكمال الملف. يرجى المحاولة مرة أخرى."
+        "submitFailed": "تعذر إكمال الملف. يرجى المحاولة مرة أخرى.",
+        "internshipTypesNeedIdentity": "أكّد هويتك (الشعبة والقسم) أولاً لعرض أنواع التدريب في ESCA.",
+        "noInternshipTypesForProgram": "لم يُعثر على نوع تدريب لبرنامجك وقسمك. تواصل مع الإدارة أو تحقق من تسجيلك.",
+        "noCompetenciesForProgram": "لا توجد كفاءات مسجّلة لهذا النوع من التدريب."
       }
     },
     "loading": {
@@ -825,7 +889,7 @@
       "panelTitle": "بناء سيرتك الذاتية",
       "panelSubtitle": "نماذج منظمة · معاينة ATS مباشرة",
       "nav": { "label": "أقسام السيرة" },
-      "mobile": { "form": "النموذج", "preview": "المعاينة" },
+      "mobile": { "form": "النموذج", "preview": "المعاينة", "livePreview": "معاينة مباشرة", "editorTab": "المحرر", "viewerTab": "المعاينة" },
       "wizard": { "prev": "السابق", "next": "التالي" },
       "empty": { "description": "أضف قسمًا واحدًا على الأقل عبر النموذج." },
       "steps": {
@@ -845,8 +909,10 @@
       "photo": { "upload": "رفع صورة", "remove": "حذف" },
       "personal": {
         "fullName": "الاسم الكامل",
-        "headline": "المسمى",
-        "email": "البريد",
+        "headline": "المسمى الوظيفي",
+        "about": "نبذة",
+        "role": "الدور / المسمى",
+        "email": "البريد الإلكتروني",
         "phone": "الهاتف",
         "location": "الموقع"
       },
@@ -858,11 +924,12 @@
         "website": "الموقع",
         "portfolio": "المعرض"
       },
-      "common": { "start": "البداية", "end": "النهاية", "date": "التاريخ" },
+      "common": { "start": "البداية", "end": "النهاية", "date": "التاريخ", "delete": "حذف", "link": "رابط" },
       "education": {
         "add": "إضافة تعليم",
         "new": "تعليم جديد",
-        "degree": "الشهادة",
+        "degree": "المؤهل / الشهادة",
+        "institution": "المؤسسة",
         "school": "المؤسسة",
         "location": "الموقع",
         "description": "الوصف"
@@ -870,18 +937,19 @@
       "experience": {
         "add": "إضافة خبرة",
         "new": "خبرة جديدة",
-        "title": "المنصب",
+        "title": "المسمى الوظيفي",
         "company": "الشركة",
         "location": "الموقع",
+        "description": "الوصف",
         "bullets": "الإنجازات",
         "addBullet": "إضافة نقطة"
       },
-      "skills": { "add": "إضافة مهارة", "new": "مهارة", "name": "الاسم", "level": "المستوى" },
+      "skills": { "add": "إضافة مهارة", "new": "مهارة", "name": "اسم المهارة", "iconUrl": "رابط أيقونة SVG", "level": "المستوى" },
       "languages": { "add": "إضافة لغة", "new": "لغة", "name": "اللغة", "level": "المستوى" },
       "projects": {
         "add": "إضافة مشروع",
         "new": "مشروع",
-        "name": "الاسم",
+        "name": "اسم المشروع",
         "tech": "التقنيات",
         "url": "الرابط",
         "description": "الوصف"
@@ -902,6 +970,7 @@
       "custom": { "add": "إضافة قسم", "new": "قسم", "title": "العنوان", "content": "المحتوى" },
       "template": {
         "pick": "اختر قالبًا",
+        "contact": "التواصل",
         "desc": {
           "executive": "حديث ومتوازن",
           "minimal": "محسّن لـ ATS",
@@ -909,6 +978,23 @@
           "elegant": "تنفيذي أنيق",
           "corporate": "مؤسسي مدمج"
         }
+      },
+      "placeholders": {
+        "about": "ملخص مهني قصير",
+        "role": "مثال: متدرب هندسة برمجيات",
+        "companyExample": "اسم الشركة",
+        "dateRange": "يونيو 2022 – حتى الآن",
+        "experienceDesc": "صف مسؤولياتك وإنجازاتك",
+        "skillIcon": "رابط أيقونة من Iconify",
+        "institutionExample": "اسم الجامعة",
+        "dateExample": "مايو 2018",
+        "qualificationExample": "إجازة في هندسة المعلومات",
+        "projectLink": "رابط المشروع",
+        "projectDesc": "وصف مختصر للمشروع",
+        "languageExample": "الفرنسية، الإنجليزية…",
+        "languageLevel": "أصلي، B2، احترافي…",
+        "githubUrl": "اسم المستخدم أو رابط GitHub",
+        "linkedinUrl": "رابط ملف LinkedIn"
       }
     },
     "ai": {

@@ -19,10 +19,12 @@ import type {
   ImportPhase,
   SmartInsight,
   TargetingRules,
+  TextPhase,
   WizardStep,
 } from '../types/createOfferWorkflow';
 import { createEmptyOfferForm } from '../types/createOfferWorkflow';
 import { hasTargetingSelection as targetingHasSelection } from '../../../shared/utils/targetingMappers';
+import { parseOfferText } from '../utils/parseOfferText';
 
 export type OfferStudioMode = 'create' | 'edit';
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -176,6 +178,12 @@ export function useCreateOfferWorkflow(
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [validationAttempted, setValidationAttempted] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // --- Text parse method state ---
+  const [textInput, setTextInput] = useState('');
+  const [textPhase, setTextPhase] = useState<TextPhase>('idle');
+  const [textError, setTextError] = useState<string | null>(null);
+  const [textExtractedFields, setTextExtractedFields] = useState<string[]>([]);
 
   const skipAutoSaveRef = useRef(true);
   const savedStatusTimerRef = useRef<number | null>(null);
@@ -382,6 +390,10 @@ export function useCreateOfferWorkflow(
     setValidationAttempted(false);
     setSaveStatus('idle');
     setSaveError(null);
+    setTextInput('');
+    setTextPhase('idle');
+    setTextError(null);
+    setTextExtractedFields([]);
   }, [initialForm, initialMethod, isEditMode]);
 
   const rejectImport = useCallback(async (reason = '') => {
@@ -391,6 +403,40 @@ export function useCreateOfferWorkflow(
   }, [importJobMeta?.jobUuid, resetWorkflow]);
 
   const checkDuplicates = useCallback((): DuplicateOffer | null => duplicate, [duplicate]);
+
+  // --- Text parse actions ---
+  const parseText = useCallback(async () => {
+    if (!textInput.trim()) return;
+    setTextPhase('parsing');
+    setTextError(null);
+    setTextExtractedFields([]);
+
+    // Simulate brief async so the UI can show the parsing state
+    await new Promise<void>((resolve) => window.setTimeout(resolve, 600));
+
+    try {
+      const result = parseOfferText(textInput);
+      if (result.extracted.length === 0) {
+        setTextError('no_fields_extracted');
+        setTextPhase('failed');
+        return;
+      }
+      setForm(result.form);
+      setTextExtractedFields(result.extracted);
+      setTextPhase('extracted');
+    } catch {
+      setTextError('parse_failed');
+      setTextPhase('failed');
+    }
+  }, [textInput]);
+
+  const resetTextParse = useCallback(() => {
+    setTextInput('');
+    setTextPhase('idle');
+    setTextError(null);
+    setTextExtractedFields([]);
+    setForm(createEmptyOfferForm());
+  }, []);
 
   return {
     mode,
@@ -435,6 +481,14 @@ export function useCreateOfferWorkflow(
     setValidationAttempted,
     saveDraft,
     saveError,
+    // text parse
+    textInput,
+    setTextInput,
+    textPhase,
+    textError,
+    textExtractedFields,
+    parseText,
+    resetTextParse,
   };
 }
 

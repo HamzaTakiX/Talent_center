@@ -7,9 +7,12 @@ import type {
   InternshipConversation,
 } from '../../../../admin/offres-stage/chat/types/internshipChatTypes';
 import { InternshipChatMessagesSkeleton, InternshipChatWorkspaceSkeleton } from '../../../../admin/offres-stage/chat/components/InternshipChatLoadingSkeletons';
-import InternshipMessageReadStatus from '../../../../admin/offres-stage/chat/components/InternshipMessageReadStatus';
+import {
+  StandardChatMessageThread,
+  toChatToolMessages,
+  useChatConversationTools,
+} from '../../../../shared/chat-design-system';
 import StudentInternshipChatHeader from './StudentInternshipChatHeader';
-import { formatInternshipSystemMessage } from '../../../../admin/offres-stage/chat/utils/internshipChatSystemMessageUtils';
 
 type Props = {
   conversation: InternshipConversation | null;
@@ -23,9 +26,11 @@ type Props = {
   messagesLoading?: boolean;
   conversationLoading?: boolean;
   statsLoading?: boolean;
-  onSend: (text: string) => void;
+  onSend: (text: string, files?: File[]) => void;
   onBack?: () => void;
   onViewOffer: () => void;
+  onArchive: () => void;
+  onUnarchive: () => void;
   peerTyping?: boolean;
   onTyping?: (isTyping: boolean) => void;
 };
@@ -40,12 +45,26 @@ const StudentInternshipChatArea: FunctionComponent<Props> = ({
   onSend,
   onBack,
   onViewOffer,
+  onArchive,
+  onUnarchive,
   peerTyping = false,
   onTyping,
 }) => {
   const { t } = useTranslation();
   const [draft, setDraft] = useState('');
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [attachError, setAttachError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const chatTools = useChatConversationTools({
+    messages: toChatToolMessages(conversation?.messages ?? []),
+    conversationKey: conversation?.id ?? '',
+    counterpartyName: conversation?.company,
+    archived: conversation?.archived,
+    onArchive,
+    onUnarchive,
+    scrollContainerRef: scrollRef,
+  });
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -53,14 +72,18 @@ const StudentInternshipChatArea: FunctionComponent<Props> = ({
 
   useEffect(() => {
     setDraft('');
+    setPendingFiles([]);
+    setAttachError(null);
   }, [conversation?.id]);
 
   const handleSend = useCallback(() => {
     const text = draft.trim();
-    if (!text) return;
-    onSend(text);
+    if (!text && !pendingFiles.length) return;
+    onSend(text, pendingFiles.length ? pendingFiles : undefined);
     setDraft('');
-  }, [draft, onSend]);
+    setPendingFiles([]);
+    setAttachError(null);
+  }, [draft, onSend, pendingFiles]);
 
   if ((conversationLoading || messagesLoading) && !conversation) {
     return <InternshipChatWorkspaceSkeleton />;
@@ -96,67 +119,45 @@ const StudentInternshipChatArea: FunctionComponent<Props> = ({
         conversation={conversation}
         onBack={onBack}
         onViewOffer={onViewOffer}
+        conversationMenu={chatTools.menu}
       />
+      {chatTools.searchBar}
 
       <div ref={scrollRef} className="isi-messages">
         {messagesLoading && conversation.messages.length === 0 ? (
           <InternshipChatMessagesSkeleton embedded />
-        ) : conversation.messages.length === 0 ? (
-          <div className="isi-messages-empty">
-            <p className="text-sm text-[var(--admin-text-muted)]">
-              {t('student.internshipOffers.chat.noMessages')}
-            </p>
-          </div>
         ) : (
-          conversation.messages.map((msg) => {
-            const systemLabel =
-              msg.messageType === 'EVENT' || msg.messageType === 'SYSTEM'
-                ? formatInternshipSystemMessage(msg, 'student', t)
-                : null;
-
-            return (
-            <div key={msg.id} className="isi-msg-block">
-              {msg.separatorBefore ? (
-                <div className="isi-date-sep">
-                  <span>{msg.separatorBefore}</span>
-                </div>
-              ) : null}
-              {systemLabel ? (
-                <div className="isi-system-msg">{systemLabel}</div>
-              ) : msg.direction === 'in' ? (
-                <div className="isi-msg isi-msg--in">
-                  <div className="isi-bubble isi-bubble--in">{msg.text}</div>
-                  <time className="isi-msg-time">{msg.time}</time>
-                </div>
-              ) : (
-                <div className="isi-msg isi-msg--out">
-                  <div className="isi-bubble isi-bubble--out">{msg.text}</div>
-                  <InternshipMessageReadStatus
-                    message={msg}
-                    seenLabel={
-                      msg.seenTime
-                        ? t('student.internshipOffers.chat.seenAt', { time: msg.seenTime })
-                        : undefined
-                    }
-                  />
-                </div>
-              )}
-            </div>
-            );
-          })
+          <StandardChatMessageThread
+            messages={conversation.messages}
+            inboxMode="student"
+            systemEventsPrefix="student.internshipOffers.chat.systemEvents"
+            emptyLabel={t('student.internshipOffers.chat.noMessages')}
+            typing={peerTyping}
+            typingLabel={t('student.internshipOffers.chat.adminTyping', {
+              defaultValue: "L'administrateur écrit…",
+            })}
+            getMessageBlockProps={chatTools.getMessageBlockProps}
+            renderHighlightedText={chatTools.renderHighlightedText}
+            seenLabelFor={(msg) =>
+              msg.seenTime
+                ? t('student.internshipOffers.chat.seenAt', { time: msg.seenTime })
+                : undefined
+            }
+          />
         )}
-        {peerTyping ? (
-          <div className="isi-typing-indicator text-xs text-[var(--admin-text-muted)] px-4 pb-2">
-            {t('student.internshipOffers.chat.adminTyping', { defaultValue: "L'administrateur écrit…" })}
-          </div>
-        ) : null}
       </div>
+
+      {chatTools.panels}
 
       <SupportMessageComposer
         value={draft}
         onChange={setDraft}
         onSend={handleSend}
         onTyping={onTyping}
+        pendingFiles={pendingFiles}
+        onPendingFilesChange={setPendingFiles}
+        attachError={attachError}
+        onAttachError={setAttachError}
         placeholder={t('student.internshipOffers.chat.composer')}
         inputAriaLabel={t('student.internshipOffers.chat.composer')}
         attachAriaLabel={t('student.internshipOffers.chat.attachFile')}

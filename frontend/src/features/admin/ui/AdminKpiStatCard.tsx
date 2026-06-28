@@ -12,6 +12,7 @@ interface AdminKpiStatCardProps {
   onClick?: ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
   index?: number;
   valueClassName?: string;
+  valueLoading?: boolean;
 }
 
 const AdminKpiStatCard: FunctionComponent<AdminKpiStatCardProps> = ({
@@ -23,6 +24,7 @@ const AdminKpiStatCard: FunctionComponent<AdminKpiStatCardProps> = ({
   onClick,
   index = 0,
   valueClassName,
+  valueLoading = false,
 }) => {
   const isInteractive = Boolean(onClick);
   const toneStyle = {
@@ -54,9 +56,15 @@ const AdminKpiStatCard: FunctionComponent<AdminKpiStatCardProps> = ({
       </span>
       <span className="min-w-0 flex-1 overflow-hidden">
         <span className="admin-kpi-label block truncate">{label}</span>
-        <span className={`admin-kpi-value mt-0.5 block truncate${valueClassName ? ` ${valueClassName}` : ''}`}>
-          {value}
-        </span>
+        {valueLoading ? (
+          <span className="admin-kpi-value mt-0.5 block" aria-live="polite" aria-busy="true">
+            <span className="admin-shimmer admin-kpi-value-skeleton block" aria-hidden />
+          </span>
+        ) : (
+          <span className={`admin-kpi-value mt-0.5 block truncate${valueClassName ? ` ${valueClassName}` : ''}`}>
+            {value}
+          </span>
+        )}
       </span>
       {isInteractive ? (
         <ChevronRight

@@ -52,7 +52,7 @@ const InternshipOfferCard: FunctionComponent<InternshipOfferCardProps> = ({ offe
 
   return (
     <article
-      className={`${STUDENT_SURFACE_CARD_INTERACTIVE} box-border flex w-full min-w-0 max-w-full flex-col items-start gap-5 overflow-hidden px-4 pb-4 pt-5 max-[429px]:gap-4 sm:gap-6 sm:px-[21px] sm:pb-4 sm:pt-[21px]`}
+      className={`student-internship-offer-card ${STUDENT_SURFACE_CARD_INTERACTIVE} box-border flex w-full min-w-0 max-w-full flex-col items-start gap-5 overflow-hidden px-4 pb-4 pt-5 max-[429px]:gap-4 sm:gap-6 sm:px-[21px] sm:pb-4 sm:pt-[21px]`}
     >
 
       <div className="flex w-full min-w-0 max-w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -71,7 +71,7 @@ const InternshipOfferCard: FunctionComponent<InternshipOfferCardProps> = ({ offe
             </h3>
           </div>
 
-          <div className={`flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1 pl-[3.5rem] text-[14px] leading-5 ${STUDENT_TEXT_SECONDARY}`}>
+          <div className={`student-internship-offer-card__meta flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1 pl-[3.5rem] text-[14px] leading-5 ${STUDENT_TEXT_SECONDARY}`}>
 
             <Building2 className={`h-4 w-4 shrink-0 ${STUDENT_TEXT_SECONDARY}`} strokeWidth={1.75} aria-hidden />
 
@@ -93,7 +93,7 @@ const InternshipOfferCard: FunctionComponent<InternshipOfferCardProps> = ({ offe
 
           </div>
 
-          <div className="flex w-full min-w-0 flex-wrap gap-2 pl-[3.5rem]">
+          <div className="student-internship-offer-card__tags flex w-full min-w-0 flex-wrap gap-2 pl-[3.5rem]">
 
             {offer.tags.map((tag) => (
 

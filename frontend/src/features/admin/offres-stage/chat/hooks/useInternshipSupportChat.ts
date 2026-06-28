@@ -9,9 +9,16 @@ import {
   markConversationRead,
   sendChatMessage,
 } from '../../../../shared/contextual-chat/api/chatApi';
+import { useChatUnread } from '../../../../shared/contextual-chat/context/ChatUnreadContext';
 import { useChatWebSocket } from '../../../../shared/contextual-chat/hooks/useChatWebSocket';
 import type { ConversationDto, MessageDto } from '../../../../shared/contextual-chat/types';
+import {
+  buildOptimisticMessageAttachments,
+  resolveOptimisticMessageType,
+  revokeMessageAttachmentUrls,
+} from '../../../../shared/contextual-chat/utils/mapMessageAttachments';
 import type { ChatMetricsDto } from '../../../../shared/contextual-chat/api/chatApi';
+import { useAuth } from '../../../../auth/hooks/useAuth';
 import { stageApi } from '../../../../shared/api/stageApi';
 import { useAcademicStructureCatalog } from '../../../shared/academic-structure/hooks/useAcademicStructureCatalog';
 import { restrictFilterCountsToCatalog } from '../../../shared/chat-filters/studentAcademicChatFilterUtils';
@@ -33,10 +40,12 @@ import {
   withClientNonce,
 } from '../utils/internshipChatMessageUtils';
 import {
+  applyIncomingMessageUnreadPreview,
   mergeFetchedConversations,
   patchConversationArchiveState,
   patchConversationPreviewInList,
   sortConversationsByRecent,
+  zeroConversationUnreadInList,
 } from '../utils/internshipChatConversationUtils';
 
 function nowTime(): string {
@@ -137,6 +146,9 @@ function toggleItem<T>(list: T[], item: T): T[] {
 
 export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin') {
   const { t, i18n } = useTranslation();
+  const { user } = useAuth();
+  const { refresh: refreshChatUnread } = useChatUnread();
+  const currentUserId = user?.id ?? null;
   const [rawConversations, setRawConversations] = useState<ConversationDto[]>([]);
   const [messagesByConv, setMessagesByConv] = useState<Record<number, MessageDto[]>>({});
   const [inboxMetrics, setInboxMetrics] = useState<ChatMetricsDto | null>(null);
@@ -171,6 +183,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
   filtersRef.current = filters;
   const archiveOverridesRef = useRef<Map<number, boolean>>(new Map());
   const loadConversationsDebounceRef = useRef<number | null>(null);
+  const seenWsMessageIdsRef = useRef<Set<number>>(new Set());
 
   const syncArchiveOverride = useCallback((conversationId: number, archived: boolean | null) => {
     if (archived === null) {
@@ -219,7 +232,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
     setLoadError(null);
     try {
       const { primary, priorities } = filtersRef.current;
-      const includeArchived = inboxMode === 'admin';
+      const includeArchived = true;
       const [items, metrics] = await Promise.all([
         fetchConversations('offers', {
           unreadOnly: primary === 'unread' ? true : undefined,
@@ -240,6 +253,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
         }),
       );
       setInboxMetrics(metrics);
+      seenWsMessageIdsRef.current.clear();
       for (const [conversationId, archived] of archiveOverridesRef.current.entries()) {
         clearArchiveOverrideIfSynced(conversationId, archived);
       }
@@ -289,11 +303,12 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
         }
 
         if (typeof event.body === 'string' && event.body.trim()) {
-          const existing = rawConversationsRef.current.find((c) => c.id === convId);
           setRawConversations((prev) =>
-            patchConversationPreviewInList(prev, convId, event.body!, {
+            applyIncomingMessageUnreadPreview(prev, convId, event.body!, {
+              isActiveConv,
               isOwn: false,
-              unreadCount: isActiveConv ? 0 : (existing?.unread_count ?? 0) + 1,
+              messageId: messageId != null ? Number(messageId) : null,
+              seenMessageIds: seenWsMessageIdsRef.current,
             }),
           );
         }
@@ -307,8 +322,11 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
           );
         }
         if (isActiveConv && messageId != null && Number.isFinite(Number(messageId))) {
-          void markConversationRead(convId, Number(messageId));
+          void markConversationRead(convId, Number(messageId)).then(() => {
+            void refreshChatUnread();
+          });
         }
+        scheduleSilentReload();
         void refreshInboxMetricsRef.current();
         return;
       }
@@ -345,6 +363,10 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
         const readAt =
           typeof event.read_at === 'string' ? event.read_at : new Date().toISOString();
         if (!Number.isFinite(readerUserId) || !Number.isFinite(lastReadMessageId)) return;
+
+        if (currentUserId != null && readerUserId === currentUserId) {
+          setRawConversations((prev) => zeroConversationUnreadInList(prev, convId));
+        }
 
         setMessagesByConv((prev) => {
           const existing = prev[convId] ?? [];
@@ -526,7 +548,9 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
         });
         const last = msgs[msgs.length - 1];
         if (last) {
-          void markConversationRead(conversationId, last.id);
+          await markConversationRead(conversationId, last.id);
+          setRawConversations((prev) => zeroConversationUnreadInList(prev, conversationId));
+          void refreshChatUnread();
         }
         return mapMessages(msgs, studentUserId, inboxMode);
       } finally {
@@ -535,7 +559,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
         }
       }
     },
-    [inboxMode]
+    [inboxMode, refreshChatUnread]
   );
 
   useEffect(() => {
@@ -621,8 +645,8 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
   );
 
   const sendMessage = useCallback(
-    async (text: string) => {
-      if (!selectedId || !text.trim()) return;
+    async (text: string, files?: File[]) => {
+      if (!selectedId || (!text.trim() && !files?.length)) return;
       const conversationId = Number(selectedId);
       if (!Number.isFinite(conversationId)) return;
       const trimmed = text.trim();
@@ -635,14 +659,15 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
           conversation_id: conversationId,
           sender_id: null,
           sender_name: '',
-          body: trimmed,
-          message_type: 'TEXT',
+          body: trimmed || (files?.[0] ? `📎 ${files[0].name}` : ''),
+          message_type: resolveOptimisticMessageType(files ?? [], trimmed),
           created_at: new Date().toISOString(),
           tags: [],
           is_own: true,
           delivery_status: 'delivered',
           read_by: [],
           metadata_json: { client_nonce: optimisticId },
+          attachments: files?.length ? buildOptimisticMessageAttachments(files) : undefined,
         };
         const next = { ...prev, [conversationId]: [...existing, optimistic] };
         messagesByConvRef.current = next;
@@ -654,7 +679,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
             c.id === conversationId
               ? {
                   ...c,
-                  last_preview: trimmed.slice(0, 200),
+                  last_preview: (trimmed || (files?.[0] ? `📎 ${files[0].name}` : '')).slice(0, 200),
                   last_message_is_own: true,
                   last_message_at: new Date().toISOString(),
                   unread_count: 0,
@@ -664,7 +689,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
         ),
       );
       try {
-        const saved = await sendChatMessage(conversationId, trimmed);
+        const saved = await sendChatMessage(conversationId, trimmed, undefined, files);
         if (!saved) {
           throw new Error('send failed');
         }
@@ -680,6 +705,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
 
           let nextList: MessageDto[];
           if (pendingIndex >= 0) {
+            revokeMessageAttachmentUrls(existing[pendingIndex]);
             nextList = [...existing];
             nextList[pendingIndex] = savedWithNonce;
           } else if (existing.some((message) => message.id === saved.id)) {
@@ -709,18 +735,23 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
             ),
           ),
         );
-        void markConversationRead(conversationId, saved.id);
+        void markConversationRead(conversationId, saved.id).then(() => {
+          void refreshChatUnread();
+        });
         void refreshInboxMetrics();
+        scheduleSilentReload();
       } catch {
         setMessagesByConv((prev) => {
           const next = {
             ...prev,
             [conversationId]: (prev[conversationId] ?? []).filter(
-              (message) =>
-                !(
+              (message) => {
+                const isTarget =
                   isPendingLocalMessage(message) &&
-                  message.metadata_json?.client_nonce === optimisticId
-                ),
+                  message.metadata_json?.client_nonce === optimisticId;
+                if (isTarget) revokeMessageAttachmentUrls(message);
+                return !isTarget;
+              },
             ),
           };
           messagesByConvRef.current = next;
@@ -728,7 +759,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
         });
       }
     },
-    [selectedId, sendWsTyping, refreshInboxMetrics]
+    [selectedId, sendWsTyping, refreshInboxMetrics, scheduleSilentReload]
   );
 
   const notifyTyping = useCallback(
@@ -774,8 +805,9 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
         rawConversationsRef.current = next;
         return next;
       });
-      setSelectedId((prev) => (prev === id ? '' : prev));
-      setMobileView('list');
+      if (filtersRef.current.primary !== 'archived') {
+        setFilters((prev) => ({ ...prev, primary: 'archived' }));
+      }
 
       try {
         await applySmartAction(conversationId, 'archive_conversation');

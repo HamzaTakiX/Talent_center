@@ -1,4 +1,5 @@
 import apiClient from '../../../shared/api/client';
+import { dedupedGet } from '../../../shared/api/requestDedup';
 import { AUTH_LOGIN_PATH, logAuthLoginUrlInProduction } from '../../../shared/api/config';
 import { AuthResponse, LoginSession, User } from '../types';
 
@@ -28,8 +29,10 @@ export const authApi = {
   },
   
   me: async (): Promise<User> => {
-    const response = await apiClient.get<ApiResponse<User>>('/auth/me');
-    return response.data.data;
+    return dedupedGet('auth:me', async () => {
+      const response = await apiClient.get<ApiResponse<User>>('/auth/me');
+      return response.data.data;
+    });
   },
 
   /** Exchange Auth0 SPA token for platform JWT (session + authorization). */
@@ -103,17 +106,8 @@ export const authApi = {
     filiere_id?: number | null;
     class_group_id?: number | null;
   }): Promise<User> => {
-    const response = await apiClient.patch<ApiResponse<{
-      id: number;
-      first_name: string;
-      last_name: string;
-      phone: string;
-      date_of_birth: string;
-    }>>('/accounts/confirm-identity', data);
-    
-    // After confirming identity, fetch updated user data
-    const updatedUser = await authApi.me();
-    return updatedUser;
+    const response = await apiClient.patch<ApiResponse<User>>('/accounts/confirm-identity', data);
+    return response.data.data;
   },
 
   completeProfile: async (formData: FormData): Promise<User> => {

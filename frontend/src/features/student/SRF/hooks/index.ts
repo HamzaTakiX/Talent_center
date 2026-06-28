@@ -1,1 +1,1 @@
-/** Hooks — Student SRF (placeholder). */
+export { useStudentSrfData } from './useStudentSrfData';

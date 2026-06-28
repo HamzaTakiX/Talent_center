@@ -19,9 +19,6 @@ const StudentAdminContextPanel: FunctionComponent<Props> = ({ conversation }) =>
   <aside className="isi-inspector">
     <header className="isi-inspector-head">
       <span className="isi-inspector-head-title">Administrateur</span>
-      {conversation.roleLabel ? (
-        <span className="isi-inspector-head-badge">{conversation.roleLabel}</span>
-      ) : null}
     </header>
 
     <div className="isi-inspector-section-title">Contact</div>

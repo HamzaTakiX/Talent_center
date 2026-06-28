@@ -31,4 +31,5 @@ _REQUIRED_FIELDS: dict[str, tuple[str, ...]] = {
     'documents.rejected': ('title',),
     'announcement.published': ('title',),
     'chat.message.received': ('title', 'body'),
+    'chat.conversation.resolved': ('title', 'body'),
 }

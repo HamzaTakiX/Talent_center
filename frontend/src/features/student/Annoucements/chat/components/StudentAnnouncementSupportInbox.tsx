@@ -83,6 +83,7 @@ const StudentAnnouncementSupportInbox: FunctionComponent = () => {
           announcementTypeOptions={announcementTypeOptions}
           search={search}
           sidebarTitle={t('student.announcements.chat.sidebarTitle')}
+          sidebarSubtitle={t('student.announcements.chat.sidebarSubtitle')}
           searchPlaceholder={t('student.announcements.chat.search')}
           onSetPrimary={setPrimaryFilter}
           onToggleAnnouncementType={toggleAnnouncementTypeFilter}
@@ -101,7 +102,7 @@ const StudentAnnouncementSupportInbox: FunctionComponent = () => {
           conversationLoading={conversationLoading}
           statsLoading={loading}
           peerTyping={peerTyping}
-          onSend={(text) => void sendMessage(text)}
+          onSend={(text, files) => void sendMessage(text, files)}
           onTyping={notifyTyping}
           onBack={() => setMobileView('list')}
           onViewAnnouncement={goAnnouncement}

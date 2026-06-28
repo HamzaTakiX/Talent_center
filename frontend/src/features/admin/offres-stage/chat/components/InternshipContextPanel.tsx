@@ -76,7 +76,6 @@ const InternshipContextPanel: FunctionComponent<Props> = ({
       <aside className="isi-inspector">
         <header className="isi-inspector-head">
           <span className="isi-inspector-head-title">{t('contextTitle')}</span>
-          <span className="isi-inspector-head-badge">{conversation.internshipType}</span>
         </header>
 
         <div className="isi-inspector-section-title">{t('sections.student')}</div>

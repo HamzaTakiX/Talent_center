@@ -20,6 +20,7 @@ from apps.admin_management.models import (
     InternshipType,
 )
 from apps.admin_management.services.esca_catalog import ESCA_CATALOG_FILIERE_CODES
+from apps.admin_management.services.esca_internship_competencies import COMPETENCIES_BY_INTERNSHIP_CODE
 
 
 def _t(en: str, fr: str, ar: str) -> dict:
@@ -109,7 +110,9 @@ def _upsert_internship(
     duration_hint: str = '',
     sector: Optional[AcademicSector] = None,
     sort_order: int = 0,
+    competencies: Optional[list] = None,
 ) -> InternshipType:
+    competency_payload = competencies if competencies is not None else COMPETENCIES_BY_INTERNSHIP_CODE.get(code, [])
     obj, _ = InternshipType.objects.update_or_create(
         academic_level=level,
         academic_sector=sector,
@@ -120,6 +123,7 @@ def _upsert_internship(
             'name_en': name_i18n.get('en', name),
             'name_i18n': name_i18n,
             'duration_hint': duration_hint,
+            'competencies': competency_payload,
             'sort_order': sort_order,
             'is_active': True,
         },

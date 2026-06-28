@@ -1,4 +1,6 @@
 import { FunctionComponent, useState } from 'react';
+import { resolveMediaUrl } from '../../../../../shared/api/mediaUrl';
+import OfferAvatarFallback, { type AvatarSize } from '../../components/OfferAvatarFallback';
 
 type Size = 'list' | 'header' | 'thread';
 
@@ -9,12 +11,11 @@ type Props = {
   size?: Size;
 };
 
-function fallbackLabel(companyName?: string, offerTitle?: string): string {
-  const src = (companyName || offerTitle || '').trim();
-  const parts = src.split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  return (src.slice(0, 2) || '??').toUpperCase();
-}
+const SIZE_TO_AVATAR: Record<Size, AvatarSize> = {
+  list: 'card',
+  header: 'card',
+  thread: 'kpi',
+};
 
 const InternshipOfferAvatar: FunctionComponent<Props> = ({
   url,
@@ -23,13 +24,14 @@ const InternshipOfferAvatar: FunctionComponent<Props> = ({
   size = 'list',
 }) => {
   const [failed, setFailed] = useState(false);
-  const resolved = url?.trim();
+  const resolved = resolveMediaUrl(url) ?? undefined;
   const showImage = Boolean(resolved) && !failed;
+  const fallbackName = companyName?.trim() || offerTitle?.trim();
 
   return (
     <div
       className={`isi-offer-avatar isi-offer-avatar--${size}`}
-      aria-hidden={!showImage && !companyName && !offerTitle}
+      aria-hidden={!showImage && !fallbackName}
     >
       {showImage ? (
         <img
@@ -41,9 +43,11 @@ const InternshipOfferAvatar: FunctionComponent<Props> = ({
           referrerPolicy="no-referrer"
         />
       ) : (
-        <span className="isi-offer-avatar__fallback" aria-hidden>
-          {fallbackLabel(companyName, offerTitle)}
-        </span>
+        <OfferAvatarFallback
+          companyName={fallbackName}
+          size={SIZE_TO_AVATAR[size]}
+          className="offer-avatar--fill"
+        />
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import { resolveMediaUrl } from '../../../../../shared/api/mediaUrl';
 import { formatConversationPreview, findLatestChatPreview, resolveStudentDisplayName } from './internshipChatDisplayUtils';
 import { getMessageStableKey } from './internshipChatMessageUtils';
 import { parseSmartActionCode, shouldHideSmartActionForInbox } from './internshipChatSystemMessageUtils';
+import { mapMessageAttachments } from '../../../../shared/contextual-chat/utils/mapMessageAttachments';
 import type { ChatUrgency } from '../../../shared/admin-module-chat/adminChatTypes';
 import type { ConversationContextDto, ConversationDto, MessageDto } from '../../../../shared/contextual-chat/types';
 import type {
@@ -196,6 +197,8 @@ export function mapMessages(
         smartActionCode,
         createdAt: m.created_at,
         tags: m.tags,
+        attachmentName: m.attachments?.[0]?.original_filename,
+        attachments: mapMessageAttachments(m),
       };
     });
 }
@@ -223,7 +226,7 @@ function isConversationArchived(
   _ctx: ConversationContextDto | null | undefined,
   inboxMode: 'admin' | 'student' = 'admin',
 ): boolean {
-  if (inboxMode === 'student') return false;
+  if (inboxMode === 'student') return Boolean(dto.is_archived);
   const meta = (dto.metadata_json ?? {}) as Snapshot;
   if (Object.prototype.hasOwnProperty.call(meta, 'admin_inbox_archived')) {
     return meta.admin_inbox_archived === true;

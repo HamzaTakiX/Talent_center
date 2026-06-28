@@ -15,12 +15,15 @@ interface DraftInternshipOfferActionsProps {
   offer: InternshipOffer;
   onView?: (offer: InternshipOffer) => void;
   onRefresh?: () => void | Promise<void>;
+  /** Mobile card: menu only (publish lives in the ⋮ menu). Table: publish button + menu. */
+  variant?: 'table' | 'mobile-card';
 }
 
 const DraftInternshipOfferActions: FunctionComponent<DraftInternshipOfferActionsProps> = ({
   offer,
   onView,
   onRefresh,
+  variant = 'table',
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -72,19 +75,33 @@ const DraftInternshipOfferActions: FunctionComponent<DraftInternshipOfferActions
         onSuccess={(message) => toast.showToast(message, 'success')}
       />
       <div className="admin-offers-table__actions-row flex items-center justify-end gap-1.5">
-        <button
-          type="button"
-          className={`${adminTableBtnSuccess} shrink-0`}
-          onClick={() => setPublishOpen(true)}
-        >
-          <Send className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-          <span>{t('admin.modules.offers.draftsPage.publish.action')}</span>
-        </button>
+        {variant === 'table' ? (
+          <button
+            type="button"
+            className={`${adminTableBtnSuccess} shrink-0`}
+            onClick={() => setPublishOpen(true)}
+          >
+            <Send className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+            <span>{t('admin.modules.offers.draftsPage.publish.action')}</span>
+          </button>
+        ) : null}
         <AdminRowActionsMenu
           ariaLabel={t('admin.modules.offers.actions.menuAria', { title: offer.title })}
           onView={handleView}
           onEdit={() => navigate(adminCrudRoutes.internshipOfferEdit(offer.id))}
           onDelete={() => setDeleteOpen(true)}
+          extraItems={
+            variant === 'mobile-card'
+              ? [
+                  {
+                    key: 'publish',
+                    label: t('admin.modules.offers.draftsPage.publish.action'),
+                    icon: Send,
+                    onClick: () => setPublishOpen(true),
+                  },
+                ]
+              : undefined
+          }
         />
       </div>
     </>

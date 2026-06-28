@@ -1,9 +1,8 @@
 import { CSSProperties, FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { Calendar, ChevronRight, Eye, MapPin, Users } from 'lucide-react';
-import { scaleTap, staggerItem } from '../../dashboard/ui/animations';
+import { Calendar, Eye, MapPin, Users } from 'lucide-react';
+import { staggerItem } from '../../dashboard/ui/animations';
 import { useTranslateAdminLabel } from '../../i18n/useTranslateAdminLabel';
 import OfferCompanyLogo from './OfferCompanyLogo';
 import { formatOfferDetailDateOnly } from '../utils/offerDetailViewModel';
@@ -24,7 +23,6 @@ const InternshipPopularOfferCard: FunctionComponent<InternshipPopularOfferCardPr
 }) => {
   const { t } = useTranslation();
   const translateLabel = useTranslateAdminLabel();
-  const navigate = useNavigate();
   const accent = '#06b6d4';
   const accentBg = 'rgba(6, 182, 212, 0.12)';
   const toneStyle = {
@@ -37,15 +35,11 @@ const InternshipPopularOfferCard: FunctionComponent<InternshipPopularOfferCardPr
     : null;
 
   return (
-    <motion.button
-      type="button"
+    <motion.div
       variants={staggerItem}
       custom={index}
-      onClick={() => navigate(`/admin/internship-offers/${offer.uuid}`)}
       style={toneStyle}
-      whileTap={scaleTap.whileTap}
-      className="admin-kpi-cell admin-kpi-cell--popular-offer group focus-visible:outline-none"
-      tabIndex={0}
+      className="admin-kpi-cell admin-kpi-cell--static admin-kpi-cell--popular-offer"
     >
       <span
         className="absolute bottom-2 left-0 top-2 w-[3px] rounded-r-full opacity-80"
@@ -94,12 +88,8 @@ const InternshipPopularOfferCard: FunctionComponent<InternshipPopularOfferCardPr
           ) : null}
         </span>
       </span>
-      <ChevronRight
-        className="h-3.5 w-3.5 shrink-0 self-center text-[var(--admin-text-muted)] opacity-0 transition-opacity group-hover:opacity-100"
-        strokeWidth={2}
-        aria-hidden
-      />
-    </motion.button>
+      <span className="admin-kpi-cell__chevron-spacer" aria-hidden />
+    </motion.div>
   );
 };
 

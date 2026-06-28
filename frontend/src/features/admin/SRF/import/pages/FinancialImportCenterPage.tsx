@@ -1,21 +1,27 @@
-import { ChangeEvent, DragEvent, FunctionComponent, useCallback, useMemo, useState } from 'react';
+import { ChangeEvent, type CSSProperties, DragEvent, FunctionComponent, useCallback, useMemo, useState } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
+  AlertTriangle,
+  ArrowRightLeft,
   CheckCircle2,
+  Eye,
   FileSpreadsheet,
   History,
   Loader2,
   Lock,
+  MinusCircle,
+  Play,
   RotateCcw,
   Shield,
-  Upload,
-  AlertTriangle,
-  Play,
-  Eye,
   Trash2,
+  Upload,
+  Users,
+  XCircle,
 } from 'lucide-react';
+import { easePremium } from '../../../dashboard/ui/animations';
 import AdminModulePageShell from '../../../ui/AdminModulePageShell';
 import AdminModal from '../../../ui/AdminModal';
 import AdminBackButton from '../../../ui/AdminBackButton';
@@ -33,9 +39,18 @@ const PREFIX = 'admin.modules.srf.importCenter';
 const STEPS: ImportStep[] = ['upload', 'mapping', 'preview', 'processing', 'done'];
 
 const PANEL = 'admin-module-panel rounded-2xl p-6 shadow-sm';
-const BTN_SECONDARY = 'admin-btn-secondary rounded-lg px-4 py-2 text-sm font-medium';
+const BTN_SECONDARY =
+  'admin-btn-secondary inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60';
 const BTN_PRIMARY =
-  'inline-flex items-center gap-2 rounded-lg bg-[var(--admin-brand)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60';
+  'admin-btn-primary inline-flex h-10 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white shadow-[0_2px_12px_var(--admin-brand-glow)] transition-all duration-200 hover:shadow-[0_4px_20px_var(--admin-brand-glow)] disabled:cursor-not-allowed disabled:opacity-60';
+const MAPPING_PANEL =
+  'admin-module-panel relative overflow-hidden rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] shadow-sm transition-shadow duration-300 hover:shadow-[var(--admin-shadow-md)]';
+const MAPPING_HEADER =
+  'flex flex-wrap items-start justify-between gap-4 border-b border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-brand)_4%,var(--admin-bg-elevated))] px-5 py-4 sm:px-6';
+const MAPPING_META =
+  'border-b border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-bg-subtle)_55%,var(--admin-bg-elevated))] px-5 py-3.5 sm:px-6';
+const MAPPING_ACTIONS =
+  'flex flex-wrap items-center justify-end gap-3 border-t border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-bg-elevated)_94%,var(--admin-bg-subtle))] px-5 py-4 sm:px-6';
 
 const statusVariant = (status: string): 'success' | 'warning' | 'danger' | 'neutral' => {
   if (status === 'COMPLETED') return 'success';
@@ -447,59 +462,181 @@ function MappingSection({
     [t, targetFields],
   );
 
+  const mappedCount = useMemo(
+    () => headers.filter((header) => Boolean(mapping[header])).length,
+    [headers, mapping],
+  );
+  const requiredKeys = useMemo(
+    () => targetFields.filter((field) => field.required).map((field) => field.key),
+    [targetFields],
+  );
+  const mappedTargets = useMemo(
+    () => new Set(Object.values(mapping).filter(Boolean)),
+    [mapping],
+  );
+  const requiredMappedCount = useMemo(
+    () => requiredKeys.filter((key) => mappedTargets.has(key)).length,
+    [requiredKeys, mappedTargets],
+  );
+  const mappingProgress = headers.length > 0 ? Math.round((mappedCount / headers.length) * 100) : 0;
+  const requiredComplete = requiredKeys.length === 0 || requiredMappedCount === requiredKeys.length;
+
   return (
-    <section className={`${PANEL} relative admin-form`}>
+    <motion.section
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, ease: easePremium }}
+      className={`${MAPPING_PANEL} admin-form`}
+    >
       {loading ? (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-[var(--admin-bg-elevated)]/80 backdrop-blur-[2px]">
           <Loader2 className="h-8 w-8 animate-spin text-[var(--admin-brand)]" />
         </div>
       ) : null}
-      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-[var(--admin-text-secondary)]">
-        <FileSpreadsheet className="h-5 w-5 text-[var(--admin-brand)]" />
-        <span className="font-medium text-[var(--admin-text)]">{filename}</span>
-        <span>· {t(`${PREFIX}.rowCount`, { count: rowCount })}</span>
+
+      <header className={MAPPING_HEADER}>
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--admin-brand-muted)] shadow-[0_0_20px_color-mix(in_srgb,var(--admin-brand)_15%,transparent)] ring-1 ring-[var(--admin-brand)]/15">
+            <ArrowRightLeft className="h-5 w-5 text-[var(--admin-brand)]" strokeWidth={1.75} aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-[var(--admin-text)] sm:text-lg">
+              {t(`${PREFIX}.mappingTitle`)}
+            </h2>
+            <p className="mt-0.5 max-w-2xl text-sm leading-relaxed text-[var(--admin-text-secondary)]">
+              {t(`${PREFIX}.mappingHint`)}
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <div className={MAPPING_META}>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex min-w-0 max-w-full items-center gap-2.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-3 py-2 shadow-sm">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--admin-brand-muted)]">
+              <FileSpreadsheet className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[var(--admin-text)]">{filename}</p>
+              <p className="text-xs text-[var(--admin-text-muted)]">
+                {t(`${PREFIX}.rowCount`, { count: rowCount })}
+              </p>
+            </div>
+          </div>
+
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-3 py-1 text-xs font-semibold text-[var(--admin-text-secondary)]">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" aria-hidden />
+            {t(`${PREFIX}.mappingProgress`, { mapped: mappedCount, total: headers.length })}
+          </span>
+
+          {requiredKeys.length > 0 ? (
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
+                requiredComplete
+                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600'
+                  : 'border-amber-500/30 bg-amber-500/10 text-amber-600'
+              }`}
+            >
+              {requiredComplete ? (
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
+              )}
+              {t(`${PREFIX}.mappingRequired`, {
+                mapped: requiredMappedCount,
+                total: requiredKeys.length,
+              })}
+            </span>
+          ) : null}
+        </div>
+
+        <div className="mt-3 flex items-center gap-3">
+          <div
+            className="h-1.5 min-w-[8rem] flex-1 overflow-hidden rounded-full bg-[var(--admin-bg-subtle)] ring-1 ring-[var(--admin-border)]/60"
+            role="progressbar"
+            aria-valuenow={mappingProgress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={t(`${PREFIX}.mappingProgress`, { mapped: mappedCount, total: headers.length })}
+          >
+            <div
+              className="h-full rounded-full bg-[var(--admin-brand)] transition-all duration-300 ease-out"
+              style={{ width: `${mappingProgress}%` }}
+            />
+          </div>
+          <span className="shrink-0 text-xs font-bold tabular-nums text-[var(--admin-brand)]">
+            {mappingProgress}%
+          </span>
+        </div>
       </div>
-      <h2 className="admin-module-title text-lg">{t(`${PREFIX}.mappingTitle`)}</h2>
-      <p className="mt-1 text-sm text-[var(--admin-text-secondary)]">{t(`${PREFIX}.mappingHint`)}</p>
-      <div className="mt-4 max-h-[420px] overflow-auto rounded-xl border border-[var(--admin-border)]">
-        <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-[var(--admin-bg-subtle)] text-left text-xs uppercase text-[var(--admin-text-secondary)]">
-            <tr>
-              <th className="px-4 py-3">{t(`${PREFIX}.sourceCol`)}</th>
-              <th className="px-4 py-3">{t(`${PREFIX}.targetField`)}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {headers.map((h, index) => (
-              <tr key={h} className="border-t border-[var(--admin-border)]">
-                <td className="px-4 py-2.5 font-medium text-[var(--admin-text)]">{h}</td>
-                <td className="min-w-[14rem] px-4 py-2.5">
-                  <AdminCustomSelect
-                    id={`srf-import-map-${index}`}
-                    variant="default"
-                    value={mapping[h] ?? ''}
-                    options={targetOptions}
-                    disabled={loading}
-                    searchable={targetFields.length > 6}
-                    onChange={(value) => update(h, value)}
-                    aria-label={`${t(`${PREFIX}.targetField`)} — ${h}`}
-                  />
-                </td>
+
+      <div className="p-5 sm:p-6">
+        <div className="max-h-[420px] overflow-auto rounded-xl border border-[var(--admin-border)] bg-[color-mix(in_srgb,var(--admin-bg-subtle)_40%,var(--admin-bg-elevated))] shadow-[inset_0_1px_0_color-mix(in_srgb,var(--admin-border)_60%,transparent)]">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 z-[1] bg-[color-mix(in_srgb,var(--admin-brand)_6%,var(--admin-bg-subtle))] text-left text-[11px] font-semibold uppercase tracking-wide text-[var(--admin-text-secondary)] backdrop-blur-sm">
+              <tr>
+                <th className="w-10 px-3 py-3" aria-hidden />
+                <th className="px-4 py-3">{t(`${PREFIX}.sourceCol`)}</th>
+                <th className="px-4 py-3">{t(`${PREFIX}.targetField`)}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {headers.map((header, index) => {
+                const target = mapping[header] ?? '';
+                const isMapped = Boolean(target);
+                return (
+                  <tr
+                    key={header}
+                    className={`border-t border-[var(--admin-border)] transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--admin-brand)_5%,var(--admin-bg-elevated))] ${
+                      isMapped
+                        ? 'bg-[color-mix(in_srgb,#10b981_6%,var(--admin-bg-elevated))]'
+                        : index % 2 === 1
+                          ? 'bg-[color-mix(in_srgb,var(--admin-bg-subtle)_35%,transparent)]'
+                          : ''
+                    }`}
+                  >
+                    <td className="px-3 py-2.5 text-center">
+                      {isMapped ? (
+                        <CheckCircle2 className="mx-auto h-4 w-4 text-emerald-500" aria-hidden />
+                      ) : (
+                        <MinusCircle className="mx-auto h-4 w-4 text-[var(--admin-text-muted)]" aria-hidden />
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <code className="rounded-md border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-2 py-1 font-mono text-xs font-semibold text-[var(--admin-text)]">
+                        {header}
+                      </code>
+                    </td>
+                    <td className="min-w-[14rem] px-4 py-2.5">
+                      <AdminCustomSelect
+                        id={`srf-import-map-${index}`}
+                        variant="default"
+                        value={target}
+                        options={targetOptions}
+                        disabled={loading}
+                        searchable={targetFields.length > 6}
+                        onChange={(value) => update(header, value)}
+                        aria-label={`${t(`${PREFIX}.targetField`)} — ${header}`}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div className="mt-6 flex flex-wrap gap-3">
+
+      <div className={MAPPING_ACTIONS}>
         <button type="button" onClick={onBack} disabled={loading} className={BTN_SECONDARY}>
           {t(`${PREFIX}.back`)}
         </button>
         <button type="button" disabled={loading} onClick={onPreview} className={BTN_PRIMARY}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" aria-hidden />}
           {t(`${PREFIX}.runValidation`)}
         </button>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -617,72 +754,220 @@ function ProgressSection({
 }) {
   const done = ['COMPLETED', 'PARTIAL', 'FAILED', 'ROLLED_BACK'].includes(batch.status);
   const processing = batch.status === 'PROCESSING' || batch.status === 'QUEUED';
+  const isSuccess = batch.status === 'COMPLETED';
+  const isFailed = batch.status === 'FAILED';
+  const isPartial = batch.status === 'PARTIAL';
+
+  // Status color tokens
+  const sc = processing
+    ? { dot: '#155dfc', bg: 'rgba(21,93,252,.10)',  border: 'rgba(21,93,252,.25)'  }
+    : isSuccess
+      ? { dot: '#10b981', bg: 'rgba(16,185,129,.12)', border: 'rgba(16,185,129,.28)' }
+      : isPartial
+        ? { dot: '#f59e0b', bg: 'rgba(245,158,11,.12)', border: 'rgba(245,158,11,.28)' }
+        : isFailed
+          ? { dot: '#ef4444', bg: 'rgba(239,68,68,.11)',  border: 'rgba(239,68,68,.28)'  }
+          : { dot: '#94a3b8', bg: 'rgba(148,163,184,.10)',border: 'rgba(148,163,184,.22)'};
+
+  const pct = batch.progress_percent ?? 0;
+
+  const kpiItems = [
+    {
+      icon: CheckCircle2,
+      value: batch.success_rows,
+      label: t(`${PREFIX}.kpi.success`),
+      color: batch.success_rows > 0 ? '#10b981' : undefined,
+      iconColor: '#10b981',
+    },
+    {
+      icon: XCircle,
+      value: batch.error_rows,
+      label: t(`${PREFIX}.kpi.errors`),
+      color: batch.error_rows > 0 ? '#ef4444' : undefined,
+      iconColor: '#ef4444',
+    },
+    {
+      icon: Users,
+      value: batch.affected_students,
+      label: t(`${PREFIX}.kpi.affected`),
+      color: undefined,
+      iconColor: 'var(--admin-brand)',
+    },
+  ];
 
   return (
-    <section className={PANEL}>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="admin-module-title text-lg">{batch.source_filename}</h2>
-        <AdminBadge variant={statusVariant(batch.status)}>
-          {batchStatusLabel(t, batch.status)}
-        </AdminBadge>
-      </div>
-      <div className="mt-4">
-        <div className="mb-2 flex justify-between text-sm text-[var(--admin-text-secondary)]">
-          <span className="flex items-center gap-2">
-            {processing ? <Loader2 className="h-4 w-4 animate-spin text-[var(--admin-brand)]" /> : null}
-            {batch.progress_message || batchStatusLabel(t, batch.status)}
-          </span>
-          <span>{batch.progress_percent}%</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-[var(--admin-bg-subtle)]">
-          <div
-            className="h-full rounded-full bg-[var(--admin-brand)] transition-all duration-500"
-            style={{ width: `${batch.progress_percent}%` }}
-          />
-        </div>
-      </div>
-      <div className="mt-4 grid grid-cols-1 gap-3 text-center text-sm sm:grid-cols-3">
-        <div className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-subtle)] p-3">
-          <div className="font-bold text-[var(--admin-text)]">{batch.success_rows}</div>
-          <div className="text-[var(--admin-text-secondary)]">{t(`${PREFIX}.kpi.success`)}</div>
-        </div>
-        <div className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-subtle)] p-3">
-          <div className="font-bold text-[var(--admin-text)]">{batch.error_rows}</div>
-          <div className="text-[var(--admin-text-secondary)]">{t(`${PREFIX}.kpi.errors`)}</div>
-        </div>
-        <div className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-subtle)] p-3">
-          <div className="font-bold text-[var(--admin-text)]">{batch.affected_students}</div>
-          <div className="text-[var(--admin-text-secondary)]">{t(`${PREFIX}.kpi.affected`)}</div>
-        </div>
-      </div>
-      {done && (
-        <div className="mt-6 flex flex-wrap gap-3">
-          <button type="button" onClick={onReset} className={BTN_SECONDARY}>
-            {t(`${PREFIX}.newImport`)}
-          </button>
-          {(batch.can_rollback || batch.can_retry_rollback) && (
-            <button
-              type="button"
-              disabled={loading}
-              onClick={onRollback}
-              className="inline-flex items-center gap-2 rounded-lg admin-btn-secondary border-red-500/40 !text-red-400 hover:!bg-red-500/10"
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: easePremium }}
+    >
+      <div
+        className="relative overflow-hidden rounded-2xl border bg-[var(--admin-bg-elevated)] shadow-sm"
+        style={{ borderColor: sc.border } as CSSProperties}
+      >
+        {/* Top accent bar */}
+        <div
+          className="h-[3px] w-full"
+          style={{ background: `linear-gradient(90deg, ${sc.dot}, ${sc.dot}40)` }}
+        />
+
+        <div className="p-6">
+          {/* ── Header ── */}
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: sc.bg } as CSSProperties}
+              >
+                <FileSpreadsheet className="h-5 w-5" style={{ color: sc.dot }} />
+              </span>
+              <div className="min-w-0">
+                <h2 className="truncate text-base font-semibold text-[var(--admin-text)]">
+                  {batch.source_filename}
+                </h2>
+                {batch.import_mode && (
+                  <code
+                    className="mt-0.5 inline-block rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold"
+                    style={{ background: sc.bg, color: sc.dot } as CSSProperties}
+                  >
+                    {batch.import_mode}
+                  </code>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              {/* Pulsing dot for active processing */}
+              {processing && (
+                <span className="relative flex h-2.5 w-2.5">
+                  <span
+                    className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
+                    style={{ background: sc.dot }}
+                  />
+                  <span
+                    className="relative inline-flex h-2.5 w-2.5 rounded-full"
+                    style={{ background: sc.dot }}
+                  />
+                </span>
+              )}
+              <AdminBadge variant={statusVariant(batch.status)}>
+                {batchStatusLabel(t, batch.status)}
+              </AdminBadge>
+            </div>
+          </div>
+
+          {/* ── Progress bar ── */}
+          <div className="mt-5">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="flex items-center gap-2 text-sm text-[var(--admin-text-secondary)]">
+                {processing && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: sc.dot }} />
+                )}
+                {batch.progress_message || batchStatusLabel(t, batch.status)}
+              </span>
+              <span className="text-sm font-bold tabular-nums" style={{ color: sc.dot }}>
+                {pct}%
+              </span>
+            </div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-[var(--admin-bg-subtle)]">
+              <div
+                className="h-full rounded-full transition-all duration-700 ease-out"
+                style={
+                  {
+                    width: `${pct}%`,
+                    background: `linear-gradient(90deg, ${sc.dot}bb, ${sc.dot})`,
+                    boxShadow: processing ? `0 0 10px ${sc.dot}55` : 'none',
+                  } as CSSProperties
+                }
+              />
+            </div>
+          </div>
+
+          {/* ── KPI grid ── */}
+          <div className="mt-5 grid grid-cols-3 gap-3">
+            {kpiItems.map(({ icon: Icon, value, label, color, iconColor }) => (
+              <div
+                key={label}
+                className="rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-subtle)] p-4 text-center"
+              >
+                <Icon
+                  className="mx-auto mb-2 h-5 w-5"
+                  style={{ color: iconColor }}
+                  strokeWidth={1.75}
+                />
+                <p
+                  className="text-2xl font-bold"
+                  style={color ? { color } : { color: 'var(--admin-text)' }}
+                >
+                  {value}
+                </p>
+                <p className="mt-0.5 text-xs text-[var(--admin-text-secondary)]">{label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Processing notice ── */}
+          {processing && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-4 flex items-center gap-2.5 rounded-xl border px-4 py-3"
+              style={
+                {
+                  borderColor: `${sc.dot}30`,
+                  background: `color-mix(in srgb, ${sc.dot} 8%, var(--admin-bg-elevated))`,
+                } as CSSProperties
+              }
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-              {batch.can_retry_rollback
-                ? t(`${PREFIX}.retryRollback`)
-                : t(`${PREFIX}.rollback`)}
-            </button>
+              <Loader2 className="h-4 w-4 animate-spin" style={{ color: sc.dot }} />
+              <p className="text-sm text-[var(--admin-text-secondary)]">
+                {t(`${PREFIX}.processingImport`)}
+              </p>
+            </motion.div>
+          )}
+
+          {/* ── Done actions ── */}
+          {done && (
+            <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-[var(--admin-border)]/50 pt-5">
+              <button type="button" onClick={onReset} className={BTN_SECONDARY}>
+                {t(`${PREFIX}.newImport`)}
+              </button>
+              {(batch.can_rollback || batch.can_retry_rollback) && (
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={onRollback}
+                  className="inline-flex items-center gap-2 rounded-xl border border-red-500/35 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-60"
+                >
+                  {loading
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <RotateCcw className="h-4 w-4" />}
+                  {batch.can_retry_rollback
+                    ? t(`${PREFIX}.retryRollback`)
+                    : t(`${PREFIX}.rollback`)}
+                </button>
+              )}
+            </div>
           )}
         </div>
-      )}
-      {processing && !done ? (
-        <p className="mt-4 text-sm text-[var(--admin-text-secondary)]">{t(`${PREFIX}.processingImport`)}</p>
-      ) : null}
-    </section>
+      </div>
+    </motion.section>
   );
 }
 
 const WIPE_SRF_CONFIRM_PHRASE = 'VIDER_SRF';
+
+// Status → visual tokens
+const BATCH_ST: Record<string, { dot: string; bg: string; border: string }> = {
+  COMPLETED:     { dot: '#10b981', bg: 'rgba(16,185,129,.12)',  border: 'rgba(16,185,129,.28)' },
+  PARTIAL:       { dot: '#f59e0b', bg: 'rgba(245,158,11,.12)', border: 'rgba(245,158,11,.28)' },
+  PREVIEW_READY: { dot: '#155dfc', bg: 'rgba(21,93,252,.11)',  border: 'rgba(21,93,252,.28)'  },
+  FAILED:        { dot: '#ef4444', bg: 'rgba(239,68,68,.11)',  border: 'rgba(239,68,68,.28)'  },
+  ROLLED_BACK:   { dot: '#94a3b8', bg: 'rgba(148,163,184,.10)',border: 'rgba(148,163,184,.22)'},
+  PROCESSING:    { dot: '#155dfc', bg: 'rgba(21,93,252,.09)',  border: 'rgba(21,93,252,.22)'  },
+  QUEUED:        { dot: '#8b5cf6', bg: 'rgba(139,92,246,.10)', border: 'rgba(139,92,246,.25)' },
+};
+const getBatchSt = (status: string) => BATCH_ST[status] ?? BATCH_ST.ROLLED_BACK;
 
 function HistoryPanel({
   batches,
@@ -742,46 +1027,59 @@ function HistoryPanel({
 
   return (
     <section className={PANEL} aria-labelledby="srf-import-history-title">
-      <div className="mb-1 flex flex-wrap items-center gap-2">
-        <History className="h-5 w-5 text-[var(--admin-brand)]" aria-hidden />
-        <h2 id="srf-import-history-title" className="admin-module-title text-lg">
-          {t(`${PREFIX}.history`)}
-        </h2>
-        <div className="ms-auto flex items-center gap-2">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin text-[var(--admin-brand)]" /> : null}
-          {!loading && batches.length > 0 ? (
+
+      {/* ── Panel header ──────────────────────────────────── */}
+      <div className="mb-4 flex flex-wrap items-start gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--admin-brand-muted)]">
+            <History className="h-4.5 w-4.5 text-[var(--admin-brand)]" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 id="srf-import-history-title" className="admin-module-title text-lg">
+                {t(`${PREFIX}.history`)}
+              </h2>
+              {batches.length > 0 && (
+                <span className="rounded-full bg-[var(--admin-brand-muted)] px-2 py-0.5 text-[11px] font-bold text-[var(--admin-brand)]">
+                  {batches.length}
+                </span>
+              )}
+              {loading && <Loader2 className="h-4 w-4 animate-spin text-[var(--admin-brand)]" />}
+            </div>
+            <p className="mt-0.5 text-sm text-[var(--admin-text-secondary)]">
+              {t(`${PREFIX}.historySubtitle`)}
+            </p>
+          </div>
+        </div>
+
+        {/* Danger actions */}
+        <div className="flex shrink-0 items-center gap-2">
+          {!loading && batches.length > 0 && (
             <button
               type="button"
               disabled={actionLoading}
-              onClick={() => {
-                setWipeConfirmInput('');
-                setWipeSrfOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/15 disabled:opacity-50"
+              onClick={() => { setWipeConfirmInput(''); setWipeSrfOpen(true); }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-500/20 hover:border-red-500/50 disabled:opacity-50"
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden />
               {t(`${PREFIX}.wipeSrfModule`)}
             </button>
-          ) : null}
-          {batches.length > 0 && deletableCount > 0 ? (
+          )}
+          {batches.length > 0 && deletableCount > 0 && (
             <button
               type="button"
               disabled={actionLoading || loading}
-              onClick={() => {
-                setForceDelete(false);
-                setPurgeFinancial(true);
-                setClearAllOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-subtle)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-text-secondary)] transition-colors hover:border-red-500/40 hover:text-red-400 disabled:opacity-50"
+              onClick={() => { setForceDelete(false); setPurgeFinancial(true); setClearAllOpen(true); }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-subtle)] px-3 py-2 text-xs font-semibold text-[var(--admin-text-secondary)] transition-all hover:border-red-500/35 hover:text-red-400 disabled:opacity-50"
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden />
               {t(`${PREFIX}.clearHistory`)}
             </button>
-          ) : null}
+          )}
         </div>
       </div>
-      <p className="mb-4 text-sm text-[var(--admin-text-secondary)]">{t(`${PREFIX}.historySubtitle`)}</p>
 
+      {/* ── Content ───────────────────────────────────────── */}
       {loading ? (
         <HistorySkeleton />
       ) : batches.length === 0 ? (
@@ -796,52 +1094,146 @@ function HistoryPanel({
         />
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {batches.slice(0, 24).map((b) => (
-            <li
-              key={b.uuid}
-              className="rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-subtle)] p-4 text-sm transition-colors hover:border-[var(--admin-brand-muted)]"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <span className="min-w-0 flex-1 truncate font-medium text-[var(--admin-text)]">
-                  {b.source_filename}
-                </span>
-                <AdminBadge variant={statusVariant(b.status)}>{batchStatusLabel(t, b.status)}</AdminBadge>
-              </div>
-              <p className="mt-2 text-xs text-[var(--admin-text-secondary)]">
-                {b.success_rows}/{b.total_rows} · {b.started_by_name || '—'}
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                {b.can_rollback || b.can_retry_rollback ? (
-                  <button
-                    type="button"
-                    disabled={actionLoading}
-                    onClick={() => onRollback(b.uuid, b.can_retry_rollback)}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-amber-500 hover:underline disabled:opacity-50"
-                  >
-                    <RotateCcw className="h-3 w-3" />
-                    {b.can_retry_rollback
-                      ? t(`${PREFIX}.retryRollback`)
-                      : t(`${PREFIX}.rollback`)}
-                  </button>
-                ) : null}
-                {canDeleteHistoryItem(b) ? (
-                  <button
-                    type="button"
-                    disabled={actionLoading}
-                    onClick={() => openDeleteModal(b)}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-red-400 hover:underline disabled:opacity-50"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    {t(`${PREFIX}.removeFromHistory`)}
-                  </button>
-                ) : (
-                  <span className="text-xs text-[var(--admin-text-muted)]">
-                    {t(`${PREFIX}.cannotDeleteActive`)}
-                  </span>
-                )}
-              </div>
-            </li>
-          ))}
+          <AnimatePresence initial={false}>
+            {batches.slice(0, 24).map((b, idx) => {
+              const st = getBatchSt(b.status);
+              const isActive = b.status === 'PROCESSING' || b.status === 'QUEUED';
+              return (
+                <motion.li
+                  key={b.uuid}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.25, delay: idx * 0.03 }}
+                  className="relative overflow-hidden rounded-xl border bg-[var(--admin-bg-elevated)] transition-shadow duration-200 hover:shadow-[var(--admin-shadow-md)]"
+                  style={{ borderColor: st.border } as CSSProperties}
+                >
+                  {/* Left accent bar */}
+                  <span
+                    className="pointer-events-none absolute inset-y-0 start-0 w-[3px] rounded-e-full"
+                    style={{ background: st.dot }}
+                    aria-hidden
+                  />
+
+                  <div className="py-3.5 pe-4 ps-5">
+                    {/* ── Card header ── */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 items-start gap-2.5">
+                        <span
+                          className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                          style={{ background: st.bg }}
+                        >
+                          <FileSpreadsheet className="h-4 w-4" style={{ color: st.dot }} />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-[var(--admin-text)]">
+                            {b.source_filename}
+                          </p>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                            <span className="text-[11px] text-[var(--admin-text-muted)]">
+                              {b.started_by_name || '—'}
+                            </span>
+                            {b.import_mode && (
+                              <code
+                                className="rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold"
+                                style={{ background: st.bg, color: st.dot }}
+                              >
+                                {b.import_mode}
+                              </code>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <AdminBadge variant={statusVariant(b.status)}>
+                        {batchStatusLabel(t, b.status)}
+                      </AdminBadge>
+                    </div>
+
+                    {/* ── Stats row ── */}
+                    <div className="mt-3 grid grid-cols-3 gap-1.5">
+                      {[
+                        { label: t(`${PREFIX}.kpi.success`), value: b.success_rows, color: b.success_rows > 0 ? '#10b981' : undefined },
+                        { label: t(`${PREFIX}.kpi.errors`),  value: b.error_rows,   color: b.error_rows > 0 ? '#ef4444' : undefined },
+                        { label: t(`${PREFIX}.kpi.totalRows`), value: b.total_rows, color: undefined },
+                      ].map(({ label, value, color }) => (
+                        <div
+                          key={label}
+                          className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-subtle)] px-2 py-1.5 text-center"
+                        >
+                          <p className="text-sm font-bold" style={color ? { color } : undefined}>
+                            {value}
+                          </p>
+                          <p className="mt-0.5 text-[10px] text-[var(--admin-text-muted)]">{label}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* ── Progress bar (active batches) ── */}
+                    {isActive && (
+                      <div className="mt-2.5">
+                        <div className="flex items-center justify-between text-[10px] text-[var(--admin-text-muted)]">
+                          <span className="flex items-center gap-1">
+                            <Loader2 className="h-2.5 w-2.5 animate-spin" style={{ color: st.dot }} />
+                            {b.progress_message || batchStatusLabel(t, b.status)}
+                          </span>
+                          <span>{b.progress_percent}%</span>
+                        </div>
+                        <div className="mt-1 h-1 overflow-hidden rounded-full bg-[var(--admin-bg-subtle)]">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${b.progress_percent || 0}%`, background: st.dot }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Footer ── */}
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--admin-border)]/50 pt-3">
+                      {b.affected_students > 0 ? (
+                        <span className="flex items-center gap-1 text-[11px] text-[var(--admin-text-muted)]">
+                          <Users className="h-3 w-3" />
+                          {b.affected_students}
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        {(b.can_rollback || b.can_retry_rollback) && (
+                          <button
+                            type="button"
+                            disabled={actionLoading}
+                            onClick={() => onRollback(b.uuid, b.can_retry_rollback)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-amber-500/12 px-2.5 py-1.5 text-[11px] font-semibold text-amber-600 transition-colors hover:bg-amber-500/20 disabled:opacity-50"
+                          >
+                            <RotateCcw className="h-3 w-3" />
+                            {b.can_retry_rollback ? t(`${PREFIX}.retryRollback`) : t(`${PREFIX}.rollback`)}
+                          </button>
+                        )}
+                        {canDeleteHistoryItem(b) ? (
+                          <button
+                            type="button"
+                            disabled={actionLoading}
+                            onClick={() => openDeleteModal(b)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-red-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            {t(`${PREFIX}.removeFromHistory`)}
+                          </button>
+                        ) : (
+                          !b.can_rollback && !b.can_retry_rollback && (
+                            <span className="text-[10px] text-[var(--admin-text-muted)]">
+                              {t(`${PREFIX}.cannotDeleteActive`)}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.li>
+              );
+            })}
+          </AnimatePresence>
         </ul>
       )}
 
@@ -1024,7 +1416,31 @@ function HistorySkeleton() {
   return (
     <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-hidden>
       {[1, 2, 3].map((i) => (
-        <li key={i} className="admin-shimmer h-24 rounded-xl" />
+        <li key={i} className="overflow-hidden rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)]">
+          <div className="py-3.5 pe-4 ps-5">
+            {/* header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <div className="admin-shimmer h-8 w-8 rounded-lg" />
+                <div className="space-y-1.5">
+                  <div className="admin-shimmer h-3.5 w-32 rounded-full" />
+                  <div className="admin-shimmer h-2.5 w-20 rounded-full" />
+                </div>
+              </div>
+              <div className="admin-shimmer h-5 w-20 rounded-full" />
+            </div>
+            {/* stats */}
+            <div className="mt-3 grid grid-cols-3 gap-1.5">
+              {[1, 2, 3].map((j) => (
+                <div key={j} className="admin-shimmer h-12 rounded-lg" />
+              ))}
+            </div>
+            {/* footer */}
+            <div className="mt-3 flex justify-end border-t border-[var(--admin-border)]/50 pt-3">
+              <div className="admin-shimmer h-6 w-28 rounded-lg" />
+            </div>
+          </div>
+        </li>
       ))}
     </ul>
   );
