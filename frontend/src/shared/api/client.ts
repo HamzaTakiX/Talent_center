@@ -53,6 +53,7 @@ apiClient.interceptors.response.use(
     if (
       url.includes('/auth/refresh')
       || url.includes('/auth/login')
+      || url.includes('/auth/providers/auth0/exchange')
     ) {
       return Promise.reject(error);
     }

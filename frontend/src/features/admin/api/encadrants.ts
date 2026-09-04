@@ -2,6 +2,7 @@ import apiClient from '../../../shared/api/client';
 import type {
   AdminBulkImportResult,
   AdminEncadrantRow,
+  AdminEncadrantDetail,
   BulkDeleteUsersResult,
   ApiEnvelope,
   CreateEncadrantPayload,
@@ -24,11 +25,37 @@ export const adminEncadrantsApi = {
     return response.data.data;
   },
 
-  get: async (id: number): Promise<AdminEncadrantRow> => {
-    const response = await apiClient.get<ApiEnvelope<AdminEncadrantRow>>(
+  get: async (id: number): Promise<AdminEncadrantDetail> => {
+    const response = await apiClient.get<ApiEnvelope<AdminEncadrantDetail>>(
       `/admin/encadrants/${id}`,
     );
     return response.data.data;
+  },
+
+  openChat: async (id: number, message?: string): Promise<{ conversation_id: number }> => {
+    const response = await apiClient.post<ApiEnvelope<{ conversation_id: number }>>(
+      `/admin/encadrants/${id}/chat/open`,
+      message ? { message } : {},
+    );
+    const body = response.data;
+    if (!body.success || !body.data?.conversation_id) {
+      throw new Error(body.message || 'Failed to open chat');
+    }
+    return body.data;
+  },
+
+  revealCredential: async (id: number): Promise<string> => {
+    const response = await apiClient.post<ApiEnvelope<{ password: string }>>(
+      `/admin/encadrants/${id}/reveal-credential`,
+    );
+    return response.data.data.password;
+  },
+
+  regeneratePassword: async (id: number): Promise<string> => {
+    const response = await apiClient.post<ApiEnvelope<{ password: string }>>(
+      `/admin/encadrants/${id}/regenerate-password`,
+    );
+    return response.data.data.password;
   },
 
   create: async (payload: CreateEncadrantPayload): Promise<AdminEncadrantRow> => {
@@ -43,6 +70,15 @@ export const adminEncadrantsApi = {
     const response = await apiClient.patch<ApiEnvelope<AdminEncadrantRow>>(
       `/admin/encadrants/${id}`,
       payload,
+    );
+    return response.data.data;
+  },
+
+  updateProfile: async (id: number, payload: FormData): Promise<AdminEncadrantDetail> => {
+    const response = await apiClient.patch<ApiEnvelope<AdminEncadrantDetail>>(
+      `/admin/encadrants/${id}/profile`,
+      payload,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
     );
     return response.data.data;
   },

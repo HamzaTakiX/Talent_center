@@ -48,6 +48,7 @@ const ProviderTab: FunctionComponent<Props> = ({
   const providerOptions = useMemo(
     () => [
       { value: 'mock', label: 'Mock (development)' },
+      { value: 'brevo', label: 'Brevo' },
       { value: 'sendgrid', label: 'SendGrid' },
       { value: 'ses', label: 'Amazon SES' },
       { value: 'mailgun', label: 'Mailgun' },
@@ -90,7 +91,10 @@ const ProviderTab: FunctionComponent<Props> = ({
             />
           </div>
 
-          {(draft.provider === 'sendgrid' || draft.provider === 'ses' || draft.provider === 'mailgun') && (
+          {(draft.provider === 'brevo' ||
+            draft.provider === 'sendgrid' ||
+            draft.provider === 'ses' ||
+            draft.provider === 'mailgun') && (
             <AdminFormField label={t(`${PREFIX}.apiKey`)} htmlFor="provider-api-key">
               <AdminFormInput
                 id="provider-api-key"

@@ -80,6 +80,7 @@ const InternshipOffersToolbar: FunctionComponent<InternshipOffersToolbarProps> =
         />
       }
       createLabel={createLabel('offer')}
+      createVariant="primary"
       onCreate={() => navigate('/admin/internship-offers/create')}
     />
   );

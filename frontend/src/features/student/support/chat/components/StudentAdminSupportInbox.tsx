@@ -1,10 +1,10 @@
 import { FunctionComponent, ReactNode } from 'react';
-import { LifeBuoy } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import StudentLayout from '../../../components/StudentLayout';
 import type { SupportInboxLayoutProps } from '../../../../admin/shared/admin-support-inbox/components/SupportInboxShell';
 import PlatformDeskSupportInbox from '../../../../admin/shared/platform-desk-chat/components/PlatformDeskSupportInbox';
-import StudentAdminContextPanel from './StudentAdminContextPanel';
+import StudentSupportChatStartState from './StudentSupportChatStartState';
 
 const StudentSupportChatLayout: FunctionComponent<SupportInboxLayoutProps> = ({
   children,
@@ -25,12 +25,15 @@ const StudentAdminSupportInbox: FunctionComponent = () => {
       viewerRole="student"
       showAcademicFilters={false}
       enableAdminActions={false}
-      enableArchive
+      enableArchive={false}
+      showTagAction
+      chatModule="platform"
       sidebarTitle={t('student.support.chat.sidebarTitle')}
       sidebarSubtitle={t('student.support.chat.sidebarSubtitle')}
-      sidebarIcon={LifeBuoy}
+      searchPlaceholder={t('student.support.chat.searchPlaceholder')}
+      sidebarIcon={MessageSquare}
       Layout={StudentSupportChatLayout}
-      renderContextPanel={(conversation) => <StudentAdminContextPanel conversation={conversation} />}
+      renderThreadEmpty={(conversation) => <StudentSupportChatStartState conversation={conversation} />}
     />
   );
 };

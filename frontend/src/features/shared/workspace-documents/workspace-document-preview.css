@@ -1,0 +1,212 @@
+.workspace-doc-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 16rem;
+}
+
+.workspace-doc-preview__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 16rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+}
+
+.workspace-doc-preview__frame,
+.workspace-doc-preview__image {
+  width: 100%;
+  height: min(70vh, 44rem);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.workspace-doc-preview__image {
+  object-fit: contain;
+  padding: 0.75rem;
+}
+
+.workspace-doc-preview__paper,
+.workspace-doc-preview__text {
+  max-height: min(70vh, 44rem);
+  overflow: auto;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #111827;
+}
+
+.workspace-doc-preview__paper {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.workspace-doc-preview__paper h1,
+.workspace-doc-preview__paper h2,
+.workspace-doc-preview__paper h3 {
+  color: #111827;
+}
+
+.workspace-doc-preview__text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.workspace-doc-preview__sheet {
+  display: flex;
+  flex-direction: column;
+  min-height: 16rem;
+  max-height: min(70vh, 44rem);
+  overflow: hidden;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.workspace-doc-preview__sheet-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.5rem 0.6rem 0;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.workspace-doc-preview__sheet-tab {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 0.375rem 0.375rem 0 0;
+  background: transparent;
+  color: #4b5563;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.workspace-doc-preview__sheet-tab.is-active {
+  background: #fff;
+  color: #111827;
+  border-color: #e5e7eb;
+}
+
+.workspace-doc-preview__sheet-scroll {
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+.workspace-doc-preview__table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  color: #111827;
+}
+
+.workspace-doc-preview__table th,
+.workspace-doc-preview__table td {
+  padding: 0.4rem 0.65rem;
+  border: 1px solid #e5e7eb;
+  text-align: start;
+  white-space: nowrap;
+  max-width: 18rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspace-doc-preview__table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+  font-weight: 700;
+}
+
+.workspace-doc-preview-modal .admin-modal-footer {
+  padding: 0.85rem 1.25rem;
+}
+
+.workspace-doc-preview__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  width: 100%;
+}
+
+.workspace-doc-preview__footer-meta {
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.workspace-doc-preview__footer-name {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.workspace-doc-preview__footer-details {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+}
+
+.workspace-doc-preview__download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 50%, transparent);
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--admin-brand) 88%, #1d4ed8),
+    color-mix(in srgb, var(--admin-brand) 65%, #2563eb)
+  );
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 4px 12px color-mix(in srgb, var(--admin-brand) 25%, transparent);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+}
+
+.workspace-doc-preview__download:hover {
+  filter: brightness(1.06);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.14),
+    0 6px 16px color-mix(in srgb, var(--admin-brand) 32%, transparent);
+  transform: translateY(-1px);
+}
+
+.workspace-doc-preview__download:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}

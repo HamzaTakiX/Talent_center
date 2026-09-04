@@ -1,7 +1,6 @@
 import { FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
-import { AdminChartDonutSkeleton } from '../../../ui/AdminSectionSkeleton';
-import { AdminKpiGridSkeleton } from '../../../ui/AdminKpiGridSkeleton';
+import { AdminChartDonutSkeleton, AdminStudentsStatsSkeleton } from '../../../ui/AdminSectionSkeleton';
 import { AdminPanelListSkeleton } from '../../../ui/AdminSectionSkeleton';
 
 const Shimmer: FunctionComponent<{ className?: string }> = ({ className = '' }) => (
@@ -17,7 +16,7 @@ const DocumentsPageSkeleton: FunctionComponent = () => (
   >
     <div className="admin-doc-skeleton__hero admin-shimmer" aria-hidden />
 
-    <AdminKpiGridSkeleton count={7} columns={4} />
+    <AdminStudentsStatsSkeleton count={6} withPiePattern="all-but-first" />
 
     <div className="admin-doc-skeleton__nav" aria-hidden>
       {Array.from({ length: 5 }).map((_, i) => (

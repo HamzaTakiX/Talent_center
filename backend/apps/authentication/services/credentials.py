@@ -75,16 +75,52 @@ def set_student_password(*, user, plaintext: str, generated_by=None) -> StudentC
     )
 
 
-def reveal_current_credential(*, user, revealed_by=None) -> str:
-    record = (
+def _current_credential(user):
+    return (
         StudentCredential.objects
         .filter(user=user, is_current=True)
         .order_by('-generated_at')
         .first()
     )
+
+
+def current_credential_plaintext(*, user) -> str | None:
+    record = _current_credential(user)
+    if record is None:
+        return None
+    return decrypt_password(record.password_ciphertext)
+
+
+@transaction.atomic
+def provision_user_password(*, user, generated_by=None) -> str:
+    """Return the current plaintext password, generating a random one if missing."""
+    existing = current_credential_plaintext(user=user)
+    if existing:
+        return existing
+    plaintext = generate_secure_password()
+    set_student_password(user=user, plaintext=plaintext, generated_by=generated_by)
+    return plaintext
+
+
+def reveal_current_credential(*, user, revealed_by=None) -> str:
+    record = _current_credential(user)
     if record is None:
         raise ValueError('No credential on file for this user.')
     if record.revealed_at is None:
         record.revealed_at = timezone.now()
         record.save(update_fields=['revealed_at'])
     return decrypt_password(record.password_ciphertext)
+
+
+def reveal_or_provision_credential(*, user, revealed_by=None) -> str:
+    """Reveal the stored password, creating a random one if none exists yet."""
+    provision_user_password(user=user, generated_by=revealed_by)
+    return reveal_current_credential(user=user, revealed_by=revealed_by)
+
+
+@transaction.atomic
+def regenerate_user_password(*, user, generated_by=None) -> str:
+    """Replace the current password with a new random one and return it."""
+    plaintext = generate_secure_password()
+    set_student_password(user=user, plaintext=plaintext, generated_by=generated_by)
+    return plaintext

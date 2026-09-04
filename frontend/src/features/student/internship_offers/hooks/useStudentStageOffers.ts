@@ -20,15 +20,28 @@ import type {
 } from '../constants/internshipOfferFilters';
 import { useStudentOfferLocation } from './useStudentOfferLocation';
 import type { InternshipOfferDetails, InternshipOffersStatItem } from '../types';
-import type { StageOfferListItem } from '../../../shared/types/stageTypes';
+import type { StageMatchScore, StageOfferListItem } from '../../../shared/types/stageTypes';
+
+function buildEngineMatchMap(scores: StageMatchScore[]): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const score of scores) {
+    const offerId = score.offer_uuid ? String(score.offer_uuid) : '';
+    if (!offerId) continue;
+    map.set(offerId, Math.round(Number(score.score) || 0));
+  }
+  return map;
+}
 
 function mapVisibleOffersToStudentCards(
   items: StageOfferListItem[],
-  matchMap: Map<string, number>,
+  cvMatchMap: Map<string, number>,
+  engineMatchMap: Map<string, number> = new Map(),
 ) {
-  return items.map((offer) =>
-    mapStageOfferToStudentCard(offer, getCvMatchPercent(matchMap, offer.uuid)),
-  );
+  return items.map((offer) => {
+    const cvMatch = getCvMatchPercent(cvMatchMap, offer.uuid);
+    const engineScore = engineMatchMap.get(offer.uuid) ?? 0;
+    return mapStageOfferToStudentCard(offer, Math.max(cvMatch, engineScore));
+  });
 }
 
 export function useStudentRecentOffers(limit = 2) {
@@ -41,10 +54,20 @@ export function useStudentRecentOffers(limit = 2) {
     setLoading(true);
     setError(null);
 
-    void Promise.all([stageApi.list({ page_size: limit }), loadCvInternshipMatchMap(100)])
-      .then(([list, matchMap]) => {
+    void Promise.all([
+      stageApi.list({ page_size: limit }),
+      loadCvInternshipMatchMap(100),
+      stageApi.studentMatches(100).catch(() => [] as StageMatchScore[]),
+    ])
+      .then(([list, matchMap, engineScores]) => {
         if (cancelled) return;
-        setOffers(mapVisibleOffersToStudentCards(list.items, matchMap).slice(0, limit));
+        setOffers(
+          mapVisibleOffersToStudentCards(
+            list.items,
+            matchMap,
+            buildEngineMatchMap(engineScores),
+          ).slice(0, limit),
+        );
       })
       .catch((err) => {
         if (cancelled) return;
@@ -78,9 +101,13 @@ export function useStudentRecommendations() {
         stageApi.recommendations(),
         loadCvInternshipMatchMap(100),
       ]);
-      const mapped = recs.map((rec) =>
-        mapRecommendationToStudentCard(rec, getCvMatchPercent(matchMap, rec.offer_uuid)),
-      );
+      const mapped = recs.map((rec) => {
+        const cvMatch = getCvMatchPercent(matchMap, rec.offer_uuid);
+        const recommendationScore = Math.round(Number(rec.score) || 0);
+        // Prefer the stronger signal: CV analysis or recommendation engine score.
+        // Avoid treating missing CV match (0) as a real 0% override.
+        return mapRecommendationToStudentCard(rec, Math.max(cvMatch, recommendationScore));
+      });
       setOffers(buildRecommendedInternshipOffers(mapped, studentInternshipTypeName));
     } catch (err) {
       setError(parseAdminApiError(err, 'recommendations_load_failed').message);
@@ -113,7 +140,8 @@ export function useStudentAllOffers(filters: StudentAllOffersFilters = {}) {
   } = filters;
   const studentLocation = useStudentOfferLocation();
   const [rawOffers, setRawOffers] = useState<StageOfferListItem[]>([]);
-  const [matchMap, setMatchMap] = useState<Map<string, number>>(new Map());
+  const [cvMatchMap, setCvMatchMap] = useState<Map<string, number>>(new Map());
+  const [engineMatchMap, setEngineMatchMap] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -123,20 +151,24 @@ export function useStudentAllOffers(filters: StudentAllOffersFilters = {}) {
     Promise.all([
       stageApi.list({ page_size: 100 }),
       loadCvInternshipMatchMap(100),
+      stageApi.studentMatches(100).catch(() => [] as StageMatchScore[]),
     ])
-      .then(([list, scores]) => {
+      .then(([list, cvScores, engineScores]) => {
         setRawOffers(list.items);
-        setMatchMap(scores);
+        setCvMatchMap(cvScores);
+        setEngineMatchMap(buildEngineMatchMap(engineScores));
       })
       .catch((err) => {
         setError(parseAdminApiError(err, 'offers_load_failed').message);
         setRawOffers([]);
+        setCvMatchMap(new Map());
+        setEngineMatchMap(new Map());
       })
       .finally(() => setLoading(false));
   }, []);
 
   const offers = useMemo(() => {
-    const mapped = mapVisibleOffersToStudentCards(rawOffers, matchMap);
+    const mapped = mapVisibleOffersToStudentCards(rawOffers, cvMatchMap, engineMatchMap);
     return applyInternshipOfferFilters({
       offers: mapped,
       search,
@@ -151,7 +183,8 @@ export function useStudentAllOffers(filters: StudentAllOffersFilters = {}) {
     dateFilter,
     maxDistanceKm,
     distanceSort,
-    matchMap,
+    cvMatchMap,
+    engineMatchMap,
     studentLocation.point,
   ]);
 
@@ -173,7 +206,9 @@ export function useStudentOfferDetail(uuid: string | undefined) {
       loadCvInternshipMatchMap(100),
     ])
       .then(([offer, match, matchMap]) => {
-        const matchPercent = getCvMatchPercent(matchMap, uuid) || (match ? Math.round(match.score) : 0);
+        const cvMatch = getCvMatchPercent(matchMap, uuid);
+        const engineScore = match ? Math.round(Number(match.score) || 0) : 0;
+        const matchPercent = Math.max(cvMatch, engineScore);
         const details = mapStageDetailToStudentDetails(offer, matchPercent);
         if (match) {
           details.matchReasons = match.reasons.map((r) => r.reason);

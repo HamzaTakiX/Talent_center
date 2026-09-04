@@ -144,7 +144,8 @@ const EncadrantSubpageTableSection: FunctionComponent<EncadrantSubpageTableSecti
                   rows.map((row) => (
                     <tr
                       key={row.id}
-                      className="min-h-[49px] border-b border-solid border-[var(--admin-border)] last:border-b-0"
+                      className="admin-table-row--interactive min-h-[49px] border-b border-solid border-[var(--admin-border)] last:border-b-0"
+                      onClick={() => setViewRow(row)}
                     >
                       <td className="box-border min-h-[49px] py-[13.5px] pl-2 pr-4 align-middle font-medium leading-num-20">
                         <div>{row.full_name || row.email}</div>
@@ -161,7 +162,10 @@ const EncadrantSubpageTableSection: FunctionComponent<EncadrantSubpageTableSecti
                           {accountStatus(row.account_status)}
                         </span>
                       </td>
-                      <td className="box-border min-h-[49px] py-[8.5px] pl-4 pr-2 text-right align-middle">
+                      <td
+                        className="box-border min-h-[49px] py-[8.5px] pl-4 pr-2 text-right align-middle"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex flex-wrap items-start justify-end gap-2">
                           <button
                             type="button"

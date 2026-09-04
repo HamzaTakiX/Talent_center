@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdminTheme } from '../context/AdminThemeContext';
+import PlatformHeaderBrand from '../../../shared/platform-header/components/PlatformHeaderBrand';
+import { getAdminHeaderIcon } from '../config/adminNavConfig';
 import AdminUserMenu from './AdminUserMenu';
 import {
   AdminHeaderSearchDesktop,
@@ -50,6 +52,8 @@ const AdminHeader: FunctionComponent<AdminHeaderProps> = ({ onMenuClick }) => {
   };
 
   const pageTitle = getPageTitle();
+  const PageIcon = getAdminHeaderIcon(pathname);
+  const subtitle = t('admin.header.defaultSubtitle');
 
   return (
     <AdminHeaderSearchProvider>
@@ -68,11 +72,19 @@ const AdminHeader: FunctionComponent<AdminHeaderProps> = ({ onMenuClick }) => {
             <Menu className="h-5 w-5" strokeWidth={2} />
           </button>
 
-          <div className="min-w-0">
-            <h1 className="truncate text-base font-semibold tracking-tight text-[var(--admin-text)] sm:text-lg">
-              {pageTitle}
-            </h1>
-          </div>
+          <motion.div
+            key={pageTitle}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <PlatformHeaderBrand
+              title={pageTitle}
+              subtitle={subtitle}
+              icon={PageIcon}
+              subtitleClassName="hidden sm:block"
+            />
+          </motion.div>
         </motion.div>
 
         <motion.div

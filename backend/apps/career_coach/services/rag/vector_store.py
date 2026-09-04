@@ -1,44 +1,45 @@
-"""ChromaDB vector store for career coach RAG."""
+"""PostgreSQL vector store for career coach RAG."""
 
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+import math
+import re
 from typing import Any
 
-from django.conf import settings
+from apps.career_coach.models import RagChunk
 
 logger = logging.getLogger(__name__)
 
-_COLLECTION_NAME = 'career_coach_context'
-_client = None
-_collection = None
+
+def _cosine_similarity(left: list[float], right: list[float]) -> float:
+    if not left or not right or len(left) != len(right):
+        return 0.0
+    dot = sum(a * b for a, b in zip(left, right))
+    norm_left = math.sqrt(sum(a * a for a in left))
+    norm_right = math.sqrt(sum(b * b for b in right))
+    if norm_left == 0 or norm_right == 0:
+        return 0.0
+    return dot / (norm_left * norm_right)
 
 
-def _get_persist_dir() -> Path:
-    base = getattr(settings, 'CAREER_COACH_CHROMA_DIR', None)
-    if base:
-        return Path(base)
-    return Path(settings.BASE_DIR) / 'data' / 'chromadb'
+def _lexical_score(query: str, text: str) -> float:
+    tokens = set(re.findall(r'\w+', query.lower()))
+    if not tokens:
+        return 0.0
+    haystack = set(re.findall(r'\w+', text.lower()))
+    if not haystack:
+        return 0.0
+    return len(tokens & haystack) / len(tokens)
 
 
-def get_collection():
-    global _client, _collection
-    if _collection is not None:
-        return _collection
+def _embed_or_empty(texts: list[str]) -> list[list[float]]:
     try:
-        import chromadb
-    except ImportError as exc:
-        raise RuntimeError('chromadb is required for RAG. Install with: pip install chromadb') from exc
-
-    persist_dir = _get_persist_dir()
-    persist_dir.mkdir(parents=True, exist_ok=True)
-    _client = chromadb.PersistentClient(path=str(persist_dir))
-    _collection = _client.get_or_create_collection(
-        name=_COLLECTION_NAME,
-        metadata={'hnsw:space': 'cosine'},
-    )
-    return _collection
+        from apps.career_coach.services.rag.embeddings import embed_texts
+        return embed_texts(texts)
+    except Exception as exc:
+        logger.warning('Embedding failed, falling back to lexical ranking: %s', exc)
+        return [[] for _ in texts]
 
 
 def upsert_documents(
@@ -48,54 +49,49 @@ def upsert_documents(
     """Upsert context chunks. Each doc: {id, text, metadata}."""
     if not documents:
         return 0
-    collection = get_collection()
-    ids = [f'student_{student_id}_{d["id"]}' for d in documents]
-    texts = [d['text'] for d in documents]
-    metadatas = [{**d.get('metadata', {}), 'student_id': student_id} for d in documents]
-    embeddings = None
-    try:
-        from apps.career_coach.services.rag.embeddings import embed_texts
-        embeddings = embed_texts(texts)
-    except Exception as exc:
-        logger.warning('Embedding failed, ChromaDB will embed internally: %s', exc)
 
-    try:
-        collection.upsert(ids=ids, documents=texts, metadatas=metadatas, embeddings=embeddings)
-    except Exception:
-        collection.upsert(ids=ids, documents=texts, metadatas=metadatas)
+    texts = [d['text'] for d in documents]
+    embeddings = _embed_or_empty(texts)
+
+    for doc, vector in zip(documents, embeddings):
+        RagChunk.objects.update_or_create(
+            student_id=student_id,
+            chunk_id=str(doc['id']),
+            defaults={
+                'text': doc['text'],
+                'metadata': {**doc.get('metadata', {}), 'student_id': student_id},
+                'embedding': vector or [],
+            },
+        )
     return len(documents)
 
 
 def query_documents(student_id: int, query: str, *, top_k: int = 8) -> list[dict[str, Any]]:
-    collection = get_collection()
-    query_embedding = None
-    try:
-        from apps.career_coach.services.rag.embeddings import embed_texts
-        vectors = embed_texts([query])
-        query_embedding = vectors[0] if vectors else None
-    except Exception as exc:
-        logger.warning('Query embedding failed: %s', exc)
-
-    kwargs: dict[str, Any] = {
-        'n_results': top_k,
-        'where': {'student_id': student_id},
-    }
-    if query_embedding:
-        kwargs['query_embeddings'] = [query_embedding]
-    else:
-        kwargs['query_texts'] = [query]
-
-    try:
-        result = collection.query(**kwargs)
-    except Exception as exc:
-        logger.warning('ChromaDB query failed: %s', exc)
+    chunks = list(RagChunk.objects.filter(student_id=student_id))
+    if not chunks:
         return []
 
-    docs = result.get('documents', [[]])[0]
-    metas = result.get('metadatas', [[]])[0]
-    distances = result.get('distances', [[]])[0]
+    query_embedding: list[float] = []
+    embedded = _embed_or_empty([query])
+    if embedded and embedded[0]:
+        query_embedding = embedded[0]
+
+    scored: list[tuple[float, RagChunk]] = []
+    use_vectors = bool(query_embedding) and any(c.embedding for c in chunks)
+    for chunk in chunks:
+        if use_vectors and chunk.embedding:
+            score = _cosine_similarity(query_embedding, chunk.embedding)
+        else:
+            score = _lexical_score(query, chunk.text)
+        scored.append((score, chunk))
+
+    scored.sort(key=lambda item: item[0], reverse=True)
     return [
-        {'text': doc, 'metadata': meta or {}, 'distance': dist}
-        for doc, meta, dist in zip(docs, metas, distances)
-        if doc
+        {
+            'text': chunk.text,
+            'metadata': chunk.metadata or {},
+            'distance': 1 - score,
+        }
+        for score, chunk in scored[:top_k]
+        if chunk.text
     ]

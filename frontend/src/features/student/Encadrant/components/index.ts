@@ -4,4 +4,6 @@ export { default as EncadrantReminderBanner } from './EncadrantReminderBanner';
 export { default as EncadrantMeetingsSection } from './EncadrantMeetingsSection';
 export { default as EncadrantTasksSection } from './EncadrantTasksSection';
 export { default as EncadrantReportProgressSection } from './EncadrantReportProgressSection';
+export { default as EncadrantMilestonesSection } from './EncadrantMilestonesSection';
+export { default as EncadrantPriorityAlerts } from './EncadrantPriorityAlerts';
 export { default as EncadrantQuickActionsGrid } from './EncadrantQuickActionsGrid';

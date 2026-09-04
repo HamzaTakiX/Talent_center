@@ -11,6 +11,17 @@ export function getThemeDefaultBackgroundColor(theme: AdminTheme): string {
   return theme === 'dark' ? '#0f172a' : DEFAULT_WHITEBOARD_BACKGROUND;
 }
 
+/** Fills previously handed out as theme defaults, including superseded ones. */
+const THEME_DEFAULT_BACKGROUNDS = ['#ffffff', '#f1f5f9', '#0f172a', '#1e293b'];
+
+/**
+ * A canvas still sitting on a theme default follows the app theme; only a colour
+ * the student picked on purpose survives a light/dark switch.
+ */
+export function isThemeDefaultBackgroundColor(color: string): boolean {
+  return THEME_DEFAULT_BACKGROUNDS.includes(color.trim().toLowerCase());
+}
+
 /** Pattern/grid styles render on the CSS layer behind a transparent Excalidraw canvas. */
 export function usesPatternBackgroundLayer(type: WhiteboardBackgroundType): boolean {
   return type !== 'solid' && type !== 'blank';

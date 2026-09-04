@@ -29,6 +29,10 @@ export interface AgendaMeetingEvent {
   status: AgendaMeetingStatus;
   description: string;
   showJoinMeeting?: boolean;
+  /** Optional backend Meeting PK — auto-resolved from /meeting-sessions/scheduled when omitted. */
+  meetingId?: number;
+  /** ISO datetime used to match a scheduled backend meeting. */
+  plannedStart?: string;
 }
 
 export interface AgendaWeekDay {

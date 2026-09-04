@@ -16,6 +16,7 @@ import {
   Copy,
   Download,
   Eye,
+  MessageSquare,
   MoreVertical,
   Pencil,
   Trash2,
@@ -37,6 +38,7 @@ export type AdminRowActionsMenuItem = {
 interface AdminRowActionsMenuProps {
   onView?: () => void;
   onEdit?: () => void;
+  onSendMessage?: () => void;
   onDelete?: () => void;
   onDuplicate?: () => void;
   onArchive?: () => void;
@@ -55,6 +57,7 @@ const MENU_MIN_WIDTH = 168;
 const AdminRowActionsMenu: FunctionComponent<AdminRowActionsMenuProps> = ({
   onView,
   onEdit,
+  onSendMessage,
   onDelete,
   onDuplicate,
   onArchive,
@@ -80,6 +83,14 @@ const AdminRowActionsMenu: FunctionComponent<AdminRowActionsMenuProps> = ({
       : null,
     onEdit != null
       ? { key: 'edit', label: t('admin.common.actions.edit'), icon: Pencil, onClick: onEdit }
+      : null,
+    onSendMessage != null
+      ? {
+          key: 'send-message',
+          label: t('admin.common.detailModal.student.sendMessage'),
+          icon: MessageSquare,
+          onClick: onSendMessage,
+        }
       : null,
     ...extraItems,
     onDuplicate != null

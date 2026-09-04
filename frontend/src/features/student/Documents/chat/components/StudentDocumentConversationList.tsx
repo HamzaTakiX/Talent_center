@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { Archive, FileText, Search, X } from 'lucide-react';
+import { FileText, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SupportInboxSidebarBrandHeader from '../../../../admin/shared/admin-support-inbox/components/SupportInboxSidebarBrandHeader';
 import ChatToolbarActions from '../../../../shared/chat-design-system/components/ChatToolbarActions';
@@ -85,18 +85,8 @@ const StudentDocumentConversationList: FunctionComponent<Props> = ({
             archivedCount={primaryFilterCounts.archived}
             hasActiveFilters={hasActiveFilters}
             filtersOpen={false}
-            onToggleArchive={() => onSetPrimary(viewingArchived ? 'all' : 'archived')}
+            showArchive={false}
             onToggleFilters={() => onToggleQuickFilter('unread')}
-            archiveAriaLabel={
-              viewingArchived
-                ? t(`${prefix}.backToActive`, { defaultValue: 'Retour aux conversations actives' })
-                : t(`${prefix}.viewArchived`, { defaultValue: 'Voir les conversations archivées' })
-            }
-            archiveTitle={
-              viewingArchived
-                ? t(`${prefix}.backToActive`, { defaultValue: 'Retour aux conversations actives' })
-                : t(`${prefix}.archived`, { defaultValue: 'Archives' })
-            }
             filterAriaLabel={t(`${prefix}.unread`, { defaultValue: 'Non lus' })}
           />
         }
@@ -106,18 +96,6 @@ const StudentDocumentConversationList: FunctionComponent<Props> = ({
         <p className="isi-load-error px-4 py-2 text-sm text-[var(--admin-danger,#dc2626)]" role="alert">
           {loadError}
         </p>
-      ) : null}
-
-      {viewingArchived ? (
-        <div className="isi-archived-strip">
-          <Archive className="isi-archived-strip-icon" strokeWidth={2} aria-hidden />
-          <span className="isi-archived-strip-label">
-            {t(`${prefix}.archivedBanner`, { defaultValue: 'Conversations archivées' })}
-          </span>
-          <button type="button" onClick={() => onSetPrimary('all')} className="isi-archived-strip-back">
-            {t(`${prefix}.backToActive`, { defaultValue: 'Retour aux actives' })}
-          </button>
-        </div>
       ) : null}
 
       {hasActiveFilters && filters.unread ? (

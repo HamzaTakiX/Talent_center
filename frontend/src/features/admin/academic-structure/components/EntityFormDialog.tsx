@@ -9,11 +9,13 @@ import AdminModal from '../../ui/AdminModal';
 import AdminToggle from '../../account/components/AdminToggle';
 import AdminCustomSelect from '../../ui/AdminCustomSelect';
 import { AdminFormField, AdminFormInput, AdminFormTextarea } from '../../shared/forms/AdminFormPrimitives';
+import AdminTagMultiSelect, { type TagOption } from '../../shared/forms/AdminTagMultiSelect';
 import {
   adminFormBtnPrimaryClass,
   adminFormBtnSecondaryClass,
 } from '../../shared/forms/adminFormClasses';
-import type { AcademicLevelOption } from '../../api/types';
+import { academicReferenceApi } from '../../api/reference';
+import type { AcademicLevelOption, SpecializationDomainOption } from '../../api/types';
 import type {
   AcademicClassRow,
   AcademicLevelRow,
@@ -73,6 +75,10 @@ function buildInitialValues(
   }
 
   const duration = parseDurationHint(String(editRow.duration_hint ?? ''));
+  const rawDomainIds = editRow.specialization_domain_ids;
+  const domainIds = Array.isArray(rawDomainIds)
+    ? rawDomainIds.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
+    : [];
   const base: AcademicStructureFormValues = {
     name_fr: String(editRow.name_fr ?? ''),
     name_en: String(editRow.name_en ?? editRow.name ?? ''),
@@ -86,6 +92,7 @@ function buildInitialValues(
     academic_year: String(editRow.academic_year ?? '2025-2026'),
     duration_value: duration.value,
     duration_unit: duration.unit,
+    specialization_domain_ids: domainIds,
   };
 
   if (mode === 'duplicate') {
@@ -103,8 +110,8 @@ function buildInitialValues(
 function valuesToPayload(
   tab: AcademicStructureTab,
   values: AcademicStructureFormValues,
-): Record<string, string | number | boolean> {
-  const base: Record<string, string | number | boolean> = {
+): Record<string, string | number | boolean | number[]> {
+  const base: Record<string, string | number | boolean | number[]> = {
     name_fr: values.name_fr.trim(),
     name_en: values.name_en.trim(),
     sort_order: values.sort_order,
@@ -117,6 +124,7 @@ function valuesToPayload(
       code: values.code.trim(),
       description: values.description.trim(),
       program_family: values.program_family.trim().toUpperCase(),
+      specialization_domain_ids: values.specialization_domain_ids,
     };
   }
 
@@ -175,6 +183,8 @@ const EntityFormDialog: FunctionComponent<EntityFormDialogProps> = ({
     buildInitialValues(editRow, tracks, mode),
   );
   const [levelOptions, setLevelOptions] = useState<AcademicLevelOption[]>([]);
+  const [domainCatalog, setDomainCatalog] = useState<SpecializationDomainOption[]>([]);
+  const [loadingDomains, setLoadingDomains] = useState(false);
   const [touched, setTouched] = useState<Partial<Record<keyof AcademicStructureFormValues, boolean>>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -188,6 +198,67 @@ const EntityFormDialog: FunctionComponent<EntityFormDialogProps> = ({
     setTouched({});
     setSubmitAttempted(false);
   }, [open, editRow, tracks, mode]);
+
+  useEffect(() => {
+    if (!open || tab !== 'tracks') {
+      setDomainCatalog([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingDomains(true);
+    Promise.all([
+      academicReferenceApi.listSpecializationDomains({ category: 'BUSINESS', lang }),
+      academicReferenceApi.listSpecializationDomains({ category: 'TECH', lang }),
+    ])
+      .then(([business, tech]) => {
+        if (!cancelled) setDomainCatalog([...business, ...tech]);
+      })
+      .catch(() => {
+        if (!cancelled) setDomainCatalog([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDomains(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, tab, lang]);
+
+  const businessDomainOptions: TagOption[] = useMemo(
+    () =>
+      domainCatalog
+        .filter((d) => d.category === 'BUSINESS')
+        .map((d) => ({ value: String(d.id), label: d.name })),
+    [domainCatalog],
+  );
+
+  const techDomainOptions: TagOption[] = useMemo(
+    () =>
+      domainCatalog
+        .filter((d) => d.category === 'TECH')
+        .map((d) => ({ value: String(d.id), label: d.name })),
+    [domainCatalog],
+  );
+
+  const selectedBusinessDomainIds = useMemo(() => {
+    const businessIds = new Set(businessDomainOptions.map((o) => o.value));
+    return values.specialization_domain_ids.filter((id) => businessIds.has(String(id))).map(String);
+  }, [businessDomainOptions, values.specialization_domain_ids]);
+
+  const selectedTechDomainIds = useMemo(() => {
+    const techIds = new Set(techDomainOptions.map((o) => o.value));
+    return values.specialization_domain_ids.filter((id) => techIds.has(String(id))).map(String);
+  }, [techDomainOptions, values.specialization_domain_ids]);
+
+  const patchDomainSelection = useCallback(
+    (nextBusiness: string[], nextTech: string[]) => {
+      const ids = [...nextBusiness, ...nextTech]
+        .map(Number)
+        .filter((id) => Number.isFinite(id) && id > 0);
+      setValues((prev) => ({ ...prev, specialization_domain_ids: ids }));
+    },
+    [],
+  );
 
   useEffect(() => {
     const fid = values.filiere_id;
@@ -438,6 +509,32 @@ const EntityFormDialog: FunctionComponent<EntityFormDialogProps> = ({
                           onChange={(e) => set('description', e.target.value)}
                         />
                       </AdminFormField>
+                    </div>
+                    <div className="academic-form-grid__full">
+                      <AdminTagMultiSelect
+                        id="academic-business-domains"
+                        label={t(`${PREFIX}.fields.businessDomains`)}
+                        hint={t(`${PREFIX}.fields.businessDomainsHint`)}
+                        values={selectedBusinessDomainIds}
+                        options={businessDomainOptions}
+                        onChange={(next) => patchDomainSelection(next, selectedTechDomainIds)}
+                        loading={loadingDomains}
+                        searchable
+                        placeholder={t(`${PREFIX}.fields.selectBusinessDomains`)}
+                      />
+                    </div>
+                    <div className="academic-form-grid__full">
+                      <AdminTagMultiSelect
+                        id="academic-tech-domains"
+                        label={t(`${PREFIX}.fields.techDomains`)}
+                        hint={t(`${PREFIX}.fields.techDomainsHint`)}
+                        values={selectedTechDomainIds}
+                        options={techDomainOptions}
+                        onChange={(next) => patchDomainSelection(selectedBusinessDomainIds, next)}
+                        loading={loadingDomains}
+                        searchable
+                        placeholder={t(`${PREFIX}.fields.selectTechDomains`)}
+                      />
                     </div>
                   </>
                 )}

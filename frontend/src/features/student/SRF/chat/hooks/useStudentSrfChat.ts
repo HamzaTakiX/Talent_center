@@ -374,7 +374,7 @@ export function useStudentSrfChat() {
 
   const sendMessage = useCallback(
 
-    async (text: string) => {
+    async (text: string, tagCodes?: string[], entityRefs?: import('../../../../shared/contextual-chat/types/chatEntityTypes').ChatEntityReference[]) => {
 
       if (!conversationId || !text.trim()) return;
 
@@ -430,7 +430,7 @@ export function useStudentSrfChat() {
 
       try {
 
-        const saved = await sendChatMessage(conversationId, trimmed);
+        const saved = await sendChatMessage(conversationId, trimmed, tagCodes, undefined, entityRefs);
 
         if (!saved) return;
 

@@ -33,6 +33,7 @@ const PlatformDeskSupportStatusBadge: FunctionComponent<Props> = ({
         .filter(Boolean)
         .join(' ')}
     >
+      <span className="isi-status-pill__dot" aria-hidden />
       {t(supportStatusLabelKey(status, viewerRole), {
         defaultValue: SUPPORT_STATUS_DEFAULT_LABELS[status],
       })}

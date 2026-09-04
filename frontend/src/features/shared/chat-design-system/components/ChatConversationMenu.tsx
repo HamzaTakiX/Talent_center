@@ -69,21 +69,17 @@ const MenuItem: FunctionComponent<{
     type="button"
     role="menuitem"
     onClick={onClick}
-    className={`admin-chat-menu-item chat-conversation-menu__item flex w-full items-start gap-2.5 px-3 py-2 text-start text-sm ${
+    className={`admin-chat-menu-item chat-conversation-menu__item flex w-full items-start gap-3 text-start ${
       active ? 'admin-chat-menu-item--active' : ''
     } ${variant !== 'default' ? `chat-conversation-menu__item--${variant}` : ''}`}
   >
-    <span className="chat-conversation-menu__item-icon flex h-4 w-4 shrink-0 items-center justify-center text-[var(--admin-text-secondary)]">
-      {icon}
-    </span>
+    <span className="chat-conversation-menu__item-icon shrink-0">{icon}</span>
     <span className="min-w-0 flex-1">
-      <span className="chat-conversation-menu__item-label block truncate font-medium text-[var(--admin-text)]">
+      <span className="chat-conversation-menu__item-label block truncate text-[var(--admin-text)]">
         {label}
       </span>
       {description ? (
-        <span className="chat-conversation-menu__item-desc mt-0.5 block truncate text-xs text-[var(--admin-text-muted)]">
-          {description}
-        </span>
+        <span className="chat-conversation-menu__item-desc block truncate">{description}</span>
       ) : null}
     </span>
   </button>
@@ -135,7 +131,7 @@ const ChatConversationMenu: FunctionComponent<ChatConversationMenuProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="admin-chat-dropdown chat-conversation-menu__panel absolute end-0 top-[calc(100%+6px)] z-50 min-w-[14.5rem] overflow-hidden rounded-xl border border-[var(--admin-border)] py-1 shadow-admin-lg"
+            className="admin-chat-dropdown chat-conversation-menu__panel absolute end-0 top-[calc(100%+8px)] z-50 overflow-hidden"
           >
             {archived ? (
               <>
@@ -151,6 +147,9 @@ const ChatConversationMenu: FunctionComponent<ChatConversationMenuProps> = ({
             <MenuItem
               icon={<Paperclip className="h-3.5 w-3.5" strokeWidth={2} />}
               label={t('admin.chat.sharedAttachments')}
+              description={t('admin.chat.sharedAttachmentsHint', {
+                defaultValue: 'Fichiers partagés dans ce fil',
+              })}
               onClick={() => closeAnd(onOpenAttachments)}
             />
             <MenuItem
@@ -163,6 +162,9 @@ const ChatConversationMenu: FunctionComponent<ChatConversationMenuProps> = ({
             <MenuItem
               icon={<Clock className="h-3.5 w-3.5" strokeWidth={2} />}
               label={t('admin.chat.conversationHistory')}
+              description={t('admin.chat.conversationHistoryHint', {
+                defaultValue: 'Repères et événements du fil',
+              })}
               onClick={() => closeAnd(onOpenHistory)}
             />
 

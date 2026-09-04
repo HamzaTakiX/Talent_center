@@ -471,6 +471,7 @@ export interface AdminEncadrantRow {
   full_name: string;
   first_name: string;
   last_name: string;
+  avatar_url?: string | null;
   account_status: AdminAccountStatus;
   auth_provider: string;
   platform_access_granted: boolean;
@@ -488,6 +489,10 @@ export interface AdminEncadrantRow {
   accepting_students?: boolean;
 }
 
+export interface AdminEncadrantDetail extends AdminEncadrantRow {
+  profile?: AdminStudentUserProfileDetail | null;
+}
+
 export interface CreateEncadrantPayload {
   full_name: string;
   email: string;
@@ -499,6 +504,7 @@ export interface CreateEncadrantPayload {
   specialization_domain_ids?: number[];
   supervised_internship_type_ids?: number[];
   max_students?: number;
+  sso_enabled?: boolean;
   grant_access?: boolean;
   is_active?: boolean;
 }
@@ -515,6 +521,7 @@ export interface UpdateEncadrantPayload {
   supervised_internship_type_ids?: number[];
   max_students?: number;
   platform_access_granted?: boolean;
+  sso_enabled?: boolean;
   is_active?: boolean;
   account_status?: AdminAccountStatus;
   reason?: string;
@@ -579,12 +586,34 @@ export interface SmartAssignmentStudentRow {
   reason?: string;
 }
 
+export interface EncadrantScopePayload {
+  filiere_ids?: number[];
+  level_ids?: number[];
+  sector_ids?: number[];
+  filiere_labels?: string[];
+  filiere_codes?: string[];
+  level_labels?: string[];
+  sector_labels?: string[];
+  class_group_labels?: string[];
+  academic_years?: string[];
+}
+
+export interface SupervisedInternshipTypeRef {
+  id: number;
+  name: string;
+  code?: string;
+}
+
 export interface SmartAssignmentEncadrantCard {
   encadrant_profile_id: number;
   user_id: number;
   full_name: string;
   email: string;
+  avatar_url?: string | null;
   specialization_domains: SpecializationDomainRef[];
+  scope?: EncadrantScopePayload;
+  supervised_internship_types?: SupervisedInternshipTypeRef[];
+  supervised_internship_type_ids?: number[];
   current_load: number;
   max_capacity: number;
   load_percent: number;

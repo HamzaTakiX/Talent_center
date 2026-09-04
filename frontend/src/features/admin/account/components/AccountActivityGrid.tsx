@@ -1,18 +1,16 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Activity, Calendar, Clock, LucideIcon, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../../../auth/api';
 import { useAuth } from '../../../auth/hooks/useAuth';
 import { formatAccountDate } from '../../dashboard/utils/adminUserDisplay';
-import { staggerContainer, staggerItem } from '../../dashboard/ui/animations';
 
 interface ActivityItem {
   labelKey: string;
   value: string;
   hintKey: string;
   icon: LucideIcon;
-  accent?: 'brand' | 'success' | 'neutral';
+  accent: 'brand' | 'success' | 'neutral';
 }
 
 const AccountActivityGrid: FunctionComponent = () => {
@@ -75,43 +73,31 @@ const AccountActivityGrid: FunctionComponent = () => {
     },
   ];
 
-  const accentClass: Record<NonNullable<ActivityItem['accent']>, string> = {
-    brand: 'admin-activity-card--brand',
-    success: 'admin-activity-card--success',
-    neutral: 'admin-activity-card--neutral',
-  };
-
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial="initial"
-      animate="animate"
-      className="admin-activity-grid grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
-    >
+    <ul className="admin-profile-activity" aria-label={t('admin.account.activity.title')}>
       {items.map((item) => {
         const Icon = item.icon;
         return (
-          <motion.div
+          <li
             key={item.labelKey}
-            variants={staggerItem}
-            className={`admin-activity-card group relative overflow-hidden rounded-xl border p-5 ${accentClass[item.accent ?? 'neutral']}`}
+            className={`admin-profile-activity__item admin-activity-card--${item.accent}`}
           >
-            <span
-              className={`admin-activity-card-accent admin-activity-card-accent--${item.accent ?? 'neutral'}`}
-              aria-hidden
-            />
-            <span className="admin-activity-card-icon relative flex h-11 w-11 items-center justify-center rounded-xl">
-              <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+            <span className="admin-activity-card-icon admin-profile-activity__icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+              <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
             </span>
-            <p className="relative mt-4 text-xs font-medium uppercase tracking-wide text-[var(--admin-text-secondary)]">
-              {t(item.labelKey)}
-            </p>
-            <p className="relative mt-1 text-lg font-bold tracking-tight text-[var(--admin-text)]">{item.value}</p>
-            <p className="relative mt-1 text-xs text-[var(--admin-text-muted)]">{t(item.hintKey)}</p>
-          </motion.div>
+            <div className="min-w-0">
+              <p className="m-0 text-[10px] font-semibold uppercase tracking-wide text-[var(--admin-text-muted)]">
+                {t(item.labelKey)}
+              </p>
+              <p className="m-0 mt-0.5 truncate text-sm font-semibold tracking-tight text-[var(--admin-text)]">
+                {item.value}
+              </p>
+              <p className="m-0 mt-0.5 truncate text-[11px] text-[var(--admin-text-muted)]">{t(item.hintKey)}</p>
+            </div>
+          </li>
         );
       })}
-    </motion.div>
+    </ul>
   );
 };
 

@@ -422,30 +422,6 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
           .join(' ')}
         dir={isRtl ? 'rtl' : 'ltr'}
       >
-        {values.length > 0 ? (
-          <div className="admin-tag-multi-select__chips" role="list" aria-label={label}>
-            {values.map((val) => (
-              <span key={val} className="admin-tag-multi-select__chip" role="listitem">
-                <span className="admin-tag-multi-select__chip-label">
-                  {labelByValue.get(val) ?? val}
-                </span>
-                {!disabled ? (
-                  <button
-                    type="button"
-                    className="admin-tag-multi-select__chip-remove"
-                    onClick={() => removeValue(val)}
-                    aria-label={t('admin.forms.academicScope.removeChip', {
-                      label: labelByValue.get(val) ?? val,
-                    })}
-                  >
-                    <X className="admin-tag-multi-select__chip-remove-icon" strokeWidth={2} aria-hidden />
-                  </button>
-                ) : null}
-              </span>
-            ))}
-          </div>
-        ) : null}
-
         <button
           ref={triggerRef}
           id={controlId}
@@ -477,6 +453,30 @@ const AdminTagMultiSelect: FunctionComponent<AdminTagMultiSelectProps> = ({
             )}
           </span>
         </button>
+
+        {values.length > 0 ? (
+          <div className="admin-tag-multi-select__chips" role="list" aria-label={label}>
+            {values.map((val) => (
+              <span key={val} className="admin-tag-multi-select__chip" role="listitem">
+                <span className="admin-tag-multi-select__chip-label">
+                  {labelByValue.get(val) ?? val}
+                </span>
+                {!disabled ? (
+                  <button
+                    type="button"
+                    className="admin-tag-multi-select__chip-remove"
+                    onClick={() => removeValue(val)}
+                    aria-label={t('admin.forms.academicScope.removeChip', {
+                      label: labelByValue.get(val) ?? val,
+                    })}
+                  >
+                    <X className="admin-tag-multi-select__chip-remove-icon" strokeWidth={2} aria-hidden />
+                  </button>
+                ) : null}
+              </span>
+            ))}
+          </div>
+        ) : null}
         {menu}
       </div>
       {error ? <p className="admin-form-field-error">{error}</p> : null}

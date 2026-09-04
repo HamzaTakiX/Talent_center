@@ -1,1 +1,1 @@
-﻿/** Hooks — Encadrant Chat (placeholder). */
+﻿export { useStudentEncadrantChat } from './useStudentEncadrantChat';

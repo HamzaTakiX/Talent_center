@@ -69,7 +69,8 @@ _DOMAIN_ROWS: list[tuple] = [
     ('export_management', 'Export Management', 'BUSINESS', ['MASTER'], ['MIISS'], ['export management']),
     ('international_commerce', 'International Commerce', 'BUSINESS', ['MASTER'], ['MIISS'], ['international commerce']),
     ('global_marketing', 'Global Marketing', 'BUSINESS', ['MASTER'], ['MIISS'], ['global marketing']),
-    # —— TECH (cross-program) ——
+    # —— TECH (catalog only; NOT linked to ESCA business programs by default) ——
+    # Assign per filière in Paramètres → Structure académique if needed.
     ('web_development', 'Web Development', 'TECH', [], [], ['web', 'frontend', 'backend', 'react', 'javascript']),
     ('mobile_development', 'Mobile Development', 'TECH', [], [], ['mobile', 'android', 'ios', 'flutter']),
     ('data_science', 'Data Science', 'TECH', [], [], ['data science', 'machine learning', 'ml']),
@@ -124,4 +125,49 @@ def seed_specialization_domains() -> dict[str, int]:
             created += 1
         else:
             updated += 1
-    return {'created': created, 'updated': updated, 'total': len(_DOMAIN_ROWS)}
+    linked = sync_filiere_domain_links()
+    return {
+        'created': created,
+        'updated': updated,
+        'total': len(_DOMAIN_ROWS),
+        **linked,
+    }
+
+
+def sync_filiere_domain_links(*, only_empty: bool = False) -> dict[str, int]:
+    """
+    Attach BUSINESS catalog domains to filières from program_families.
+
+    TECH domains stay unlinked unless an admin assigns them in
+    Structure académique (ESCA programs are business-focused by default).
+    Domains with empty program_families are never auto-linked.
+    """
+    from apps.admin_management.models import Filiere
+
+    filieres = list(
+        Filiere.objects.filter(is_active=True, is_archived=False).exclude(program_family=''),
+    )
+    domains = list(
+        SpecializationDomain.objects.filter(
+            is_active=True,
+            category=SpecializationDomain.Category.BUSINESS,
+        ),
+    )
+    updated = 0
+    for filiere in filieres:
+        if only_empty and filiere.specialization_domains.exists():
+            continue
+        family = (filiere.program_family or '').upper()
+        linked_business = [
+            domain
+            for domain in domains
+            if domain.program_families
+            and family in {str(f).upper() for f in domain.program_families}
+        ]
+        # Preserve any TECH domains already assigned manually in settings.
+        existing_tech = list(
+            filiere.specialization_domains.filter(category=SpecializationDomain.Category.TECH),
+        )
+        filiere.specialization_domains.set([*linked_business, *existing_tech])
+        updated += 1
+    return {'filieres_linked': updated}

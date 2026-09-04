@@ -51,6 +51,7 @@
       "darkMode": "تفعيل الوضع الداكن",
       "lightMode": "تفعيل الوضع الفاتح",
       "defaultTitle": "مركز المواهب الرقمية",
+      "defaultSubtitle": "بوابة الإدارة",
       "titles": {
         "dashboard": "لوحة التحكم",
         "students": "الطلاب",
@@ -228,7 +229,7 @@
     "account": {
       "badge": "الحساب",
       "title": "حسابي",
-      "subtitle": "الملف الشخصي والأمان والإعدادات — كل شيء في مكان واحد.",
+      "subtitle": "الملف الشخصي والأمان والإعدادات، كل شيء في مكان واحد.",
       "sectionsNav": "أقسام الحساب",
       "tabs": {
         "profile": "الملف الشخصي",
@@ -381,7 +382,65 @@
       "backToList": "العودة إلى المحادثات",
       "clearSearch": "مسح البحث",
       "attachFile": "إرفاق ملف",
-      "tagTemplate": "وسم أو قالب",
+      "tagTemplate": "وسم أو سياق",
+      "tagPickerTitle": "السياق / الوسوم",
+      "tagPickerHint": "اختر السياق المهني لهذه الرسالة.",
+      "tagPickerHints": {
+        "documents": "وسوم الوثائق: تصحيح، مصادقة، ملاحظات…",
+        "srf": "وسوم SRF: مصادقة مالية، تنبيهات، متابعة الملف…",
+        "offers": "وسوم التدريب: متابعة العرض، اجتماع، مهام…",
+        "announcements": "وسوم الإعلانات: ملاحظات، استعجال، مهام…",
+        "encadrant": "وسوم الإشراف: تقرير، مهمة، اجتماع، تصحيح…",
+        "platform": "وسوم دعم المنصة: مهمة، اجتماع، استعجال…"
+      },
+      "tagPickerSearch": "بحث…",
+      "tagPickerLoading": "جاري تحميل الوسوم…",
+      "tagPickerError": "تعذر تحميل الوسوم.",
+      "tagPickerEmpty": "لا توجد وسوم متاحة.",
+      "tagPickerNoResults": "لا توجد وسوم مطابقة لبحثك.",
+      "tagPickerRetry": "إعادة المحاولة",
+      "entityPickerAction": "الإشارة إلى عنصر",
+      "entityPickerTitle": "الإشارة إلى عنصر",
+      "entityPickerHint": "حدد أي وثيقة أو عرض أو عنصر يخص هذه الرسالة.",
+      "entityPickerHints": {
+        "documents": "الوثائق المتاحة وطلباتك الجارية.",
+        "srf": "أقساط SRF والحساب المالي.",
+        "offers": "عروض التدريب والترشيحات.",
+        "announcements": "الإعلانات المتاحة لك.",
+        "encadrant": "اجتماعات ومهام وتقارير وتدريبات هذا الطالب.",
+        "platform": "الوثائق والعروض والإعلانات وSRF."
+      },
+      "entityPickerGroups": {
+        "meeting": "الاجتماعات",
+        "task": "المهام",
+        "report": "التقارير",
+        "internship_offer": "التدريبات",
+        "offer_application": "الترشيحات"
+      },
+      "entityPickerSearch": "البحث عن عنصر…",
+      "entityPickerError": "تعذر تحميل العناصر.",
+      "entityPickerEmpty": "لا عناصر متاحة.",
+      "entityPickerNoResults": "لا عناصر مطابقة.",
+      "entityPickerRetry": "إعادة المحاولة",
+      "selectedEntities": "العناصر المشار إليها",
+      "removeEntity": "إزالة {{name}}",
+      "tagPickerSelectedHint": "يُطبَّق الاختيار على رسالتك التالية",
+      "selectedTags": "السياق المحدد",
+      "removeTag": "إزالة {{name}}",
+      "tags": {
+        "report": "تقرير",
+        "task": "مهمة",
+        "meeting": "اجتماع",
+        "correction": "تصحيح",
+        "validation": "تحقق",
+        "feedback": "ملاحظات",
+        "urgency": "عاجل",
+        "blockage": "عائق",
+        "internship_followup": "متابعة التدريب",
+        "internal_note": "ملاحظة داخلية",
+        "escalation": "تصعيد",
+        "financial_warning": "تنبيه مالي"
+      },
       "sendMessage": "إرسال الرسالة",
       "voiceNote": "ملاحظة صوتية",
       "composerHint": "Enter للإرسال · Shift+Enter لسطر جديد",
@@ -559,7 +618,7 @@
       "submit": "تسجيل الدخول",
       "submitting": "جاري الاتصال…",
       "submitButton": "تسجيل الدخول إلى حسابك",
-      "microsoft": "تسجيل الدخول عبر Microsoft (ESCA SSO)",
+      "microsoft": "المتابعة عبر Microsoft",
       "or": "أو سجّل الدخول بالبريد",
       "forgotPassword": "نسيت كلمة المرور؟",
       "showPassword": "إظهار كلمة المرور",
@@ -591,7 +650,7 @@
         "archivedMessage": "تم أرشفة حسابك. تواصل مع المسؤول.",
         "disabledTitle": "حساب معطل",
         "disabledMessage": "حسابك معطل. تواصل مع المسؤول.",
-        "deniedTitle": "الوصول مرفوض",
+        "deniedTitle": "تم رفض الوصول",
         "deniedMessage": "لا يملك حسابك صلاحية الوصول. تواصل مع الدعم.",
         "lockedTitle": "حساب مقفل",
         "lockedMessage": "محاولات كثيرة فاشلة. أعد المحاولة بعد 15 دقيقة.",
@@ -600,7 +659,15 @@
         "serverTitle": "خطأ في الخادم",
         "serverMessage": "حدث خطأ. حاول لاحقاً.",
         "failedTitle": "فشل تسجيل الدخول",
-        "failedMessage": "حدث خطأ غير متوقع. حاول مجدداً."
+        "failedMessage": "حدث خطأ غير متوقع. حاول مجدداً.",
+        "microsoftAccessDeniedTitle": "تم رفض الوصول",
+        "microsoftAccessDeniedMessage": "هذا الحساب Microsoft غير مصرح له بالوصول إلى Talent Center. استخدم حساب ESCA مصرحاً أو سجّل الدخول بالبريد الإلكتروني وكلمة المرور.",
+        "microsoftAccessDeniedHint": "إذا كنت تعتقد أن لديك حق الوصول، تواصل مع support@esca.ma أو المسؤول.",
+        "microsoftCancelledMessage": "تم إلغاء تسجيل الدخول عبر Microsoft. حاول مجدداً.",
+        "microsoftFailedMessage": "فشل تسجيل الدخول عبر Microsoft. حاول مجدداً أو استخدم البريد الإلكتروني.",
+        "microsoftConnectionMissingMessage": "تسجيل الدخول عبر Microsoft غير مهيأ. عيّن VITE_AUTH0_CONNECTION في البيئة.",
+        "noMatchingAccountMessage": "لا يوجد حساب مطابق لهوية Microsoft هذه. تواصل مع المسؤول.",
+        "ssoNotAuthorizedMessage": "لم يتم تفعيل SSO لهذا الحساب. تواصل مع المسؤول الأعلى."
       }
     },
     "student": {
@@ -770,7 +837,12 @@
     "accessDenied": {
       "title": "وصول غير مصرح",
       "body": "دورك لا يسمح بالوصول إلى هذا القسم.",
-      "back": "العودة إلى مساحتي"
+      "back": "العودة إلى مساحتي",
+      "ssoTitle": "تم رفض الوصول",
+      "ssoBody": "هذا الحساب Microsoft غير مصرح له بالوصول إلى Talent Center. استخدم حساب ESCA مصرحاً أو سجّل الدخول بالبريد الإلكتروني وكلمة المرور.",
+      "ssoHint": "إذا كنت تعتقد أن لديك حق الوصول، تواصل مع support@esca.ma أو المسؤول.",
+      "backToLogin": "العودة لتسجيل الدخول",
+      "tryAnotherMicrosoft": "تجربة حساب Microsoft آخر"
     },
     "callback": {
       "title": "جاري المصادقة…",

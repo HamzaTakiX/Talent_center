@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable
 
-from apps.notifications.constants import Category, Priority
+from apps.notifications.constants import Category, EmailKind, Priority
 from apps.notifications.models import NotificationRecipient
 
 
@@ -18,6 +18,7 @@ class EventConfig:
     resolver: str
     digestible: bool = False
     urgent: bool = False
+    email_kind: str = EmailKind.NOTIFICATION
 
 
 RESOLVER_NAMES = {
@@ -34,6 +35,7 @@ RESOLVER_NAMES = {
     'user_from_payload': 'user_from_payload',
     'supervision_parties': 'supervision_parties',
     'actor_only': 'actor_only',
+    'agenda_participants': 'agenda_participants',
 }
 
 
@@ -210,17 +212,17 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
     ),
     # SRF
     'srf.submitted': EventConfig(
-        Category.SRF, Priority.HIGH, 'welcome',
+        Category.SRF, Priority.HIGH, 'srf_submitted',
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'finance_admins',
     ),
     'srf.approved': EventConfig(
-        Category.SRF, Priority.HIGH, 'welcome',
+        Category.SRF, Priority.HIGH, 'srf_approved',
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'srf_student_and_admins',
     ),
     'srf.rejected': EventConfig(
-        Category.SRF, Priority.HIGH, 'welcome',
+        Category.SRF, Priority.HIGH, 'srf_rejected',
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'srf_student_and_admins',
     ),
@@ -229,12 +231,12 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
         (NotificationRecipient.Channel.IN_APP,), 'finance_admins',
     ),
     'srf.risk.alert': EventConfig(
-        Category.SRF, Priority.URGENT, 'welcome',
+        Category.SRF, Priority.URGENT, 'srf_risk_alert',
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'finance_admins', urgent=True,
     ),
     'srf.installment.overdue': EventConfig(
-        Category.SRF, Priority.HIGH, 'welcome',
+        Category.SRF, Priority.HIGH, 'srf_installment_overdue',
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'srf_student_and_admins',
     ),
@@ -244,17 +246,18 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
         (NotificationRecipient.Channel.EMAIL,), 'user_from_payload',
     ),
     'student.activated': EventConfig(
-        Category.SYSTEM, Priority.HIGH, 'welcome',
+        Category.SYSTEM, Priority.HIGH, 'student_activated',
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'user_from_payload',
     ),
     'student.password.reset': EventConfig(
         Category.SYSTEM, Priority.URGENT, 'password_reset',
-        (NotificationRecipient.Channel.EMAIL,), 'user_from_payload', urgent=True,
+        (NotificationRecipient.Channel.EMAIL,), 'user_from_payload',
+        urgent=True, email_kind=EmailKind.TRANSACTIONAL,
     ),
     # Student intelligence alerts
     'student.intelligence.critical_risk': EventConfig(
-        Category.SYSTEM, Priority.URGENT, 'welcome',
+        Category.SYSTEM, Priority.URGENT, 'student_critical_risk',
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'internship_admins', urgent=True,
     ),
@@ -272,7 +275,7 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
     ),
     # Supervision
     'supervisor.assigned': EventConfig(
-        Category.SUPERVISION, Priority.HIGH, 'welcome',
+        Category.SUPERVISION, Priority.HIGH, 'supervisor_assigned',
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'supervision_parties',
     ),
@@ -289,9 +292,55 @@ EVENT_REGISTRY: dict[str, EventConfig] = {
         (NotificationRecipient.Channel.IN_APP,), 'supervision_parties',
     ),
     'report.escalated': EventConfig(
-        Category.SUPERVISION, Priority.URGENT, 'welcome',
+        Category.SUPERVISION, Priority.URGENT, 'report_escalated',
         (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
         'supervision_parties', urgent=True,
+    ),
+    'report.rejected': EventConfig(
+        Category.SUPERVISION, Priority.HIGH, 'report_rejected',
+        (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
+        'supervision_parties',
+    ),
+    'report.requires_changes': EventConfig(
+        Category.SUPERVISION, Priority.HIGH, 'report_requires_changes',
+        (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
+        'supervision_parties',
+    ),
+    # Agenda / calendar
+    'agenda.event.created': EventConfig(
+        Category.AGENDA, Priority.NORMAL, 'agenda_event_created',
+        (NotificationRecipient.Channel.IN_APP,), 'agenda_participants',
+    ),
+    'agenda.invitation.sent': EventConfig(
+        Category.AGENDA, Priority.HIGH, 'agenda_invitation',
+        (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
+        'agenda_participants',
+    ),
+    'agenda.invitation.answered': EventConfig(
+        Category.AGENDA, Priority.NORMAL, 'agenda_invitation_answered',
+        (NotificationRecipient.Channel.IN_APP,), 'agenda_participants',
+    ),
+    'agenda.event.updated': EventConfig(
+        Category.AGENDA, Priority.NORMAL, 'agenda_event_updated',
+        (NotificationRecipient.Channel.IN_APP,), 'agenda_participants', digestible=True,
+    ),
+    'agenda.event.rescheduled': EventConfig(
+        Category.AGENDA, Priority.HIGH, 'agenda_event_rescheduled',
+        (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
+        'agenda_participants',
+    ),
+    'agenda.event.cancelled': EventConfig(
+        Category.AGENDA, Priority.HIGH, 'agenda_event_cancelled',
+        (NotificationRecipient.Channel.IN_APP, NotificationRecipient.Channel.EMAIL),
+        'agenda_participants',
+    ),
+    'agenda.event.reminder': EventConfig(
+        Category.AGENDA, Priority.HIGH, 'agenda_event_reminder',
+        (NotificationRecipient.Channel.IN_APP,), 'agenda_participants',
+    ),
+    'agenda.participant.removed': EventConfig(
+        Category.AGENDA, Priority.NORMAL, 'agenda_participant_removed',
+        (NotificationRecipient.Channel.IN_APP,), 'agenda_participants',
     ),
     # Digests (jobs)
     'notification.digest.daily': EventConfig(
@@ -338,4 +387,5 @@ def get_default_config(event_code: str) -> EventConfig:
         template_code='welcome',
         channels=(NotificationRecipient.Channel.IN_APP,),
         resolver='user_from_payload',
+        email_kind=EmailKind.NOTIFICATION,
     )

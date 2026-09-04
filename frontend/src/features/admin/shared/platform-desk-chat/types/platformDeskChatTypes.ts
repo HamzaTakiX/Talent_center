@@ -1,8 +1,13 @@
 import type { SupportMessage } from '../../admin-support-inbox/types/supportInboxTypes';
 
-export type PlatformDeskEntityType = 'student_admin_dm' | 'student_desk' | 'admin_desk';
+export type PlatformDeskEntityType =
+  | 'student_admin_dm'
+  | 'student_desk'
+  | 'admin_desk'
+  | 'encadrant_desk'
+  | 'supervision_dm';
 
-export type PlatformDeskViewerRole = 'admin' | 'student';
+export type PlatformDeskViewerRole = 'admin' | 'student' | 'encadrant';
 
 export type PrimaryDeskFilter = 'all' | 'archived';
 
@@ -32,9 +37,15 @@ export const EMPTY_PLATFORM_DESK_FILTERS: PlatformDeskInboxFilters = {
 export interface PlatformDeskMessage extends SupportMessage {
   deliveryStatus?: 'sent' | 'delivered' | 'read';
   seenTime?: string;
-  messageType?: 'TEXT' | 'FILE' | 'IMAGE' | 'SYSTEM' | 'EVENT';
+  messageType?: 'TEXT' | 'FILE' | 'IMAGE' | 'SYSTEM' | 'EVENT' | 'MEETING_REQUEST';
   smartActionCode?: string;
   createdAt?: string;
+  meetingRequest?: {
+    requestId: string;
+    mode: 'video' | 'voice';
+    status: 'pending' | 'accepted' | 'declined';
+    title?: string;
+  };
 }
 
 export interface PlatformDeskConversation {
@@ -56,6 +67,14 @@ export interface PlatformDeskConversation {
   urgency?: string;
   userId?: number | null;
   studentUserId?: number | null;
+  studentProfileId?: number | null;
+  encadrantProfileId?: number | null;
+  specializationDomains?: string[];
+  supervisedInternshipTypes?: string[];
+  currentStudents?: number;
+  maxStudents?: number;
+  acceptingStudents?: boolean;
+  isEncadrantActive?: boolean;
   lastMessage: string;
   timeLabel: string;
   lastMessageAt: string | null;
@@ -70,4 +89,5 @@ export interface PlatformDeskInboxStats {
   unread: number;
   pending: number;
   resolved: number;
+  availableAdmins?: number;
 }

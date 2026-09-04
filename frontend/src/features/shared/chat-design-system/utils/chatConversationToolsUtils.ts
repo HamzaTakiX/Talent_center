@@ -19,6 +19,8 @@ export function toChatToolMessages(
     messageType?: string;
     createdAt?: string;
     senderName?: string;
+    tags?: string[];
+    entityRefs?: import('../../contextual-chat/types/chatEntityTypes').ChatEntityReference[];
   }>,
 ): ChatToolMessage[] {
   return messages.map((message) => ({
@@ -32,6 +34,8 @@ export function toChatToolMessages(
     messageType: message.messageType,
     createdAt: message.createdAt,
     senderName: message.senderName,
+    tags: message.tags,
+    entityRefs: message.entityRefs,
   }));
 }
 

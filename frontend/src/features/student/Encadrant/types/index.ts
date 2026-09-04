@@ -15,6 +15,8 @@ export interface EncadrantMeetingItem {
   id: string;
   title: string;
   dateTime: string;
+  startAt?: string;
+  meetingId?: number;
 }
 
 export interface EncadrantTaskItem {
@@ -40,10 +42,27 @@ export interface EncadrantQuickAction {
   path: string;
 }
 
+export type EncadrantAlertSeverity = 'info' | 'warning' | 'danger' | 'success';
+
+export interface EncadrantPriorityAlert {
+  id: string;
+  titleKey: string;
+  messageKey: string;
+  severity: EncadrantAlertSeverity;
+}
+
+export interface EncadrantMilestone {
+  id: string;
+  labelKey: string;
+  status: 'completed' | 'current' | 'upcoming';
+  dateKey?: string;
+}
+
 export interface EncadrantSupervisor {
   initials: string;
   name: string;
   department: string;
   specialty: string;
   email: string;
+  avatarUrl: string;
 }

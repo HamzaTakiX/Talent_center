@@ -125,14 +125,28 @@ export const TypingText: FunctionComponent<TypingTextProps> = ({ text, speed = 2
 interface ScoreBarProps {
   score: number;
   delay?: number;
+  className?: string;
 }
 
-export const ScoreBar: FunctionComponent<ScoreBarProps> = ({ score, delay = 0 }) => (
-  <div className="sr-is-progress" role="progressbar" aria-valuenow={score}>
+const scoreTone = (score: number) => {
+  if (score >= 75) return 'high';
+  if (score >= 50) return 'medium';
+  if (score > 0) return 'low';
+  return 'idle';
+};
+
+export const ScoreBar: FunctionComponent<ScoreBarProps> = ({ score, delay = 0, className = '' }) => (
+  <div
+    className={`sr-is-progress sr-is-progress--${scoreTone(score)}${className ? ` ${className}` : ''}`}
+    role="progressbar"
+    aria-valuenow={score}
+    aria-valuemin={0}
+    aria-valuemax={100}
+  >
     <motion.div
       className="sr-is-progress__fill"
       initial={{ width: 0 }}
-      animate={{ width: `${score}%` }}
+      animate={{ width: `${Math.max(0, Math.min(100, score))}%` }}
       transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
     />
   </div>

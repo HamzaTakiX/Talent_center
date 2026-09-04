@@ -34,6 +34,7 @@ export const agendaMeetingsMock: AgendaMeetingEvent[] = [
     status: 'upcoming',
     description: 'Discuss smart contract architecture and security considerations',
     showJoinMeeting: true,
+    plannedStart: '2026-04-22T14:30:00',
   },
   {
     id: 'mtg-2',
@@ -79,6 +80,7 @@ export const agendaMeetingsMock: AgendaMeetingEvent[] = [
     status: 'upcoming',
     description: 'Short weekly sync on tasks, blockers, and integration testing progress.',
     showJoinMeeting: true,
+    plannedStart: '2026-04-25T15:00:00',
   },
   {
     id: 'mtg-5',

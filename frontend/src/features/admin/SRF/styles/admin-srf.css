@@ -7,6 +7,39 @@
   min-width: 0;
 }
 
+/* Hero avatar on student financial detail */
+.admin-srf-detail-hero__avatar {
+  width: 4rem;
+  height: 4rem;
+}
+
+.admin-srf-detail-hero__avatar .isi-avatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.admin-srf-detail-hero__avatar .isi-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+@media (min-width: 1024px) {
+  .admin-srf-detail-hero__stats {
+    flex: 1 1 0;
+    min-width: 38rem;
+    max-width: none;
+  }
+
+  .admin-srf-detail-hero__stats > * {
+    min-width: 0;
+  }
+}
+
 /* ── Quick actions nav strip ── */
 .admin-srf-quick-actions {
   display: flex;
@@ -141,6 +174,47 @@
 
 .admin-srf-data-row:hover td {
   background: color-mix(in srgb, var(--admin-brand) 4%, var(--admin-bg-elevated));
+}
+
+/* ── Amount badges (table) ── */
+.admin-srf-amount-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 0.28rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 6%, transparent);
+}
+
+.admin-srf-amount-badge--due {
+  color: #334155;
+  background: color-mix(in srgb, #64748b 12%, var(--admin-bg-elevated));
+  border-color: color-mix(in srgb, #64748b 22%, var(--admin-border));
+}
+
+.admin-srf-amount-badge--paid {
+  color: #15803d;
+  background: color-mix(in srgb, #22c55e 12%, var(--admin-bg-elevated));
+  border-color: color-mix(in srgb, #22c55e 24%, var(--admin-border));
+}
+
+[data-admin-theme='dark'] .admin-srf-amount-badge--due {
+  color: #cbd5e1;
+  background: color-mix(in srgb, #94a3b8 14%, var(--admin-bg-elevated));
+  border-color: color-mix(in srgb, #94a3b8 28%, var(--admin-border));
+}
+
+[data-admin-theme='dark'] .admin-srf-amount-badge--paid {
+  color: #86efac;
+  background: color-mix(in srgb, #22c55e 16%, var(--admin-bg-elevated));
+  border-color: color-mix(in srgb, #22c55e 30%, var(--admin-border));
 }
 
 /* ── Payment status badges ── */

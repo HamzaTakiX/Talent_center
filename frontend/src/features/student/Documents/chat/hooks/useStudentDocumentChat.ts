@@ -317,7 +317,7 @@ export function useStudentDocumentChat() {
   );
 
   const sendMessage = useCallback(
-    async (text: string, files?: File[]) => {
+    async (text: string, files?: File[], tagCodes?: string[], entityRefs?: import('../../../../shared/contextual-chat/types/chatEntityTypes').ChatEntityReference[]) => {
       const numId = Number(selectedId);
       if (!Number.isFinite(numId) || (!text.trim() && !files?.length)) return;
 
@@ -349,7 +349,7 @@ export function useStudentDocumentChat() {
       sendWsTyping(false);
 
       try {
-        const saved = await sendChatMessage(numId, trimmed, undefined, files);
+        const saved = await sendChatMessage(numId, trimmed, tagCodes, files, entityRefs);
         if (!saved) return;
         setMessagesByConv((prev) => {
           const existing = prev[numId] ?? [];

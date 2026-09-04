@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import ChatUnreadBadge from '../../../../shared/chat-design-system/components/ChatUnreadBadge';
+import InternshipStudentAvatar from '../../../offres-stage/chat/components/InternshipStudentAvatar';
 import type { SupportConversationListItem } from '../types/supportInboxTypes';
 
 interface Props {
@@ -14,7 +15,12 @@ const SupportConversationCard: FunctionComponent<Props> = ({ item, active, onSel
     onClick={() => onSelect(item.id)}
     className={`isi-conv-item ${active ? 'isi-conv-item--active' : ''}`}
   >
-    <div className="isi-avatar">{item.avatarInitials}</div>
+    <InternshipStudentAvatar
+      url={item.avatarUrl}
+      name={item.name}
+      initials={item.avatarInitials}
+      size="list"
+    />
     <div className="isi-conv-body">
       <div className="isi-conv-row">
         <span className="isi-conv-name">{item.name}</span>

@@ -1,22 +1,98 @@
-import { FunctionComponent, useCallback, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { FunctionComponent, useCallback, useRef, useState } from 'react';
+import type { Editor } from '@tiptap/core';
+import { useNavigate, useParams } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 
 import { useAdminTheme } from '../../../admin/dashboard/context/AdminThemeContext';
+import { STUDENT_REPORTS_PATH } from '../constants/routes';
+import { usePageAnalysis } from '../hooks/usePageAnalysis';
 import { useReportPlatform } from '../hooks/useReportPlatform';
+import type { AnalysisIssue, AnalysisMode } from '../types/pageAnalysis';
 import ReportAnalyticsBar from '../components/editor/ReportAnalyticsBar';
 import ReportEditorTopBar from '../components/editor/ReportEditorTopBar';
+import ReportExitDialog from '../components/editor/ReportExitDialog';
 import ReportExportCenter from '../components/editor/ReportExportCenter';
 import ReportMainEditor from '../components/editor/ReportMainEditor';
-import ReportReferencesManager from '../components/editor/ReportReferencesManager';
+import ReportModelComparePane from '../components/editor/ReportModelComparePane';
+import ReportProgressSidebar from '../components/editor/ReportProgressSidebar';
 import ReportRightPanel from '../components/editor/ReportRightPanel';
 import ReportVersionHistoryPanel from '../components/editor/ReportVersionHistoryPanel';
 
 const ReportEditorPage: FunctionComponent = () => {
   const { reportId = 'rpt-main-2026' } = useParams<{ reportId: string }>();
+  const navigate = useNavigate();
   const { theme } = useAdminTheme();
   const platform = useReportPlatform(reportId);
+  const analysis = usePageAnalysis(reportId);
+  const editorRef = useRef<Editor | null>(null);
+
   const [isExporting, setIsExporting] = useState(false);
+  const [exitOpen, setExitOpen] = useState(false);
+  const [rightPanelBeforeCompare, setRightPanelBeforeCompare] = useState(true);
+  const [pageCount, setPageCount] = useState(1);
+  const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [navigateToHeading, setNavigateToHeading] = useState<{
+    title: string;
+    level: 1 | 2 | 3;
+    token: number;
+  } | null>(null);
+  const [highlightIssue, setHighlightIssue] = useState<{
+    quote: string;
+    pageNumber: number;
+    token: number;
+  } | null>(null);
+  const [activeOutlineId, setActiveOutlineId] = useState<string | null>(null);
+
+  const compareOpen = platform.modelGuidePanelOpen;
+
+  const handleEditorReady = useCallback((editor: Editor | null) => {
+    editorRef.current = editor;
+  }, []);
+
+  const closeCompare = useCallback(() => {
+    platform.setModelGuidePanelOpen(false);
+    platform.setRightPanelOpen(rightPanelBeforeCompare);
+  }, [platform, rightPanelBeforeCompare]);
+
+  const openCompare = useCallback(() => {
+    setRightPanelBeforeCompare(platform.rightPanelOpen);
+    platform.setRightPanelOpen(false);
+    platform.setModelGuidePanelOpen(true);
+  }, [platform]);
+
+  const leaveEditor = useCallback(() => {
+    navigate(STUDENT_REPORTS_PATH);
+  }, [navigate]);
+
+  const requestQuit = useCallback(() => {
+    if (platform.autoSaveEnabled) {
+      platform.flushPendingSave();
+      leaveEditor();
+      return;
+    }
+    if (platform.isDirty) {
+      setExitOpen(true);
+      return;
+    }
+    leaveEditor();
+  }, [
+    leaveEditor,
+    platform.autoSaveEnabled,
+    platform.flushPendingSave,
+    platform.isDirty,
+  ]);
+
+  const handleSaveAndQuit = useCallback(() => {
+    platform.saveNow();
+    setExitOpen(false);
+    leaveEditor();
+  }, [leaveEditor, platform.saveNow]);
+
+  const handleDiscardAndQuit = useCallback(() => {
+    platform.discardChanges();
+    setExitOpen(false);
+    leaveEditor();
+  }, [leaveEditor, platform.discardChanges]);
 
   const exportPdf = useCallback(async () => {
     setIsExporting(true);
@@ -52,6 +128,29 @@ const ReportEditorPage: FunctionComponent = () => {
     URL.revokeObjectURL(url);
   }, [platform.report]);
 
+  const runAnalyze = useCallback(
+    (mode: AnalysisMode = 'full') => {
+      void analysis.runAnalysis(editorRef.current, mode, currentPageNumber);
+    },
+    [analysis, currentPageNumber],
+  );
+
+  const handleViewIssue = useCallback((issue: AnalysisIssue) => {
+    setHighlightIssue({
+      quote: issue.quote || '',
+      pageNumber: issue.pageNumber || currentPageNumber,
+      token: Date.now(),
+    });
+  }, [currentPageNumber]);
+
+  const bodyClass = [
+    'student-report-editor-body',
+    compareOpen ? 'student-report-editor-body--compare' : '',
+    !platform.rightPanelOpen && !compareOpen ? 'student-report-editor-body--expanded' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div
       data-admin-theme={theme}
@@ -63,31 +162,87 @@ const ReportEditorPage: FunctionComponent = () => {
         autoSaveEnabled={platform.autoSaveEnabled}
         savedLabel={platform.savedLabel}
         rightPanelOpen={platform.rightPanelOpen}
+        modelCompareOpen={compareOpen}
         onTitleChange={platform.setTitle}
         onAutoSaveChange={platform.setAutoSave}
         onSave={platform.saveNow}
         onExportPdf={() => void exportPdf()}
         onExportDocx={exportDocx}
-        onOpenVersions={() => platform.setVersionPanelOpen(true)}
-        onOpenReferences={() => platform.setReferencesPanelOpen(true)}
-        onTogglePanel={() => platform.setRightPanelOpen((v) => !v)}
+        onOpenModelGuide={compareOpen ? closeCompare : openCompare}
+        onTogglePanel={() => {
+          if (compareOpen) return;
+          platform.setRightPanelOpen((v) => !v);
+        }}
+        onQuit={requestQuit}
       />
 
-      <ReportAnalyticsBar analytics={platform.analytics} />
+      <ReportAnalyticsBar
+        analytics={platform.analytics}
+        pageCount={pageCount}
+        maxPages={platform.modelGuide?.maxPages}
+      />
 
-      <div className={`student-report-editor-body ${platform.rightPanelOpen ? '' : 'student-report-editor-body--expanded'}`}>
+      <div className={bodyClass}>
+        {!compareOpen && (
+          <ReportProgressSidebar
+            reportId={reportId}
+            model={platform.modelGuide}
+            studentHtml={platform.report.content}
+            pageCount={pageCount}
+            selectedSectionId={activeOutlineId}
+            onSelectSection={(section) => {
+              setActiveOutlineId(section.id);
+              setNavigateToHeading({
+                title: section.title,
+                level: section.level,
+                token: Date.now(),
+              });
+            }}
+          />
+        )}
+
         <ReportMainEditor
           content={platform.report.content}
           onContentChange={platform.updateContent}
+          onPageCountChange={setPageCount}
+          onCurrentPageChange={setCurrentPageNumber}
+          onEditorReady={handleEditorReady}
+          navigateToHeading={navigateToHeading}
+          highlightIssue={highlightIssue}
+          comments={platform.report.comments}
+          onOpenComments={() => {
+            if (compareOpen) closeCompare();
+            platform.setRightPanelOpen(true);
+          }}
         />
 
-        {platform.rightPanelOpen && (
-          <ReportRightPanel
-            comments={platform.report.comments}
-            onResolve={(id) => platform.updateComment(id, { resolved: true })}
-            onMarkFixed={(id) => platform.updateComment(id, { fixed: true })}
-            onReply={platform.replyToComment}
+        {compareOpen ? (
+          <ReportModelComparePane
+            model={platform.modelGuide}
+            loadState={platform.modelGuideState}
+            focusSectionId={null}
+            onClose={closeCompare}
+            onRetry={platform.refreshModelGuide}
           />
+        ) : (
+          platform.rightPanelOpen && (
+            <ReportRightPanel
+              comments={platform.report.comments}
+              onResolve={(id) => platform.updateComment(id, { resolved: true })}
+              onMarkFixed={(id) => platform.updateComment(id, { fixed: true })}
+              onReply={platform.replyToComment}
+              reviewerState={analysis.state}
+              reviewerResult={analysis.result}
+              reviewerError={analysis.error}
+              reviewerIssues={analysis.visibleIssues}
+              reviewerLoading={analysis.isLoading}
+              currentPageNumber={currentPageNumber}
+              onAnalyzePage={() => runAnalyze('full')}
+              onAnalyzeMode={(mode) => runAnalyze(mode)}
+              onViewIssue={handleViewIssue}
+              onIgnoreIssue={analysis.ignoreIssue}
+            />
+          )
         )}
       </div>
 
@@ -98,14 +253,6 @@ const ReportEditorPage: FunctionComponent = () => {
         onRestore={platform.restoreVersion}
       />
 
-      <ReportReferencesManager
-        open={platform.referencesPanelOpen}
-        onClose={() => platform.setReferencesPanelOpen(false)}
-        references={platform.report.references}
-        onAdd={platform.addReference}
-        onRemove={platform.removeReference}
-      />
-
       <ReportExportCenter
         open={platform.exportPanelOpen}
         onClose={() => platform.setExportPanelOpen(false)}
@@ -113,6 +260,13 @@ const ReportEditorPage: FunctionComponent = () => {
         onExportDocx={exportDocx}
         onPrint={platform.exportPrint}
         isExporting={isExporting}
+      />
+
+      <ReportExitDialog
+        open={exitOpen}
+        onCancel={() => setExitOpen(false)}
+        onSaveAndQuit={handleSaveAndQuit}
+        onDiscardAndQuit={handleDiscardAndQuit}
       />
     </div>
   );

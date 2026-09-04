@@ -1,29 +1,47 @@
 import { FunctionComponent } from 'react';
-import { Calendar, Clock, FileText, XCircle, LucideIcon } from 'lucide-react';
-import AdminKpiGrid from '../../../../ui/AdminKpiGrid';
-import AdminKpiStatCard from '../../../../ui/AdminKpiStatCard';
-
-const overviewStats: { label: string; value: string; icon: LucideIcon; accent: string; bg: string }[] = [
-  { label: 'Total Rejected', value: '58', icon: XCircle, accent: '#dc2626', bg: 'rgba(220, 38, 38, 0.1)' },
-  { label: 'This Month', value: '15', icon: Calendar, accent: '#d97706', bg: 'rgba(217, 119, 6, 0.1)' },
-  { label: 'Resubmitted', value: '23', icon: FileText, accent: '#2563eb', bg: 'rgba(37, 99, 235, 0.1)' },
-  { label: 'Pending Resubmission', value: '35', icon: Clock, accent: '#7c3aed', bg: 'rgba(124, 58, 237, 0.1)' },
-];
+import { Calendar, Clock, FileText, XCircle } from 'lucide-react';
+import DocumentsOverviewStatGrid from '../../shared/DocumentsOverviewStatGrid';
 
 const RejectedDocumentsOverviewCards: FunctionComponent = () => (
-  <AdminKpiGrid columns={4}>
-    {overviewStats.map((stat, index) => (
-      <AdminKpiStatCard
-        key={stat.label}
-        label={stat.label}
-        value={stat.value}
-        icon={stat.icon}
-        accent={stat.accent}
-        accentBg={stat.bg}
-        index={index}
-      />
-    ))}
-  </AdminKpiGrid>
+  <DocumentsOverviewStatGrid
+    items={[
+      {
+        label: 'Total Rejected',
+        value: '58',
+        badge: 'Rejetés',
+        icon: XCircle,
+        accent: '#ef4444',
+        accentBg: 'rgba(239, 68, 68, 0.16)',
+      },
+      {
+        label: 'This Month',
+        value: '15',
+        badge: '26% du total',
+        icon: Calendar,
+        accent: '#f59e0b',
+        accentBg: 'rgba(245, 158, 11, 0.16)',
+        piePercent: 26,
+      },
+      {
+        label: 'Resubmitted',
+        value: '23',
+        badge: '40% du total',
+        icon: FileText,
+        accent: '#3b82f6',
+        accentBg: 'rgba(59, 130, 246, 0.16)',
+        piePercent: 40,
+      },
+      {
+        label: 'Pending Resubmission',
+        value: '35',
+        badge: '60% du total',
+        icon: Clock,
+        accent: '#8b5cf6',
+        accentBg: 'rgba(139, 92, 246, 0.16)',
+        piePercent: 60,
+      },
+    ]}
+  />
 );
 
 export default RejectedDocumentsOverviewCards;

@@ -1,15 +1,49 @@
-import { FunctionComponent } from 'react';
-import { ASSIGNED_STUDENTS_STATS_GRID } from '../constants/assignedStudentsLayout';
+import { FunctionComponent, useMemo } from 'react';
+import { UserCheck, UserX, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import PlatformKpiStrip from '../../../../../../design-system/PlatformKpiStrip';
+import { encadrantKpiTone } from '../../../../constants/encadrantKpiTones';
 import { assignedStudentsSummaryMock } from '../data';
-import AssignedStudentsSummaryCard from './AssignedStudentsSummaryCard';
+import type { AssignedStudentsSummaryStat } from '../types';
 
-const AssignedStudentsSummaryGrid: FunctionComponent = () => (
-  <section aria-label="Assigned students summary" className={ASSIGNED_STUDENTS_STATS_GRID}>
-    {assignedStudentsSummaryMock.map((stat) => (
-      <AssignedStudentsSummaryCard key={stat.label} stat={stat} />
-    ))}
-  </section>
-);
+const iconMap = {
+  users: Users,
+  active: UserCheck,
+  inactive: UserX,
+} as const;
+
+const labelKeyByIcon: Record<AssignedStudentsSummaryStat['icon'], string> = {
+  users: 'encadrant.dashboard.assigned.kpi.total',
+  active: 'encadrant.dashboard.assigned.kpi.active',
+  inactive: 'encadrant.dashboard.assigned.kpi.inactive',
+};
+
+const AssignedStudentsSummaryGrid: FunctionComponent = () => {
+  const { t } = useTranslation();
+
+  const items = useMemo(
+    () =>
+      assignedStudentsSummaryMock.map((stat) => {
+        const tones = encadrantKpiTone(stat.tone);
+        return {
+          id: stat.icon,
+          label: t(labelKeyByIcon[stat.icon]),
+          value: String(stat.value),
+          icon: iconMap[stat.icon],
+          accent: tones.accent,
+          accentBg: tones.bg,
+        };
+      }),
+    [t],
+  );
+
+  return (
+    <PlatformKpiStrip
+      items={items}
+      columns={3}
+      ariaLabel={t('encadrant.dashboard.assignedStudents')}
+    />
+  );
+};
 
 export default AssignedStudentsSummaryGrid;
-

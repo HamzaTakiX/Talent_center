@@ -1,5 +1,6 @@
 import { FunctionComponent, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import PlatformHeaderBrand from '../../platform-header/components/PlatformHeaderBrand';
 
 export type ChatSidebarHeaderProps = {
   title: string;
@@ -15,15 +16,7 @@ const ChatSidebarHeader: FunctionComponent<ChatSidebarHeaderProps> = ({
   actions,
 }) => (
   <div className="isi-sidebar-head isi-sidebar-head--brand">
-    <div className="isi-sidebar-brand">
-      <span className="isi-sidebar-brand-icon" aria-hidden>
-        <Icon strokeWidth={2.25} />
-      </span>
-      <div className="isi-sidebar-brand-copy">
-        <h2 className="isi-sidebar-title">{title}</h2>
-        {subtitle ? <p className="isi-sidebar-subtitle">{subtitle}</p> : null}
-      </div>
-    </div>
+    <PlatformHeaderBrand title={title} subtitle={subtitle} icon={Icon} titleAs="h2" />
     {actions ? <div className="isi-sidebar-actions">{actions}</div> : null}
   </div>
 );

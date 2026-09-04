@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ChatEmptyState from '../../../../admin/shared/admin-module-chat/components/ChatEmptyState';
 import SupportMessageComposer from '../../../../admin/shared/admin-support-inbox/components/SupportMessageComposer';
@@ -12,6 +12,9 @@ import {
   toChatToolMessages,
   useChatConversationTools,
 } from '../../../../shared/chat-design-system';
+import ChatComposerModuleExtras from '../../../../shared/contextual-chat/components/ChatComposerModuleExtras';
+import type { ChatEntityReference } from '../../../../shared/contextual-chat/types/chatEntityTypes';
+import { useSupportChatAreaComposer } from '../../../../shared/contextual-chat/hooks/useSupportChatAreaComposer';
 import StudentInternshipChatHeader from './StudentInternshipChatHeader';
 
 type Props = {
@@ -26,7 +29,12 @@ type Props = {
   messagesLoading?: boolean;
   conversationLoading?: boolean;
   statsLoading?: boolean;
-  onSend: (text: string, files?: File[]) => void;
+  onSend: (
+    text: string,
+    files?: File[],
+    tagCodes?: string[],
+    entityRefs?: ChatEntityReference[],
+  ) => void;
   onBack?: () => void;
   onViewOffer: () => void;
   onArchive: () => void;
@@ -51,16 +59,15 @@ const StudentInternshipChatArea: FunctionComponent<Props> = ({
   onTyping,
 }) => {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState('');
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const [attachError, setAttachError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const composer = useSupportChatAreaComposer(conversation?.id, onSend);
 
   const chatTools = useChatConversationTools({
     messages: toChatToolMessages(conversation?.messages ?? []),
     conversationKey: conversation?.id ?? '',
     counterpartyName: conversation?.company,
     archived: conversation?.archived,
+    showArchive: false,
     onArchive,
     onUnarchive,
     scrollContainerRef: scrollRef,
@@ -69,21 +76,6 @@ const StudentInternshipChatArea: FunctionComponent<Props> = ({
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [conversation?.messages.length, conversation?.id]);
-
-  useEffect(() => {
-    setDraft('');
-    setPendingFiles([]);
-    setAttachError(null);
-  }, [conversation?.id]);
-
-  const handleSend = useCallback(() => {
-    const text = draft.trim();
-    if (!text && !pendingFiles.length) return;
-    onSend(text, pendingFiles.length ? pendingFiles : undefined);
-    setDraft('');
-    setPendingFiles([]);
-    setAttachError(null);
-  }, [draft, onSend, pendingFiles]);
 
   if ((conversationLoading || messagesLoading) && !conversation) {
     return <InternshipChatWorkspaceSkeleton />;
@@ -150,19 +142,30 @@ const StudentInternshipChatArea: FunctionComponent<Props> = ({
       {chatTools.panels}
 
       <SupportMessageComposer
-        value={draft}
-        onChange={setDraft}
-        onSend={handleSend}
+        value={composer.draft}
+        onChange={composer.setDraft}
+        onSend={composer.handleSend}
         onTyping={onTyping}
-        pendingFiles={pendingFiles}
-        onPendingFilesChange={setPendingFiles}
-        attachError={attachError}
-        onAttachError={setAttachError}
+        pendingFiles={composer.pendingFiles}
+        onPendingFilesChange={composer.setPendingFiles}
+        attachError={composer.attachError}
+        onAttachError={composer.setAttachError}
         placeholder={t('student.internshipOffers.chat.composer')}
         inputAriaLabel={t('student.internshipOffers.chat.composer')}
         attachAriaLabel={t('student.internshipOffers.chat.attachFile')}
         sendAriaLabel={t('student.internshipOffers.chat.sendMessage')}
         showVoice={false}
+        extraActions={
+          <ChatComposerModuleExtras
+            chatModule="offers"
+            conversationId={conversation.id}
+            composer={composer}
+            disabled={conversation.archived}
+            showTagPicker={false}
+          />
+        }
+        pendingEntities={composer.pendingEntities}
+        onRemovePendingEntity={composer.removePendingEntity}
       />
     </section>
   );

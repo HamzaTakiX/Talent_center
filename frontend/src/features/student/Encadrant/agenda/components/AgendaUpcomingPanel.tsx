@@ -1,12 +1,13 @@
 import { FunctionComponent, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Eye, Video, Calendar, Clock, LayoutGrid, List } from 'lucide-react';
+import { Eye, Video, Calendar, Clock, LayoutGrid, List } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { fadeInUp } from '../../../../admin/dashboard/ui/animations';
-import StudentSearchEmptyState from '../../../ui/StudentSearchEmptyState';
+import { MeetingEmptyState } from '../../../../shared/meeting-room';
 import { AGENDA_CATEGORY_CLASS } from '../constants/eventCategories';
 import { AGENDA_PRIORITY_CLASS } from '../constants/agendaPriorities';
 import { AGENDA_GLASS_CARD, AGENDA_GHOST_BTN, AGENDA_PRIMARY_BTN } from '../constants/agendaLayout';
+import { AgendaMeetingJoinButton } from '../../../../shared/meeting-room';
 import type { AgendaPlatformEvent } from '../types';
 import { getAgendaLocale } from '../utils/calendarLocale';
 
@@ -73,15 +74,17 @@ const AgendaUpcomingEventCard: FunctionComponent<AgendaUpcomingEventCardProps> =
           ) : null}
         </div>
 
-        <h3 className="student-agenda-upcoming-card__title">{t(event.titleKey)}</h3>
+        <h3 className="student-agenda-upcoming-card__title">{event.title}</h3>
 
-        <p className={`student-agenda-upcoming-card__desc ${isGrid ? 'line-clamp-2' : ''}`}>
-          {t(event.descriptionKey)}
-        </p>
+        {event.description ? (
+          <p className={`student-agenda-upcoming-card__desc ${isGrid ? 'line-clamp-2' : ''}`}>
+            {event.description}
+          </p>
+        ) : null}
 
-        {!isGrid ? (
+        {!isGrid && event.organizerName ? (
           <p className="student-agenda-upcoming-card__organizer">
-            {t('student.encadrant.agenda.platform.modal.organizer')}: {t(event.organizerKey)}
+            {t('student.encadrant.agenda.platform.modal.organizer')}: {event.organizerName}
           </p>
         ) : null}
 
@@ -100,21 +103,22 @@ const AgendaUpcomingEventCard: FunctionComponent<AgendaUpcomingEventCardProps> =
 
         <div className={`student-agenda-upcoming-card__actions ${isGrid ? 'student-agenda-upcoming-card__actions--compact' : ''}`}>
           {event.showJoin ? (
-            <button type="button" className={AGENDA_PRIMARY_BTN}>
+            <AgendaMeetingJoinButton
+              portal="student"
+              mode="video"
+              meetingId={event.meetingId}
+              startAt={event.startAt}
+              title={event.title}
+              className={AGENDA_PRIMARY_BTN}
+            >
               <Video className="h-3.5 w-3.5" aria-hidden />
               {t('student.encadrant.agenda.joinMeeting')}
-            </button>
+            </AgendaMeetingJoinButton>
           ) : null}
           <button type="button" className={AGENDA_GHOST_BTN} onClick={() => onSelectEvent(event)}>
             <Eye className="h-3.5 w-3.5" aria-hidden />
             {!isGrid ? t('student.encadrant.agenda.platform.actions.viewDetails') : null}
           </button>
-          {!isGrid ? (
-            <button type="button" className={AGENDA_GHOST_BTN}>
-              <Bell className="h-3.5 w-3.5" aria-hidden />
-              {t('student.encadrant.agenda.platform.actions.addReminder')}
-            </button>
-          ) : null}
         </div>
       </div>
     </motion.article>
@@ -181,11 +185,7 @@ const AgendaUpcomingPanel: FunctionComponent<AgendaUpcomingPanelProps> = ({
         }`}
       >
         {events.length === 0 ? (
-          <StudentSearchEmptyState
-            titleKey="student.encadrant.agenda.platform.empty.meetingsTitle"
-            descriptionKey="student.encadrant.agenda.platform.empty.meetingsDesc"
-            variant="inline"
-          />
+          <MeetingEmptyState context="noUpcoming" variant="inline" />
         ) : (
           events.map((event, index) => (
             <AgendaUpcomingEventCard

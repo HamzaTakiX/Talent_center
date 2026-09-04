@@ -4,7 +4,7 @@ import { ReportsPendingStudentsSection, ReportsPendingSummaryGrid } from '../com
 import { REPORTS_PENDING_PAGE_ROOT } from '../constants/reportsPendingLayout';
 
 const ReportsPendingPage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Reports Pending" headerSubtitle="Encadrant Portal">
+  <EncadrantLayout>
     <div id="encadrant-reports-pending-root" className={REPORTS_PENDING_PAGE_ROOT}>
       <ReportsPendingSummaryGrid />
       <ReportsPendingStudentsSection />

@@ -16,17 +16,28 @@ import {
   ENCADRANT_WORKSPACE_PATH,
 } from './routes';
 
+export type EncadrantNavId =
+  | 'dashboard'
+  | 'chat'
+  | 'agenda'
+  | 'task'
+  | 'workspace'
+  | 'reports';
+
 export interface EncadrantNavItem {
-  label: string;
+  id: EncadrantNavId;
   path: string;
   icon: LucideIcon;
 }
 
 export const ENCADRANT_NAV_ITEMS: EncadrantNavItem[] = [
-  { label: 'Dashboard', path: ENCADRANT_PATH, icon: LayoutDashboard },
-  { label: 'Chat', path: ENCADRANT_CHAT_PATH, icon: MessageSquare },
-  { label: 'Agenda', path: ENCADRANT_AGENDA_PATH, icon: Calendar },
-  { label: 'Task', path: ENCADRANT_TASK_PATH, icon: ListTodo },
-  { label: 'Workspace', path: ENCADRANT_WORKSPACE_PATH, icon: Video },
-  { label: 'Reports', path: ENCADRANT_REPORTS_PATH, icon: FilePenLine },
+  { id: 'dashboard', path: ENCADRANT_PATH, icon: LayoutDashboard },
+  { id: 'chat', path: ENCADRANT_CHAT_PATH, icon: MessageSquare },
+  { id: 'agenda', path: ENCADRANT_AGENDA_PATH, icon: Calendar },
+  { id: 'task', path: ENCADRANT_TASK_PATH, icon: ListTodo },
+  { id: 'workspace', path: ENCADRANT_WORKSPACE_PATH, icon: Video },
+  { id: 'reports', path: ENCADRANT_REPORTS_PATH, icon: FilePenLine },
 ];
+
+/** @deprecated Prefer `getEncadrantHeaderIcon` from `utils/encadrantPageTitle`. */
+export { getEncadrantHeaderIcon } from '../utils/encadrantPageTitle';

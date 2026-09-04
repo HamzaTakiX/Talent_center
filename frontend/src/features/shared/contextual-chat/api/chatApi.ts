@@ -7,6 +7,7 @@ import type {
   MessageDto,
   SmartActionCode,
 } from '../types';
+import type { ChatEntityReference } from '../types/chatEntityTypes';
 
 const BASE = '/chat';
 
@@ -56,12 +57,16 @@ export async function sendChatMessage(
   body: string,
   tagCodes?: string[],
   files?: File[],
+  entityRefs?: ChatEntityReference[],
 ): Promise<MessageDto | null> {
   if (files?.length) {
     const form = new FormData();
     form.append('body', body);
     if (tagCodes?.length) {
       form.append('tag_codes', JSON.stringify(tagCodes));
+    }
+    if (entityRefs?.length) {
+      form.append('entity_refs', JSON.stringify(entityRefs));
     }
     for (const file of files) {
       form.append('files', file);
@@ -76,7 +81,7 @@ export async function sendChatMessage(
 
   const { data } = await apiClient.post<ApiEnvelope<MessageDto>>(
     `${BASE}/conversations/${conversationId}/messages`,
-    { body, tag_codes: tagCodes ?? [] },
+    { body, tag_codes: tagCodes ?? [], entity_refs: entityRefs ?? [] },
   );
   if (!data.success || !data.data) return null;
   return data.data;
@@ -108,9 +113,25 @@ export async function sendTypingIndicator(
   await apiClient.post(`${BASE}/conversations/${conversationId}/typing`, { is_typing: isTyping });
 }
 
-export async function fetchChatTags(): Promise<{ code: string; name: string; color: string }[]> {
-  const { data } = await apiClient.get<ApiEnvelope<{ code: string; name: string; color: string }[]>>(
-    `${BASE}/tags`
+export async function fetchChatTags(
+  module: ChatModule,
+): Promise<{ code: string; name: string; color: string; is_system?: boolean }[]> {
+  const { data } = await apiClient.get<
+    ApiEnvelope<{ code: string; name: string; color: string; is_system?: boolean }[]>
+  >(`${BASE}/tags`, { params: { module } });
+  return data.data ?? [];
+}
+
+export async function fetchChatEntityReferences(
+  module: ChatModule,
+  options?: { conversationId?: number; q?: string },
+): Promise<ChatEntityReference[]> {
+  const params: Record<string, string> = { module };
+  if (options?.conversationId) params.conversation_id = String(options.conversationId);
+  if (options?.q) params.q = options.q;
+  const { data } = await apiClient.get<ApiEnvelope<ChatEntityReference[]>>(
+    `${BASE}/entity-references`,
+    { params },
   );
   return data.data ?? [];
 }
@@ -152,16 +173,37 @@ export interface ChatInboxModuleSummary {
   unread: number;
 }
 
-export async function fetchChatInboxSummary(): Promise<ChatInboxModuleSummary[]> {
-  const { data } = await apiClient.get<ApiEnvelope<{ modules: ChatInboxModuleSummary[] }>>(
-    `${BASE}/inbox/summary`,
-  );
-  if (!data.success || !data.data) return [];
-  return data.data.modules;
+export interface ChatInboxScopeSummary {
+  module: ChatModule;
+  entity_type: string;
+  conversation_count: number;
+  unread: number;
 }
 
-export async function fetchModuleChatMetrics(module: ChatModule): Promise<ChatMetricsDto | null> {
-  const { data } = await apiClient.get<ApiEnvelope<ChatMetricsDto>>(`${BASE}/modules/${module}/metrics`);
+export interface ChatInboxSummaryPayload {
+  modules: ChatInboxModuleSummary[];
+  scopes: ChatInboxScopeSummary[];
+}
+
+export async function fetchChatInboxSummary(): Promise<ChatInboxSummaryPayload> {
+  const { data } = await apiClient.get<ApiEnvelope<ChatInboxSummaryPayload>>(
+    `${BASE}/inbox/summary`,
+  );
+  if (!data.success || !data.data) return { modules: [], scopes: [] };
+  return {
+    modules: data.data.modules ?? [],
+    scopes: data.data.scopes ?? [],
+  };
+}
+
+export async function fetchModuleChatMetrics(
+  module: ChatModule,
+  options?: { entityType?: string },
+): Promise<ChatMetricsDto | null> {
+  const params = options?.entityType ? { entity_type: options.entityType } : undefined;
+  const { data } = await apiClient.get<ApiEnvelope<ChatMetricsDto>>(`${BASE}/modules/${module}/metrics`, {
+    params,
+  });
   return data.success && data.data ? data.data : null;
 }
 

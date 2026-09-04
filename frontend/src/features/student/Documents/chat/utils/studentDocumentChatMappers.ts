@@ -13,6 +13,7 @@ export type StudentDocumentMessage = {
   createdAt?: string;
   attachmentName?: string;
   attachments?: ChatAttachmentView[];
+  tags?: string[];
 };
 
 export type StudentDocumentConversation = {

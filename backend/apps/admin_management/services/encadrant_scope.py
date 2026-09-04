@@ -180,6 +180,22 @@ def resolve_supervised_internship_type_ids(
         if unknown:
             raise ValueError(f'Unknown internship type code(s): {", ".join(unknown)}')
 
+    if ids and level_ids:
+        allowed = set(
+            InternshipType.objects.filter(
+                pk__in=ids,
+                is_active=True,
+                academic_level_id__in=level_ids,
+            ).values_list('pk', flat=True),
+        )
+        out_of_scope = [pk for pk in ids if pk not in allowed]
+        if out_of_scope:
+            raise ValueError(
+                'One or more supervised internship types do not belong to the selected levels: '
+                f'{out_of_scope}',
+            )
+        ids = [pk for pk in ids if pk in allowed]
+
     if not ids and infer_if_missing and level_ids:
         ids = internship_type_ids_for_levels(level_ids)
 

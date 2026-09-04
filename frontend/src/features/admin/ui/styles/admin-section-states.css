@@ -72,6 +72,18 @@
   background: var(--admin-surface-inset, var(--admin-bg-elevated));
 }
 
+.admin-students-stats-skeleton__card {
+  pointer-events: none;
+  --student-stat-accent: var(--admin-brand);
+  --student-stat-accent-bg: var(--admin-brand-muted);
+}
+
+.admin-students-stats-skeleton__card:hover {
+  border-color: var(--admin-border);
+  transform: none;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.04);
+}
+
 .admin-panel-list-skeleton {
   display: flex;
   flex-direction: column;
@@ -87,8 +99,10 @@
 
 .admin-section-empty-state {
   padding-block: 2rem;
+  overflow: visible;
 }
 
 .admin-section-empty-state--inline {
-  padding-block: 1.25rem;
+  padding-block: 0.75rem 1.25rem;
+  overflow: visible;
 }

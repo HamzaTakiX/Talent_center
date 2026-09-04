@@ -16,8 +16,6 @@ import type {
   RecruitmentSettings,
   TextPhase,
 } from '../../types/createOfferWorkflow';
-import { useOfferBasicInfoOptions } from '../../../shared/hooks/useAcademicReferenceOptions';
-import AdminSelect from '../../../account/components/AdminSelect';
 import TagInput from './TagInput';
 import StepTargeting from './steps/StepTargeting';
 import { OFFER_STUDIO_BTN_PRIMARY, OFFER_STUDIO_BTN_SECONDARY } from './offerStudioClasses';
@@ -37,6 +35,7 @@ interface ParseFromTextWorkspaceProps {
   textPhase: TextPhase;
   textError: string | null;
   textExtractedFields: string[];
+  textMissingFields?: string[];
   form: CreateOfferFormState;
   onFormChange: (patch: Partial<CreateOfferFormState>) => void;
   onParse: () => void;
@@ -53,6 +52,7 @@ const ParseFromTextWorkspace: FunctionComponent<ParseFromTextWorkspaceProps> = (
   textPhase,
   textError,
   textExtractedFields,
+  textMissingFields = [],
   form,
   onFormChange,
   onParse,
@@ -63,7 +63,6 @@ const ParseFromTextWorkspace: FunctionComponent<ParseFromTextWorkspaceProps> = (
   audiencePreviewLoading = false,
 }) => {
   const { t } = useTranslation();
-  const { internshipTypeOptions } = useOfferBasicInfoOptions();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const RECRUITMENT_PREFIX = 'admin.forms.createOfferStudio.recruitment';
@@ -173,7 +172,7 @@ const ParseFromTextWorkspace: FunctionComponent<ParseFromTextWorkspaceProps> = (
               type="button"
               className={`${OFFER_STUDIO_BTN_PRIMARY} h-10 w-full sm:w-auto`}
               onClick={onParse}
-              disabled={!textInput.trim() || textPhase === 'parsing'}
+              disabled={!textInput.trim()}
             >
               <Scan className="h-4 w-4" aria-hidden />
               {t(`${PREFIX}.parse`)}
@@ -212,6 +211,19 @@ const ParseFromTextWorkspace: FunctionComponent<ParseFromTextWorkspaceProps> = (
                 <p className="mt-0.5 text-xs text-[var(--admin-text-secondary)]">
                   {t(`${PREFIX}.extractedHint`)}
                 </p>
+                {textMissingFields.length > 0 && (
+                  <p className="mt-1 text-xs text-[var(--admin-text-secondary)]">
+                    {t(`${PREFIX}.missingHint`, {
+                      fields: textMissingFields
+                        .map((field) =>
+                          t(`admin.forms.createOfferStudio.import.fields.${field === 'overview' ? 'description' : field}`, {
+                            defaultValue: field,
+                          }),
+                        )
+                        .join(', '),
+                    })}
+                  </p>
+                )}
               </div>
               <button
                 type="button"
@@ -273,7 +285,7 @@ const ParseFromTextWorkspace: FunctionComponent<ParseFromTextWorkspaceProps> = (
                     />
                   </AdminFormField>
                 </div>
-                <div className="offer-extracted-card">
+                <div className="offer-extracted-card md:col-span-2">
                   <AdminFormField
                     label={t('admin.forms.createOfferStudio.import.fields.location')}
                     htmlFor="text-location"
@@ -287,23 +299,6 @@ const ParseFromTextWorkspace: FunctionComponent<ParseFromTextWorkspaceProps> = (
                       required
                     />
                   </AdminFormField>
-                </div>
-                <div className="offer-extracted-card">
-                  <AdminSelect
-                    id="text-internship-type"
-                    label={`${t('admin.forms.createOfferStudio.import.fields.internshipType')} *`}
-                    value={form.internshipType}
-                    onChange={(v) => onFormChange({ internshipType: v })}
-                    options={[
-                      { value: '', label: t('admin.forms.createOfferStudio.types.select') },
-                      ...internshipTypeOptions,
-                    ]}
-                  />
-                  {requiredError(Boolean(form.internshipType)) ? (
-                    <p className="admin-form-field-error -mt-1">
-                      {requiredError(Boolean(form.internshipType))}
-                    </p>
-                  ) : null}
                 </div>
               </div>
             </section>

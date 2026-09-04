@@ -11,7 +11,10 @@ import {
   saveWhiteboardPreferences,
 } from '../data/whiteboardPreferencesStorage';
 import type { WhiteboardBackgroundType, WhiteboardPreferences } from '../types/whiteboardPreferences';
-import { getThemeDefaultBackgroundColor } from '../utils/whiteboardCanvasBackground';
+import {
+  getThemeDefaultBackgroundColor,
+  isThemeDefaultBackgroundColor,
+} from '../utils/whiteboardCanvasBackground';
 import { normalizeHex, parseColorInput } from '../utils/whiteboardColorUtils';
 
 function resolveUserId(authUserId: number | undefined): number | string {
@@ -45,7 +48,13 @@ export function useWhiteboardPreferences() {
   }, [userId, globalTheme]);
 
   useEffect(() => {
-    setPrefs((prev) => (prev.theme === globalTheme ? prev : { ...prev, theme: globalTheme }));
+    setPrefs((prev) => {
+      if (prev.theme === globalTheme) return prev;
+      const backgroundColor = isThemeDefaultBackgroundColor(prev.backgroundColor)
+        ? getThemeDefaultBackgroundColor(globalTheme)
+        : prev.backgroundColor;
+      return { ...prev, theme: globalTheme, backgroundColor };
+    });
   }, [globalTheme]);
 
   const persist = useCallback(
@@ -62,18 +71,13 @@ export function useWhiteboardPreferences() {
   const setThemePreference = useCallback(
     (nextTheme: AdminTheme) => {
       setTheme(nextTheme);
-      persist((prev) => {
-        const wasLightDefault =
-          prev.backgroundColor === '#ffffff' || prev.backgroundColor === '#f1f5f9';
-        const wasDarkDefault = prev.backgroundColor === '#0f172a' || prev.backgroundColor === '#1e293b';
-        let backgroundColor = prev.backgroundColor;
-        if (nextTheme === 'dark' && wasLightDefault) {
-          backgroundColor = getThemeDefaultBackgroundColor('dark');
-        } else if (nextTheme === 'light' && wasDarkDefault) {
-          backgroundColor = getThemeDefaultBackgroundColor('light');
-        }
-        return { ...prev, theme: nextTheme, backgroundColor };
-      });
+      persist((prev) => ({
+        ...prev,
+        theme: nextTheme,
+        backgroundColor: isThemeDefaultBackgroundColor(prev.backgroundColor)
+          ? getThemeDefaultBackgroundColor(nextTheme)
+          : prev.backgroundColor,
+      }));
     },
     [persist, setTheme],
   );

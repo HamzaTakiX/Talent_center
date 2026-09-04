@@ -7,7 +7,7 @@ import { filterEncadrantReportsBySlice } from '../utils/encadrantReportListFilte
 import { buildEncadrantReportCardStats } from '../utils/encadrantReportSubpageKpiStats';
 import { useSupervisionReports, useSupervisionReportsDashboard } from '../hooks/useSupervisionReports';
 import { filterToApiQueue } from '../data/encadrantReportCardRoutes';
-import { AdminKpiStripSkeleton } from '../../../ui';
+import { AdminKpiGridSkeleton } from '../../../ui';
 import EncadrantReportCardStatGrid from './EncadrantReportCardStatGrid';
 import EncadrantReportsSourceBanner from './EncadrantReportsSourceBanner';
 import EncadrantReportsStatusChart from './EncadrantReportsStatusChart';
@@ -108,16 +108,18 @@ const EncadrantReportFilteredLayout: FunctionComponent<EncadrantReportFilteredLa
           subtitle={t(copy.subtitleKey, { defaultValue: copy.defaultSubtitle })}
         />
       ) : null}
-      {filter === 'all' && summary ? (
-        <SupervisionReportsCriticalBanner summary={summary} />
+      {filter === 'all' ? (
+        <SupervisionReportsCriticalBanner summary={summary} loading={dashLoading && !summary} />
       ) : null}
       <EncadrantReportsSourceBanner count={pagination.total} loading={loading || dashLoading} />
       {loading || dashLoading ? (
-        <AdminKpiStripSkeleton count={5} />
+        <AdminKpiGridSkeleton count={5} columns={5} />
       ) : (
         <EncadrantReportCardStatGrid stats={cardStats} columns={5} />
       )}
-      {filter === 'all' && analytics ? <SupervisionReportsAnalyticsPanel analytics={analytics} /> : null}
+      {filter === 'all' ? (
+        <SupervisionReportsAnalyticsPanel analytics={analytics} loading={dashLoading && !analytics} />
+      ) : null}
       <EncadrantReportsStatusChart rows={sliceRows} filter={filter} loading={loading} />
       <EncadrantReportsTableSection
         rows={sliceRows}

@@ -28,6 +28,8 @@ export interface InternshipOffer {
   publishedAt?: string | null;
   isRemote?: boolean;
   distanceKm?: number | null;
+  /** Motifs du moteur de recommandation (pourquoi cette offre). */
+  matchReasons?: string[];
 }
 
 export type InternshipOfferSkillVariant = 'primary' | 'neutral';

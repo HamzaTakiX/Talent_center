@@ -43,7 +43,14 @@ const ChatConversationHistoryPanel: FunctionComponent<Props> = ({
             className="chat-conversation-panel chat-conversation-panel--history"
           >
             <header className="chat-conversation-panel__header">
-              <h3 className="chat-conversation-panel__title">{t('admin.chat.conversationHistory')}</h3>
+              <div className="chat-conversation-panel__header-copy">
+                <h3 className="chat-conversation-panel__title">{t('admin.chat.conversationHistory')}</h3>
+                <p className="chat-conversation-panel__subtitle">
+                  {t('admin.chat.conversationHistorySubtitle', {
+                    defaultValue: 'Repères du fil de discussion',
+                  })}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={onClose}
@@ -56,7 +63,12 @@ const ChatConversationHistoryPanel: FunctionComponent<Props> = ({
 
             <div className="chat-conversation-panel__body">
               {entries.length === 0 ? (
-                <p className="chat-conversation-panel__empty">{t('admin.chat.noHistory')}</p>
+                <div className="chat-conversation-panel__empty">
+                  <span className="chat-conversation-panel__empty-icon" aria-hidden>
+                    <Clock className="size-5" strokeWidth={1.75} />
+                  </span>
+                  <p>{t('admin.chat.noHistory')}</p>
+                </div>
               ) : (
                 <ol className="chat-history-timeline">
                   {entries.map((entry) => {

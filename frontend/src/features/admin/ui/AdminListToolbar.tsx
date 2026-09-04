@@ -28,9 +28,11 @@ export interface AdminListToolbarProps {
   filter2?: AdminListToolbarFilterConfig;
   createLabel?: string;
   onCreate?: () => void;
+  createVariant?: 'default' | 'primary';
   toolbarAriaLabel?: string;
   actionExtra?: ReactNode;
   beforeCreate?: ReactNode;
+  afterCreate?: ReactNode;
   controlsLayout?: AdminListToolbarControlsLayout;
 }
 
@@ -44,13 +46,15 @@ const AdminListToolbar: FunctionComponent<AdminListToolbarProps> = ({
   filter2,
   createLabel,
   onCreate,
+  createVariant = 'default',
   toolbarAriaLabel = 'List filters',
   actionExtra,
   beforeCreate,
+  afterCreate,
   controlsLayout = 'grid',
 }) => {
   const hasCreate = Boolean(onCreate && createLabel);
-  const hasAction = hasCreate || actionExtra || beforeCreate || controlsLayout === 'grouped';
+  const hasAction = hasCreate || actionExtra || beforeCreate || afterCreate || controlsLayout === 'grouped';
 
   const searchInput = (
     <AdminSearchInput
@@ -75,11 +79,16 @@ const AdminListToolbar: FunctionComponent<AdminListToolbarProps> = ({
       {actionExtra}
       {beforeCreate}
       {hasCreate && (
-        <button type="button" className="admin-module-toolbar__btn" onClick={onCreate}>
-          <Plus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+        <button
+          type="button"
+          className={`admin-module-toolbar__btn${createVariant === 'primary' ? ' admin-module-toolbar__btn--create' : ''}`}
+          onClick={onCreate}
+        >
+          <Plus className="h-4 w-4 shrink-0" strokeWidth={2.4} aria-hidden />
           <span>{createLabel}</span>
         </button>
       )}
+      {afterCreate}
     </div>
   );
 

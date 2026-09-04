@@ -12,12 +12,7 @@ ESCA_CATALOG_FILIERE_CODES: FrozenSet[str] = frozenset(
         'pge',
         'lme',
         'iba',
-        'master-ascm',
-        'master-md',
-        'master-mrh',
-        'master-acg-sicg',
-        'master-mf-fif',
-        'master-miiss',
+        'master-fta',
     }
 )
 

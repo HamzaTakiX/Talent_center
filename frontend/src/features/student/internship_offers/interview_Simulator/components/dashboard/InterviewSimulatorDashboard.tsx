@@ -200,7 +200,6 @@ const InterviewSimulatorDashboard: FunctionComponent = () => {
               onSubmit={sim.submitAnswer}
               onSkip={sim.skipQuestion}
               onNext={sim.nextQuestion}
-              onExit={sim.backToHub}
               onEndSimulation={sim.endSimulation}
               isBusy={sim.isBusy}
             />

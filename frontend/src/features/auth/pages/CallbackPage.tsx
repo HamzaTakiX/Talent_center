@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthInitLoader } from '../components/AuthInitLoader';
 import { useAuth } from '../hooks/useAuth';
+import { getAuth0CallbackErrorMessage, isMicrosoftAccessDeniedMessage } from '../utils/loginErrors';
 import { getDefaultHomePath, normalizeRole } from '../utils/roleAuth';
 
 export const CallbackPage = () => {
@@ -15,18 +16,41 @@ export const CallbackPage = () => {
   useEffect(() => {
     if (error) {
       console.error('Auth0 callback error:', error);
-      navigate('/login', { replace: true });
+      const message = getAuth0CallbackErrorMessage(error, t);
+      if (message && isMicrosoftAccessDeniedMessage(message, t)) {
+        navigate('/unauthorized', {
+          replace: true,
+          state: { reason: 'sso', message },
+        });
+        return;
+      }
+      navigate('/login', {
+        replace: true,
+        ...(message ? { state: { authError: message } } : {}),
+      });
       return;
     }
 
     if (!isAuth0Loading && isAuthReady && !isLoading) {
       if (user) {
         navigate(getDefaultHomePath(normalizeRole(user.role)), { replace: true });
-      } else {
-        navigate('/login', { replace: true, state: { authError } });
+        return;
       }
+
+      if (authError && isMicrosoftAccessDeniedMessage(authError, t)) {
+        navigate('/unauthorized', {
+          replace: true,
+          state: { reason: 'sso', message: authError },
+        });
+        return;
+      }
+
+      navigate('/login', {
+        replace: true,
+        ...(authError ? { state: { authError } } : {}),
+      });
     }
-  }, [error, isAuth0Loading, isAuthReady, isLoading, user, authError, navigate]);
+  }, [error, isAuth0Loading, isAuthReady, isLoading, user, authError, navigate, t]);
 
   return (
     <AuthInitLoader

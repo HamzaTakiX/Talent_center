@@ -2,7 +2,7 @@ import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronRight, Users } from 'lucide-react';
+import { Calendar, CalendarDays, ChevronRight, Users } from 'lucide-react';
 import AdminPagination from '../../../ui/AdminPagination';
 import AdminEmptyState from '../../../ui/AdminEmptyState';
 import { AdminSectionSkeletonShell } from '../../../ui/AdminSectionSkeleton';
@@ -37,11 +37,16 @@ const MeetingsTableSection: FunctionComponent<MeetingsTableSectionProps> = ({
   const locale = i18n.language === 'ar' ? 'ar-MA' : i18n.language === 'en' ? 'en-GB' : 'fr-FR';
 
   return (
-    <section className="admin-meetings-list admin-card">
+    <div className="admin-meetings-list">
       <div className="admin-meetings-list__head">
-        <h3 className="admin-meetings-panel-title">
-          {t('admin.modules.meetings.table.sectionTitle', { defaultValue: 'Meeting operations' })}
-        </h3>
+        <div className="admin-meetings-list__title-wrap">
+          <span className="admin-meetings-list__icon" aria-hidden>
+            <CalendarDays className="h-4 w-4" strokeWidth={2} />
+          </span>
+          <h3 className="admin-meetings-panel-title">
+            {t('admin.modules.meetings.table.sectionTitle', { defaultValue: 'Meeting list' })}
+          </h3>
+        </div>
         <span className="admin-meetings-list__count">{totalItems}</span>
       </div>
 
@@ -125,7 +130,7 @@ const MeetingsTableSection: FunctionComponent<MeetingsTableSectionProps> = ({
         onPageChange={onPageChange}
         itemLabel={t('admin.modules.meetings.table.items', { defaultValue: 'meetings' })}
       />
-    </section>
+    </div>
   );
 };
 

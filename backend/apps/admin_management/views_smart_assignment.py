@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from apps.authentication.utils import envelope
 
 from .models import Assignment
-from .permissions import IsPlatformAdmin, IsSuperAdmin
+from .permissions import EffectiveHasPermission, IsPlatformAdmin, IsSuperAdmin
 from .serializers import (
     SmartAssignmentLockSerializer,
     SmartAssignmentReassignSerializer,
@@ -27,7 +27,8 @@ from .services.smart_assignment_validation import run_smart_assignment_precheck
 class SmartAssignmentResultsView(APIView):
     """Current assignment distribution for an academic year."""
 
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def get(self, request):
         academic_year = request.query_params.get('academic_year', '')
@@ -47,7 +48,8 @@ class SmartAssignmentResultsView(APIView):
 class SmartAssignmentAnalyticsView(APIView):
     """Internship-type analytics for the smart assignment dashboard."""
 
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def get(self, request):
         academic_year = request.query_params.get('academic_year', '')
@@ -64,7 +66,8 @@ class SmartAssignmentAnalyticsView(APIView):
 class SmartAssignmentPrecheckView(APIView):
     """Validate prerequisites before running the assignment engine."""
 
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def post(self, request):
         serializer = SmartAssignmentRunSerializer(data=request.data)
@@ -91,7 +94,8 @@ class SmartAssignmentPrecheckView(APIView):
 class SmartAssignmentPreviewView(APIView):
     """Dry-run the assignment engine without persisting."""
 
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def post(self, request):
         serializer = SmartAssignmentRunSerializer(data=request.data)
@@ -133,7 +137,8 @@ class SmartAssignmentPreviewView(APIView):
 class SmartAssignmentRunView(APIView):
     """Execute the assignment engine and persist results."""
 
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def post(self, request):
         if not is_super_admin(request.user):
@@ -185,7 +190,8 @@ class SmartAssignmentRunView(APIView):
 class SmartAssignmentReassignView(APIView):
     """Manually move a student to another encadrant."""
 
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def patch(self, request):
         if not is_super_admin(request.user):

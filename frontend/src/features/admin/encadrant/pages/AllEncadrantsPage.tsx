@@ -1,16 +1,14 @@
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import AdminModulePageShell from '../../ui/AdminModulePageShell';
 import { AdminModulePageSkeleton } from '../../ui';
-import { AdminStatChartSection } from '../../ui';
 import EncadrantsSummaryGrid from '../components/EncadrantsSummaryGrid';
 import EncadrantsTablePanel from '../components/EncadrantsTablePanel';
-import EncadrantsSubpageDonutChart from '../encadrant_cards/shared/components/charts/EncadrantsSubpageDonutChart';
 import { computeEncadrantStatsFromRows } from '../encadrant_cards/shared/utils/encadrantStats';
 import { adminEncadrantsApi } from '../../api/encadrants';
 import type { AdminEncadrantRow } from '../../api/types';
-import { DEFAULT_SERVER_PAGE_SIZE } from '../../shared/hooks/useAdminPagination';
 
 const KPI_FETCH_PAGE_SIZE = 500;
+const TABLE_PAGE_SIZE = 10;
 
 const AllEncadrantsPage: FunctionComponent = () => {
   const [query, setQuery] = useState('');
@@ -47,7 +45,7 @@ const AllEncadrantsPage: FunctionComponent = () => {
         search: query.trim() || undefined,
         status: statusFilter === 'all' ? undefined : statusFilter,
         page,
-        page_size: DEFAULT_SERVER_PAGE_SIZE,
+        page_size: TABLE_PAGE_SIZE,
       });
       setTableRows(data.items);
       setTotalItems(data.total);
@@ -95,16 +93,13 @@ const AllEncadrantsPage: FunctionComponent = () => {
   return (
     <AdminModulePageShell width="wide">
       <div data-admin-search-id="encadrants-stats">
-        <EncadrantsSummaryGrid rows={kpiRows} loading={kpiLoading} />
-      </div>
-      <AdminStatChartSection chartId="encadrants-department-load" loading={kpiLoading}>
-        <EncadrantsSubpageDonutChart
-          filter="all"
-          globalStats={kpiLoading ? null : encadrantStats}
-          allRows={kpiRows}
+        <EncadrantsSummaryGrid
+          rows={kpiRows}
           loading={kpiLoading}
+          encadrantStats={kpiLoading ? null : encadrantStats}
+          chartLoading={kpiLoading}
         />
-      </AdminStatChartSection>
+      </div>
       <div data-admin-search-id="encadrants-table">
         <EncadrantsTablePanel
           rows={tableRows}
@@ -116,7 +111,7 @@ const AllEncadrantsPage: FunctionComponent = () => {
           page={page}
           totalPages={totalPages}
           totalItems={totalItems}
-          pageSize={DEFAULT_SERVER_PAGE_SIZE}
+          pageSize={TABLE_PAGE_SIZE}
           onPageChange={setPage}
           onRefresh={refreshAll}
         />

@@ -52,6 +52,7 @@ class EmailProviderConfig(TimestampedModel):
     class Provider(models.TextChoices):
         MOCK = 'mock', 'Mock (development)'
         SENDGRID = 'sendgrid', 'SendGrid'
+        BREVO = 'brevo', 'Brevo'
         SES = 'ses', 'Amazon SES'
         MAILGUN = 'mailgun', 'Mailgun'
         SMTP = 'smtp', 'SMTP'

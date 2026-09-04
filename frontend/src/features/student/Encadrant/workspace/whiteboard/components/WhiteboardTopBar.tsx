@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
-import { Download, FileImage, History, Save, Settings2, Share2 } from 'lucide-react';
+import { Download, FileImage, History, LogOut, Save, Settings2, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import escaLogoLight from '../../../../../auth/assets/images/common/Logo_ESCA.png';
@@ -17,6 +17,7 @@ interface WhiteboardTopBarProps {
   onExportPng: () => void;
   onExportPdf: () => void;
   onShare: () => void;
+  onExit: () => void;
   onOpenVersions: () => void;
   savedLabel: string | null;
   autoSaveEnabled: boolean;
@@ -34,6 +35,7 @@ const WhiteboardTopBar: FunctionComponent<WhiteboardTopBarProps> = ({
   onExportPng,
   onExportPdf,
   onShare,
+  onExit,
   onOpenVersions,
   savedLabel,
   autoSaveEnabled,
@@ -55,6 +57,10 @@ const WhiteboardTopBar: FunctionComponent<WhiteboardTopBarProps> = ({
           to={STUDENT_ENCADRANT_WORKSPACE_PATH}
           className="student-whiteboard-logo-link"
           title={t('student.encadrant.workspace.whiteboardPage.back')}
+          onClick={(e) => {
+            e.preventDefault();
+            onExit();
+          }}
         >
           <img
             src={escaLogo}
@@ -137,6 +143,15 @@ const WhiteboardTopBar: FunctionComponent<WhiteboardTopBarProps> = ({
         <button type="button" className="student-whiteboard-action" onClick={onOpenVersions}>
           <History className="h-4 w-4" aria-hidden />
           <span className="hidden lg:inline">{t('student.encadrant.workspace.whiteboardPage.versions.button')}</span>
+        </button>
+        <button
+          type="button"
+          className="student-whiteboard-action student-whiteboard-action--exit"
+          onClick={onExit}
+          title={t('student.encadrant.workspace.whiteboardPage.exit.button')}
+        >
+          <LogOut className="h-4 w-4" aria-hidden />
+          <span className="hidden sm:inline">{t('student.encadrant.workspace.whiteboardPage.exit.button')}</span>
         </button>
       </div>
 

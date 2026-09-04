@@ -56,6 +56,19 @@ export const studentEncadrantChatInitialMessages: Record<string, ChatMessage[]> 
       text: 'Please update Chapter 2 before our weekly review tomorrow at 14:00. Bring your questions about the methodology section.',
       time: '11:24',
     },
+    {
+      id: 'st-enc1m4',
+      direction: 'in',
+      text: 'Meeting request',
+      time: '11:26',
+      messageType: 'MEETING_REQUEST',
+      meetingRequest: {
+        requestId: 'mr-demo-student-1',
+        mode: 'video',
+        status: 'pending',
+        title: 'Weekly Progress Review',
+      },
+    },
   ],
   'st-enc2': [
     {

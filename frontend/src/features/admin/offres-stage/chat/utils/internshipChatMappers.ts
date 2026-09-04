@@ -197,6 +197,7 @@ export function mapMessages(
         smartActionCode,
         createdAt: m.created_at,
         tags: m.tags,
+        entityRefs: m.entity_refs?.length ? m.entity_refs : undefined,
         attachmentName: m.attachments?.[0]?.original_filename,
         attachments: mapMessageAttachments(m),
       };

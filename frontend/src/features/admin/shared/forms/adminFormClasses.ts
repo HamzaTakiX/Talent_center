@@ -23,6 +23,10 @@ export const adminFormSubtitleClass =
 export const adminFormGridClass =
   'admin-form__grid grid grid-cols-1 gap-6 md:grid-cols-2 sm:gap-x-8 sm:gap-y-6';
 
+/** Grille cascade académique (filière → niveau → stage…) — 2 colonnes équilibrées. */
+export const adminAcademicHierarchyGridClass =
+  'admin-academic-hierarchy grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-4';
+
 export const adminFormLabelClass =
   'admin-form-label flex items-center gap-2 text-sm font-semibold text-[var(--admin-text)]';
 

@@ -1,0 +1,34 @@
+Titre: Stage Développeur Full Stack
+Entreprise: TechCorp Maroc
+Ville: Casablanca
+Type de stage: PFE
+
+Présentation:
+Nous recherchons un stagiaire motivé pour rejoindre notre équipe produit et participer au développement d'applications web utilisées par des milliers d'utilisateurs.
+
+Missions:
+- Développer des interfaces React
+- Concevoir des API REST avec Node.js
+- Participer aux cérémonies agile et aux revues de code
+- Rédiger la documentation technique
+
+Profil recherché:
+- Étudiant(e) en dernière année (informatique, génie logiciel ou équivalent)
+- Bonnes bases en JavaScript et développement web
+- Esprit d'équipe et autonomie
+
+Compétences requises:
+React, Node.js, Python, Git, SQL
+
+Compétences souhaitées:
+Docker, TypeScript, AWS
+
+Langues:
+Français, Anglais
+
+Avantages:
+- Indemnité mensuelle
+- Encadrement par un mentor senior
+- Possibilité d'embauche en CDI
+
+Date limite: 31/12/2025

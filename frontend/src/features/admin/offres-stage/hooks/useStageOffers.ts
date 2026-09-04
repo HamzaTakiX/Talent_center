@@ -72,11 +72,10 @@ function buildStats(data: StageAnalyticsDashboard, counts: StatusCounts): Intern
 
   return [
     {
-      label: 'Total Offers',
-      labelKey: 'admin.kpi.offers.totalOffers',
-      statKey: 'totalOffers',
-      value: String(s.total_offers),
-      icon: 'Briefcase',
+      label: 'Acceptance Rate',
+      labelKey: 'admin.kpi.offers.acceptanceRate',
+      value: `${s.total_applications > 0 ? s.acceptance_rate : 0}%`,
+      icon: 'TrendingUp',
     },
     {
       label: 'Active Offers',
@@ -121,11 +120,11 @@ function buildStats(data: StageAnalyticsDashboard, counts: StatusCounts): Intern
       icon: 'Users',
     },
     {
-      label: 'Acceptance Rate',
-      labelKey: 'admin.kpi.offers.acceptanceRate',
-      value: s.total_applications > 0 ? `${s.acceptance_rate}%` : '—',
-      valueKey: s.total_applications > 0 ? undefined : 'admin.kpi.offers.notDetectedYet',
-      icon: 'TrendingUp',
+      label: 'Total Offers',
+      labelKey: 'admin.kpi.offers.totalOffers',
+      statKey: 'totalOffers',
+      value: String(s.total_offers),
+      icon: 'Briefcase',
     },
     {
       label: 'Most Popular',

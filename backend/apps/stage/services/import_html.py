@@ -20,6 +20,13 @@ DEFAULT_HEADERS = {
     'Accept-Encoding': 'gzip, deflate, br',
 }
 
+# Statuses that mean "the URL is fine, but the site refuses anonymous readers".
+# 999 is LinkedIn's non-standard anti-crawler response; without it a LinkedIn
+# import was reported as an unreachable website, sending the operator to check a
+# link that was perfectly valid instead of pasting the text.
+BLOCKED_STATUS_CODES = frozenset({401, 403, 429, 999})
+
+
 class HtmlFetchError(Exception):
     """Raised when a page cannot be retrieved or parsed."""
 
@@ -57,6 +64,14 @@ def check_url_reachable(url: str, *, timeout: int = 12) -> str:
             )
         else:
             response = head
+        if response.status_code in BLOCKED_STATUS_CODES:
+            # Job boards commonly gate anonymous crawlers; the URL itself is fine.
+            raise HtmlFetchError(
+                f'Website refused the request (HTTP {response.status_code}).',
+                code='blocked',
+            )
+        if response.status_code == 404:
+            raise HtmlFetchError('Offer page not found (HTTP 404).', code='not_found')
         if response.status_code >= 400:
             raise HtmlFetchError(
                 f'Website returned HTTP {response.status_code}.',
@@ -65,13 +80,20 @@ def check_url_reachable(url: str, *, timeout: int = 12) -> str:
         return response.url or url
     except requests.Timeout as exc:
         raise HtmlFetchError('Website request timed out.', code='timeout') from exc
+    except requests.TooManyRedirects as exc:
+        raise HtmlFetchError('Website redirected too many times.', code='unreachable') from exc
     except requests.RequestException as exc:
         raise HtmlFetchError('Website is unreachable.', code='unreachable') from exc
 
 
 def fetch_html(url: str, *, timeout: int = 15) -> tuple[str, str]:
-    """Fetch HTML content; returns (html, final_url)."""
-    final_url = check_url_reachable(url, timeout=timeout)
+    """Fetch HTML content; returns (html, final_url).
+
+    Callers reach this after `check_url_reachable`, so the GET below is the only
+    request made here — re-probing would triple the latency of every import and
+    push slow job boards past the gateway timeout.
+    """
+    final_url = validate_url_format(url)
     try:
         response = requests.get(
             final_url,
@@ -79,19 +101,30 @@ def fetch_html(url: str, *, timeout: int = 15) -> tuple[str, str]:
             timeout=timeout,
             allow_redirects=True,
         )
+        if response.status_code in BLOCKED_STATUS_CODES:
+            raise HtmlFetchError(
+                f'Website refused the request (HTTP {response.status_code}).',
+                code='blocked',
+            )
+        if response.status_code == 404:
+            raise HtmlFetchError('Offer page not found (HTTP 404).', code='not_found')
         if response.status_code >= 400:
             raise HtmlFetchError(
                 f'Website returned HTTP {response.status_code}.',
                 code='unreachable',
             )
         content_type = (response.headers.get('Content-Type') or '').lower()
-        if 'html' not in content_type and 'text/' not in content_type:
-            raise HtmlFetchError('Response is not an HTML page.', code='blocked')
+        if content_type and 'html' not in content_type and 'text/' not in content_type:
+            raise HtmlFetchError('Response is not an HTML page.', code='not_html')
         encoding = response.encoding or 'utf-8'
         html = response.content.decode(encoding, errors='replace')
+        if not html.strip():
+            raise HtmlFetchError('Website returned an empty page.', code='empty_page')
         return html, response.url or final_url
     except requests.Timeout as exc:
         raise HtmlFetchError('Website request timed out.', code='timeout') from exc
+    except requests.TooManyRedirects as exc:
+        raise HtmlFetchError('Website redirected too many times.', code='unreachable') from exc
     except requests.RequestException as exc:
         raise HtmlFetchError('Website is unreachable.', code='unreachable') from exc
 

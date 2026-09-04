@@ -513,6 +513,25 @@
       0 0 16px color-mix(in srgb, var(--admin-brand) 22%, transparent);
   }
 
+  /* Empty state glow must not be clipped by panel overflow */
+  #student-alerts.student-smart-alerts-panel {
+    overflow: visible;
+  }
+
+  #student-alerts .admin-section-empty-state,
+  #student-alerts .admin-search-empty-state,
+  #student-alerts .admin-search-empty-state__content {
+    overflow: visible;
+  }
+
+  #student-alerts .admin-search-empty-state__glow {
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    transform: none;
+  }
+
   .student-smart-alerts-list {
     display: flex;
     flex-direction: column;
@@ -724,9 +743,17 @@
   }
 
   /* Recent offers — same 2-column grid as internship offers page */
-  #student-recent-offers .student-dashboard-offers-grid-body {
-    width: 100%;
+  #student-recent-offers {
     min-width: 0;
+    max-width: 100%;
+  }
+
+  #student-recent-offers .student-dashboard-offers-grid-body {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
     padding: 0.75rem 1rem 1rem;
   }
 
@@ -736,8 +763,18 @@
     }
   }
 
+  #student-recent-offers .student-internship-offers-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
   #student-recent-offers .student-internship-offers-grid > * {
     min-width: 0;
+    max-width: 100%;
   }
 
   /* Activity rows inside panel */
@@ -870,5 +907,102 @@
     .student-profile-main-widgets.student-dashboard-hero-metrics {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+  }
+
+  .student-dashboard-load-error {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    overflow: hidden;
+    padding-block: 0.875rem;
+    padding-inline: 1rem 1.125rem;
+    border-radius: var(--admin-radius-md);
+    border: 1px solid color-mix(in srgb, var(--admin-danger) 28%, var(--admin-border));
+    background: linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--admin-danger) 5%, var(--admin-bg-elevated)) 0%,
+      color-mix(in srgb, var(--admin-danger) 9%, var(--admin-bg-elevated)) 100%
+    );
+    box-shadow: var(--admin-shadow-sm);
+  }
+
+  .student-dashboard-load-error::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--admin-danger) 70%, white),
+      var(--admin-danger)
+    );
+    box-shadow: 0 0 12px color-mix(in srgb, var(--admin-danger) 35%, transparent);
+  }
+
+  .student-dashboard-load-error__icon {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    margin-inline-start: 0.25rem;
+  }
+
+  .student-dashboard-load-error__body {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    flex: 1;
+    padding-block: 0.125rem;
+  }
+
+  .student-dashboard-load-error__title {
+    margin: 0 0 0.2rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--admin-text);
+  }
+
+  .student-dashboard-load-error__message {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--admin-text-secondary);
+  }
+
+  .student-dashboard-load-error__retry {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    align-self: center;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 639.98px) {
+    .student-dashboard-load-error {
+      flex-wrap: wrap;
+    }
+
+    .student-dashboard-load-error__retry {
+      width: 100%;
+      margin-inline-start: calc(2.25rem + 1.125rem);
+    }
+  }
+
+  [data-admin-theme='dark'] .student-dashboard-load-error {
+    background: linear-gradient(
+      155deg,
+      rgba(239, 68, 68, 0.08) 0%,
+      rgba(239, 68, 68, 0.12) 100%
+    );
+    border-color: rgba(248, 113, 113, 0.24);
   }
 }

@@ -7,6 +7,7 @@ from datetime import timedelta
 from django.db.models import Count, Prefetch, Q
 from django.utils import timezone
 
+from apps.accounts_et_roles.search import profile_name_search_q
 from apps.encadrant.models import Meeting, MeetingAttachment, MeetingTimelineEvent
 from apps.admin_management.services.meeting_scopes import filter_meetings_by_admin_scope
 
@@ -142,7 +143,17 @@ def apply_meeting_filters(qs, params: dict):
             Q(title__icontains=search)
             | Q(description__icontains=search)
             | Q(student_profile__user__email__icontains=search)
-            | Q(encadrant_profile__supervisor_profile__user__email__icontains=search),
+            | Q(encadrant_profile__supervisor_profile__user__email__icontains=search)
+            | profile_name_search_q(
+                search,
+                first_name_field='student_profile__user__profile__first_name',
+                last_name_field='student_profile__user__profile__last_name',
+            )
+            | profile_name_search_q(
+                search,
+                first_name_field='encadrant_profile__supervisor_profile__user__profile__first_name',
+                last_name_field='encadrant_profile__supervisor_profile__user__profile__last_name',
+            ),
         )
 
     ordering = params.get('ordering', '-planned_start')

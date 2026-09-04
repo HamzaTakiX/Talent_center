@@ -123,7 +123,9 @@ ROLE_DEFINITIONS = [
     ),
 ]
 
-# UI role slug → backend role code
+# UI role slug → backend role code.
+# Intentionally excludes ADMIN_SUPER: super admin is granted through
+# AdminProfile.admin_level, never by submitting a role slug.
 UI_ROLE_TO_CODE = {
     'stage': 'ADMIN_INTERNSHIP',
     'finance': 'ADMIN_FINANCE',
@@ -132,6 +134,14 @@ UI_ROLE_TO_CODE = {
     'coordinator': 'ADMIN_COORDINATOR',
     'academic': 'ADMIN_ACADEMIC',
 }
+
+# Every role this module owns, i.e. every role whose assignment the admin
+# management UI is allowed to revoke when an administrator's roles are rewritten.
+# ADMIN_SUPER MUST be listed: it is grantable (seeding, fixtures, shell) but was
+# absent from the revocable set, so an admin who had ever held it kept
+# `finance.manage` and every other permission after being reconfigured down to a
+# single module.
+MANAGED_ADMIN_ROLE_CODES = frozenset(code for code, _name, _sys, _perms in ROLE_DEFINITIONS)
 
 # UI permission key → backend permission code
 UI_PERMISSION_TO_CODE = {

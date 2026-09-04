@@ -2,11 +2,13 @@ import { readStoredAppLanguage } from '../../../../../../i18n/appLanguage';
 import type { AppLanguage } from '../../../../../../i18n/types';
 import type { AdminTheme } from '../../../../../admin/dashboard/context/AdminThemeContext';
 import {
-  DEFAULT_WHITEBOARD_BACKGROUND,
   DEFAULT_WHITEBOARD_PREFERENCES,
   WHITEBOARD_PREFS_STORAGE_PREFIX,
 } from '../constants/whiteboardBackground';
-import { getThemeDefaultBackgroundColor } from '../utils/whiteboardCanvasBackground';
+import {
+  getThemeDefaultBackgroundColor,
+  isThemeDefaultBackgroundColor,
+} from '../utils/whiteboardCanvasBackground';
 import type { WhiteboardBackgroundType, WhiteboardPreferences } from '../types/whiteboardPreferences';
 import { clampOpacityPercent, normalizeHex, parseColorInput } from '../utils/whiteboardColorUtils';
 
@@ -59,12 +61,8 @@ export function loadWhiteboardPreferences(
       normalizeHex(String(parsed.backgroundColor ?? '')) ??
       getThemeDefaultBackgroundColor(globalTheme);
 
-    const isLegacyWhiteDefault =
-      color === DEFAULT_WHITEBOARD_BACKGROUND &&
-      parsed.backgroundType === DEFAULT_WHITEBOARD_PREFERENCES.backgroundType &&
-      globalTheme === 'dark';
-    if (isLegacyWhiteDefault) {
-      color = getThemeDefaultBackgroundColor('dark');
+    if (isThemeDefaultBackgroundColor(color)) {
+      color = getThemeDefaultBackgroundColor(globalTheme);
     }
 
     const opacity =

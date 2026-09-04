@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import { ChevronDown, MessageSquare, Clock, Archive, FileText, FilePenLine, Cale
 import escaLogoLight from '../../../auth/assets/images/common/Logo_ESCA.png';
 import escaLogoDark from '../../../auth/assets/images/common/logo-esca.png';
 import { useAuth } from '../../../auth/hooks/useAuth';
+import { canAccessAdminPath } from '../../../auth/utils/modulePermissions';
 import { useAdminTheme } from '../context/AdminThemeContext';
 import AdminUserIdentity from './AdminUserIdentity';
 import AdminLogoutButton from './AdminLogoutButton';
@@ -19,7 +20,7 @@ import {
   type AdminNavChildId,
   type AdminNavSectionId,
 } from '../config/adminNavConfig';
-import { ADMIN_NAV_CHAT_MODULES } from '../../../shared/contextual-chat/config/chatNavModuleMap';
+import { ADMIN_NAV_CHAT_SCOPES, resolveChatNavUnread } from '../../../shared/contextual-chat/config/chatNavModuleMap';
 import { useChatUnread } from '../../../shared/contextual-chat/context/ChatUnreadContext';
 import NavChatUnreadBadge from '../../../shared/contextual-chat/components/NavChatUnreadBadge';
 
@@ -42,6 +43,7 @@ interface SidebarMenuButtonProps {
   label: string;
   expandable?: boolean;
   expanded?: boolean;
+  unreadCount?: number;
   onClick: () => void;
 }
 
@@ -51,6 +53,7 @@ const SidebarMenuButton: FunctionComponent<SidebarMenuButtonProps> = ({
   label,
   expandable,
   expanded,
+  unreadCount = 0,
   onClick,
 }) => (
   <button
@@ -65,6 +68,8 @@ const SidebarMenuButton: FunctionComponent<SidebarMenuButtonProps> = ({
     <div className="flex min-w-0 flex-1 items-center">
       <span className="relative truncate leading-5 text-inherit">{label}</span>
     </div>
+    {!expandable && unreadCount > 0 ? <NavChatUnreadBadge count={unreadCount} /> : null}
+    {expandable && !expanded && unreadCount > 0 ? <NavChatUnreadBadge count={unreadCount} /> : null}
     {expandable && (
       <ChevronDown
         className={`relative h-4 w-4 shrink-0 text-[var(--admin-text-muted)] transition-transform ${expanded ? 'rotate-180' : ''}`}
@@ -136,9 +141,32 @@ const AdminSidebar: FunctionComponent<AdminSidebarProps> = ({ mobileOpen, onMobi
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useAdminTheme();
+  const { user } = useAuth();
   const pathname = location.pathname;
   const escaLogo = theme === 'dark' ? escaLogoDark : escaLogoLight;
-  const { getModuleUnread } = useChatUnread();
+  const { getScopedUnread } = useChatUnread();
+
+  // Hide what the API would refuse anyway. `RouteAccessGuard` is what actually
+  // blocks the navigation; this only keeps the menu honest.
+  // A section stays listed when at least one of its sub-pages is permitted —
+  // supervision reports, for instance, are open to an internship administrator
+  // even though the encadrant roster itself is not.
+  const navItems = useMemo(
+    () =>
+      ADMIN_NAV_ITEMS.map((item) => {
+        const sectionPath = getSectionPath(item.id);
+        const children = item.children?.filter((child) => {
+          const childPath = getChildPath(item.id, child);
+          return childPath === undefined || canAccessAdminPath(user, childPath);
+        });
+        return {
+          ...item,
+          children,
+          navigable: !sectionPath || canAccessAdminPath(user, sectionPath),
+        };
+      }).filter((item) => item.navigable || (item.children?.length ?? 0) > 0),
+    [user],
+  );
 
   const [manuallyExpanded, setManuallyExpanded] = useState<AdminNavSectionId[]>([]);
   const [manuallyCollapsed, setManuallyCollapsed] = useState<AdminNavSectionId[]>([]);
@@ -201,7 +229,7 @@ const AdminSidebar: FunctionComponent<AdminSidebarProps> = ({ mobileOpen, onMobi
         }`}
       />
       <aside
-        className={`admin-glass-sidebar fixed inset-y-0 left-0 z-50 flex h-screen w-[272px] flex-none flex-col overflow-hidden shadow-admin-lg transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:relative lg:z-auto lg:translate-x-0 lg:shadow-none ${
+        className={`admin-glass-sidebar fixed inset-y-0 left-0 z-50 flex h-screen w-[272px] flex-none flex-col overflow-hidden shadow-admin-lg lg:relative lg:z-auto lg:translate-x-0 lg:shadow-none ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -222,11 +250,13 @@ const AdminSidebar: FunctionComponent<AdminSidebarProps> = ({ mobileOpen, onMobi
         </div>
 
         <nav className="admin-scroll flex flex-1 flex-col gap-1 overflow-x-hidden overflow-y-auto px-2 py-3">
-          {ADMIN_NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const ItemIconComponent = item.icon;
             const isActive = activeSection === item.id;
             const isExpanded = isSectionExpanded(item.id);
             const sectionPath = getSectionPath(item.id);
+            const sectionChatScope = ADMIN_NAV_CHAT_SCOPES[item.id];
+            const sectionUnread = resolveChatNavUnread(sectionChatScope, getScopedUnread);
 
             return (
               <div key={item.id} className="w-full min-w-0">
@@ -236,8 +266,9 @@ const AdminSidebar: FunctionComponent<AdminSidebarProps> = ({ mobileOpen, onMobi
                   label={navLabel(item.id)}
                   expandable={item.expandable}
                   expanded={isExpanded}
+                  unreadCount={sectionUnread}
                   onClick={() => {
-                    if (sectionPath) navigate(sectionPath);
+                    if (sectionPath && item.navigable) navigate(sectionPath);
                     else if (!item.expandable) setPrimaryNavOverride(item.id);
                     if (item.expandable) toggleSectionExpand(item.id);
                   }}
@@ -248,8 +279,8 @@ const AdminSidebar: FunctionComponent<AdminSidebarProps> = ({ mobileOpen, onMobi
                     {item.children?.map((child) => {
                       const subPath = getChildPath(item.id, child);
                       const isSubActive = isChildNavActive(item.id, child, pathname);
-                      const chatModule = child === 'chat' ? ADMIN_NAV_CHAT_MODULES[item.id] : undefined;
-                      const unreadCount = chatModule ? getModuleUnread(chatModule) : 0;
+                      const chatScope = child === 'chat' ? ADMIN_NAV_CHAT_SCOPES[item.id] : undefined;
+                      const unreadCount = resolveChatNavUnread(chatScope, getScopedUnread);
                       return (
                         <SidebarSubButton
                           key={child}

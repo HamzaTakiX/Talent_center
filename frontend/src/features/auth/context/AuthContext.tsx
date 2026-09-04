@@ -3,7 +3,8 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { isAxiosError } from 'axios';
 import { User } from '../types';
 import { authApi } from '../api';
-import { getAuth0EnvConfig } from '../config/auth0Env';
+import { getAuth0Connection, getAuth0EnvConfig } from '../config/auth0Env';
+import { getAppOrigin } from '../config/appEnv';
 import {
   canRestoreSessionFromCache,
   hasPersistedAccessToken,
@@ -17,15 +18,19 @@ import {
 import { clearRoleScopedStorage } from '../utils/clearRoleScopedStorage';
 import { AUTH_SESSION_EXPIRED_EVENT } from '../utils/authSessionEvents';
 import { resolveAuth0ExchangeToken } from '../utils/resolveAuth0Token';
+import { getLoginErrorMessage, getMicrosoftAccessDeniedMessage } from '../utils/loginErrors';
+import i18n from '../../../i18n/config';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   /** True once JWT/session resolution finished (success or hard failure). */
   isAuthReady: boolean;
+  /** True when auth bootstrap finished and API calls may use a valid token. */
+  isSessionReady: boolean;
   authError: string | null;
   user: User | null;
-  login: (returnTo?: string) => void;
+  login: (returnTo?: string, options?: { selectAccount?: boolean }) => void;
   legacyLogin: (token: string, userData: User, refreshToken?: string) => void;
   logout: () => Promise<void>;
   updateUser: (userData: User) => void;
@@ -174,9 +179,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Failed to exchange Auth0 token or load user', error);
       const message = isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ??
-          'Échec de la connexion Auth0.'
-        : 'Échec de la connexion Auth0.';
+        ? getLoginErrorMessage(error, i18n.t.bind(i18n), { source: 'sso' })
+        : getMicrosoftAccessDeniedMessage(i18n.t.bind(i18n));
       setAuthError(message);
       const fallback = await restoreSessionWithRefresh();
       if (fallback) {
@@ -184,12 +188,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAuthError(null);
       } else {
         clearLocalAuth();
+        if (isAuth0Authenticated) {
+          try {
+            await auth0Logout({ openUrl: false });
+          } catch {
+            // proceed — local session already cleared
+          }
+        }
       }
     } finally {
       setIsBackendLoading(false);
       setIsAuthReady(true);
     }
-  }, [getAccessTokenSilently, getIdTokenClaims, setUser, clearLocalAuth]);
+  }, [getAccessTokenSilently, getIdTokenClaims, setUser, clearLocalAuth, isAuth0Authenticated, auth0Logout]);
 
   useEffect(() => {
     if (isFrontendOnlyAdmin) {
@@ -259,21 +270,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const onSessionExpired = () => {
       clearLocalAuth();
-      window.location.replace(`${window.location.origin}/login`);
+      window.location.replace(`${getAppOrigin()}/login`);
     };
     window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
     return () => window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
   }, [clearLocalAuth]);
 
   const login = useCallback(
-    (returnTo?: string) => {
+    (returnTo?: string, _options?: { selectAccount?: boolean }) => {
       setAuthError(null);
+      const connection = getAuth0Connection();
+      if (!connection) {
+        setAuthError(i18n.t('auth.login.errors.microsoftConnectionMissingMessage'));
+        return;
+      }
       const destination =
         returnTo && returnTo !== '/login' && returnTo !== '/callback'
           ? returnTo
           : '/';
       loginWithRedirect({
         appState: { returnTo: destination },
+        authorizationParams: {
+          connection,
+          // Always show Microsoft account picker on explicit SSO click.
+          prompt: 'select_account',
+        },
       });
     },
     [loginWithRedirect],
@@ -296,7 +317,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = useCallback(async () => {
-    const loginUrl = `${window.location.origin}/login`;
+    // Auth0 Allowed Logout URLs must include this exact returnTo.
+    // Use app origin (not /login) so it matches the usual dashboard entry:
+    //   Allowed Logout URLs = {VITE_APP_URL}
+    const appOrigin = getAppOrigin();
+    const loginUrl = `${appOrigin}/login`;
 
     if (isFrontendOnlyAdmin) {
       clearLocalAuth();
@@ -317,7 +342,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearLocalAuth();
 
     if (auth0Configured && isAuth0Authenticated) {
-      auth0Logout({ logoutParams: { returnTo: loginUrl } });
+      auth0Logout({ logoutParams: { returnTo: appOrigin } });
       return;
     }
 
@@ -337,12 +362,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated =
     isFrontendOnlyAdmin || isAuth0Authenticated || !!user;
 
+  const isSessionReady =
+    isFrontendOnlyAdmin || (isAuthReady && !isBackendLoading);
+
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated: auth0Configured ? isAuthenticated : !!user,
         isLoading,
         isAuthReady,
+        isSessionReady,
         authError,
         user,
         login,

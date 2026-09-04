@@ -18,7 +18,6 @@ import {
 } from '../quickcv/quickcvUiBridge';
 import { cvAiBridge, requestCvAiAnalysis, requestCvSave } from '../quickcv/cvAiBridge';
 import {
-  STUDENT_PRIMARY_BUTTON,
   STUDENT_TEXT_SECONDARY,
 } from '../../student/design-system/studentTokens';
 
@@ -27,7 +26,12 @@ const VIEW_MODES: { id: QuickCvViewMode; labelKey: string }[] = [
   { id: 'tab', labelKey: 'cv.toolbar.tabbed' },
 ];
 
-const CvEditorToolbar: FunctionComponent = () => {
+interface CvEditorToolbarProps {
+  /** Masque le lien « Retour » (ex. page cv-builder déjà dans le shell étudiant). */
+  hideBack?: boolean;
+}
+
+const CvEditorToolbar: FunctionComponent<CvEditorToolbarProps> = ({ hideBack = false }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const onboardingCv = isOnboardingCvPending();
@@ -96,7 +100,7 @@ const CvEditorToolbar: FunctionComponent = () => {
   };
 
   const showContinue = saveSucceeded && onboardingCv;
-  const showPortalLink = !onboardingCv;
+  const showPortalLink = !hideBack && !onboardingCv;
 
   return (
     <div className="quickcv-toolbar-admin flex shrink-0 flex-wrap items-center gap-3 border-b border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] px-4 py-2.5 max-sm:grid max-sm:grid-cols-1 max-sm:gap-2 max-sm:px-3 max-sm:py-2 sm:px-6">
@@ -196,7 +200,7 @@ const CvEditorToolbar: FunctionComponent = () => {
           setSaveSucceeded(false);
           requestCvSave();
         }}
-        className={`quickcv-save-btn inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold shadow-sm transition-colors max-sm:w-full max-sm:justify-center ${
+        className={`quickcv-save-btn admin-btn admin-btn--md inline-flex shrink-0 items-center gap-2 px-3 py-2 text-xs font-semibold transition-all max-sm:w-full max-sm:justify-center ${
           saveError
             ? 'quickcv-save-btn--error'
             : saveSucceeded
@@ -222,7 +226,7 @@ const CvEditorToolbar: FunctionComponent = () => {
             exit={{ opacity: 0, x: 8 }}
             transition={{ duration: 0.22 }}
             onClick={goToDashboard}
-            className={`${STUDENT_PRIMARY_BUTTON} inline-flex shrink-0 items-center gap-2 max-sm:w-full max-sm:justify-center`}
+            className="cv-ai-analyze-btn admin-btn admin-btn--md inline-flex shrink-0 items-center gap-2 px-3 py-2 text-xs font-semibold transition-all max-sm:w-full max-sm:justify-center"
           >
             <span>{t('cv.editor.actions.continueDashboard')}</span>
             <ArrowRight className="h-4 w-4" />
@@ -234,7 +238,7 @@ const CvEditorToolbar: FunctionComponent = () => {
         type="button"
         onClick={() => requestCvAiAnalysis()}
         disabled={aiBusy}
-        className="cv-ai-analyze-btn inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold shadow-sm transition-all disabled:opacity-60 max-sm:w-full max-sm:justify-center"
+        className="cv-ai-analyze-btn admin-btn admin-btn--md inline-flex shrink-0 items-center gap-2 px-3 py-2 text-xs font-semibold transition-all disabled:opacity-60 max-sm:w-full max-sm:justify-center"
       >
         {aiBusy ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -247,7 +251,7 @@ const CvEditorToolbar: FunctionComponent = () => {
       <button
         type="button"
         onClick={() => quickCvDownloadPdf()}
-        className={`${STUDENT_PRIMARY_BUTTON} inline-flex shrink-0 items-center gap-2 max-sm:w-full max-sm:justify-center`}
+        className="cv-ai-analyze-btn admin-btn admin-btn--md inline-flex shrink-0 items-center gap-2 px-3 py-2 text-xs font-semibold transition-all max-sm:w-full max-sm:justify-center"
       >
         <Download className="h-4 w-4" />
         {t('cv.toolbar.download')}

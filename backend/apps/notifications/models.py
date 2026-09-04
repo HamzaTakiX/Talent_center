@@ -262,20 +262,50 @@ class NotificationReminder(TimestampedModel):
 class NotificationTemplate(TimestampedModel):
     """Template metadata — content lives in DB translations + HTML files."""
 
+    class Status(models.TextChoices):
+        ACTIVE = 'active', _('Active')
+        ARCHIVED = 'archived', _('Archived')
+
     code = models.SlugField(max_length=128, unique=True)
+    name = models.CharField(max_length=255, blank=True, default='')
+    event_code = models.SlugField(max_length=128, blank=True, default='', db_index=True)
     channel = models.CharField(max_length=16, choices=NotificationRecipient.Channel.choices)
     category = models.CharField(max_length=32, choices=Category.choices, db_index=True)
     version = models.PositiveIntegerField(default=1)
     is_active = models.BooleanField(default=True)
+    is_selected = models.BooleanField(default=False, db_index=True)
+    is_default = models.BooleanField(default=False, db_index=True)
+    status = models.CharField(
+        max_length=16,
+        choices=Status.choices,
+        default=Status.ACTIVE,
+        db_index=True,
+    )
     html_file = models.CharField(max_length=255, blank=True, default='')
     default_action_url = models.CharField(max_length=512, blank=True, default='')
     metadata_json = models.JSONField(default=dict, blank=True)
 
     class Meta(TimestampedModel.Meta):
         ordering = ['code']
+        indexes = [
+            models.Index(fields=['event_code', 'channel', 'status']),
+            models.Index(fields=['event_code', 'is_selected']),
+            models.Index(fields=['event_code', 'is_default']),
+        ]
 
     def __str__(self) -> str:
         return f'Template<{self.code}:{self.channel}>'
+
+    def save(self, *args, **kwargs):
+        if self.status == self.Status.ARCHIVED:
+            self.is_active = False
+            self.is_selected = False
+        elif self.status == self.Status.ACTIVE:
+            self.is_active = True
+        if not self.name:
+            self.name = self.code.replace('_', ' ').title()
+        super().save(*args, **kwargs)
+
 
 
 class NotificationTemplateTranslation(TimestampedModel):
@@ -437,3 +467,16 @@ class NotificationProviderHealth(TimestampedModel):
 
     def __str__(self) -> str:
         return f'ProviderHealth<{self.provider}:{self.channel}>'
+
+
+# Email system configuration models, re-exported so they are registered with the
+# app registry when `notifications.models` loads (same pattern as
+# `apps.stage.models` <- `models_extended`). Without this they only appear once
+# some service module happens to import them.
+from apps.notifications.models_email_config import (  # noqa: E402, F401
+    EmailCategoryConfig,
+    EmailProviderConfig,
+    EmailSenderIdentity,
+    EmailSystemAuditLog,
+    PlatformEmailSettings,
+)

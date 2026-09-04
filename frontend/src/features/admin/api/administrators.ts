@@ -31,6 +31,20 @@ export const adminAdministratorsApi = {
     return response.data.data;
   },
 
+  revealCredential: async (id: number): Promise<string> => {
+    const response = await apiClient.post<ApiEnvelope<{ password: string }>>(
+      `/admin/administrators/${id}/reveal-credential`,
+    );
+    return response.data.data.password;
+  },
+
+  regeneratePassword: async (id: number): Promise<string> => {
+    const response = await apiClient.post<ApiEnvelope<{ password: string }>>(
+      `/admin/administrators/${id}/regenerate-password`,
+    );
+    return response.data.data.password;
+  },
+
   create: async (payload: CreateAdministratorPayload): Promise<AdminAdministratorRow> => {
     const response = await apiClient.post<ApiEnvelope<AdminAdministratorRow>>(
       '/admin/administrators',

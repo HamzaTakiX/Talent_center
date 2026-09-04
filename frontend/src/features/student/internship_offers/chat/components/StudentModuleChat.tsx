@@ -1,7 +1,8 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import AdminModuleChat from '../../../../admin/shared/admin-module-chat/AdminModuleChat';
 import type { AdminChatMessage, AdminChatParticipant } from '../../../../admin/shared/admin-module-chat/adminChatTypes';
+import type { SupervisionMeetingChatConfig } from '../../../../shared/meeting-room/types/chatMeetingRequest';
 import StudentLayout from '../../../components/StudentLayout';
 import type { ChatMessage, ChatParticipant } from '../types';
 import { OFFER_FIELD_LIMITS } from '../../../../../design-system/safeContent';
@@ -14,6 +15,8 @@ export interface StudentModuleChatProps {
   searchPlaceholder?: string;
   composerPlaceholder?: string;
   emptyConversationLabel?: string;
+  smartActionsBar?: ReactNode;
+  supervisionMeeting?: SupervisionMeetingChatConfig;
 }
 
 /** Chat module étudiant — UI admin premium, shell StudentLayout. */
@@ -25,6 +28,8 @@ const StudentModuleChat: FunctionComponent<StudentModuleChatProps> = ({
   searchPlaceholder,
   composerPlaceholder,
   emptyConversationLabel,
+  smartActionsBar,
+  supervisionMeeting,
 }) => {
   const { t } = useTranslation();
   const emptyLabel = emptyConversationLabel ?? t('student.moduleChat.defaultEmpty');
@@ -39,6 +44,8 @@ const StudentModuleChat: FunctionComponent<StudentModuleChatProps> = ({
     composerPlaceholder={composerPlaceholder}
     emptyConversationLabel={emptyLabel}
     composerMaxLength={OFFER_FIELD_LIMITS.chatMessage}
+    smartActionsBar={smartActionsBar}
+    supervisionMeeting={supervisionMeeting}
   />
   );
 };

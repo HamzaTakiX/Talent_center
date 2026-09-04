@@ -420,20 +420,393 @@ IN_APP_CODES = [
 ]
 
 
+DEDICATED_EMAIL_TEMPLATES = [
+    {
+        'code': 'srf_submitted',
+        'name': 'Srf Submitted',
+        'event_code': 'srf.submitted',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SRF,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Srf Submitted: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Submitted',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Srf Submitted : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Submitted',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'srf_approved',
+        'name': 'Srf Approved',
+        'event_code': 'srf.approved',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SRF,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Srf Approved: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Approved',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Srf Approved : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Approved',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'srf_rejected',
+        'name': 'Srf Rejected',
+        'event_code': 'srf.rejected',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SRF,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Srf Rejected: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Rejected',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Srf Rejected : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Rejected',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'srf_risk_alert',
+        'name': 'Srf Risk Alert',
+        'event_code': 'srf.risk.alert',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SRF,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Srf Risk Alert: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Risk Alert',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Srf Risk Alert : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Risk Alert',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'srf_installment_overdue',
+        'name': 'Srf Installment Overdue',
+        'event_code': 'srf.installment.overdue',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SRF,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Srf Installment Overdue: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Installment Overdue',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Srf Installment Overdue : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Srf Installment Overdue',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'student_activated',
+        'name': 'Student Activated',
+        'event_code': 'student.activated',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SYSTEM,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Student Activated: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Student Activated',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Student Activated : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Student Activated',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'student_critical_risk',
+        'name': 'Student Critical Risk',
+        'event_code': 'student.intelligence.critical_risk',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SYSTEM,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Student Critical Risk: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Student Critical Risk',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Student Critical Risk : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Student Critical Risk',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'supervisor_assigned',
+        'name': 'Supervisor Assigned',
+        'event_code': 'supervisor.assigned',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SUPERVISION,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Supervisor Assigned: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Supervisor Assigned',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Supervisor Assigned : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Supervisor Assigned',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'report_escalated',
+        'name': 'Report Escalated',
+        'event_code': 'report.escalated',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SUPERVISION,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Report Escalated: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Report Escalated',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Report Escalated : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Report Escalated',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'report_rejected',
+        'name': 'Report Rejected',
+        'event_code': 'report.rejected',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SUPERVISION,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Report Rejected: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Report Rejected',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Report Rejected : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Report Rejected',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+    {
+        'code': 'report_requires_changes',
+        'name': 'Report Requires Changes',
+        'event_code': 'report.requires_changes',
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.SUPERVISION,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': 'Report Requires Changes: {{ title }}',
+                'body_html': '<p>Hello {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Open</a></p>',
+                'body_text': 'Hello {{ user_name }}. {{ body }}',
+                'in_app_title': 'Report Requires Changes',
+                'in_app_body': '{{ body }}',
+            },
+            'fr': {
+                'subject': 'Report Requires Changes : {{ title }}',
+                'body_html': '<p>Bonjour {{ user_name }},</p><p>{{ body }}</p><p><a href="{{ action_url }}">Ouvrir</a></p>',
+                'body_text': 'Bonjour {{ user_name }}. {{ body }}',
+                'in_app_title': 'Report Requires Changes',
+                'in_app_body': '{{ body }}',
+            },
+        },
+    },
+]
+
+def _agenda_template(code: str, event_code: str, en_subject: str, fr_subject: str) -> dict:
+    """Agenda templates share one layout; only the heading differs per event."""
+    return {
+        'code': code,
+        'name': code.replace('_', ' ').title(),
+        'event_code': event_code,
+        'channel': NotificationRecipient.Channel.EMAIL,
+        'category': Category.AGENDA,
+        'html_file': 'email/generic.html',
+        'is_selected': True,
+        'is_default': True,
+        'translations': {
+            'en': {
+                'subject': en_subject,
+                'body_html': (
+                    '<p>Hello {{ user_name }},</p>'
+                    '<p><strong>{{ title }}</strong></p>'
+                    '<p>{{ start }} → {{ end }} ({{ timezone }})</p>'
+                    '<p><a href="{{ action_url }}">Open in calendar</a></p>'
+                ),
+                'body_text': 'Hello {{ user_name }}. {{ title }} — {{ start }} to {{ end }} ({{ timezone }}).',
+                'in_app_title': en_subject,
+                'in_app_body': '{{ title }} — {{ start }}',
+            },
+            'fr': {
+                'subject': fr_subject,
+                'body_html': (
+                    '<p>Bonjour {{ user_name }},</p>'
+                    '<p><strong>{{ title }}</strong></p>'
+                    '<p>{{ start }} → {{ end }} ({{ timezone }})</p>'
+                    '<p><a href="{{ action_url }}">Ouvrir dans l\'agenda</a></p>'
+                ),
+                'body_text': 'Bonjour {{ user_name }}. {{ title }} — {{ start }} à {{ end }} ({{ timezone }}).',
+                'in_app_title': fr_subject,
+                'in_app_body': '{{ title }} — {{ start }}',
+            },
+        },
+    }
+
+
+AGENDA_TEMPLATES = [
+    _agenda_template(
+        'agenda_event_created', 'agenda.event.created',
+        'New event: {{ title }}', 'Nouvel événement : {{ title }}',
+    ),
+    _agenda_template(
+        'agenda_invitation', 'agenda.invitation.sent',
+        'Invitation: {{ title }}', 'Invitation : {{ title }}',
+    ),
+    _agenda_template(
+        'agenda_invitation_answered', 'agenda.invitation.answered',
+        'Invitation response: {{ title }}', 'Réponse à l\'invitation : {{ title }}',
+    ),
+    _agenda_template(
+        'agenda_event_updated', 'agenda.event.updated',
+        'Event updated: {{ title }}', 'Événement mis à jour : {{ title }}',
+    ),
+    _agenda_template(
+        'agenda_event_rescheduled', 'agenda.event.rescheduled',
+        'Event rescheduled: {{ title }}', 'Événement reprogrammé : {{ title }}',
+    ),
+    _agenda_template(
+        'agenda_event_cancelled', 'agenda.event.cancelled',
+        'Event cancelled: {{ title }}', 'Événement annulé : {{ title }}',
+    ),
+    _agenda_template(
+        'agenda_event_reminder', 'agenda.event.reminder',
+        'Reminder: {{ title }}', 'Rappel : {{ title }}',
+    ),
+    _agenda_template(
+        'agenda_participant_removed', 'agenda.participant.removed',
+        'Removed from event: {{ title }}', 'Retiré de l\'événement : {{ title }}',
+    ),
+]
+
+IN_APP_CODES += [definition['code'] for definition in AGENDA_TEMPLATES]
+DEDICATED_EMAIL_TEMPLATES += AGENDA_TEMPLATES
+
+
 class Command(BaseCommand):
     help = 'Seed notification templates with FR/EN translations'
 
     def handle(self, *args, **options):
         created = 0
-        for definition in TEMPLATE_DEFINITIONS:
+        for definition in list(TEMPLATE_DEFINITIONS) + list(DEDICATED_EMAIL_TEMPLATES):
             template, was_created = NotificationTemplate.objects.update_or_create(
                 code=definition['code'],
                 defaults={
+                    'name': definition.get('name') or definition['code'].replace('_', ' ').title(),
+                    'event_code': definition.get('event_code', ''),
                     'channel': definition['channel'],
                     'category': definition['category'],
                     'html_file': definition.get('html_file', ''),
                     'default_action_url': definition.get('default_action_url', ''),
                     'is_active': True,
+                    'status': NotificationTemplate.Status.ACTIVE,
+                    'is_selected': bool(definition.get('is_selected', False)),
+                    'is_default': bool(definition.get('is_default', False)),
                 },
             )
             if was_created:

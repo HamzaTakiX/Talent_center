@@ -4,6 +4,13 @@ export interface ChatMessage {
   text: string;
   time: string;
   separatorBefore?: string;
+  messageType?: string;
+  meetingRequest?: {
+    requestId: string;
+    mode: 'video' | 'voice';
+    status: 'pending' | 'accepted' | 'declined';
+    title?: string;
+  };
 }
 
 export interface ChatParticipant {

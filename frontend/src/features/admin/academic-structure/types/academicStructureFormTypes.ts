@@ -15,12 +15,14 @@ export interface AcademicStructureFormValues {
   academic_year: string;
   duration_value: number;
   duration_unit: DurationUnit;
+  /** Business + tech domain ids linked to this program. */
+  specialization_domain_ids: number[];
 }
 
 export type AcademicStructureSaveAction = 'save' | 'saveAndCreate';
 
 export interface AcademicStructureFormSubmitPayload {
-  values: Record<string, string | number | boolean>;
+  values: Record<string, string | number | boolean | number[]>;
   action: AcademicStructureSaveAction;
 }
 
@@ -37,4 +39,5 @@ export const DEFAULT_FORM_VALUES: AcademicStructureFormValues = {
   academic_year: '2025-2026',
   duration_value: 6,
   duration_unit: 'months',
+  specialization_domain_ids: [],
 };

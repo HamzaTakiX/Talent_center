@@ -1,4 +1,4 @@
-export type TaskViewMode = 'list' | 'kanban' | 'timeline' | 'calendar';
+export type TaskViewMode = 'list' | 'kanban' | 'activity' | 'calendar';
 
 export type TaskStatus = 'todo' | 'in_progress' | 'in_review' | 'done' | 'blocked';
 
@@ -10,12 +10,9 @@ export type TaskCategory =
   | 'meetings'
   | 'documents'
   | 'administrative'
-  | 'srf'
-  | 'personal';
+  | 'srf';
 
 export type TaskRiskLevel = 'low' | 'medium' | 'high' | 'critical';
-
-export type TaskAlertSeverity = 'info' | 'warning' | 'danger' | 'success';
 
 export interface StudentPlatformTask {
   id: string;
@@ -38,7 +35,8 @@ export interface TaskKpiStat {
   id: string;
   value: string;
   trend: number;
-  sparkline: number[];
+  /** Share of the total task backlog. Omit to hide the donut. */
+  ratio?: number;
 }
 
 export interface TaskProgressMetric {
@@ -47,26 +45,12 @@ export interface TaskProgressMetric {
   progress: number;
 }
 
-export interface TaskPriorityAlert {
-  id: string;
-  titleKey: string;
-  messageKey: string;
-  severity: TaskAlertSeverity;
-}
-
 export interface TaskDeadlineItem {
   id: string;
   titleKey: string;
   dueAt: string;
   daysRemaining: number;
   risk: TaskRiskLevel;
-}
-
-export interface TaskMilestone {
-  id: string;
-  labelKey: string;
-  status: 'completed' | 'current' | 'upcoming';
-  dateKey?: string;
 }
 
 export interface TaskNotification {
@@ -81,9 +65,28 @@ export interface TaskActivityItem {
   timeKey: string;
 }
 
+export type TaskFeedActivityType =
+  | 'upload'
+  | 'comment'
+  | 'feedback'
+  | 'meeting'
+  | 'task'
+  | 'report';
+
+export interface TaskFeedActivityItem {
+  id: string;
+  type: TaskFeedActivityType;
+  messageKey: string;
+  timeKey: string;
+  actorKey: string;
+  taskId?: string;
+}
+
 export type TaskFilterStatus = TaskStatus | 'all';
 export type TaskFilterPriority = TaskPriority | 'all';
 export type TaskFilterCategory = TaskCategory | 'all';
+
+export type TaskSortKey = 'dueAsc' | 'dueDesc' | 'priority' | 'progress' | 'title';
 
 export interface TaskFilters {
   status: TaskFilterStatus;

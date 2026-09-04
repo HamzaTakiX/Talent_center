@@ -1,8 +1,9 @@
 import { FunctionComponent } from 'react';
-import { Calendar, User } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { getTaskAssignee } from '../data/taskAssignees';
 import type { StudentPlatformTask } from '../types';
-import { TASK_CATEGORY_CLASS } from '../constants/taskCategories';
+import TaskAssigneeChip from './TaskAssigneeChip';
 
 interface TaskRichCardProps {
   task: StudentPlatformTask;
@@ -10,6 +11,7 @@ interface TaskRichCardProps {
   dragHandle?: React.ReactNode;
   isDragging?: boolean;
   compact?: boolean;
+  lifted?: boolean;
 }
 
 const TaskRichCard: FunctionComponent<TaskRichCardProps> = ({
@@ -18,8 +20,13 @@ const TaskRichCard: FunctionComponent<TaskRichCardProps> = ({
   dragHandle,
   isDragging,
   compact,
+  lifted,
 }) => {
   const { t } = useTranslation();
+  const urgent = task.daysRemaining <= 3;
+  const overdue = task.daysRemaining <= 0;
+  const title = t(task.titleKey);
+  const assignee = getTaskAssignee(task.assignedByKey ?? task.supervisorKey);
 
   return (
     <article
@@ -32,51 +39,74 @@ const TaskRichCard: FunctionComponent<TaskRichCardProps> = ({
           onClick();
         }
       }}
-      className={`student-task-card ${isDragging ? 'is-dragging' : ''}`}
+      aria-label={title}
+      data-category={task.category}
+      data-priority={task.priority}
+      data-status={task.status}
+      className={[
+        'student-task-card',
+        compact ? 'is-compact' : '',
+        isDragging ? 'is-dragging' : '',
+        lifted ? 'is-lifted' : '',
+        overdue ? 'is-overdue' : urgent ? 'is-urgent' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
-      <div className="mb-2 flex items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <span className={`text-[11px] font-semibold uppercase ${TASK_CATEGORY_CLASS[task.category]}`}>
-            {t(`student.encadrant.task.platform.categories.${task.category}`)}
+      <span className="student-task-card-accent" aria-hidden />
+      <div className="student-task-card-inner">
+        <div className="student-task-card-top">
+          <div className="student-task-card-tags">
+            <span className="student-task-card-category">
+              <span className="student-task-card-category-dot" aria-hidden />
+              {t(`student.encadrant.task.platform.categories.${task.category}`)}
+            </span>
+            <span className={`admin-badge student-task-priority--${task.priority}`}>
+              {t(`student.encadrant.task.platform.priorities.${task.priority}`)}
+            </span>
+          </div>
+          {dragHandle}
+        </div>
+
+        <h3 className="student-task-card-title">{title}</h3>
+
+        <TaskAssigneeChip assignee={assignee} compact={compact} showLabel={!compact} />
+
+        {!compact ? (
+          <p className="student-task-card-desc">{t(task.descriptionKey)}</p>
+        ) : null}
+
+        <div className="student-task-card-meta">
+          <span className="student-task-card-due">
+            <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            {task.dueAt}
           </span>
-          <span className={`admin-badge student-task-priority--${task.priority}`}>
-            {t(`student.encadrant.task.platform.priorities.${task.priority}`)}
+          <span className="student-task-card-remaining">
+            {t('student.encadrant.task.platform.remaining', { days: task.daysRemaining })}
           </span>
         </div>
-        {dragHandle}
+
+        <div className="student-task-card-foot">
+          <span className={`admin-badge student-task-status--${task.status}`}>
+            {t(`student.encadrant.task.platform.status.${task.status}`)}
+          </span>
+          <div className="student-task-card-progress">
+            <div
+              className="student-task-card-progress-track"
+              role="progressbar"
+              aria-valuenow={task.progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div
+                className="student-task-card-progress-fill"
+                style={{ width: `${task.progress}%` }}
+              />
+            </div>
+            <span className="student-task-card-progress-value">{task.progress}%</span>
+          </div>
+        </div>
       </div>
-      <h3 className="m-0 text-sm font-semibold leading-snug text-[var(--admin-text)]">
-        {t(task.titleKey)}
-      </h3>
-      {!compact ? (
-        <p className="m-0 mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--admin-text-muted)]">
-          {t(task.descriptionKey)}
-        </p>
-      ) : null}
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-[var(--admin-text-muted)]">
-        <span className="inline-flex items-center gap-1">
-          <Calendar className="h-3 w-3" aria-hidden />
-          {task.dueAt}
-        </span>
-        <span>
-          {t('student.encadrant.task.platform.remaining', { days: task.daysRemaining })}
-        </span>
-      </div>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <span className={`admin-badge student-task-status--${task.status}`}>
-          {t(`student.encadrant.task.platform.status.${task.status}`)}
-        </span>
-        <span className="text-xs font-semibold text-[var(--admin-brand)]">{task.progress}%</span>
-      </div>
-      <div className="student-agenda-progress-bar mt-2">
-        <div className="student-agenda-progress-bar__fill" style={{ width: `${task.progress}%` }} />
-      </div>
-      {!compact ? (
-        <p className="m-0 mt-2 inline-flex items-center gap-1 text-[11px] text-[var(--admin-text-muted)]">
-          <User className="h-3 w-3" aria-hidden />
-          {t(task.supervisorKey)}
-        </p>
-      ) : null}
     </article>
   );
 };

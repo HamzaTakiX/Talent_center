@@ -19,6 +19,10 @@ class EventStatus(models.TextChoices):
     SKIPPED = 'SKIPPED', _('Skipped')
 
 
+class EmailKind(models.TextChoices):
+    TRANSACTIONAL = 'TRANSACTIONAL', _('Transactional')
+    NOTIFICATION = 'NOTIFICATION', _('Notification')
+
 class Category(models.TextChoices):
     OFFERS = 'offers', _('Offers')
     APPLICATIONS = 'applications', _('Applications')
@@ -31,6 +35,7 @@ class Category(models.TextChoices):
     CAREER_COACH = 'career_coach', _('Career Coach')
     SYSTEM = 'system', _('System')
     SUPERVISION = 'supervision', _('Supervision')
+    AGENDA = 'agenda', _('Agenda')
 
 
 class DigestFrequency(models.TextChoices):

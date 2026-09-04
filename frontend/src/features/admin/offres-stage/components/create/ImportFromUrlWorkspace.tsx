@@ -8,7 +8,6 @@ import {
   IMPORT_PLATFORM_DEFS,
   IMPORT_PLATFORM_LABELS,
 } from '../../constants/createOfferWorkflow';
-import { useOfferBasicInfoOptions } from '../../../shared/hooks/useAcademicReferenceOptions';
 import ImportPlatformIcon from './ImportPlatformIcon';
 import type {
   CreateOfferFormState,
@@ -16,7 +15,6 @@ import type {
   ImportPhase,
   RecruitmentSettings,
 } from '../../types/createOfferWorkflow';
-import AdminSelect from '../../../account/components/AdminSelect';
 import ImportCompanyLogo from './ImportCompanyLogo';
 import TagInput from './TagInput';
 import StepTargeting from './steps/StepTargeting';
@@ -37,6 +35,8 @@ interface ImportFromUrlWorkspaceProps {
   importPhase: ImportPhase;
   importMessageIndex: number;
   importError: string | null;
+  /** Backend error code, localized when known; `importError` is the fallback. */
+  importErrorCode?: string | null;
   importJobMeta: ImportJobMeta | null;
   form: CreateOfferFormState;
   onFormChange: (patch: Partial<CreateOfferFormState>) => void;
@@ -55,6 +55,7 @@ const ImportFromUrlWorkspace: FunctionComponent<ImportFromUrlWorkspaceProps> = (
   importPhase,
   importMessageIndex,
   importError,
+  importErrorCode = null,
   importJobMeta,
   form,
   onFormChange,
@@ -67,7 +68,6 @@ const ImportFromUrlWorkspace: FunctionComponent<ImportFromUrlWorkspaceProps> = (
   audiencePreviewLoading = false,
 }) => {
   const { t } = useTranslation();
-  const { internshipTypeOptions } = useOfferBasicInfoOptions();
   const RECRUITMENT_PREFIX = 'admin.forms.createOfferStudio.recruitment';
   const REVIEW_PREFIX = 'admin.forms.createOfferStudio.review.completion';
 
@@ -123,8 +123,15 @@ const ImportFromUrlWorkspace: FunctionComponent<ImportFromUrlWorkspaceProps> = (
   return (
     <div className="offer-studio-panel">
       <div className="offer-studio-panel__head">
-        <h2 className="offer-studio-panel__title">{t(`${PREFIX}.title`)}</h2>
-        <p className="offer-studio-panel__desc">{t(`${PREFIX}.desc`)}</p>
+        <div className="offer-studio-panel__title-row">
+          <span className="offer-studio-panel__title-icon" aria-hidden>
+            <Link2 className="h-4 w-4" strokeWidth={1.85} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="offer-studio-panel__title">{t(`${PREFIX}.title`)}</h2>
+            <p className="offer-studio-panel__desc">{t(`${PREFIX}.desc`)}</p>
+          </div>
+        </div>
       </div>
       <div className="offer-studio-panel__body offer-studio-form">
         {(importPhase === 'idle' || importPhase === 'failed') && (
@@ -149,7 +156,14 @@ const ImportFromUrlWorkspace: FunctionComponent<ImportFromUrlWorkspaceProps> = (
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <div>
                   <p className="font-medium">{t(`${PREFIX}.errors.title`)}</p>
-                  <p className="mt-0.5">{importError}</p>
+                  {/* When the request never reached the API there is no code and
+                      `importError` holds the bare fallback key, so it is looked
+                      up too rather than printed as `import_failed`. */}
+                  <p className="mt-0.5">
+                    {t(`${PREFIX}.errors.${importErrorCode ?? importError}`, {
+                      defaultValue: importError,
+                    })}
+                  </p>
                   <button type="button" className={`${OFFER_STUDIO_BTN_SECONDARY} mt-2 h-8 text-xs`} onClick={onRetry}>
                     {t(`${PREFIX}.errors.retry`)}
                   </button>
@@ -241,7 +255,7 @@ const ImportFromUrlWorkspace: FunctionComponent<ImportFromUrlWorkspaceProps> = (
                     />
                   </AdminFormField>
                 </div>
-                <div className="offer-extracted-card">
+                <div className="offer-extracted-card md:col-span-2">
                   <AdminFormField
                     label={t(`${PREFIX}.fields.location`)}
                     htmlFor="import-location"
@@ -255,21 +269,6 @@ const ImportFromUrlWorkspace: FunctionComponent<ImportFromUrlWorkspaceProps> = (
                       required
                     />
                   </AdminFormField>
-                </div>
-                <div className="offer-extracted-card">
-                  <AdminSelect
-                    id="import-internship-type"
-                    label={`${t(`${PREFIX}.fields.internshipType`)} *`}
-                    value={form.internshipType}
-                    onChange={(v) => onFormChange({ internshipType: v })}
-                    options={[
-                      { value: '', label: t('admin.forms.createOfferStudio.types.select') },
-                      ...internshipTypeOptions,
-                    ]}
-                  />
-                  {requiredError(Boolean(form.internshipType)) ? (
-                    <p className="admin-form-field-error -mt-1">{requiredError(Boolean(form.internshipType))}</p>
-                  ) : null}
                 </div>
               </div>
             </section>

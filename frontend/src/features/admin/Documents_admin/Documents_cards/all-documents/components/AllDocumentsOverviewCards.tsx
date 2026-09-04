@@ -1,29 +1,47 @@
 import { FunctionComponent } from 'react';
-import { FileText, Clock, CheckCircle, XCircle, LucideIcon } from 'lucide-react';
-import AdminKpiGrid from '../../../../ui/AdminKpiGrid';
-import AdminKpiStatCard from '../../../../ui/AdminKpiStatCard';
-
-const overviewStats: { label: string; value: string; icon: LucideIcon; accent: string; bg: string }[] = [
-  { label: 'Total Documents', value: '892', icon: FileText, accent: '#2563eb', bg: 'rgba(37, 99, 235, 0.1)' },
-  { label: 'Pending Review', value: '45', icon: Clock, accent: '#d97706', bg: 'rgba(217, 119, 6, 0.1)' },
-  { label: 'Approved', value: '789', icon: CheckCircle, accent: '#059669', bg: 'rgba(5, 150, 105, 0.1)' },
-  { label: 'Rejected', value: '58', icon: XCircle, accent: '#dc2626', bg: 'rgba(220, 38, 38, 0.1)' },
-];
+import { FileText, Clock, CheckCircle, XCircle } from 'lucide-react';
+import DocumentsOverviewStatGrid from '../../shared/DocumentsOverviewStatGrid';
 
 const AllDocumentsOverviewCards: FunctionComponent = () => (
-  <AdminKpiGrid columns={4}>
-    {overviewStats.map((stat, index) => (
-      <AdminKpiStatCard
-        key={stat.label}
-        label={stat.label}
-        value={stat.value}
-        icon={stat.icon}
-        accent={stat.accent}
-        accentBg={stat.bg}
-        index={index}
-      />
-    ))}
-  </AdminKpiGrid>
+  <DocumentsOverviewStatGrid
+    items={[
+      {
+        label: 'Total Documents',
+        value: '892',
+        badge: 'Catalogue',
+        icon: FileText,
+        accent: '#3b82f6',
+        accentBg: 'rgba(59, 130, 246, 0.16)',
+      },
+      {
+        label: 'Pending Review',
+        value: '45',
+        badge: '5% du total',
+        icon: Clock,
+        accent: '#f59e0b',
+        accentBg: 'rgba(245, 158, 11, 0.16)',
+        piePercent: 5,
+      },
+      {
+        label: 'Approved',
+        value: '789',
+        badge: '88% du total',
+        icon: CheckCircle,
+        accent: '#22c55e',
+        accentBg: 'rgba(34, 197, 94, 0.16)',
+        piePercent: 88,
+      },
+      {
+        label: 'Rejected',
+        value: '58',
+        badge: '7% du total',
+        icon: XCircle,
+        accent: '#ef4444',
+        accentBg: 'rgba(239, 68, 68, 0.16)',
+        piePercent: 7,
+      },
+    ]}
+  />
 );
 
 export default AllDocumentsOverviewCards;

@@ -74,22 +74,39 @@ const getInitials = (name: string): string =>
     .slice(0, 2)
     .toUpperCase();
 
-export const getWorkspaceDetail = (studentId: string): WorkspaceDetail | undefined => {
+export const getWorkspaceDetail = (
+  studentId: string,
+  fallbackName?: string,
+): WorkspaceDetail | undefined => {
   const student = workspaceStudentsMock.find((s) => s.id === studentId);
-  if (!student) return undefined;
+  if (student) {
+    const sharedFiles = defaultSharedFiles.map((file) =>
+      file.id === 'file-1'
+        ? { ...file, uploadedBy: `${student.name} • 18/04/2026` }
+        : file,
+    );
 
-  const sharedFiles = defaultSharedFiles.map((file) =>
-    file.id === 'file-1'
-      ? { ...file, uploadedBy: `${student.name} • 18/04/2026` }
-      : file
-  );
+    return {
+      studentId: student.id,
+      studentName: student.name,
+      studentInitials: getInitials(student.name),
+      stickyNotes: defaultStickyNotes,
+      sharedFiles,
+      recentActivity: defaultRecentActivity,
+    };
+  }
 
-  return {
-    studentId: student.id,
-    studentName: student.name,
-    studentInitials: getInitials(student.name),
-    stickyNotes: defaultStickyNotes,
-    sharedFiles,
-    recentActivity: defaultRecentActivity,
-  };
+  if (/^\d+$/.test(studentId)) {
+    const name = fallbackName?.trim() || `Étudiant #${studentId}`;
+    return {
+      studentId,
+      studentName: name,
+      studentInitials: getInitials(name),
+      stickyNotes: defaultStickyNotes,
+      sharedFiles: [],
+      recentActivity: defaultRecentActivity,
+    };
+  }
+
+  return undefined;
 };

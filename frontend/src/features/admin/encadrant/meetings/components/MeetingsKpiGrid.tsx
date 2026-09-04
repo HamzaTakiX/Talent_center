@@ -94,8 +94,8 @@ const MeetingsKpiGrid: FunctionComponent<MeetingsKpiGridProps> = ({ summary, loa
     <motion.div
       className="admin-meetings-kpi-strip"
       variants={staggerContainer}
-      initial="hidden"
-      animate="visible"
+      initial="initial"
+      animate="animate"
       aria-busy={loading}
     >
       {items.map((item, index) => (

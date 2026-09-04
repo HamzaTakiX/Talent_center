@@ -1,5 +1,4 @@
-import { FunctionComponent } from 'react';
-import { Star } from 'lucide-react';
+import { CSSProperties, FunctionComponent } from 'react';
 import { getScoreTone } from '../internship_offers/CV_Analyse/utils/cvAnalysisScore';
 import { STUDENT_MATCH_SCORE } from '../design-system/studentSemanticStyles';
 
@@ -17,17 +16,18 @@ const StudentMatchScoreBadge: FunctionComponent<StudentMatchScoreBadgeProps> = (
   className = '',
 }) => {
   const tier = getScoreTone(percent);
+  const clamped = Math.min(100, Math.max(0, Math.round(Number(percent) || 0)));
   const sizeClass = size === 'detail' ? 'student-match-score--detail' : '';
 
   return (
     <div
       className={`${STUDENT_MATCH_SCORE} ${sizeClass} ${className}`.trim()}
       data-score-tier={tier}
-      aria-label={`${label}: ${percent}%`}
+      style={{ '--student-match-pie': clamped } as CSSProperties}
+      aria-label={`${label}: ${clamped}%`}
     >
-      <div className="student-match-score__value">
-        <Star className="student-match-score__star h-4 w-4 shrink-0" aria-hidden />
-        <span className="student-match-score__percent">{percent}%</span>
+      <div className="student-match-score__pie" role="img" aria-hidden>
+        <span className="student-match-score__pie-inner">{clamped}%</span>
       </div>
       <span className="student-match-score__label">{label}</span>
     </div>

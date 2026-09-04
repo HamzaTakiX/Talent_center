@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 from apps.notifications.providers.factory import get_email_provider
-from apps.notifications.providers.smtp import SmtpEmailProvider
-from apps.notifications.providers.sendgrid import SendGridEmailProvider
 from apps.notifications.services.email_config_service import (
     get_provider_config,
     get_sender_identity,
@@ -27,16 +25,6 @@ def validate_provider_connection() -> tuple[bool, str, dict]:
         if result.success:
             return True, 'Connection validated', result.raw_response or {}
         return False, result.error or 'Validation failed', result.raw_response or {}
-
-    if provider_name == 'sendgrid' and isinstance(provider, SendGridEmailProvider):
-        result = provider.validate_connection()
-        mark_provider_validated(success=result.success, error=result.error)
-        return result.success, result.error or 'OK', result.raw_response or {}
-
-    if provider_name == 'smtp' and isinstance(provider, SmtpEmailProvider):
-        result = provider.validate_connection()
-        mark_provider_validated(success=result.success, error=result.error)
-        return result.success, result.error or 'OK', result.raw_response or {}
 
     mark_provider_validated(success=False, error=f'Provider {provider_name} validation not implemented')
     return False, f'Validation not available for {provider_name}', {}

@@ -65,6 +65,7 @@ def send_message(
     message_type: str = 'TEXT',
     parent_message_id: int | None = None,
     tag_codes: Optional[list[str]] = None,
+    entity_refs: Optional[list[dict[str, Any]]] = None,
     metadata: Optional[dict[str, Any]] = None,
     uploaded_files: Optional[list] = None,
 ) -> Message | None:
@@ -87,22 +88,43 @@ def send_message(
     if not trimmed_body and files:
         trimmed_body = build_attachment_preview_body(files[0].name if hasattr(files[0], 'name') else 'file')
 
+    merged_metadata = dict(metadata or {})
+    if entity_refs:
+        from .entity_reference_service import sanitize_entity_refs
+
+        ctx = getattr(conv, 'context', None)
+        module = ctx.module if ctx else None
+        clean_refs = sanitize_entity_refs(
+            user,
+            module,
+            entity_refs,
+            conversation_id=conversation_id,
+        )
+        if clean_refs:
+            merged_metadata['entity_refs'] = clean_refs
+
     msg = Message.objects.create(
         conversation=conv,
         sender=user,
         body=trimmed_body,
         message_type=resolved_type,
         parent_message_id=parent_message_id,
-        metadata_json=metadata or {},
+        metadata_json=merged_metadata,
     )
 
     if files:
         create_message_attachments(msg, files)
 
     if tag_codes:
-        tags = Tag.objects.filter(code__in=tag_codes)
-        for tag in tags:
-            MessageTag.objects.get_or_create(message=msg, tag=tag, defaults={'tagged_by': user})
+        from .tag_authorization import filter_authorized_tag_codes
+
+        ctx = getattr(conv, 'context', None)
+        module = ctx.module if ctx else None
+        authorized_codes = filter_authorized_tag_codes(user, tag_codes, module=module)
+        if authorized_codes:
+            tags = Tag.objects.filter(code__in=authorized_codes)
+            for tag in tags:
+                MessageTag.objects.get_or_create(message=msg, tag=tag, defaults={'tagged_by': user})
 
     conv.last_message_at = timezone.now()
     conv.save(update_fields=['last_message_at', 'updated_at'])

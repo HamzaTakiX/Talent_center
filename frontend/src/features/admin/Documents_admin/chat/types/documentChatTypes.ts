@@ -30,6 +30,8 @@ export type DocumentMessage = {
   messageType?: string;
   attachmentName?: string;
   attachments?: ChatAttachmentView[];
+  tags?: string[];
+  entityRefs?: import('../../contextual-chat/types/chatEntityTypes').ChatEntityReference[];
 };
 
 import type { StudentAcademicFields } from '../../../shared/chat-filters/studentAcademicChatFilterTypes';

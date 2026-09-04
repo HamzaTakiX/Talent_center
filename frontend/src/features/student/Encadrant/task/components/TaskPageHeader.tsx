@@ -19,11 +19,11 @@ const TaskPageHeader: FunctionComponent = () => {
         style={{ background: 'var(--admin-brand-muted)' }}
         aria-hidden
       />
-      <div className="relative flex items-start gap-3">
+      <div className="relative flex min-w-0 items-start gap-3">
         <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-muted)] text-[var(--admin-brand)]">
           <ListTodo className="h-5 w-5" strokeWidth={1.75} aria-hidden />
         </span>
-        <div>
+        <div className="min-w-0">
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--admin-border)] bg-[var(--admin-brand-muted)] px-3 py-1 text-xs font-semibold text-[var(--admin-brand)]">
             <Sparkles className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
             {t('student.encadrant.task.platform.badge')}

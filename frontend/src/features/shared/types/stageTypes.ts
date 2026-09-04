@@ -194,6 +194,7 @@ export interface StageImportDuplicateInfo {
   company_name: string;
   similarity_percent: number;
   published_days_ago: number;
+  published_at?: string | null;
   status: string;
 }
 

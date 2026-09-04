@@ -5,6 +5,7 @@ import { Calendar, Clock, Download, Eye, Pencil, Store } from 'lucide-react';
 import type { DocumentServiceCatalogItem } from '../../types/documentServiceCatalog';
 import { resolveServiceIcon } from './serviceCatalogIcons';
 import { isCustomServiceColor, serviceAccentStyle } from './serviceCatalogColor';
+import { formatCatalogDisplayCode } from './catalogLabelUtils';
 
 interface Props {
   service: DocumentServiceCatalogItem;
@@ -38,7 +39,7 @@ const ServiceCatalogCard: FunctionComponent<Props> = ({
         </span>
         <div className="admin-doc-svc-card__meta">
           <h3 className="admin-doc-svc-card__title">{service.name}</h3>
-          <code className="admin-doc-svc-card__code">{service.code}</code>
+          <code className="admin-doc-svc-card__code">{formatCatalogDisplayCode(service.code)}</code>
         </div>
         {showAdminEdit ? (
           <button

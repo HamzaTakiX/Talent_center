@@ -68,15 +68,6 @@ const SmartAssignmentInternshipAnalyticsSkeleton: FunctionComponent = () => {
     aria-label={t('admin.smartAssignment.analytics.loadingAnalytics')}
   >
     <p className="sr-only">{t('admin.smartAssignment.analytics.loadingAnalytics')}</p>
-    <header className="admin-smart-assignment-analytics__header">
-      <Shimmer className="h-5 w-48 max-w-full" />
-      <Shimmer className="mt-2 h-3.5 w-72 max-w-full" />
-    </header>
-    <div className="admin-smart-assignment-analytics__alerts">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Shimmer key={i} className="h-[4.25rem] w-full rounded-xl" />
-      ))}
-    </div>
     <div className="admin-smart-assignment-analytics__grid">
       <AnalyticsCardSkeleton />
       <AnalyticsCardSkeleton />

@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Prefetch, Q
 from django.utils import timezone
 
+from apps.accounts_et_roles.search import profile_name_search_q
 from apps.accounts_et_roles.models import (
     OnboardingStep,
     Role,
@@ -16,15 +17,29 @@ from apps.accounts_et_roles.models import (
     UserRoleAssignment,
 )
 from apps.accounts_et_roles.services import assign_role, change_account_status, revoke_role
+from apps.authentication.services.credentials import provision_user_password
 from apps.authentication.services.platform_access import grant_platform_access, revoke_platform_access
+from .microsoft_access_sync import (
+    MicrosoftAccessSyncError,
+    apply_platform_access_with_microsoft_sync,
+    ensure_microsoft_assignment_for_new_user,
+)
 
 from ..models import AcademicLevel, AcademicSector, AdminProfile, AdminRoleAssignment, ClassGroup, Filiere
-from .rbac_seed import UI_PERMISSION_TO_CODE, UI_ROLE_TO_CODE, seed_admin_rbac
+from .rbac_seed import (
+    MANAGED_ADMIN_ROLE_CODES,
+    UI_PERMISSION_TO_CODE,
+    UI_ROLE_TO_CODE,
+    seed_admin_rbac,
+)
 from .scopes import is_super_admin
 
 User = get_user_model()
 
-ADMIN_ROLE_CODES = frozenset(UI_ROLE_TO_CODE.values())
+# Roles the admin management UI may revoke when rewriting an admin's roles.
+# Must cover every role this module can grant (including ADMIN_SUPER), otherwise
+# narrowing an administrator to one module silently leaves broader roles active.
+ADMIN_ROLE_CODES = MANAGED_ADMIN_ROLE_CODES
 
 
 def _split_full_name(full_name: str) -> tuple[str, str]:
@@ -36,12 +51,34 @@ def _split_full_name(full_name: str) -> tuple[str, str]:
     return parts[0], parts[1]
 
 
+#: Read-only marker returned by the API for super admins. Accepted on write so a
+#: client can echo back what it read, but it never grants the ADMIN_SUPER role —
+#: super admin status comes from AdminProfile.admin_level alone.
+_IGNORED_ROLE_SLUGS = frozenset({'super'})
+
+
 def _ui_roles_to_codes(role_slugs: list[str]) -> list[str]:
-    codes = []
+    """Map UI role slugs to backend role codes, rejecting unknown slugs.
+
+    Silently dropping unrecognized slugs used to produce administrators with no
+    role at all (and therefore no permissions), which is indistinguishable from a
+    successful save in the UI.
+    """
+    codes: list[str] = []
+    unknown: list[str] = []
     for slug in role_slugs:
-        code = UI_ROLE_TO_CODE.get(slug)
-        if code and code not in codes:
+        normalized = str(slug or '').strip().lower()
+        if not normalized or normalized in _IGNORED_ROLE_SLUGS:
+            continue
+        code = UI_ROLE_TO_CODE.get(normalized)
+        if not code:
+            unknown.append(str(slug))
+            continue
+        if code not in codes:
             codes.append(code)
+    if unknown:
+        allowed = ', '.join(sorted(UI_ROLE_TO_CODE))
+        raise ValueError(f'Unknown role(s): {", ".join(unknown)}. Allowed roles: {allowed}.')
     return codes
 
 
@@ -234,8 +271,7 @@ def create_platform_admin(
         sso_enabled=sso_enabled,
         is_active=True,
     )
-    user.set_unusable_password()
-    user.save(update_fields=['password'])
+    provision_user_password(user=user, generated_by=created_by)
 
     UserProfile.objects.create(user=user, first_name=first_name, last_name=last_name)
     StaffProfile.objects.get_or_create(user=user)
@@ -263,6 +299,10 @@ def create_platform_admin(
 
     if grant_access:
         grant_platform_access(user, granted_by=created_by)
+        try:
+            ensure_microsoft_assignment_for_new_user(user, granted_by=created_by)
+        except MicrosoftAccessSyncError:
+            raise
 
     return user
 
@@ -372,9 +412,13 @@ def update_platform_admin(
         change_account_status(user, account_status, changed_by=changed_by, reason=reason)
 
     if platform_access_granted is True:
-        grant_platform_access(user, granted_by=changed_by)
+        apply_platform_access_with_microsoft_sync(
+            user, grant=True, granted_by=changed_by,
+        )
     elif platform_access_granted is False:
-        revoke_platform_access(user)
+        apply_platform_access_with_microsoft_sync(
+            user, grant=False, granted_by=changed_by,
+        )
 
     user.refresh_from_db()
     return user
@@ -400,10 +444,14 @@ def list_administrators_queryset(*, search: str = '', status: str = '', role: st
     )
 
     if search:
+        q = search.strip()
         qs = qs.filter(
-            Q(email__icontains=search)
-            | Q(profile__first_name__icontains=search)
-            | Q(profile__last_name__icontains=search)
+            Q(email__icontains=q)
+            | profile_name_search_q(
+                q,
+                first_name_field='profile__first_name',
+                last_name_field='profile__last_name',
+            )
         )
 
     if status:

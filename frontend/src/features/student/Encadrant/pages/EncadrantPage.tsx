@@ -1,6 +1,8 @@
 import { FunctionComponent } from 'react';
 import StudentLayout from '../../components/StudentLayout';
 import EncadrantMeetingsSection from '../components/EncadrantMeetingsSection';
+import EncadrantMilestonesSection from '../components/EncadrantMilestonesSection';
+import EncadrantPriorityAlerts from '../components/EncadrantPriorityAlerts';
 import EncadrantQuickActionsGrid from '../components/EncadrantQuickActionsGrid';
 import EncadrantReminderBanner from '../components/EncadrantReminderBanner';
 import EncadrantReportProgressSection from '../components/EncadrantReportProgressSection';
@@ -14,7 +16,9 @@ const EncadrantPage: FunctionComponent = () => (
     <div id="student-encadrant-root" className={ENCADRANT_PAGE_ROOT}>
       <EncadrantSupervisorCard />
       <EncadrantStatsGrid />
+      <EncadrantQuickActionsGrid />
       <EncadrantReminderBanner />
+      <EncadrantPriorityAlerts />
 
       <div className={ENCADRANT_TWO_COL_GRID}>
         <EncadrantMeetingsSection />
@@ -22,7 +26,7 @@ const EncadrantPage: FunctionComponent = () => (
       </div>
 
       <EncadrantReportProgressSection />
-      <EncadrantQuickActionsGrid />
+      <EncadrantMilestonesSection />
     </div>
   </StudentLayout>
 );

@@ -131,11 +131,13 @@ def resolve_student_for_context(
     *,
     student_user_id: int | None,
     snapshot: dict[str, Any] | None = None,
+    entity_id: str | None = None,
+    entity_type: str | None = None,
 ) -> StudentProfile | None:
     snap = snapshot or {}
     student_profile_id = snap.get('student_profile_id')
     resolved_user_id = student_user_id or snap.get('student_user_id')
-    if not student_profile_id and not resolved_user_id:
+    if not student_profile_id and not resolved_user_id and not entity_id:
         return None
 
     queryset = StudentProfile.objects.select_related('user', 'user__profile')
@@ -144,23 +146,55 @@ def resolve_student_for_context(
         if student:
             return student
     if resolved_user_id:
-        return queryset.filter(user_id=resolved_user_id).first()
+        student = queryset.filter(user_id=resolved_user_id).first()
+        if student:
+            return student
+    if entity_type == 'financial_support' and entity_id:
+        try:
+            profile_id = int(str(entity_id).strip())
+        except (TypeError, ValueError):
+            profile_id = None
+        if profile_id:
+            return queryset.filter(pk=profile_id).first()
     return None
+
+
+def _label_as_student_name(entity_label: str | None) -> str:
+    label = str(entity_label or '').strip()
+    if not label:
+        return ''
+    if label.upper().startswith('SRF'):
+        for separator in ('—', '–', '-'):
+            if separator in label:
+                candidate = label.split(separator, 1)[-1].strip()
+                if candidate:
+                    return candidate
+    return label
 
 
 def resolve_student_display_name_for_context(
     *,
     student_user_id: int | None,
     snapshot: dict[str, Any] | None = None,
+    entity_label: str | None = None,
+    entity_id: str | None = None,
+    entity_type: str | None = None,
 ) -> str:
     snap = snapshot or {}
     cached = str(snap.get('student_name') or '').strip()
     if cached:
         return cached
-    student = resolve_student_for_context(student_user_id=student_user_id, snapshot=snap)
-    if not student:
-        return ''
-    return _student_display_name(student)
+    student = resolve_student_for_context(
+        student_user_id=student_user_id,
+        snapshot=snap,
+        entity_id=entity_id,
+        entity_type=entity_type,
+    )
+    if student:
+        name = _student_display_name(student)
+        if name:
+            return name
+    return _label_as_student_name(entity_label)
 
 
 def _student_avatar_url(student: StudentProfile, request=None) -> str | None:

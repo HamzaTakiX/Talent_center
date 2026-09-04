@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FunctionComponent, useEffect, useMemo, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SupportMessageComposer from '../../../../admin/shared/admin-support-inbox/components/SupportMessageComposer';
@@ -7,6 +7,9 @@ import {
   toChatToolMessages,
   useChatConversationTools,
 } from '../../../../shared/chat-design-system';
+import ChatComposerModuleExtras from '../../../../shared/contextual-chat/components/ChatComposerModuleExtras';
+import { useSupportChatAreaComposer } from '../../../../shared/contextual-chat/hooks/useSupportChatAreaComposer';
+import type { ChatEntityReference } from '../../../../shared/contextual-chat/types/chatEntityTypes';
 import type { SrfChatMessage } from '../types';
 
 type Props = {
@@ -15,7 +18,7 @@ type Props = {
   loadError?: string | null;
   archived?: boolean;
   initialDraft?: string;
-  onSend: (text: string) => void;
+  onSend: (text: string, tagCodes?: string[], entityRefs?: ChatEntityReference[]) => void;
   onBack?: () => void;
   onArchive?: () => void;
   onUnarchive?: () => void;
@@ -33,18 +36,21 @@ const SrfChatThread: FunctionComponent<Props> = ({
   onUnarchive,
 }) => {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState(initialDraft);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const composer = useSupportChatAreaComposer('student-srf', (text, _files, tagCodes, entityRefs) => {
+    onSend(text, tagCodes, entityRefs);
+  });
 
   useEffect(() => {
-    if (initialDraft) setDraft(initialDraft);
-  }, [initialDraft]);
+    if (initialDraft) composer.setDraft(initialDraft);
+  }, [initialDraft, composer.setDraft]);
 
   const chatTools = useChatConversationTools({
     messages: toChatToolMessages(messages),
     conversationKey: 'student-srf',
     counterpartyName: t('student.srf.chat.serviceName'),
     archived,
+    showArchive: false,
     onArchive,
     onUnarchive,
     scrollContainerRef: scrollRef,
@@ -53,13 +59,6 @@ const SrfChatThread: FunctionComponent<Props> = ({
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages.length, chatTools.searchQuery]);
-
-  const handleSend = useCallback(() => {
-    const text = draft.trim();
-    if (!text) return;
-    onSend(text);
-    setDraft('');
-  }, [draft, onSend]);
 
   const emptyLabel = useMemo(() => {
     if (loadError) return loadError;
@@ -107,11 +106,21 @@ const SrfChatThread: FunctionComponent<Props> = ({
       {chatTools.panels}
 
       <SupportMessageComposer
-        value={draft}
-        onChange={setDraft}
-        onSend={handleSend}
+        value={composer.draft}
+        onChange={composer.setDraft}
+        onSend={composer.handleSend}
         placeholder={t('student.srf.chat.composerPlaceholder', { defaultValue: 'Écrire un message…' })}
         showVoice={false}
+        extraActions={
+          <ChatComposerModuleExtras
+            chatModule="srf"
+            composer={composer}
+            disabled={archived}
+            showTagPicker={false}
+          />
+        }
+        pendingEntities={composer.pendingEntities}
+        onRemovePendingEntity={composer.removePendingEntity}
       />
     </section>
   );

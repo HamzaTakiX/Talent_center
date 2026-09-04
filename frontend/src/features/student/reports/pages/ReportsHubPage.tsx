@@ -1,81 +1,82 @@
 import { FunctionComponent } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Workflow } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import StudentLayout from '../../components/StudentLayout';
-import {
-  activeHubReport,
-  hubDocumentsReferences,
-  hubKpiMetrics,
-  hubRecentActivity,
-  hubReports,
-  hubSupervisorFeedback,
-  reportJourneySteps,
-} from '../data/reportPlatformMock';
-import ReportJourneyTimeline from '../components/hub/ReportJourneyTimeline';
 import ReportSubmissionWorkflow from '../components/editor/ReportSubmissionWorkflow';
 import ReportsAcademicWorkspace from '../components/hub/ReportsAcademicWorkspace';
 import ReportsHubHero from '../components/hub/ReportsHubHero';
 import ReportsHubKpiGrid from '../components/hub/ReportsHubKpiGrid';
+import ReportsHubSkeletonBlock from '../components/hub/ReportsHubSkeletonBlock';
 import ReportsHubTable from '../components/hub/ReportsHubTable';
-import { studentReportEditorPath } from '../constants/routes';
+import { REPORTS_HUB_WORKFLOW_SKELETON_STEPS } from '../constants/limits';
 import { REPORTS_HUB_PAGE_ROOT } from '../constants/reportsHubLayout';
+import { useReportsHubPlatform } from '../hooks/useReportsHubPlatform';
 
 const ReportsHubPage: FunctionComponent = () => {
   const { t } = useTranslation();
+  const { loading, report, kpis, reports, feedback, documents } = useReportsHubPlatform();
+  const loadingLabel = t('student.reports.hub.loading', { defaultValue: 'Chargement…' });
 
   return (
     <StudentLayout>
-      <div className={REPORTS_HUB_PAGE_ROOT}>
-        <motion.header
-          className="sr-hub__topbar"
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
+      <div className={REPORTS_HUB_PAGE_ROOT} aria-busy={loading || undefined}>
+        <ReportsHubHero report={report} kpis={kpis} loading={loading} />
+
+        <section
+          className="sr-hub__workflow-card"
+          aria-label={t('student.reports.workflow.title')}
+          aria-busy={loading || undefined}
         >
-          <div>
-            <h1 className="sr-hub__page-title">{t('student.reports.hub.title')}</h1>
-            <p className="sr-hub__page-sub">{t('student.reports.hub.subtitle')}</p>
-          </div>
-          <Link
-            to={studentReportEditorPath('rpt-main-2026')}
-            className="sr-hub-btn sr-hub-btn--primary sr-hub-btn--sm"
-          >
-            <Plus className="h-4 w-4" aria-hidden />
-            {t('student.reports.hub.newReport')}
-          </Link>
-        </motion.header>
-
-        <ReportsHubHero report={activeHubReport} kpis={hubKpiMetrics} />
-
-        <section className="sr-hub__workflow-card" aria-label={t('student.reports.workflow.title')}>
           <div className="sr-hub__workflow-header">
-            <h2 className="sr-hub__workflow-title">{t('student.reports.workflow.title')}</h2>
-            <span className={`student-report-status-badge student-report-status-badge--${activeHubReport.status}`}>
-              {t(`student.reports.status.${activeHubReport.status}`)}
-            </span>
+            <div className="sr-hub__workflow-title-wrap">
+              <span className="sr-hub__workflow-icon" aria-hidden>
+                <Workflow className="h-4 w-4" strokeWidth={2} />
+              </span>
+              <h2 className="sr-hub__workflow-title">{t('student.reports.workflow.title')}</h2>
+            </div>
+            {loading ? (
+              <ReportsHubSkeletonBlock className="h-6 w-20 rounded-full" />
+            ) : (
+              <span className={`student-report-status-badge student-report-status-badge--${report.status}`}>
+                {t(`student.reports.status.${report.status}`)}
+              </span>
+            )}
           </div>
-          <ReportSubmissionWorkflow status={activeHubReport.status} />
+          {loading ? (
+            <div
+              className="student-report-workflow"
+              role="status"
+              aria-busy="true"
+              aria-label={loadingLabel}
+            >
+              <span className="sr-only">{loadingLabel}</span>
+              {Array.from({ length: REPORTS_HUB_WORKFLOW_SKELETON_STEPS }, (_, i) => (
+                <div key={i} className="flex items-center">
+                  <div className="student-report-workflow-step">
+                    <ReportsHubSkeletonBlock className="h-8 w-8 rounded-full" />
+                    <ReportsHubSkeletonBlock className="mt-1.5 h-2.5 w-12" />
+                  </div>
+                  {i < REPORTS_HUB_WORKFLOW_SKELETON_STEPS - 1 ? (
+                    <div className="student-report-workflow-connector" aria-hidden />
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <ReportSubmissionWorkflow status={report.status} />
+          )}
         </section>
 
-        <ReportsHubKpiGrid metrics={hubKpiMetrics} />
+        <ReportsHubKpiGrid metrics={kpis} loading={loading} />
 
-        <div className="sr-hub__layout">
-          <div className="sr-hub__main">
-            <ReportsHubTable reports={hubReports} />
-          </div>
-          <aside className="sr-hub__aside">
-            <ReportJourneyTimeline steps={reportJourneySteps} />
-          </aside>
-        </div>
+        <ReportsHubTable reports={reports} loading={loading} />
 
         <ReportsAcademicWorkspace
-          reportId={activeHubReport.id}
-          feedback={hubSupervisorFeedback}
-          activity={hubRecentActivity}
-          documents={hubDocumentsReferences}
+          reportId={report.id}
+          feedback={feedback}
+          documents={documents}
+          loading={loading}
         />
       </div>
     </StudentLayout>

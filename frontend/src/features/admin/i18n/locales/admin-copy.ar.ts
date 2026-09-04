@@ -264,6 +264,7 @@ export const adminCopyAr = {
     "createAdministrator": {
       "title": "إنشاء مسؤول جديد",
       "subtitle": "إضافة مسؤول بصلاحيات محددة",
+      "heroBadge": "حساب جديد",
       "fields": {
         "fullName": "الاسم الكامل",
         "email": "البريد الإلكتروني SSO المدرسي",
@@ -387,20 +388,23 @@ export const adminCopyAr = {
       "internshipAmbiguous": "عدة أنواع ممكنة — حدّد التخصص"
     },
     "createEncadrant": {
-      "title": "إضافة مشرف جديد",
-      "subtitle": "تسجيل مشرف مع SSO ESCA والنطاق الأكاديمي",
+      "title": "مشرف جديد",
+      "subtitle": "أنشئ الحساب وحدد نطاقه الأكاديمي في ESCA.",
+      "heroBadge": "حساب جديد",
       "editTitle": "تعديل المشرف",
-      "editSubtitle": "تحديث الهوية والنطاق والقدرة والوصول.",
+      "editSubtitle": "حدّث الهوية والنطاق والقدرة والوصول.",
       "fields": {
         "fullName": "الاسم الكامل",
-        "email": "بريد SSO ESCA",
-        "emailHint": "عنوان @groupe-esca.ma مطلوب لتسجيل الدخول عبر SSO.",
+        "email": "بريد ESCA",
+        "emailHint": "عنوان @groupe-esca.ma المستخدم لتسجيل الدخول.",
         "maxStudents": "الحد الأقصى للطلاب",
         "specializationDomains": "مجالات التخصص",
+        "ssoEnabled": "تجهيز تسجيل الدخول عبر SSO",
+        "ssoEnabledHint": "يمكن لهذا البريد استخدام SSO المدرسة عند توفره. تسجيل الدخول بالبريد وكلمة المرور يبقى متاحاً.",
         "grantAccess": "الوصول إلى المنصة",
-        "grantAccessHint": "يسمح بتسجيل الدخول عبر SSO ESCA عند تفعيله من المشرف الأعلى.",
+        "grantAccessHint": "يسمح بتسجيل الدخول. بدونه لا يستطيع المشرف الدخول.",
         "isActive": "مشرف نشط",
-        "isActiveHint": "المشرفون غير النشطين مستبعدون من سير عمل التعيين."
+        "isActiveHint": "الحسابات غير النشطة لا تظهر في التعيينات."
       },
       "placeholders": {
         "fullName": "مثال: أحمد بناني",
@@ -409,13 +413,15 @@ export const adminCopyAr = {
       },
       "sections": {
         "identity": "المعلومات الأساسية",
-        "identityHint": "الاسم الرسمي وبريد SSO ESCA. لا حاجة لكلمة مرور.",
+        "identityHint": "الاسم وبريد ESCA. تُنشأ كلمة مرور تلقائياً.",
         "academicScope": "النطاق الأكاديمي",
-        "academicScopeHint": "الشعبة، المستويات، السنوات الأكاديمية، مجالات الخبرة والقطاعات ESCA — كل خطوة تفتح التالية.",
+        "academicScopeHint": "اختر الشعبة ثم المستويات والسنوات والمجالات.",
         "supervision": "قدرة الإشراف",
-        "supervisionHint": "الحد الأقصى لعدد الطلاب الذين يمكن لهذا المشرف إشرافهم.",
-        "access": "التحكم في الوصول",
-        "accessHint": "المصادقة عبر SSO فقط. يدير المشرف الأعلى الوصول."
+        "supervisionHint": "أقصى عدد من الطلاب يمكن لهذا المشرف متابعتهم.",
+        "access": "الوصول",
+        "accessHint": "البريد وكلمة المرور الآن، وSSO لاحقاً بنفس البريد.",
+        "credentials": "بيانات الدخول",
+        "credentialsHint": "كلمة مرور مولّدة لأول تسجيل دخول. انسخها وشاركها بأمان."
       },
       "domains": {
         "webDevelopment": "تطوير الويب",
@@ -435,28 +441,28 @@ export const adminCopyAr = {
         "filiereHint": "اختر شعبة ESCA واحدة على الأقل.",
         "selectFiliere": "اختر شعبة",
         "academicYears": "السنوات الأكاديمية",
-        "academicYearsHint": "السنوات المشمولة (بعد المستويات).",
+        "academicYearsHint": "السنوات المشمولة في هذا النطاق.",
         "selectAcademicYears": "اختر السنوات الأكاديمية",
         "levels": "المستويات",
-        "levelsHint": "مستويات الدراسة ESCA (بعد الشعبة).",
+        "levelsHint": "مستويات الدراسة للشعب المختارة.",
         "selectLevels": "اختر المستويات",
         "specializationDomains": "مجالات التخصص",
-        "specializationDomainsHint": "خبرات مهنية مرتبطة بالبرامج المختارة (مالية، تسويق، تدقيق…).",
+        "specializationDomainsHint": "خبرات مهنية مرتبطة بالبرامج (مالية، تسويق، تدقيق…).",
         "selectSpecializationDomains": "اختر مجالات التخصص",
         "technicalSpecializationDomains": "مجالات تقنية (اختياري)",
-        "technicalSpecializationDomainsHint": "تداريب أو مهارات IT (تطوير، بيانات، أمن سيبراني…). منفصلة عن المجال المهني.",
+        "technicalSpecializationDomainsHint": "مهارات تقنية (تطوير، بيانات، أمن سيبراني…). منفصلة عن المجال المهني.",
         "selectTechnicalSpecializationDomains": "اختر المجالات التقنية",
         "sectors": "قطاع ESCA",
-        "sectorsHint": "قطاع ESCA للمستوى المحدد.",
+        "sectorsHint": "قطاع المستوى المحدد.",
         "selectSectors": "اختر التخصص",
         "needsFiliere": "اختر شعبة أولاً.",
         "needsLevel": "اختر مستوى واحداً على الأقل أولاً."
       },
       "messages": {
-        "requiredIdentity": "الاسم الكامل وبريد SSO ESCA مطلوبان.",
+        "requiredIdentity": "الاسم الكامل وبريد ESCA مطلوبان.",
         "requiredFullName": "الاسم الكامل مطلوب.",
-        "requiredEmail": "بريد SSO مطلوب.",
-        "invalidEmailDomain": "يجب أن يستخدم البريد نطاق @groupe-esca.ma.",
+        "requiredEmail": "البريد مطلوب.",
+        "invalidEmailDomain": "يجب أن يكون البريد على @groupe-esca.ma.",
         "invalidEmailFormat": "صيغة البريد غير صالحة.",
         "requiredFiliere": "اختر شعبة واحدة على الأقل.",
         "requiredAcademicYear": "اختر سنة أكاديمية واحدة على الأقل.",
@@ -468,13 +474,16 @@ export const adminCopyAr = {
         "maxStudentsMin": "يجب أن تكون السعة طالباً واحداً على الأقل.",
         "validationSummary": "صحّح الحقول المميزة قبل الحفظ.",
         "createSuccess": "تم إنشاء المشرف بنجاح.",
+        "createSuccessWithPassword": "تم إنشاء الحساب. انسخ كلمة المرور أدناه ليتمكن المشرف من تسجيل الدخول.",
         "updateSuccess": "تم تحديث المشرف بنجاح.",
         "saveError": "تعذر حفظ المشرف. حاول مرة أخرى."
       },
       "supervisedInternships": {
         "label": "أنواع التدريب المُشرَف عليها",
-        "hint": "تعيين المشرفين يطابق فقط الطلاب الذين يطابق نوع تدريبهم الاختيار.",
-        "placeholder": "اختر أنواع التدريب…"
+        "hint": "الأنواع من إطار التدريب للمستويات المختارة (الهيكل الأكاديمي).",
+        "autoHint": "يُحدَّد تلقائياً حسب المستويات المختارة.",
+        "placeholder": "اختر أنواع التدريب…",
+        "emptyForLevels": "لا يوجد نوع تدريب مُعد لهذه المستويات."
       },
       "detail": {
         "filieres": "البرامج / الشعب",
@@ -494,7 +503,8 @@ export const adminCopyAr = {
       "actions": {
         "cancel": "إلغاء",
         "submit": "إنشاء المشرف",
-        "save": "حفظ التغييرات"
+        "save": "حفظ التغييرات",
+        "done": "تم"
       }
     },
     "createAnnouncement": {
@@ -1064,7 +1074,19 @@ export const adminCopyAr = {
         },
         "errors": {
           "title": "تعذّر تحليل هذا الرابط",
-          "retry": "إعادة المحاولة"
+          "retry": "إعادة المحاولة",
+          "invalid_url": "هذا الرابط غير صالح. الصق الرابط الكامل لصفحة العرض بادئًا بـ https://",
+          "unreachable": "تعذّر الوصول إلى هذا الموقع. تحقّق من الرابط أو أعد المحاولة لاحقًا.",
+          "not_found": "صفحة العرض لم تعد موجودة على هذا العنوان (خطأ 404).",
+          "timeout": "استغرق الموقع وقتًا طويلاً للاستجابة. أعد المحاولة بعد لحظات.",
+          "blocked": "هذا الموقع يمنع القراءة الآلية. انسخ نص العرض واستخدم «لصق النص».",
+          "not_html": "هذا الرابط لا يشير إلى صفحة ويب (قد يكون ملف PDF أو ملفًا آخر).",
+          "empty_page": "تم الوصول إلى الصفحة لكنها لا تحتوي على محتوى قابل للقراءة.",
+          "unsupported_website": "هذا الموقع غير مدعوم بعد. انسخ نص العرض واستخدم «لصق النص».",
+          "no_content_extracted": "تمت قراءة الصفحة لكن لم يتم التعرّف على أي بيانات للعرض. انسخ نص العرض واستخدم «لصق النص».",
+          "extraction_failed": "تعذّر استخراج بيانات العرض من هذه الصفحة. انسخ نص العرض واستخدم «لصق النص».",
+          "import_failed": "فشل الاستيراد. تحقّق من الرابط ثم أعد المحاولة.",
+          "unexpected_error": "حدث خطأ غير متوقّع. أعد المحاولة أو أدخل العرض يدويًا."
         },
         "loading": {
           "analyzingPage": "تحليل الصفحة…",
@@ -1088,12 +1110,14 @@ export const adminCopyAr = {
         "reset": "لصق نص جديد",
         "extractedSummary": "تم استخراج {{count}} حقول بنجاح",
         "extractedHint": "راجع الحقول المستخرجة أدناه، عدّل عند الحاجة، ثم احفظ كمسودة أو انشر.",
+        "missingHint": "يجب إكمالها يدوياً: {{fields}}.",
         "viewOriginalText": "عرض النص الأصلي",
         "formatHintTitle": "الصيغة المتوقعة (انقر للعرض)",
         "formatHint": "العنوان: [عنوان العرض]\nالشركة: [اسم الشركة]\nالمدينة: [المدينة، البلد]\nالنوع: [PFE / تدريب / تناوب…]\n\nالوصف:\n[وصف عام للمنصب]\n\nالمهام / المسؤوليات:\n[قائمة المهام]\n\nالملف المطلوب:\n[المؤهلات المطلوبة]\n\nالمهارات / التقنيات:\n[قائمة مفصولة بفواصل أو أسطر]\n\nاللغات: الفرنسية، الإنجليزية\n\nالمزايا:\n[ما سيكتسبه المتدرب]\n\nآخر موعد: DD/MM/YYYY",
         "errors": {
           "title": "تعذّر استخراج معلومات العرض",
-          "no_fields_extracted": "لم يتم التعرف على أي أقسام. تأكد من أن النص يحتوي على أقسام موسومة (مثل: «العنوان:»، «الوصف:»، «المهارات:»).",
+          "no_fields_extracted": "تعذّر تحديد عنوان العرض. أضف سطر «العنوان: …» في أعلى النص، أو أدخل العرض يدوياً.",
+          "text_too_short": "النص الملصق قصير جداً. الصق الإعلان الكامل (العنوان، الشركة، الوصف).",
           "parse_failed": "حدث خطأ أثناء قراءة النص. يرجى المحاولة مجدداً."
         }
       }
@@ -1101,10 +1125,12 @@ export const adminCopyAr = {
     "createStudent": {
       "title": "إضافة طالب",
       "subtitle": "إنشاء حساب وتعيين الشعبة والفصل وصول المنصة.",
+      "heroBadge": "حساب جديد",
       "editTitle": "إدارة حساب الطالب",
       "editSubtitle": "تعديل الوصول والتعيين الأكاديمي وبيانات الاعتماد.",
       "fields": {
         "email": "البريد الإلكتروني",
+        "emailHint": "العنوان المستخدم لتسجيل الدخول بالبريد / كلمة المرور و SSO.",
         "firstName": "الاسم الأول",
         "lastName": "اسم العائلة",
         "studentNumber": "رقم الطالب",
@@ -1113,7 +1139,9 @@ export const adminCopyAr = {
         "class": "الفصل",
         "accountStatus": "حالة الحساب",
         "ssoAccess": "وصول SSO (المدرسة)",
+        "ssoAccessHint": "يسمح بتسجيل الدخول عبر Microsoft / SSO بعد تفويض الحساب.",
         "grantPlatformAccess": "السماح بالوصول للمنصة فوراً",
+        "grantPlatformAccessHint": "بدون ذلك، لن يتمكن الطالب من الدخول إلى Talent Center.",
         "platformAccess": "الوصول للمنصة مفعّل"
       },
       "placeholders": {
@@ -1305,7 +1333,13 @@ export const adminCopyAr = {
         "level": "المستوى الأكاديمي",
         "year": "السنة الأكاديمية",
         "duration": "تلميح المدة",
-        "order": "ترتيب العرض"
+        "order": "ترتيب العرض",
+        "businessDomains": "مجالات التخصص",
+        "businessDomainsHint": "الخبرات المهنية المقترحة للمشرفين لهذا البرنامج.",
+        "techDomains": "المجالات التقنية",
+        "techDomainsHint": "مهارات تقنية مرتبطة بهذا البرنامج (تدريب تقني، بيانات، أمن سيبراني…).",
+        "selectBusinessDomains": "اختر مجالات التخصص",
+        "selectTechDomains": "اختر المجالات التقنية"
       },
       "status": {
         "active": "نشط",
@@ -1455,17 +1489,28 @@ export const adminCopyAr = {
       "repairScopes": "إكمال المستويات",
       "repairScopesSuccess": "تم تحديث {{count}} مشرف(ين) بالمستويات والسنة وأنواع التدريب.",
       "repairScopesError": "تعذّر إكمال النطاقات الأكاديمية.",
-      "incompleteScopeBanner": "{{count}} مشرف(ين) لديهم نطاق أكاديمي غير مكتمل. انقر للإكمال تلقائياً.",
+      "scopeAlert": {
+        "title": "نطاق أكاديمي غير مكتمل",
+        "badge": "{{count}} للإكمال",
+        "description": "هؤلاء المشرفون تنقصهم المستويات أو السنة الأكاديمية أو أنواع التدريب. أكملها تلقائياً من شعبهم لجعل التعيين أكثر دقة.",
+        "dismiss": "إخفاء هذا التنبيه"
+      },
+      "actions": {
+        "menuAria": "إجراءات {{name}}"
+      },
       "import": {
         "title": "استيراد المشرفين",
         "description": "إنشاء عدة حسابات مشرفين من ملف CSV أو Excel.",
         "hint": "الأعمدة: البريد (@groupe-esca.ma)، الاسم الكامل، رموز الشعب (pge)، رموز المستوى (y4,y5 — اختياري)، السنوات الأكاديمية (2025-2026)، رموز أنواع التدريب (اختياري)، الحد الأقصى للطلاب، الوصول، نشط، التخصص (اختياري).",
         "downloadTemplate": "تنزيل قالب CSV",
-        "fileLabel": "ملف الاستيراد",
+        "fileLabel": "انقر للتصفح، أو اسحب وأفلت ملف .csv / .xlsx",
+        "dropzoneTitle": "أفلت ملف CSV أو Excel هنا",
+        "dropzoneChange": "انقر أو أفلت ملفاً آخر للاستبدال",
         "actions": {
           "cancel": "إلغاء",
           "close": "إغلاق",
-          "import": "تشغيل الاستيراد"
+          "import": "تشغيل الاستيراد",
+          "importing": "جاري الاستيراد…"
         },
         "errors": {
           "noFile": "اختر ملف CSV أو Excel (.xlsx).",
@@ -1474,7 +1519,10 @@ export const adminCopyAr = {
         "result": {
           "summary": "{{success}} / {{total}} مشرف(ين) تم إنشاؤهم، {{errors}} خطأ(أخطاء).",
           "rowError": "الصف {{row}} ({{email}}): {{message}}",
-          "moreErrors": "… و{{count}} خطأ(أخطاء) أخرى."
+          "moreErrors": "… و{{count}} خطأ(أخطاء) أخرى.",
+          "successLabel": "تم الإنشاء",
+          "totalLabel": "إجمالي الصفوف",
+          "errorsLabel": "أخطاء"
         }
       }
     },
@@ -1857,7 +1905,13 @@ export const adminCopyAr = {
           "paid": "مدفوع",
           "overdue": "متأخر",
           "outstandingAmount": "المبلغ المستحق",
-          "averagePaymentRate": "متوسط معدل الدفع"
+          "averagePaymentRate": "متوسط معدل الدفع",
+          "badges": {
+            "allAccounts": "كل الحسابات",
+            "percentOfTotal": "{{percent}}% من الإجمالي",
+            "outstanding": "المتبقي للتحصيل",
+            "avgRate": "المستوى المتوسط"
+          }
         },
         "empty": {
           "importData": "استيراد البيانات المالية"
@@ -2316,6 +2370,20 @@ export const adminCopyAr = {
         "title": "تفاصيل التقرير",
         "general": "معلومات عامة",
         "dates": "التواريخ"
+      },
+      "analytics": {
+        "validationRate": "معدل التحقق",
+        "successRate": "نجاح التدريب",
+        "riskDist": "توزيع المخاطر",
+        "totalCaption": "المجموع",
+        "riskEmptyTitle": "لا مخاطر مسجّلة",
+        "riskEmptyDesc": "سيظهر التوزيع بمجرد أن يسجّل تقرير مستوى خطر.",
+        "riskLevel": {
+          "CRITICAL": "حرج",
+          "HIGH": "مرتفع",
+          "MEDIUM": "متوسط",
+          "LOW": "منخفض"
+        }
       }
     },
     "meetings": {
@@ -2352,7 +2420,9 @@ export const adminCopyAr = {
         "title": "تحليلات الإشراف",
         "completedVsDelayed": "مكتملة مقابل متأخرة",
         "distribution": "توزيع الاجتماعات",
-        "totalCaption": "الإجمالي"
+        "totalCaption": "الإجمالي",
+        "distributionEmptyTitle": "لا توجد اجتماعات مسجّلة",
+        "distributionEmptyDesc": "سيظهر التوزيع حسب الحالة بمجرد جدولة أول اجتماع."
       },
       "insights": {
         "title": "ملاحظات رئيسية",
@@ -2467,6 +2537,7 @@ export const adminCopyAr = {
   },
   "common": {
     "loading": "جاري التحميل…",
+    "auto": "تلقائي",
     "yes": "نعم",
     "no": "لا",
     "breadcrumbs": {
@@ -2475,6 +2546,7 @@ export const adminCopyAr = {
       "offers": "عروض التدريب",
       "announcements": "الإعلانات",
       "encadrants": "المشرفون",
+      "newEncadrant": "مشرف جديد",
       "administrators": "المسؤولون",
       "newAdministrator": "مسؤول جديد",
       "documents": "المستندات",
@@ -2511,6 +2583,8 @@ export const adminCopyAr = {
     "delete": {
       "confirm": "حذف نهائي",
       "confirmWithCount": "حذف ({{count}})",
+      "deleting": "جاري الحذف…",
+      "irreversible": "لا يمكن التراجع عن هذا الإجراء.",
       "startSelection": "تحديد للحذف",
       "cancelSelection": "إلغاء",
       "selectedCount": "{{count}} محدد",
@@ -2534,6 +2608,8 @@ export const adminCopyAr = {
     "detailModal": {
       "close": "إغلاق",
       "readOnlyHint": "عرض للقراءة فقط. استخدم تعديل لتغيير البيانات.",
+      "copyValue": "نسخ {{label}}",
+      "copiedValue": "تم نسخ {{label}}",
       "sections": {
         "identity": "الهوية",
         "roles": "الأدوار والصلاحيات",
@@ -2629,6 +2705,18 @@ export const adminCopyAr = {
         "openingChat": "جارٍ الفتح…",
         "chatUnavailable": "متاح فقط للحسابات الطلابية النشطة.",
         "chatOpenError": "تعذر فتح المحادثة. أعد المحاولة."
+      },
+      "credentials": {
+        "title": "كلمة سر الحساب",
+        "hint": "كتولدات أوتوماتيكياً من بعد ما تخلق الحساب. نسخها وعتيها للمستخدم.",
+        "loading": "جاري تحميل كلمة السر…",
+        "error": "ما قدرناش نحملو هاد كلمة السر.",
+        "copy": "نسخ كلمة السر",
+        "copied": "تنسخات",
+        "show": "بيّن كلمة السر",
+        "hide": "خبّي كلمة السر",
+        "regenerate": "بدّل كلمة السر",
+        "regenerateError": "ما قدرناش نبدّلو هاد كلمة السر."
       },
       "encadrant": {
         "title": "تفاصيل المشرف"
@@ -4007,6 +4095,10 @@ export const adminCopyAr = {
       "acceptanceRate": "معدل القبول",
       "mostPopular": "الأكثر شعبية",
       "notDetectedYet": "غير متاح بعد",
+      "shareOfTotal": "{{percent}}% من الإجمالي",
+      "activeCountBadge": "{{count}} نشطة",
+      "applicationsBadge": "الترشحات",
+      "acceptanceBadge": "المعدل المتوسط",
       "popularOffer": {
         "views": "مشاهدات"
       },
@@ -4110,7 +4202,14 @@ export const adminCopyAr = {
   "smartAssignment": {
     "title": "تعيين المشرفين",
     "open": "فتح",
-    "subtitle": "تحليل ESCA وتوزيع تلقائي للطلاب على المشرفين",
+    "subtitle": "تعيين الطلاب للمشرفين حسب الشعبة والمستوى والقطاع والحمل.",
+    "heroBadge": "محرك ذكي",
+    "heroChips": {
+      "internship": "نوع التدريب",
+      "program": "الشعبة",
+      "sector": "القطاع",
+      "workload": "الحمل"
+    },
     "academicYear": "السنة الأكاديمية",
     "currentYear": "الحالية",
     "respectLocks": "احترام التعيينات المقفلة",
@@ -4148,6 +4247,8 @@ export const adminCopyAr = {
       "filterExcluded": "مستبعدون من المحرك",
       "paginationLabel": "مشرفون",
       "emptyFilters": "لا يوجد مشرف يطابق معاييرك.",
+      "emptyNone": "ما كاين حتى مشرف دابا.",
+      "emptyNoneHint": "المشرفين غادي يبانو هنا من بعد ما تشغّل التوزيع، أو ملي يكونو متاحين لهاذ السنة.",
       "studentsCount": "{{count}} طالب",
       "expandStudents": "عرض قائمة الطلاب ({{count}})",
       "collapseStudents": "إخفاء قائمة الطلاب"
@@ -4160,6 +4261,30 @@ export const adminCopyAr = {
       "workloadPaginationLabel": "مشرفون",
       "workloadAria": "مخطط عبء عمل المشرفين",
       "noData": "لا توجد بيانات"
+    },
+    "manualAssign": {
+      "openFor": "إدارة تعيينات {{name}}",
+      "title": "تعيين طلاب لـ {{name}}",
+      "titleFallback": "تعيين يدوي",
+      "description": "اختر الطلاب المتوافقين مع شعبة ومستويات وتخصصات هذا المشرف.",
+      "searchStudents": "البحث عن طالب…",
+      "filterAria": "تصفية الطلاب",
+      "filterCompatible": "متوافقون",
+      "filterAssignedHere": "معيّنون هنا",
+      "filterUnassigned": "غير معيّنين",
+      "filterAll": "كل الطلاب",
+      "studentsShown": "{{count}} طالب(ة) معروض",
+      "empty": "لا يوجد طلاب يطابقون البحث أو الفلاتر.",
+      "assign": "تعيين",
+      "assigning": "جاري التعيين…",
+      "unassign": "إزالة",
+      "removing": "جاري الإزالة…",
+      "assignedHere": "معيّن",
+      "assignedTo": "حالياً مع {{name}}",
+      "notCompatible": "خارج النطاق",
+      "capacityFull": "وصل هذا المشرف إلى الحد الأقصى للسعة.",
+      "capacityFullShort": "ممتلئ",
+      "capacityOpen": "متاح"
     },
     "success": {
       "applied": "تم حفظ التعيينات بنجاح.",
@@ -4180,6 +4305,9 @@ export const adminCopyAr = {
       "count": "{{count}} متأثر",
       "expandDetails": "إظهار السجلات المتأثرة",
       "collapseDetails": "إخفاء السجلات المتأثرة",
+      "recommendationsLabel": "الإجراءات الموصى بها",
+      "issuesSectionTitle": "المشكلات المكتشفة",
+      "recordsUnavailable": "السجلات التفصيلية غير متاحة لهذه المشكلة.",
       "noIssues": "لا توجد مشكلات لعرضها.",
       "blockedToast": "التعيين متوقف — أصلح المشكلات الحرجة قبل التشغيل.",
       "confirmTitle": "المتابعة مع التحذيرات؟",
@@ -4191,7 +4319,9 @@ export const adminCopyAr = {
       "banner": {
         "blockedTitle": "لا يمكن تشغيل التعيين",
         "warningTitle": "تم اكتشاف تحذيرات",
-        "subtitle": "{{blocking}} حرج · {{warnings}} تحذير"
+        "subtitle": "{{blocking}} حرج · {{warnings}} تحذير",
+        "criticalCount": "{{count}} حرج",
+        "warningCount": "{{count}} تحذير"
       },
       "phase": {
         "validating": "جاري التحقق من المتطلبات…",
@@ -4317,6 +4447,12 @@ export const adminCopyAr = {
       "coverageRatio": "نسبة التغطية",
       "supervisedTypes": "أنواع مُشرَف عليها",
       "missingCoverage": "فجوات في الإشراف",
+      "statGapCenterLabel": "فجوات",
+      "statCoverageCenterLabel": "التغطية",
+      "statGapTypesLegend": "أنواع غير مغطاة",
+      "statCoveredTypesLegend": "أنواع مغطاة",
+      "statCoveredStudentsLegend": "مغطى",
+      "statUncoveredStudentsLegend": "غير مغطى",
       "studentsLabel": "طلاب",
       "encadrantsLabel": "مشرفون",
       "shareOfTotal": "{{percent}}٪ من الإجمالي",
@@ -4337,6 +4473,11 @@ export const adminCopyAr = {
       "insightDominant": "{{type}} هي أكبر مجموعة طلاب ({{count}}٪)",
       "insightDiversified": "أنواع التدريب موزعة بشكل متوازن بين الطلاب",
       "uncoveredTitle": "أنواع تدريب بلا مشرف متاح",
+      "uncoveredHint": "هذه الأنواع فيها طلبة كيستناو وما كاينش مشرف مناسب.",
+      "uncoveredTypesBadge": "{{count}} أنواع",
+      "uncoveredStudentsBadge": "{{count}} طالب(ة)",
+      "uncoveredExpandTypes": "إظهار أنواع التدريب ({{count}})",
+      "uncoveredCollapseTypes": "إخفاء أنواع التدريب",
       "uncoveredRow": "{{type}} — {{count}} طالب(ة)"
     }
   },

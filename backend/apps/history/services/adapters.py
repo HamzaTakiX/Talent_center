@@ -26,6 +26,7 @@ SOURCE_APPS = {
     'chat': 'chat',
     'notifications': 'notifications',
     'smart_assignment': 'smart_assignment',
+    'agenda': 'agenda',
 }
 
 

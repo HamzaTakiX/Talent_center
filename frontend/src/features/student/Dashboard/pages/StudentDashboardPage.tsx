@@ -6,15 +6,17 @@ import { STUDENT_PAGE_CONTAINER } from '../constants/studentDashboardStyles';
 import { StudentDashboardProvider, useStudentDashboardContext } from '../context/StudentDashboardContext';
 import StudentDashboardPageHero from '../components/StudentDashboardPageHero';
 import StudentDashboardStatsGrid from '../components/StudentDashboardStatsGrid';
+import TaskProgressSection from '../../Encadrant/task/components/TaskProgressSection';
 import StudentDashboardAnalytics from '../components/StudentDashboardAnalytics';
 import StudentSmartAlertsCard from '../components/cards/StudentSmartAlertsCard';
 import StudentRecommendedOffersCard from '../components/cards/StudentRecommendedOffersCard';
 import StudentProgressCard from '../components/cards/StudentProgressCard';
 import StudentRecentActivityCard from '../components/cards/StudentRecentActivityCard';
 import StudentDashboardPageSkeleton from '../components/StudentDashboardSkeleton';
+import StudentDashboardLoadError from '../components/StudentDashboardLoadError';
 
 const StudentDashboardContent: FunctionComponent = () => {
-  const { loading, error } = useStudentDashboardContext();
+  const { loading, error, refresh } = useStudentDashboardContext();
 
   if (loading) {
     return <StudentDashboardPageSkeleton />;
@@ -29,16 +31,12 @@ const StudentDashboardContent: FunctionComponent = () => {
       className={STUDENT_PAGE_CONTAINER}
     >
       {error ? (
-        <p
-          role="alert"
-          className="rounded-lg border border-[#fecaca] bg-[#fef2f2] px-3 py-2 text-sm text-[#b91c1c]"
-        >
-          {error}
-        </p>
+        <StudentDashboardLoadError message={error} onRetry={refresh} />
       ) : null}
 
       <StudentDashboardPageHero />
       <StudentDashboardStatsGrid />
+      <TaskProgressSection />
       <StudentDashboardAnalytics />
 
       <div className="student-dashboard-main-grid">

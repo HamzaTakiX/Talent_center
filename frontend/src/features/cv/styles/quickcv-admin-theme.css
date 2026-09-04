@@ -385,6 +385,84 @@
   min-height: 0;
 }
 
+/* Éditeur / Aperçu — segmented control (style agenda Mois/Semaine) */
+[data-admin-theme] .quickcv-tabs-list {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  width: auto !important;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: 0.2rem;
+  border: 1px solid color-mix(in srgb, var(--admin-border) 88%, transparent);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--admin-bg-elevated) 82%, var(--admin-surface-inset, #0f172a));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 5%, transparent),
+    0 1px 2px color-mix(in srgb, #000 18%, transparent);
+}
+
+[data-admin-theme] .quickcv-tabs-list :is(button, [role='tab'], .quickcv-tabs-list__tab) {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.125rem;
+  min-width: 6.5rem;
+  padding: 0.4rem 1rem !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--admin-text-muted) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+[data-admin-theme] .quickcv-tabs-list :is(button, [role='tab'], .quickcv-tabs-list__tab):hover {
+  color: var(--admin-text) !important;
+  background: color-mix(in srgb, var(--admin-brand) 8%, transparent) !important;
+}
+
+[data-admin-theme] .quickcv-tabs-list
+  :is(
+    button[aria-selected='true'],
+    button[data-state='active'],
+    [role='tab'][aria-selected='true'],
+    [role='tab'][data-state='active'],
+    .quickcv-tabs-list__tab[aria-selected='true'],
+    .quickcv-tabs-list__tab[data-state='active'],
+    .tabon,
+    [class*='tabon']
+  ) {
+  background: var(--admin-brand) !important;
+  color: #fff !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--admin-brand) 35%, transparent),
+    0 6px 16px color-mix(in srgb, var(--admin-brand) 28%, transparent) !important;
+}
+
+[data-admin-theme] .quickcv-tabs-list :is(button, [role='tab'], .quickcv-tabs-list__tab) i,
+[data-admin-theme] .quickcv-tabs-list :is(button, [role='tab'], .quickcv-tabs-list__tab) [class*='i-'] {
+  width: 0.95rem;
+  height: 0.95rem;
+  opacity: 0.9;
+}
+
+[data-admin-theme='dark'] .quickcv-tabs-list {
+  background: color-mix(in srgb, var(--admin-bg-elevated) 70%, #0b1220);
+  border-color: color-mix(in srgb, var(--admin-border) 80%, transparent);
+}
+
 [data-admin-theme] .quickcv-editor-scroll {
   height: 100%;
   min-height: 0;
@@ -548,62 +626,61 @@ html[dir='rtl'] [data-admin-theme] .quickcv-editor-scroll .absolute.right-0 {
   font-size: 0.8125rem !important;
 }
 
-/* CV toolbar — save button states */
-[data-admin-theme] .quickcv-save-btn--default {
-  border-color: var(--admin-border);
-  background: var(--admin-bg-elevated);
-  color: var(--admin-text);
-}
-
-[data-admin-theme] .quickcv-save-btn--default:hover {
-  border-color: var(--admin-brand);
-  background: var(--admin-brand-muted);
-  color: var(--admin-text);
-}
-
-[data-admin-theme='light'] .quickcv-save-btn--saved {
-  border-color: #34d399;
-  background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
-  color: #065f46;
+/* CV toolbar — save button (solid green, same shape as download) */
+[data-admin-theme] .quickcv-save-btn {
+  min-height: 2.5rem;
+  border-radius: var(--admin-radius-sm, 0.65rem);
+  border-style: solid;
+  border-width: 1px;
+  font-weight: 600;
   box-shadow:
-    0 1px 2px rgba(5, 150, 105, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    0 1px 2px color-mix(in srgb, #059669 18%, transparent),
+    0 4px 12px color-mix(in srgb, #059669 16%, transparent);
 }
 
-[data-admin-theme='light'] .quickcv-save-btn--saved svg {
-  color: #059669;
+[data-admin-theme] .quickcv-save-btn--default,
+[data-admin-theme] .quickcv-save-btn--saved {
+  border-color: color-mix(in srgb, #059669 75%, #000);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #10b981 88%, #fff 12%) 0%,
+    #059669 100%
+  );
+  color: #fff;
 }
 
-[data-admin-theme='dark'] .quickcv-save-btn--saved {
-  border-color: color-mix(in srgb, #34d399 45%, var(--admin-border));
-  background: color-mix(in srgb, #059669 16%, var(--admin-bg-elevated));
-  color: #a7f3d0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+[data-admin-theme] .quickcv-save-btn--default svg,
+[data-admin-theme] .quickcv-save-btn--saved svg {
+  color: #fff;
 }
 
-[data-admin-theme='dark'] .quickcv-save-btn--saved svg {
-  color: #6ee7b7;
+[data-admin-theme] .quickcv-save-btn--default:hover,
+[data-admin-theme] .quickcv-save-btn--saved:hover {
+  filter: brightness(1.05);
+  box-shadow:
+    0 2px 6px color-mix(in srgb, #059669 22%, transparent),
+    0 6px 16px color-mix(in srgb, #059669 20%, transparent);
 }
 
 [data-admin-theme='light'] .quickcv-save-btn--error {
-  border-color: #fca5a5;
-  background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%);
-  color: #991b1b;
-  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
+  border-color: #dc2626;
+  background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.18), 0 4px 12px rgba(220, 38, 38, 0.16);
 }
 
 [data-admin-theme='light'] .quickcv-save-btn--error svg {
-  color: #dc2626;
+  color: #fff;
 }
 
 [data-admin-theme='dark'] .quickcv-save-btn--error {
-  border-color: color-mix(in srgb, #f87171 40%, var(--admin-border));
-  background: color-mix(in srgb, #ef4444 14%, var(--admin-bg-elevated));
-  color: #fecaca;
+  border-color: color-mix(in srgb, #ef4444 70%, #000);
+  background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+  color: #fff;
 }
 
 [data-admin-theme='dark'] .quickcv-save-btn--error svg {
-  color: #fca5a5;
+  color: #fff;
 }
 
 @media (max-width: 768px) {
@@ -660,7 +737,7 @@ html[dir='rtl'] [data-admin-theme] .quickcv-editor-scroll .absolute.right-0 {
   }
 
   [data-admin-theme] .quickcv-tabs-list {
-    width: 100%;
+    width: auto !important;
     max-width: 100%;
   }
 

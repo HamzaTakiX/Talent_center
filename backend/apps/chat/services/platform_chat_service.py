@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
 from apps.accounts_et_roles.models import StudentProfile
@@ -17,8 +18,10 @@ User = get_user_model()
 MODULE = ConversationContext.Module.PLATFORM
 STUDENT_ADMIN_DM = 'student_admin_dm'
 ADMIN_DESK_ENTITY = 'admin_desk'
+ENCADRANT_DESK_ENTITY = 'encadrant_desk'
 STUDENT_CHANNEL_CODE = 'support-stage'
 ADMIN_CHANNEL_CODE = 'administration'
+ENCADRANT_CHANNEL_CODE = 'encadrants'
 
 # Legacy alias kept for backwards compatibility with existing rows.
 STUDENT_DESK_ENTITY = STUDENT_ADMIN_DM
@@ -112,6 +115,88 @@ def build_student_admin_dm_snapshot(
 
 def build_admin_desk_snapshot(admin: User) -> dict[str, Any]:
     return {
+        'admin_user_id': admin.pk,
+        'admin_name': _user_display_name(admin),
+        'admin_email': admin.email,
+        'admin_avatar_url': _admin_avatar_url(admin),
+        'admin_role_label': 'Administrateur',
+    }
+
+
+def _encadrant_profile_snapshot(encadrant_user: User) -> dict[str, Any]:
+    empty: dict[str, Any] = {
+        'encadrant_profile_id': None,
+        'filiere_name': '',
+        'class_code': '',
+        'academic_level_name': '',
+        'filiere_labels': [],
+        'level_labels': [],
+        'class_group_labels': [],
+        'specialization_domains': [],
+        'supervised_internship_types': [],
+        'current_students': 0,
+        'max_students': 0,
+        'accepting_students': False,
+        'is_encadrant_active': False,
+    }
+    try:
+        enc = encadrant_user.supervisor_profile.encadrant_profile
+        supervisor = encadrant_user.supervisor_profile
+    except ObjectDoesNotExist:
+        return empty
+
+    from apps.admin_management.services.encadrants import (
+        _assigned_student_count,
+        build_encadrant_scope_payload,
+        build_encadrant_specialization_payload,
+    )
+    from apps.admin_management.services.supervised_internship_types import (
+        build_encadrant_supervised_internship_labels,
+    )
+
+    scope = build_encadrant_scope_payload(enc)
+    filiere_labels = list(scope.get('filiere_labels') or [])
+    level_labels = list(scope.get('level_labels') or [])
+    class_labels = list(scope.get('class_group_labels') or [])
+    load = _assigned_student_count(enc)
+    max_cap = enc.max_concurrent_students or supervisor.student_capacity or 0
+    profile = getattr(encadrant_user, 'profile', None)
+    avatar_url = profile.avatar.url if profile and getattr(profile, 'avatar', None) else None
+    domain_labels = [
+        str(item.get('name') or item.get('code') or '').strip()
+        for item in build_encadrant_specialization_payload(enc)
+        if str(item.get('name') or item.get('code') or '').strip()
+    ]
+    internship_labels = build_encadrant_supervised_internship_labels(enc)
+
+    return {
+        'encadrant_profile_id': enc.pk,
+        'filiere_name': ', '.join(filiere_labels),
+        'class_code': ', '.join(class_labels),
+        'academic_level_name': ', '.join(level_labels),
+        'filiere_labels': filiere_labels,
+        'level_labels': level_labels,
+        'class_group_labels': class_labels,
+        'specialization_domains': domain_labels,
+        'supervised_internship_types': internship_labels,
+        'current_students': load,
+        'max_students': max_cap,
+        'accepting_students': bool(supervisor.accepting_students),
+        'is_encadrant_active': bool(enc.is_active and encadrant_user.is_active),
+        'encadrant_avatar_url': avatar_url,
+    }
+
+
+def build_encadrant_desk_snapshot(admin: User, encadrant: User) -> dict[str, Any]:
+    profile_snapshot = _encadrant_profile_snapshot(encadrant)
+    avatar_url = profile_snapshot.pop('encadrant_avatar_url', None)
+    return {
+        **profile_snapshot,
+        'encadrant_user_id': encadrant.pk,
+        'encadrant_name': _user_display_name(encadrant),
+        'encadrant_email': encadrant.email,
+        'encadrant_avatar_url': avatar_url or _admin_avatar_url(encadrant),
+        'encadrant_role_label': 'Encadrant',
         'admin_user_id': admin.pk,
         'admin_name': _user_display_name(admin),
         'admin_email': admin.email,
@@ -227,6 +312,69 @@ def ensure_admin_desk_dm(admin_a: User, admin_b: User) -> Conversation | None:
     _refresh_context_snapshot(conv, snapshot)
     ensure_conversation_participants(conv, [admin_a, admin_b])
     return conv
+
+
+def _platform_encadrant_users() -> list[User]:
+    return list(
+        User.objects.filter(
+            role=User.RoleChoices.SUPERVISOR,
+            is_active=True,
+            supervisor_profile__encadrant_profile__isnull=False,
+        )
+        .select_related(
+            'profile',
+            'supervisor_profile',
+            'supervisor_profile__encadrant_profile',
+        )
+        .prefetch_related(
+            'supervisor_profile__encadrant_profile__specialization_domains',
+            'supervisor_profile__encadrant_profile__supervised_internship_types',
+        )
+        .order_by('id')
+    )
+
+
+def ensure_encadrant_desk_dm(admin: User, encadrant: User) -> Conversation | None:
+    if not admin or not encadrant or admin.pk == encadrant.pk:
+        return None
+    if not admin.is_active or not encadrant.is_active:
+        return None
+    if not admin.platform_access_granted:
+        return None
+    if admin.role != User.RoleChoices.ADMIN:
+        return None
+    if encadrant.role != User.RoleChoices.SUPERVISOR:
+        return None
+
+    _ensure_chat_infrastructure()
+    snapshot = build_encadrant_desk_snapshot(admin, encadrant)
+    conv = get_or_create_contextual_conversation(
+        module=MODULE,
+        entity_type=ENCADRANT_DESK_ENTITY,
+        entity_id=_dm_entity_id(admin.pk, encadrant.pk),
+        title=_user_display_name(encadrant) or encadrant.email,
+        context_kind=ConversationContext.ContextKind.DIRECT,
+        entity_label='Messagerie encadrant',
+        workflow_status='OPEN',
+        is_internal_only=False,
+        context_snapshot=snapshot,
+        participant_users=[admin, encadrant],
+        created_by=admin,
+        channel_code=ENCADRANT_CHANNEL_CODE,
+    )
+    _refresh_context_snapshot(conv, snapshot)
+    ensure_conversation_participants(conv, [admin, encadrant])
+    return conv
+
+
+def sync_encadrant_desk_conversations_for_admin(admin: User) -> int:
+    if not user_can_manage_platform_desk(admin):
+        return 0
+    count = 0
+    for encadrant in _platform_encadrant_users():
+        if ensure_encadrant_desk_dm(admin, encadrant):
+            count += 1
+    return count
 
 
 def _refresh_context_snapshot(conversation: Conversation, snapshot: dict[str, Any]) -> None:

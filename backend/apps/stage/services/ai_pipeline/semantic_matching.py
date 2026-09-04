@@ -13,15 +13,20 @@ from apps.stage.services.ai_pipeline.embedding_service import semantic_score_fro
 def get_semantic_match_score(
     student: StudentProfile,
     offer: InternshipOffer,
+    *,
+    student_emb: SemanticEmbedding | None = None,
+    offer_emb: SemanticEmbedding | None = None,
 ) -> tuple[Decimal | None, dict]:
-    student_emb = SemanticEmbedding.objects.filter(
-        entity_type=SemanticEmbedding.EntityType.STUDENT,
-        entity_id=student.pk,
-    ).first()
-    offer_emb = SemanticEmbedding.objects.filter(
-        entity_type=SemanticEmbedding.EntityType.OFFER,
-        entity_id=offer.pk,
-    ).first()
+    if student_emb is None:
+        student_emb = SemanticEmbedding.objects.filter(
+            entity_type=SemanticEmbedding.EntityType.STUDENT,
+            entity_id=student.pk,
+        ).first()
+    if offer_emb is None:
+        offer_emb = SemanticEmbedding.objects.filter(
+            entity_type=SemanticEmbedding.EntityType.OFFER,
+            entity_id=offer.pk,
+        ).first()
     if not student_emb or not offer_emb:
         return None, {'reason': 'Semantic embeddings not available', 'score': 0}
 

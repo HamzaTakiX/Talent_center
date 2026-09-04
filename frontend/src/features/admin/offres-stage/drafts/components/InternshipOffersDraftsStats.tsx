@@ -1,14 +1,13 @@
 import { FunctionComponent } from 'react';
 import InternshipOfferStatCard from '../../components/InternshipOfferStatCard';
-import AdminKpiGrid from '../../../ui/AdminKpiGrid';
-import { AdminKpiGridSkeleton } from '../../../ui/AdminKpiGridSkeleton';
+import { AdminStudentsStatsSkeleton } from '../../../ui/AdminSectionSkeleton';
 import { useStageDraftsDashboard } from '../../hooks/useStageDraftsDashboard';
 
 const InternshipOffersDraftsStats: FunctionComponent = () => {
   const { stats, loading, error } = useStageDraftsDashboard();
 
   if (loading) {
-    return <AdminKpiGridSkeleton count={4} columns={4} />;
+    return <AdminStudentsStatsSkeleton count={4} compact withPiePattern={false} />;
   }
 
   if (error) {
@@ -20,7 +19,7 @@ const InternshipOffersDraftsStats: FunctionComponent = () => {
   }
 
   return (
-    <AdminKpiGrid columns={4}>
+    <div className="admin-students-stats-grid admin-offers-stats-grid">
       {stats.map((stat, index) => (
         <InternshipOfferStatCard
           key={stat.labelKey ?? stat.label}
@@ -30,9 +29,10 @@ const InternshipOffersDraftsStats: FunctionComponent = () => {
           value={stat.value}
           icon={stat.icon}
           index={index}
+          compact
         />
       ))}
-    </AdminKpiGrid>
+    </div>
   );
 };
 

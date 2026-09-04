@@ -1,15 +1,14 @@
-import type {
-  PlatformDeskConversation,
-  PlatformDeskViewerRole,
-} from '../types/platformDeskChatTypes';
+import type { PlatformDeskViewerRole } from '../types/platformDeskChatTypes';
 
 /** User-facing support thread status (not raw backend workflow_status). */
 export type PlatformDeskSupportStatus = 'open' | 'pending' | 'resolved' | 'closed';
 
-type StatusInput = Pick<
-  PlatformDeskConversation,
-  'resolved' | 'archived' | 'messages' | 'workflowStatus'
->;
+type StatusInput = {
+  resolved?: boolean;
+  archived?: boolean;
+  workflowStatus?: string;
+  messages: Array<{ direction: 'in' | 'out' }>;
+};
 
 function isResolvedStatus(workflowStatus?: string): boolean {
   const normalized = workflowStatus?.trim().toUpperCase();

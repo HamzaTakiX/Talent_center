@@ -1,4 +1,5 @@
 import type { ChatContextKind, ChatUrgency } from '../../admin/shared/admin-module-chat/adminChatTypes';
+import type { ChatEntityReference } from './types/chatEntityTypes';
 
 export type ChatModule =
   | 'platform'
@@ -65,6 +66,7 @@ export interface MessageDto {
   message_type: string;
   created_at: string;
   tags: string[];
+  entity_refs?: ChatEntityReference[];
   is_own: boolean;
   metadata_json: Record<string, unknown>;
   read_by?: MessageReadReceiptDto[];

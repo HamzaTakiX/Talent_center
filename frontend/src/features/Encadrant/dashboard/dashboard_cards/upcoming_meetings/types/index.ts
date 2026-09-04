@@ -21,4 +21,6 @@ export interface UpcomingMeeting {
   type: MeetingType;
   typeLabel: string;
   showJoinMeeting: boolean;
+  meetingId?: number;
+  plannedStart?: string;
 }

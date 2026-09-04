@@ -42,8 +42,6 @@ import ImportFromUrlWorkspace from './ImportFromUrlWorkspace';
 
 import ParseFromTextWorkspace from './ParseFromTextWorkspace';
 
-import DuplicateDetectionBanner from './DuplicateDetectionBanner';
-
 import SuggestedStudentsPanel from './SuggestedStudentsPanel';
 
 import StepBasicInfo from './steps/StepBasicInfo';
@@ -77,6 +75,7 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
   initialForm,
   offerStatus,
   lastUpdatedAt,
+  companyLogoUrl: initialCompanyLogoUrl,
 }) => {
 
   const { t } = useTranslation();
@@ -523,6 +522,8 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
 
                 importError={workflow.importError}
 
+                importErrorCode={workflow.importErrorCode}
+
                 importJobMeta={workflow.importJobMeta}
 
                 form={workflow.form}
@@ -548,20 +549,6 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
                 audiencePreviewLoading={workflow.audiencePreviewLoading}
 
               />
-
-              {workflow.duplicate && !workflow.duplicateDismissed && workflow.importPhase === 'extracted' && (
-
-                <DuplicateDetectionBanner
-
-                  duplicate={workflow.duplicate}
-
-                  onViewExisting={() => navigate(`/admin/internship-offers/${workflow.duplicate!.id}`)}
-
-                  onContinue={() => workflow.setDuplicateDismissed(true)}
-
-                />
-
-              )}
 
               {workflow.importPhase === 'extracted' && (
 
@@ -636,6 +623,8 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
                 textError={workflow.textError}
 
                 textExtractedFields={workflow.textExtractedFields}
+
+                textMissingFields={workflow.textMissingFields}
 
                 form={workflow.form}
 
@@ -734,22 +723,6 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
                 />
 
               </div>
-
-
-
-              {!workflow.isEditMode && workflow.duplicate && !workflow.duplicateDismissed && (
-
-                <DuplicateDetectionBanner
-
-                  duplicate={workflow.duplicate}
-
-                  onViewExisting={() => navigate(`/admin/internship-offers/${workflow.duplicate!.id}`)}
-
-                  onContinue={() => workflow.setDuplicateDismissed(true)}
-
-                />
-
-              )}
 
 
 
@@ -942,6 +915,26 @@ const CreateOfferStudio: FunctionComponent<CreateOfferStudioProps> = ({
             audienceSize={workflow.audienceSize}
 
             hasTargeting={workflow.hasTargeting}
+
+            companyLogoUrl={workflow.importJobMeta?.companyLogoUrl || initialCompanyLogoUrl}
+
+            duplicate={
+              !workflow.isEditMode &&
+              workflow.duplicate &&
+              !workflow.duplicateDismissed &&
+              (workflow.method !== 'import' || workflow.importPhase === 'extracted') &&
+              (workflow.method !== 'text' || workflow.textPhase === 'extracted')
+                ? workflow.duplicate
+                : null
+            }
+
+            onViewDuplicate={
+              workflow.duplicate
+                ? () => navigate(`/admin/internship-offers/${workflow.duplicate!.id}`)
+                : undefined
+            }
+
+            onDismissDuplicate={() => workflow.setDuplicateDismissed(true)}
 
           />
 

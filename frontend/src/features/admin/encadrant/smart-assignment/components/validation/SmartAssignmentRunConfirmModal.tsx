@@ -7,7 +7,7 @@ import type {
   SmartAssignmentPrecheckResult,
 } from '../../../../api/types';
 import SmartAssignmentSeverityBadge from './SmartAssignmentSeverityBadge';
-import { issueTitleKey, sortIssuesBySeverity } from '../../utils/validationIssueKeys';
+import { issueTitleKey, getIssueTranslationParams, sortIssuesBySeverity } from '../../utils/validationIssueKeys';
 
 interface SmartAssignmentRunConfirmModalProps {
   open: boolean;
@@ -87,14 +87,14 @@ const SmartAssignmentRunConfirmModal: FunctionComponent<SmartAssignmentRunConfir
       </div>
 
       <ul className="mt-4 space-y-2">
-        {warnings.map((issue) => (
+        {warnings.map((issue, index) => (
           <li
-            key={issue.code}
+            key={`${issue.code}-${index}`}
             className="flex flex-wrap items-center gap-2 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg)] px-3 py-2 text-xs"
           >
             <SmartAssignmentSeverityBadge severity={issue.severity} />
             <span className="text-[var(--admin-text)]">
-              {t(issueTitleKey(issue.code), { count: issue.count })}
+              {t(issueTitleKey(issue.code), getIssueTranslationParams(issue))}
             </span>
           </li>
         ))}

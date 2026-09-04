@@ -9,6 +9,7 @@ import {
   UserCheck,
   Users,
   Shield,
+  UserCog,
 } from 'lucide-react';
 
 export type AdminNavSectionId =
@@ -181,3 +182,27 @@ export const getSectionPath = (section: AdminNavSectionId): string | undefined =
       return undefined;
   }
 };
+
+/** Icon shown next to the admin top-bar page title (same path rules as the title). */
+export function getAdminHeaderIcon(pathname: string): LucideIcon {
+  if (pathname === '/admin/dashboard' || pathname.startsWith('/admin/dashboard/')) {
+    return LayoutDashboard;
+  }
+  if (pathname.startsWith('/admin/students') || pathname.startsWith('/admin/student')) {
+    return Users;
+  }
+  if (pathname.startsWith('/admin/encadrant') || pathname.startsWith('/admin/encadrants')) {
+    return UserCheck;
+  }
+  if (pathname.startsWith('/admin/admins') || pathname.startsWith('/admin/sous-admin')) {
+    return Shield;
+  }
+  if (pathname.startsWith('/admin/internship-offers')) return Briefcase;
+  if (pathname.startsWith('/admin/announcements')) return Bell;
+  if (pathname.startsWith('/admin/documents')) return FileText;
+  if (pathname.startsWith('/admin/srf')) return DollarSign;
+  if (pathname.startsWith('/admin/history')) return History;
+  if (pathname === '/admin/profile' || pathname === '/admin/settings') return UserCog;
+  const section = getActiveSectionFromPath(pathname);
+  return ADMIN_NAV_ITEMS.find((item) => item.id === section)?.icon ?? LayoutDashboard;
+}

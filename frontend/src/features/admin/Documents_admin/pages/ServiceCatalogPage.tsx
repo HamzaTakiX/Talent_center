@@ -1,8 +1,9 @@
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Sparkles } from 'lucide-react';
+import { BookOpen, Plus, Sparkles } from 'lucide-react';
 import AdminModulePageShell from '../../ui/AdminModulePageShell';
+import AdminPageHero from '../../ui/AdminPageHero';
 import { AdminPagination, AdminSearchInput, AdminSelectField } from '../../ui';
 import { useAdminPagination } from '../../shared/hooks/useAdminPagination';
 import AdminToggle from '../../account/components/AdminToggle';
@@ -59,33 +60,37 @@ const ServiceCatalogPage: FunctionComponent = () => {
   return (
     <AdminModulePageShell width="wide">
       <div className="admin-doc-workspace admin-doc-catalog-page" data-admin-search-id="documents-catalog">
-        <header className="admin-doc-hero">
-          <div className="admin-doc-hero__content">
-            <span className="admin-doc-hero__badge">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden />
+        <AdminPageHero
+          className="admin-doc-catalog-hero"
+          icon={BookOpen}
+          badge={
+            <span className="admin-doc-hub-hero__badge">
+              <Sparkles className="h-3 w-3" aria-hidden />
               {t('admin.documentsModule.catalog.badge')}
             </span>
-            <h1 className="admin-doc-hero__title">{t('admin.documentsModule.catalog.title')}</h1>
-            <p className="admin-doc-hero__subtitle">{t('admin.documentsModule.catalog.subtitle')}</p>
-          </div>
-          <div className="admin-doc-catalog-hero__actions">
-            <button
-              type="button"
-              className="admin-btn-secondary inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
-              onClick={handleSeed}
-            >
-              {t('admin.documentsModule.catalog.actions.seed')}
-            </button>
-            <button
-              type="button"
-              className="admin-btn-primary inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
-              onClick={() => navigate('/admin/documents/catalog/create')}
-            >
-              <Plus className="h-4 w-4" aria-hidden />
-              {t('admin.documentsModule.catalog.actions.create')}
-            </button>
-          </div>
-        </header>
+          }
+          title={t('admin.documentsModule.catalog.title')}
+          subtitle={t('admin.documentsModule.catalog.subtitle')}
+          action={
+            <div className="admin-doc-catalog-hero-actions">
+              <button
+                type="button"
+                className="admin-btn-secondary inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
+                onClick={handleSeed}
+              >
+                {t('admin.documentsModule.catalog.actions.seed')}
+              </button>
+              <button
+                type="button"
+                className="admin-btn-primary inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
+                onClick={() => navigate('/admin/documents/catalog/create')}
+              >
+                <Plus className="h-4 w-4" aria-hidden />
+                {t('admin.documentsModule.catalog.actions.create')}
+              </button>
+            </div>
+          }
+        />
 
         <section className="admin-doc-catalog-filters">
           <div className="admin-doc-catalog-filters__head">

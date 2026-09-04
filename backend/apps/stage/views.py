@@ -1,5 +1,7 @@
 """REST API views for internship offers module."""
 
+import logging
+
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -71,6 +73,9 @@ from .services.offer_service import (
 from .services.permissions import user_can_manage_offers
 
 
+logger = logging.getLogger(__name__)
+
+
 def _handle_service_error(exc: StageServiceError) -> Response:
     status_code = status.HTTP_400_BAD_REQUEST
     if isinstance(exc, OfferPermissionError):
@@ -79,9 +84,26 @@ def _handle_service_error(exc: StageServiceError) -> Response:
         status_code = status.HTTP_409_CONFLICT
     elif isinstance(exc, (OfferTransitionError, OfferValidationError)):
         status_code = status.HTTP_409_CONFLICT
+    errors = {'code': exc.code}
+    details = getattr(exc, 'details', None)
+    if details:
+        errors.update(details)
     return Response(
-        envelope(False, exc.message, errors={'code': exc.code}),
+        envelope(False, exc.message, errors=errors),
         status=status_code,
+    )
+
+
+def _handle_unexpected_error(exc: Exception, *, context: str) -> Response:
+    """Never leak a driver/parser traceback message to an administrator."""
+    logger.exception('Unexpected error during %s', context)
+    return Response(
+        envelope(
+            False,
+            'An unexpected error occurred. The technical team has been notified.',
+            errors={'code': 'unexpected_error'},
+        ),
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
 
 
@@ -121,6 +143,8 @@ class OfferListCreateView(APIView):
             offer = create_offer_draft(actor=request.user, data=ser.validated_data)
         except StageServiceError as exc:
             return _handle_service_error(exc)
+        except Exception as exc:
+            return _handle_unexpected_error(exc, context='offer draft creation')
         return Response(
             envelope(
                 True,
@@ -165,6 +189,8 @@ class OfferDetailView(APIView):
             offer = update_offer(offer=offer, actor=request.user, data=ser.validated_data)
         except StageServiceError as exc:
             return _handle_service_error(exc)
+        except Exception as exc:
+            return _handle_unexpected_error(exc, context='offer update')
         return Response(
             envelope(
                 True,
@@ -208,6 +234,8 @@ class OfferActionView(APIView):
                 return Response(envelope(False, f'Unknown action: {action}'), status=400)
         except StageServiceError as exc:
             return _handle_service_error(exc)
+        except Exception as exc:
+            return _handle_unexpected_error(exc, context=f'offer action "{action}"')
         return Response(
             envelope(
                 True,
@@ -338,6 +366,8 @@ class OfferImportView(APIView):
             job = run_import_extraction(job, actor=request.user)
         except StageServiceError as exc:
             return _handle_service_error(exc)
+        except Exception as exc:
+            return _handle_unexpected_error(exc, context='offer URL import')
         job = OfferImportJob.objects.select_related(
             'duplicate_offer', 'resulting_offer',
         ).prefetch_related('history').get(pk=job.pk)
@@ -394,6 +424,8 @@ class OfferImportDetailView(APIView):
                 return Response(envelope(True, 'Import rejected', data=OfferImportJobSerializer(job).data))
         except StageServiceError as exc:
             return _handle_service_error(exc)
+        except Exception as exc:
+            return _handle_unexpected_error(exc, context=f'offer import action "{action}"')
         return Response(envelope(False, f'Unknown action: {action}'), status=400)
 
 

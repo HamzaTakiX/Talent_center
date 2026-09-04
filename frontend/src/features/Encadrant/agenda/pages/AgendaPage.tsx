@@ -4,7 +4,7 @@ import { AgendaCalendarSection, AgendaPageHeader, AgendaSummaryGrid } from '../c
 import { AGENDA_PAGE_ROOT } from '../constants/agendaLayout';
 
 const AgendaPage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Agenda" headerSubtitle="Encadrant Portal">
+  <EncadrantLayout>
     <div id="encadrant-agenda-root" className={AGENDA_PAGE_ROOT}>
       <AgendaPageHeader />
       <AgendaSummaryGrid />

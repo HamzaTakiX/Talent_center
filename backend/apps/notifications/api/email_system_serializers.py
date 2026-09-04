@@ -101,10 +101,15 @@ class EmailTemplateListSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'code',
+            'name',
+            'event_code',
             'channel',
             'category',
             'version',
             'is_active',
+            'is_selected',
+            'is_default',
+            'status',
             'languages',
         )
 
@@ -125,18 +130,31 @@ class EmailTemplateTranslationSerializer(serializers.ModelSerializer):
 
 class EmailTemplateDetailSerializer(serializers.ModelSerializer):
     translations = EmailTemplateTranslationSerializer(many=True, read_only=True)
+    available_variables = serializers.SerializerMethodField()
 
     class Meta:
         model = NotificationTemplate
         fields = (
             'id',
             'code',
+            'name',
+            'event_code',
             'channel',
             'category',
             'version',
             'is_active',
+            'is_selected',
+            'is_default',
+            'status',
             'translations',
+            'available_variables',
         )
+
+    def get_available_variables(self, obj) -> list[dict]:
+        from apps.notifications.events.event_variables import get_event_variables
+        if not obj.event_code:
+            return get_event_variables('')
+        return get_event_variables(obj.event_code)
 
 
 class EmailTemplateUpdateSerializer(serializers.Serializer):
@@ -144,6 +162,26 @@ class EmailTemplateUpdateSerializer(serializers.Serializer):
     subject_template = serializers.CharField()
     body_html_template = serializers.CharField(required=False, allow_blank=True)
     body_text_template = serializers.CharField(required=False, allow_blank=True)
+    name = serializers.CharField(required=False, allow_blank=True)
+    event_code = serializers.SlugField(required=False, allow_blank=True)
+
+
+class EmailTemplateCreateSerializer(serializers.Serializer):
+    code = serializers.SlugField(max_length=128)
+    name = serializers.CharField(max_length=255)
+    event_code = serializers.SlugField(max_length=128)
+    category = serializers.CharField(max_length=32)
+    language = serializers.CharField(max_length=8, default='fr')
+    subject_template = serializers.CharField()
+    body_html_template = serializers.CharField(required=False, allow_blank=True, default='')
+    body_text_template = serializers.CharField(required=False, allow_blank=True, default='')
+    set_as_selected = serializers.BooleanField(required=False, default=False)
+    set_as_default = serializers.BooleanField(required=False, default=False)
+
+
+class EmailTemplateDuplicateSerializer(serializers.Serializer):
+    new_code = serializers.SlugField(max_length=128)
+    new_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
 
 
 class EmailTestSendSerializer(serializers.Serializer):
@@ -183,3 +221,5 @@ class EmailSystemAuditLogSerializer(serializers.ModelSerializer):
             'new_value',
             'metadata_json',
         )
+
+EmailSettingsSerializer = PlatformEmailSettingsSerializer

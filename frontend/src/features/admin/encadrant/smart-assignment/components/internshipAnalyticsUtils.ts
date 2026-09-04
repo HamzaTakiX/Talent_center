@@ -262,6 +262,32 @@ export function donutArcPath(
   return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${large} 0 ${end.x} ${end.y}`;
 }
 
+export function buildPairDonutSegments(
+  parts: { key: string; label: string; count: number; color: string }[],
+  donutTotal?: number
+) {
+  const total = donutTotal ?? parts.reduce((sum, part) => sum + part.count, 0);
+  let cursor = 0;
+  return parts
+    .filter((part) => part.count > 0)
+    .map((part, index) => {
+      const sweep = total > 0 ? (part.count / total) * 360 : 0;
+      const start = cursor;
+      const end = cursor + sweep;
+      cursor = end;
+      return {
+        key: part.key,
+        label: part.label,
+        count: part.count,
+        color: part.color,
+        percent: total > 0 ? Math.round((part.count / total) * 100) : 0,
+        path: sweep > 0 ? donutArcPath(140, 52, start, end) : '',
+        sweep,
+        index,
+      };
+    });
+}
+
 export function buildDonutSegments(rows: DistributionRow[], donutTotal: number) {
   let cursor = 0;
   return rows

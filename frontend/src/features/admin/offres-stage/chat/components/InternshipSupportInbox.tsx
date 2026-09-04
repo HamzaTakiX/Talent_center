@@ -179,7 +179,7 @@ const InternshipSupportInbox: FunctionComponent = () => {
             messagesLoading={messagesLoading}
             conversationLoading={conversationLoading}
             statsLoading={loading}
-            onSend={(text) => void sendMessage(text)}
+            onSend={(text, files, tagCodes, entityRefs) => void sendMessage(text, files, tagCodes, entityRefs)}
             onBack={() => setMobileView('list')}
             onMarkResolved={handleResolved}
             onArchive={handleArchive}

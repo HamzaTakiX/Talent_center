@@ -239,11 +239,14 @@ def _render_projects(content: Dict[str, Any]) -> str:
         bullets = item.get('bullets') or []
         bullets_html = ''.join(f'<li>{escape(str(b))}</li>' for b in bullets if b)
         link_html = f' · <span class="muted">{link}</span>' if link else ''
+        description_html = f'<p>{description}</p>' if description else ''
+        bullets_block = f'<ul>{bullets_html}</ul>' if bullets_html else ''
+        link_block = f'<div class="sub">{link_html[3:]}</div>' if link_html else ''
         parts.append(
             f'<div class="row"><h3>{title}</h3><span class="muted">{role}</span></div>'
-            f'{f"<p>{description}</p>" if description else ""}'
-            f'{f"<ul>{bullets_html}</ul>" if bullets_html else ""}'
-            f'{f"<div class=\"sub\">{link_html[3:]}</div>" if link_html else ""}'
+            f'{description_html}'
+            f'{bullets_block}'
+            f'{link_block}'
         )
     return ''.join(parts)
 

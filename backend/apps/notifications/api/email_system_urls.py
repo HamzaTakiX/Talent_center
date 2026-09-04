@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.notifications.api import email_system_views
+from apps.notifications.api import email_system_views, email_system_template_views
 
 urlpatterns = [
     path('', email_system_views.EmailSystemBootstrapView.as_view()),
@@ -17,9 +17,18 @@ urlpatterns = [
     path('senders/<int:sender_id>/verify/', email_system_views.EmailSenderVerifyView.as_view()),
     path('categories/', email_system_views.EmailCategoryListView.as_view()),
     path('templates/', email_system_views.EmailTemplateListView.as_view()),
+    path('templates/create/', email_system_template_views.EmailTemplateCreateView.as_view()),
     path('templates/<slug:template_code>/', email_system_views.EmailTemplateDetailView.as_view()),
     path('templates/<slug:template_code>/preview/', email_system_views.EmailTemplatePreviewView.as_view()),
     path('templates/<slug:template_code>/test/', email_system_views.EmailTemplateTestView.as_view()),
+    path('templates/<slug:template_code>/safe-preview/', email_system_template_views.EmailTemplateSafePreviewView.as_view()),
+    path('templates/<slug:template_code>/safe-test/', email_system_template_views.EmailTemplateSafeTestView.as_view()),
+    path('templates/<slug:template_code>/duplicate/', email_system_template_views.EmailTemplateDuplicateView.as_view()),
+    path('templates/<slug:template_code>/archive/', email_system_template_views.EmailTemplateArchiveView.as_view()),
+    path('templates/<slug:template_code>/select/', email_system_template_views.EmailTemplateSetSelectedView.as_view()),
+    path('templates/<slug:template_code>/default/', email_system_template_views.EmailTemplateSetDefaultView.as_view()),
+    path('events/', email_system_template_views.EmailEventCatalogView.as_view()),
+    path('events/<str:event_code>/variables/', email_system_template_views.EmailEventVariablesView.as_view()),
     path('analytics/', email_system_views.EmailAnalyticsOverviewView.as_view()),
     path('queue/', email_system_views.EmailQueueView.as_view()),
     path('queue/<int:recipient_id>/retry/', email_system_views.EmailQueueRetryView.as_view()),

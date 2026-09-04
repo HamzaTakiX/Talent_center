@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAuth } from '../../../../auth/hooks/useAuth';
 import {
   applySmartAction,
   fetchConversation,
@@ -56,19 +57,25 @@ function computePrimaryFilterCounts(conversations: AdminSrfConversation[]): Prim
   };
 }
 
+function isWaitingAdminReply(conv: AdminSrfConversation): boolean {
+  if (conv.resolved || conv.archived) return false;
+  const last = conv.messages[conv.messages.length - 1];
+  if (last) return last.direction === 'in';
+  if (conv.lastPreview) return !conv.lastMessageIsOwn;
+  return false;
+}
+
 function computeStats(conversations: AdminSrfConversation[]): InboxStats {
   const active = conversations.filter((c) => !c.archived);
   return {
     unread: active.reduce((sum, c) => sum + c.unreadCount, 0),
-    pending: active.filter((c) => {
-      const last = c.messages[c.messages.length - 1];
-      return !c.resolved && last?.direction === 'in';
-    }).length,
+    pending: active.filter(isWaitingAdminReply).length,
     resolved: active.filter((c) => c.resolved).length,
   };
 }
 
 export function useSrfSupportChat() {
+  const { isSessionReady } = useAuth();
   const { refresh: refreshChatUnread } = useChatUnread();
   const [rawConversations, setRawConversations] = useState<ConversationDto[]>([]);
   const [messagesByConv, setMessagesByConv] = useState<Record<number, MessageDto[]>>({});
@@ -236,8 +243,9 @@ export function useSrfSupportChat() {
   });
 
   useEffect(() => {
+    if (!isSessionReady) return;
     void loadConversations();
-  }, [loadConversations]);
+  }, [isSessionReady, loadConversations]);
 
   useEffect(
     () => () => {
@@ -249,10 +257,11 @@ export function useSrfSupportChat() {
   );
 
   useEffect(() => {
+    if (!isSessionReady) return;
     if (moduleFilters.unread) {
       void loadConversations({ silent: true });
     }
-  }, [moduleFilters.unread, loadConversations]);
+  }, [isSessionReady, moduleFilters.unread, loadConversations]);
 
   const conversations = useMemo(() => {
     const mapped = rawConversations.map((dto) => {
@@ -293,7 +302,7 @@ export function useSrfSupportChat() {
     const client = computeStats(conversations);
     return {
       unread: inboxMetrics?.unread_messages ?? client.unread,
-      pending: inboxMetrics?.waiting_admin ?? client.pending,
+      pending: client.pending,
       resolved: client.resolved,
     };
   }, [conversations, inboxMetrics]);
@@ -423,7 +432,7 @@ export function useSrfSupportChat() {
   }, [clearStudentAcademicFilters]);
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, tagCodes?: string[], entityRefs?: import('../../../../shared/contextual-chat/types/chatEntityTypes').ChatEntityReference[]) => {
       const conversationId = Number(selectedId);
       if (!Number.isFinite(conversationId) || !text.trim()) return;
 
@@ -455,7 +464,7 @@ export function useSrfSupportChat() {
       });
 
       try {
-        const saved = await sendChatMessage(conversationId, trimmed);
+        const saved = await sendChatMessage(conversationId, trimmed, tagCodes, undefined, entityRefs);
         if (!saved) return;
         setMessagesByConv((prev) => {
           const existing = prev[conversationId] ?? [];
@@ -592,6 +601,7 @@ export function useSrfSupportChat() {
       return {
         id: c.id,
         avatarInitials: c.studentInitials,
+        avatarUrl: c.studentAvatarUrl,
         name: c.studentName,
         contextLine:
           [c.program, c.className !== '—' ? c.className : ''].filter(Boolean).join(' · ') ||
@@ -633,6 +643,11 @@ export function useSrfSupportChat() {
     moduleFilters.primary !== 'all' ||
     moduleFilters.unread;
 
+  const clearSelection = useCallback(() => {
+    setSelectedId('');
+    setMobileView('list');
+  }, []);
+
   return {
     conversations: filteredConversations,
     listItems,
@@ -659,6 +674,7 @@ export function useSrfSupportChat() {
     setPrimaryFilter,
     toggleQuickFilter,
     selectConversation,
+    clearSelection,
     sendMessage,
     toggleStudentAcademicFilter,
     clearStudentAcademicFilters,

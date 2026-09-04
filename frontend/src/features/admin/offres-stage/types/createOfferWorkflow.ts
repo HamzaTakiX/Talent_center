@@ -77,6 +77,7 @@ export interface DuplicateOffer {
   company: string;
   similarity: number;
   publishedDaysAgo: number;
+  publishedAt?: string | null;
 }
 
 export interface SmartInsight {

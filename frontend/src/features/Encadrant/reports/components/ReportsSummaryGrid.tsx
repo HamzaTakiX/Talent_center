@@ -1,36 +1,65 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useMemo } from 'react';
+import { AlertTriangle, CheckCircle2, Clock, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import PlatformKpiStrip from '../../../../design-system/PlatformKpiStrip';
+import { encadrantKpiTone } from '../../constants/encadrantKpiTones';
 import { ENCADRANT_REPORTS_LATE_PATH } from '../reports_card/reports_late/constants/routes';
 import { ENCADRANT_REPORTS_PENDING_PATH } from '../reports_card/reports_pending/constants/routes';
 import { ENCADRANT_REPORTS_SUBMITTED_PATH } from '../reports_card/reports_submitted/constants/routes';
 import { ENCADRANT_REPORTS_VALIDATED_PATH } from '../reports_card/reports_validated/constants/routes';
-import { REPORTS_STATS_GRID } from '../constants/reportsLayout';
 import { reportsSummaryMock } from '../data/reportsMock';
-import ReportsSummaryCard from './ReportsSummaryCard';
+import type { ReportsSummaryStat } from '../types';
 
-const routeByLabel: Record<string, string> = {
-  'Reports Submitted': ENCADRANT_REPORTS_SUBMITTED_PATH,
-  'Reports Pending': ENCADRANT_REPORTS_PENDING_PATH,
-  'Reports Late': ENCADRANT_REPORTS_LATE_PATH,
-  'Reports Validated': ENCADRANT_REPORTS_VALIDATED_PATH,
+const iconMap = {
+  submitted: FileText,
+  pending: Clock,
+  late: AlertTriangle,
+  validated: CheckCircle2,
+} as const;
+
+const labelKeyByIcon: Record<ReportsSummaryStat['icon'], string> = {
+  submitted: 'encadrant.reports.kpi.submitted',
+  pending: 'encadrant.reports.kpi.pending',
+  late: 'encadrant.reports.kpi.late',
+  validated: 'encadrant.reports.kpi.validated',
+};
+
+const pathByIcon: Partial<Record<ReportsSummaryStat['icon'], string>> = {
+  submitted: ENCADRANT_REPORTS_SUBMITTED_PATH,
+  pending: ENCADRANT_REPORTS_PENDING_PATH,
+  late: ENCADRANT_REPORTS_LATE_PATH,
+  validated: ENCADRANT_REPORTS_VALIDATED_PATH,
 };
 
 const ReportsSummaryGrid: FunctionComponent = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const items = useMemo(
+    () =>
+      reportsSummaryMock.map((stat) => {
+        const tones = encadrantKpiTone(stat.tone);
+        const path = pathByIcon[stat.icon];
+        return {
+          id: stat.icon,
+          label: t(labelKeyByIcon[stat.icon]),
+          value: String(stat.value),
+          icon: iconMap[stat.icon],
+          accent: tones.accent,
+          accentBg: tones.bg,
+          onClick: path ? () => navigate(path) : undefined,
+        };
+      }),
+    [navigate, t],
+  );
 
   return (
-    <section aria-label="Reports summary" className={REPORTS_STATS_GRID}>
-      {reportsSummaryMock.map((stat) => (
-        <ReportsSummaryCard
-          key={stat.label}
-          stat={stat}
-          onClick={() => {
-            const path = routeByLabel[stat.label];
-            if (path) navigate(path);
-          }}
-        />
-      ))}
-    </section>
+    <PlatformKpiStrip
+      items={items}
+      columns={4}
+      ariaLabel={t('encadrant.reports.summaryAria')}
+    />
   );
 };
 

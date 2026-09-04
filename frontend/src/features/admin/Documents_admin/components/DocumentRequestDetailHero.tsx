@@ -1,11 +1,14 @@
 import { FunctionComponent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalendarClock, FileText, Hash, Layers, Truck } from 'lucide-react';
+import AdminBackButton from '../../ui/AdminBackButton';
 import DocumentsStatusBadge from './DocumentsStatusBadge';
 import type { DocumentRequestDetail } from '../types';
 
 interface DocumentRequestDetailHeroProps {
   data: DocumentRequestDetail;
+  backLabel: string;
+  onBack: () => void;
 }
 
 function formatDateTime(value?: string): string {
@@ -19,12 +22,19 @@ function formatDateTime(value?: string): string {
   });
 }
 
-const DocumentRequestDetailHero: FunctionComponent<DocumentRequestDetailHeroProps> = ({ data }) => {
+const DocumentRequestDetailHero: FunctionComponent<DocumentRequestDetailHeroProps> = ({
+  data,
+  backLabel,
+  onBack,
+}) => {
   const { t } = useTranslation();
 
   return (
     <div className="admin-doc-detail-hero">
       <div className="admin-doc-detail-hero__accent" aria-hidden />
+      <div className="admin-doc-detail-hero__back">
+        <AdminBackButton onClick={onBack} label={backLabel} className="w-fit shrink-0" />
+      </div>
       <div className="admin-doc-detail-hero__inner">
         <div className="admin-doc-detail-hero__main">
           <p className="admin-doc-detail-hero__eyebrow">{t('admin.documentsModule.detail.title')}</p>

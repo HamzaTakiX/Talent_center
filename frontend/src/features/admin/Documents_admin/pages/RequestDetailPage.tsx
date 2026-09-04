@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { adminDocumentsApi } from '../../api/documents';
 import { useAdminBackLabel } from '../../i18n/useAdminCopy';
+import AdminBackButton from '../../ui/AdminBackButton';
 import AdminFormPageShell from '../../ui/AdminFormPageShell';
 import DocumentsWorkflowTimeline from '../components/DocumentsWorkflowTimeline';
 import DocumentsSlaBar from '../components/DocumentsSlaBar';
@@ -87,7 +88,8 @@ const RequestDetailPage: FunctionComponent = () => {
 
   if (loading) {
     return (
-      <AdminFormPageShell backLabel={backLabel} onBack={goBack}>
+      <AdminFormPageShell backLabel={backLabel} onBack={goBack} hideBack>
+        <AdminBackButton onClick={goBack} label={backLabel} className="mb-3 w-fit shrink-0" />
         <DocumentsPageSkeleton />
       </AdminFormPageShell>
     );
@@ -95,10 +97,13 @@ const RequestDetailPage: FunctionComponent = () => {
 
   if (!data) {
     return (
-      <AdminFormPageShell backLabel={backLabel} onBack={goBack}>
+      <AdminFormPageShell backLabel={backLabel} onBack={goBack} hideBack>
         <div className="admin-doc-detail-empty" role="alert">
-          <AlertCircle className="h-5 w-5 shrink-0" aria-hidden />
-          <p>{error ?? t('admin.forms.reviewDocument.messages.notFound')}</p>
+          <AdminBackButton onClick={goBack} label={backLabel} className="mb-1 w-fit shrink-0" />
+          <div className="admin-doc-detail-empty__body">
+            <AlertCircle className="h-5 w-5 shrink-0" aria-hidden />
+            <p>{error ?? t('admin.forms.reviewDocument.messages.notFound')}</p>
+          </div>
         </div>
       </AdminFormPageShell>
     );
@@ -110,11 +115,8 @@ const RequestDetailPage: FunctionComponent = () => {
     <AdminFormPageShell
       backLabel={backLabel}
       onBack={goBack}
-      breadcrumbs={[
-        { label: t('admin.common.breadcrumbs.documents'), onClick: goBack },
-        { label: data.reference },
-      ]}
-      heroContent={<DocumentRequestDetailHero data={data} />}
+      hideBack
+      heroContent={<DocumentRequestDetailHero data={data} backLabel={backLabel} onBack={goBack} />}
     >
       <div className="admin-doc-detail-grid">
         <div className="admin-doc-detail-main">
@@ -164,7 +166,6 @@ const RequestDetailPage: FunctionComponent = () => {
             title={t('admin.documentsModule.detail.slaCountdown')}
             icon={Timer}
             accent="warning"
-            className="admin-doc-detail-panel--sticky"
           >
             <DocumentsSlaBar percent={data.slaPercent} deadline={data.slaDeadline} />
             {data.slaDeadline ? (

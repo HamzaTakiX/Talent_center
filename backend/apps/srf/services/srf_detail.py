@@ -31,7 +31,9 @@ def _user_display_name(user) -> str:
     return user.email or ''
 
 
-def build_student_summary(student) -> dict[str, Any]:
+def build_student_summary(student, request=None) -> dict[str, Any]:
+    from apps.stage.services.chat_service import _student_avatar_url
+
     profile = getattr(student.user, 'profile', None)
     filiere = student.filiere
     level = student.academic_level
@@ -43,6 +45,7 @@ def build_student_summary(student) -> dict[str, Any]:
         'first_name': profile.first_name if profile else '',
         'last_name': profile.last_name if profile else '',
         'full_name': _user_display_name(student.user),
+        'avatar_url': _student_avatar_url(student, request),
         'program': filiere.name if filiere else student.program_major or '',
         'filiere_code': filiere.code if filiere else '',
         'academic_level': level.name if level else '',
@@ -137,10 +140,10 @@ def build_student_financial_detail(account: FinancialAccount, request) -> dict[s
     ).count()
 
     return {
-        'student': build_student_summary(student),
+        'student': build_student_summary(student, request),
         'account': FinancialAccountSerializer(account, context={'request': request}).data,
         'academic_access': access,
-        'table_row': account_to_table_row(account),
+        'table_row': account_to_table_row(account, request),
         'installment_progress': progress,
         'restrictions': {
             'active_holds': holds,
@@ -203,7 +206,7 @@ def build_payment_proof_detail(proof_id: int, request) -> Optional[dict[str, Any
 
     return {
         'proof': PaymentProofSubmissionSerializer(proof, context={'request': request}).data,
-        'student': build_student_summary(student),
+        'student': build_student_summary(student, request),
         'account': FinancialAccountSerializer(account, context={'request': request}).data,
         'academic_access': access,
         'installment': {

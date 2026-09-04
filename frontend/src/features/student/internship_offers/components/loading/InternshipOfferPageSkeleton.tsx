@@ -2,12 +2,13 @@ import { FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import StudentLayout from '../../../components/StudentLayout';
-import { INTERNSHIP_OFFERS_PAGE_ROOT } from '../../constants/internshipOffersLayout';
 import {
+  DETAILS_PAGE_ROOT,
   DETAILS_SURFACE_CARD,
 } from '../../constants/internshipOfferDetailsStyles';
-import { STUDENT_MATCH_SCORE, STUDENT_CALLOUT_BRAND, STUDENT_CALLOUT_INFO } from '../../../design-system/studentSemanticStyles';
+import { STUDENT_MATCH_SCORE } from '../../../design-system/studentSemanticStyles';
 import StudentSkeletonBlock from './StudentSkeletonBlock';
+import '../../../../admin/offres-stage/styles/offer-detail-page.css';
 
 export type InternshipOfferPageSkeletonVariant =
   | 'details'
@@ -33,21 +34,28 @@ const stagger = (index: number) => ({
   transition: { delay: index * 0.06, duration: 0.38, ease: [0.22, 1, 0.36, 1] as const },
 });
 
-const BackNavSkeleton: FunctionComponent = () => (
-  <StudentSkeletonBlock className="h-9 w-[11.5rem] max-w-full rounded-full sm:h-10 sm:w-[13rem]" />
+const BackNavSkeleton: FunctionComponent<{ compact?: boolean }> = ({ compact = false }) => (
+  <StudentSkeletonBlock
+    className={
+      compact
+        ? 'h-7 w-[11.5rem] max-w-full rounded-lg sm:h-8 sm:w-[13rem]'
+        : 'h-9 w-[11.5rem] max-w-full rounded-full sm:h-10 sm:w-[13rem]'
+    }
+  />
 );
 
-const SectionCardSkeleton: FunctionComponent<{ lines?: number; index: number }> = ({
+const SectionCardSkeleton: FunctionComponent<{ lines?: number; index: number; className?: string }> = ({
   lines = 3,
   index,
+  className = '',
 }) => (
   <motion.section
     {...stagger(index)}
-    className={`${DETAILS_SURFACE_CARD} box-border w-full min-w-0 px-4 py-5 sm:px-6 sm:py-6`}
+    className={`${DETAILS_SURFACE_CARD} box-border flex h-full min-h-0 w-full min-w-0 flex-col px-4 py-5 sm:px-6 sm:py-6 ${className}`}
     aria-hidden
   >
     <StudentSkeletonBlock className="mb-4 h-5 w-36 rounded-lg" />
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-1 flex-col gap-2.5">
       {Array.from({ length: lines }, (_, lineIndex) => (
         <StudentSkeletonBlock
           key={lineIndex}
@@ -60,10 +68,13 @@ const SectionCardSkeleton: FunctionComponent<{ lines?: number; index: number }> 
 
 const DetailsHeaderSkeleton: FunctionComponent = () => (
   <motion.header
-    {...stagger(1)}
+    {...stagger(0)}
     className={`${DETAILS_SURFACE_CARD} box-border w-full min-w-0 overflow-hidden px-4 py-5 sm:px-6 sm:py-6`}
     aria-hidden
   >
+    <div className="offer-detail-page__header-back">
+      <BackNavSkeleton compact />
+    </div>
     <div className="flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
       <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
         <StudentSkeletonBlock className="h-16 w-16 shrink-0 rounded-[var(--admin-radius-md)] sm:h-[4.5rem] sm:w-[4.5rem]" />
@@ -94,26 +105,9 @@ const DetailsHeaderSkeleton: FunctionComponent = () => (
 );
 
 const DetailsSidebarSkeleton: FunctionComponent = () => (
-  <aside className="flex min-w-0 flex-col gap-4 sm:gap-5" aria-hidden>
-    <motion.section {...stagger(6)} className={`${STUDENT_CALLOUT_BRAND} px-4 py-5 sm:px-6 sm:py-6`}>
-      <div className="mb-3 flex items-center gap-2">
-        <StudentSkeletonBlock className="h-[18px] w-[18px] rounded" />
-        <StudentSkeletonBlock className="h-5 w-28 rounded-lg" />
-      </div>
-      <StudentSkeletonBlock className="h-4 w-full rounded-md" />
-      <StudentSkeletonBlock className="mt-2 h-4 w-[88%] rounded-md" />
-    </motion.section>
-
-    <SectionCardSkeleton index={7} lines={4} />
-    <SectionCardSkeleton index={8} lines={3} />
-
-    <motion.section {...stagger(9)} className={`${STUDENT_CALLOUT_INFO} px-4 py-5 sm:px-6 sm:py-6`}>
-      <StudentSkeletonBlock className="mb-4 h-5 w-40 rounded-lg" />
-      <div className="flex flex-col gap-3">
-        <StudentSkeletonBlock className="h-10 w-full rounded-lg" />
-        <StudentSkeletonBlock className="h-10 w-full rounded-lg" />
-      </div>
-    </motion.section>
+  <aside className="grid h-full min-h-0 min-w-0 grid-cols-1 items-stretch gap-4 sm:grid-cols-2" aria-hidden>
+    <SectionCardSkeleton index={6} lines={4} />
+    <SectionCardSkeleton index={7} lines={3} />
   </aside>
 );
 
@@ -207,7 +201,7 @@ const InternshipOfferPageSkeleton: FunctionComponent<InternshipOfferPageSkeleton
 
   return (
     <motion.div
-      className="student-internship-page-skeleton flex w-full min-w-0 flex-col gap-4 sm:gap-5"
+      className="student-internship-page-skeleton flex w-full min-w-0 flex-col gap-3 sm:gap-4"
       role="status"
       aria-live="polite"
       aria-busy="true"
@@ -218,23 +212,24 @@ const InternshipOfferPageSkeleton: FunctionComponent<InternshipOfferPageSkeleton
     >
       <span className="sr-only">{loadingLabel}</span>
 
-      <motion.div {...stagger(0)}>
-        <BackNavSkeleton />
-      </motion.div>
-
       {variant === 'details' && (
         <>
           <DetailsHeaderSkeleton />
-          <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,1fr)] lg:gap-6">
-            <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
+          <div className="flex min-w-0 flex-col gap-3 sm:gap-4">
+            <div className="grid min-w-0 grid-cols-1 items-stretch gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(420px,1.15fr)]">
               <SectionCardSkeleton index={2} lines={4} />
-              <SectionCardSkeleton index={3} lines={3} />
-              <SectionCardSkeleton index={4} lines={3} />
-              <SectionCardSkeleton index={5} lines={2} />
+              <DetailsSidebarSkeleton />
             </div>
-            <DetailsSidebarSkeleton />
+            <SectionCardSkeleton index={3} lines={3} />
+            <SectionCardSkeleton index={4} lines={2} />
           </div>
         </>
+      )}
+
+      {variant !== 'details' && (
+        <motion.div {...stagger(0)}>
+          <BackNavSkeleton />
+        </motion.div>
       )}
 
       {variant === 'apply' && (
@@ -277,7 +272,7 @@ export const InternshipOfferPageLoadingState: FunctionComponent<InternshipOfferP
   props,
 ) => (
   <StudentLayout>
-    <div className={INTERNSHIP_OFFERS_PAGE_ROOT}>
+    <div className={DETAILS_PAGE_ROOT}>
       <InternshipOfferPageSkeleton {...props} />
     </div>
   </StudentLayout>

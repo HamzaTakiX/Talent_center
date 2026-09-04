@@ -11,11 +11,13 @@ export interface SupportMessage {
   messageType?: string;
   attachmentName?: string;
   attachments?: ChatAttachmentView[];
+  tags?: string[];
 }
 
 export interface SupportConversationListItem {
   id: string;
   avatarInitials: string;
+  avatarUrl?: string;
   name: string;
   contextLine?: string;
   preview: string;

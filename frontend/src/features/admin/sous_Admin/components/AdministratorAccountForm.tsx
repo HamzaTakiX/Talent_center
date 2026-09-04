@@ -1,6 +1,6 @@
 import { FormEvent, FunctionComponent, useEffect, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, Loader2, ShieldPlus, UserCog } from 'lucide-react';
 import { adminAdministratorsApi } from '../../api/administrators';
 import type { AdminAccountStatus, AdminAdministratorRow } from '../../api/types';
 import AdminSelect from '../../account/components/AdminSelect';
@@ -13,8 +13,9 @@ import AdminFormPanelHeader from '../../shared/forms/AdminFormPanelHeader';
 import AdminFormSection from '../../shared/forms/AdminFormSection';
 import AdminFormSwitch from '../../shared/forms/AdminFormSwitch';
 import AdminFormAlert from '../../shared/forms/AdminFormAlert';
+import AdminBackButton from '../../ui/AdminBackButton';
 import {
-  adminFormActionsFooterClass,
+  adminFormActionsInlineClass,
   adminFormBtnPrimaryClass,
   adminFormBtnSecondaryClass,
   adminFormGridClass,
@@ -41,6 +42,8 @@ interface AdministratorAccountFormProps {
   onCancel: () => void;
   onSaved: () => void;
   hidePanelHeader?: boolean;
+  /** Bouton retour dans le panneau formulaire (même bloc que les champs). */
+  backLabel?: string;
 }
 
 const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps> = ({
@@ -49,6 +52,7 @@ const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps>
   onCancel,
   onSaved,
   hidePanelHeader = false,
+  backLabel,
 }) => {
   const { t, i18n } = useTranslation();
   const { showToast } = useAdminToast();
@@ -172,7 +176,18 @@ const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps>
 
   return (
     <form className={adminFormPanelFlexClass} onSubmit={handleSubmit} id={formId}>
-      {!hidePanelHeader && <AdminFormPanelHeader title={formTitle} subtitle={formSubtitle} />}
+      {!hidePanelHeader && (
+        <AdminFormPanelHeader
+          title={formTitle}
+          subtitle={mode === 'edit' ? formSubtitle : undefined}
+          icon={mode === 'edit' ? UserCog : ShieldPlus}
+          leading={
+            backLabel ? (
+              <AdminBackButton onClick={onCancel} label={backLabel} className="!w-auto" />
+            ) : null
+          }
+        />
+      )}
 
       {error ? (
         <div className="px-4 sm:px-6">
@@ -298,7 +313,7 @@ const AdministratorAccountForm: FunctionComponent<AdministratorAccountFormProps>
         </div>
       </div>
 
-      <div className={adminFormActionsFooterClass}>
+      <div className={adminFormActionsInlineClass}>
         <button type="button" onClick={onCancel} className={adminFormBtnSecondaryClass} disabled={loading}>
           {t(`${FORM_PREFIX}.actions.cancel`)}
         </button>

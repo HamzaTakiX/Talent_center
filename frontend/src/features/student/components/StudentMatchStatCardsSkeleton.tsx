@@ -29,13 +29,9 @@ const StudentMatchStatCardsSkeleton: FunctionComponent<StudentMatchStatCardsSkel
     >
       <span className="sr-only">{loadingLabel}</span>
 
-      <div className="student-match-stats mb-5">
+      <div className="admin-students-stats-grid student-match-stats mb-4">
         {Array.from({ length: 4 }, (_, index) => (
-          <StudentMatchStatCardSkeleton
-            key={index}
-            index={index}
-            showTrack={index < 3}
-          />
+          <StudentMatchStatCardSkeleton key={index} index={index} />
         ))}
       </div>
 

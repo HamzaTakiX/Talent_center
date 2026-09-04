@@ -1,24 +1,29 @@
+import {
+  ENC_BADGE_DANGER,
+  ENC_BADGE_WARNING,
+  ENC_TONE_ICON,
+} from '../../../../constants/encadrantTokens';
 import type { PendingReportStatus, ReportsPendingSummaryTone } from '../types';
 
 export const REPORTS_PENDING_SUMMARY_STYLES: Record<
   ReportsPendingSummaryTone,
   { iconBg: string; iconText: string }
 > = {
-  orange: { iconBg: 'bg-[#f97316]', iconText: 'text-white' },
-  red: { iconBg: 'bg-[#ef4444]', iconText: 'text-white' },
-  green: { iconBg: 'bg-[#22c55e]', iconText: 'text-white' },
+  orange: ENC_TONE_ICON.orange,
+  red: ENC_TONE_ICON.red,
+  green: ENC_TONE_ICON.green,
 };
 
 export const REPORTS_PENDING_STATUS_STYLES: Record<
   PendingReportStatus,
-  { badge: string; label: string }
+  { badge: string; labelKey: string }
 > = {
   late: {
-    badge: 'bg-[#fee2e2] text-[#b91c1c]',
-    label: 'Late',
+    badge: ENC_BADGE_DANGER,
+    labelKey: 'encadrant.common.late',
   },
   pending: {
-    badge: 'bg-[#fef9c3] text-[#a16207]',
-    label: 'Pending',
+    badge: ENC_BADGE_WARNING,
+    labelKey: 'encadrant.common.pending',
   },
 };

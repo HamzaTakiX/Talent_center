@@ -1,12 +1,18 @@
 import { FunctionComponent } from 'react';
 
 import ExcalidrawEditor from './ExcalidrawEditor';
-import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
+import type { BinaryFiles, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import type { WhiteboardBackgroundType } from '../types/whiteboardPreferences';
 
 /** Isolates Excalidraw from top-bar autosave label updates; still receives canvas prefs. */
 interface WhiteboardCanvasShellProps {
   onApiReady: (api: ExcalidrawImperativeAPI) => void;
+  onSceneChange: (
+    elements: readonly { isDeleted?: boolean }[],
+    appState: Record<string, unknown>,
+    files: BinaryFiles,
+  ) => void;
+  storageKey: string;
   theme: 'light' | 'dark';
   backgroundColor: string;
   backgroundOpacity: number;
@@ -15,6 +21,8 @@ interface WhiteboardCanvasShellProps {
 
 const WhiteboardCanvasShell: FunctionComponent<WhiteboardCanvasShellProps> = ({
   onApiReady,
+  onSceneChange,
+  storageKey,
   theme,
   backgroundColor,
   backgroundOpacity,
@@ -22,6 +30,8 @@ const WhiteboardCanvasShell: FunctionComponent<WhiteboardCanvasShellProps> = ({
 }) => (
   <ExcalidrawEditor
     onApiReady={onApiReady}
+    onSceneChange={onSceneChange}
+    storageKey={storageKey}
     theme={theme}
     backgroundColor={backgroundColor}
     backgroundOpacity={backgroundOpacity}

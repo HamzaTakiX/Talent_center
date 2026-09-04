@@ -32,7 +32,7 @@ const SupportInboxShell: FunctionComponent<Props> = ({
   return (
     <Layout mainFillHeight>
       <div
-        className={`isi-shell ${layoutClass} ${hasSelection ? 'isi-shell--has-selection' : ''}`}
+        className={`isi-shell ${layoutClass} ${hasSelection && contextPanel != null ? 'isi-shell--has-selection' : ''}`}
       >
         {sidebar}
         {workspace}

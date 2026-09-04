@@ -51,6 +51,7 @@
       "darkMode": "Enable dark mode",
       "lightMode": "Enable light mode",
       "defaultTitle": "Digital Talent Center",
+      "defaultSubtitle": "Administration portal",
       "titles": {
         "dashboard": "Dashboard",
         "students": "Students",
@@ -228,7 +229,7 @@
     "account": {
       "badge": "Account",
       "title": "My account",
-      "subtitle": "Profile, security and settings — all in one place.",
+      "subtitle": "Profile, security and settings, all in one place.",
       "sectionsNav": "Account sections",
       "tabs": {
         "profile": "Profile",
@@ -386,7 +387,65 @@
       "backToList": "Back to conversations",
       "clearSearch": "Clear search",
       "attachFile": "Attach file",
-      "tagTemplate": "Tag or template",
+      "tagTemplate": "Tag or context",
+      "tagPickerTitle": "Context / tags",
+      "tagPickerHint": "Select the business context for this message.",
+      "tagPickerHints": {
+        "documents": "Document tags: correction, validation, feedback…",
+        "srf": "SRF tags: financial validation, alerts, case follow-up…",
+        "offers": "Internship tags: offer follow-up, meeting, tasks, validation…",
+        "announcements": "Announcement tags: feedback, urgency, tasks…",
+        "encadrant": "Supervision tags: report, task, meeting, correction…",
+        "platform": "Platform support tags: task, meeting, urgency…"
+      },
+      "tagPickerSearch": "Search…",
+      "tagPickerLoading": "Loading tags…",
+      "tagPickerError": "Unable to load tags.",
+      "tagPickerEmpty": "No tags available.",
+      "tagPickerNoResults": "No tags match your search.",
+      "tagPickerRetry": "Retry",
+      "entityPickerAction": "Reference an item",
+      "entityPickerTitle": "Reference an item",
+      "entityPickerHint": "Indicate which document, offer, or item this is about.",
+      "entityPickerHints": {
+        "documents": "Available documents and your active requests.",
+        "srf": "SRF installments and financial account.",
+        "offers": "Internship offers and applications.",
+        "announcements": "Announcements visible to you.",
+        "encadrant": "Meetings, tasks, reports, and internships for this student.",
+        "platform": "Documents, offers, announcements, and SRF."
+      },
+      "entityPickerGroups": {
+        "meeting": "Meetings",
+        "task": "Tasks",
+        "report": "Reports",
+        "internship_offer": "Internships",
+        "offer_application": "Applications"
+      },
+      "entityPickerSearch": "Search items…",
+      "entityPickerError": "Could not load items.",
+      "entityPickerEmpty": "No items available.",
+      "entityPickerNoResults": "No matching items.",
+      "entityPickerRetry": "Retry",
+      "selectedEntities": "Referenced items",
+      "removeEntity": "Remove {{name}}",
+      "tagPickerSelectedHint": "Selection applies to your next message",
+      "selectedTags": "Selected context",
+      "removeTag": "Remove {{name}}",
+      "tags": {
+        "report": "Report",
+        "task": "Task",
+        "meeting": "Meeting",
+        "correction": "Correction",
+        "validation": "Validation",
+        "feedback": "Feedback",
+        "urgency": "Urgency",
+        "blockage": "Blockage",
+        "internship_followup": "Internship follow-up",
+        "internal_note": "Internal note",
+        "escalation": "Escalation",
+        "financial_warning": "Financial warning"
+      },
       "sendMessage": "Send message",
       "voiceNote": "Voice note",
       "composerHint": "Enter to send · Shift+Enter for new line",
@@ -564,7 +623,7 @@
       "submit": "Sign in",
       "submitting": "Signing in…",
       "submitButton": "Login to your account",
-      "microsoft": "Sign in with Microsoft (ESCA SSO)",
+      "microsoft": "Continue with Microsoft",
       "or": "Or sign in with email",
       "forgotPassword": "Forgot password?",
       "showPassword": "Show password",
@@ -605,7 +664,15 @@
         "serverTitle": "Server error",
         "serverMessage": "Something went wrong. Please try again later.",
         "failedTitle": "Login failed",
-        "failedMessage": "An unexpected error occurred. Please try again."
+        "failedMessage": "An unexpected error occurred. Please try again.",
+        "microsoftAccessDeniedTitle": "Access denied",
+        "microsoftAccessDeniedMessage": "This Microsoft account is not authorized to access Talent Center. Use an authorized ESCA account or sign in with your email and password.",
+        "microsoftAccessDeniedHint": "If you believe you should have access, contact support@esca.ma or your administrator.",
+        "microsoftCancelledMessage": "Microsoft sign-in was cancelled. Please try again.",
+        "microsoftFailedMessage": "Microsoft sign-in failed. Please try again or use email login.",
+        "microsoftConnectionMissingMessage": "Microsoft login is not configured. Set VITE_AUTH0_CONNECTION in your environment.",
+        "noMatchingAccountMessage": "No account matches this Microsoft identity. Contact your administrator.",
+        "ssoNotAuthorizedMessage": "SSO has not been enabled for this account. Contact a super administrator."
       }
     },
     "student": {
@@ -775,7 +842,12 @@
     "accessDenied": {
       "title": "Access denied",
       "body": "Your role cannot access this section.",
-      "back": "Back to my workspace"
+      "back": "Back to my workspace",
+      "ssoTitle": "Access denied",
+      "ssoBody": "This Microsoft account is not authorized to access Talent Center. Use an authorized ESCA account or sign in with your email and password.",
+      "ssoHint": "If you believe you should have access, contact support@esca.ma or your administrator.",
+      "backToLogin": "Back to login",
+      "tryAnotherMicrosoft": "Try another Microsoft account"
     },
     "callback": {
       "title": "Authenticating…",
@@ -1148,6 +1220,7 @@
     },
     "preferences": {
       "save": "Save preferences",
+      "saved": "Preferences saved",
       "channels": {
         "in_app": "In-app",
         "email": "Email",

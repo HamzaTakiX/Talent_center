@@ -1,6 +1,10 @@
+export { default as AgendaOfativeSidebar } from './AgendaOfativeSidebar';
+export { default as AgendaCalendarModule } from './AgendaCalendarModule';
+export { default as AgendaCalendarSkeleton } from './AgendaCalendarSkeleton';
+export { default as AgendaFloatingUpcoming } from './AgendaFloatingUpcoming';
+export { default as AgendaEventDetailModal } from './AgendaEventDetailModal';
 export { default as AgendaPageHeader } from './AgendaPageHeader';
 export { default as AgendaStatsGrid } from './AgendaStatsGrid';
-export { default as AgendaCalendarModule } from './AgendaCalendarModule';
 export { default as AgendaUpcomingPanel } from './AgendaUpcomingPanel';
 export { default as AgendaInternshipTimeline } from './AgendaInternshipTimeline';
 export { default as AgendaTasksKanban } from './AgendaTasksKanban';
@@ -8,4 +12,3 @@ export { default as AgendaDeadlinesSection } from './AgendaDeadlinesSection';
 export { default as AgendaSupervisorMeetingsTable } from './AgendaSupervisorMeetingsTable';
 export { default as AgendaProgressSection } from './AgendaProgressSection';
 export { default as AgendaNotificationsPanel } from './AgendaNotificationsPanel';
-export { default as AgendaEventDetailModal } from './AgendaEventDetailModal';

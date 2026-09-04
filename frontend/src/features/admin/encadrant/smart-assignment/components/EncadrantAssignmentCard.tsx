@@ -6,6 +6,7 @@ import type { SmartAssignmentEncadrantCard } from '../../../api/types';
 import { specializationDomainLabel } from '../../utils/specializationDomainDisplay';
 import AdminFormSwitch from '../../../shared/forms/AdminFormSwitch';
 import SmartAssignmentStudentRow from './SmartAssignmentStudentRow';
+import { getEncadrantLoadBarColor } from '../utils/workloadBarUtils';
 
 interface EncadrantAssignmentCardProps {
   encadrant: SmartAssignmentEncadrantCard;
@@ -44,11 +45,12 @@ const EncadrantAssignmentCard: FunctionComponent<EncadrantAssignmentCardProps> =
   }, [isOver]);
 
   const loadPct = Math.min(100, encadrant.load_percent);
-  const barColor = encadrant.is_overloaded
-    ? '#ef4444'
-    : loadPct > 85
-      ? '#f59e0b'
-      : 'var(--admin-brand)';
+  const barColor = getEncadrantLoadBarColor({
+    loadPct,
+    isOverloaded: encadrant.is_overloaded,
+    currentLoad: encadrant.current_load,
+    maxCapacity: encadrant.max_capacity,
+  });
 
   return (
     <article

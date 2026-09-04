@@ -13,6 +13,8 @@ from .models import (
     SupervisedStudent,
     Task,
     Workspace,
+    WorkspaceDocument,
+    WorkspaceDocumentReview,
 )
 
 
@@ -116,3 +118,22 @@ class ReportObligationAdmin(admin.ModelAdmin):
 class ReportVersionAdmin(admin.ModelAdmin):
     list_display = ('report', 'version_number', 'change_note', 'created_by', 'created_at')
     autocomplete_fields = ('report', 'created_by')
+
+
+@admin.register(WorkspaceDocument)
+class WorkspaceDocumentAdmin(admin.ModelAdmin):
+    list_display = (
+        'original_name', 'student_profile', 'category', 'size_bytes',
+        'viewed_by_encadrant_at', 'created_at',
+    )
+    list_filter = ('category',)
+    search_fields = ('original_name', 'student_profile__user__email')
+    autocomplete_fields = ('student_profile', 'encadrant_profile', 'uploaded_by')
+
+
+@admin.register(WorkspaceDocumentReview)
+class WorkspaceDocumentReviewAdmin(admin.ModelAdmin):
+    list_display = ('document', 'grade', 'status', 'author', 'updated_at')
+    list_filter = ('status',)
+    search_fields = ('comment', 'grade', 'document__original_name')
+    autocomplete_fields = ('document', 'author')

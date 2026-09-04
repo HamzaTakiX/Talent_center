@@ -1,17 +1,20 @@
+import { ENC_BADGE_INFO, ENC_BADGE_SUCCESS, ENC_BADGE_WARNING } from '../../constants/encadrantTokens';
 import type { ReportRowStatus } from '../types';
 
+/** Aligned with Student/Admin REPORT_STATUS_BADGE: Pending=warning, Submitted=info, Validated=success */
 export const REPORT_ROW_STATUS_STYLES: Record<
   ReportRowStatus,
-  { badgeBg: string; badgeText: string; label: string }
+  { badge: string; labelKey: string }
 > = {
   pending: {
-    badgeBg: 'bg-[#fef9c3]',
-    badgeText: 'text-[#a16207]',
-    label: 'Pending',
+    badge: ENC_BADGE_WARNING,
+    labelKey: 'encadrant.common.pending',
   },
   validated: {
-    badgeBg: 'bg-[#dcfce7]',
-    badgeText: 'text-[#15803d]',
-    label: 'Validated',
+    badge: ENC_BADGE_SUCCESS,
+    labelKey: 'encadrant.common.validated',
   },
 };
+
+/** Extra mapping for submitted-style rows when present in UI copy. */
+export const REPORT_SUBMITTED_BADGE = ENC_BADGE_INFO;

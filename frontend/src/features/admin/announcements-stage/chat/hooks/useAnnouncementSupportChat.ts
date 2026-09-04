@@ -491,7 +491,7 @@ export function useAnnouncementSupportChat() {
   }, [clearStudentAcademicFilters]);
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, tagCodes?: string[], entityRefs?: import('../../../../shared/contextual-chat/types/chatEntityTypes').ChatEntityReference[]) => {
       const conversationId = Number(selectedId);
       if (!Number.isFinite(conversationId) || !text.trim()) return;
 
@@ -524,7 +524,7 @@ export function useAnnouncementSupportChat() {
       sendWsTyping(false);
 
       try {
-        const saved = await sendChatMessage(conversationId, text.trim());
+        const saved = await sendChatMessage(conversationId, text.trim(), tagCodes, undefined, entityRefs);
         if (!saved) return;
         setMessagesByConv((prev) => {
           const existing = prev[conversationId] ?? [];

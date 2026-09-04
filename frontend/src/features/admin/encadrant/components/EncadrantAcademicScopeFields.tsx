@@ -211,9 +211,9 @@ const EncadrantAcademicScopeFields: FunctionComponent<EncadrantAcademicScopeFiel
   );
 
   const hasBusinessProgram = selectedFilieres.some((f) => Boolean(f.program_family));
-  const hasTechProgram = selectedFilieres.some((f) => !f.program_family);
   const showBusinessDomains = hasBusinessProgram;
-  const showTechDomains = hasTechProgram || hasBusinessProgram;
+  // Tech domains only when Structure académique linked TECH domains to the selected programs.
+  const showTechDomainsField = value.filiereIds.length > 0;
 
   useEffect(() => {
     if (value.filiereIds.length === 0 || !showBusinessDomains) {
@@ -222,7 +222,7 @@ const EncadrantAcademicScopeFields: FunctionComponent<EncadrantAcademicScopeFiel
     }
     setLoadingBusinessDomains(true);
     academicReferenceApi
-      .listSpecializationDomains({ filiere_ids: value.filiereIds, lang: i18n.language })
+      .listSpecializationDomains({ filiere_ids: value.filiereIds, lang: i18n.language, category: 'BUSINESS' })
       .then((domains) => {
         const business = domains.filter((d) => d.category === 'BUSINESS');
         setBusinessDomains(business);
@@ -241,7 +241,7 @@ const EncadrantAcademicScopeFields: FunctionComponent<EncadrantAcademicScopeFiel
   }, [filiereIdsKey, i18n.language, showBusinessDomains]);
 
   useEffect(() => {
-    if (value.filiereIds.length === 0 || !showTechDomains) {
+    if (!showTechDomainsField) {
       setTechDomains([]);
       return;
     }
@@ -251,13 +251,13 @@ const EncadrantAcademicScopeFields: FunctionComponent<EncadrantAcademicScopeFiel
         filiere_ids: value.filiereIds,
         lang: i18n.language,
         category: 'TECH',
-        include_tech: true,
       })
       .then((domains) => {
-        setTechDomains(domains);
+        const tech = domains.filter((d) => d.category === 'TECH');
+        setTechDomains(tech);
         const allowed = new Set([
           ...businessDomains.map((d) => d.id),
-          ...domains.map((d) => d.id),
+          ...tech.map((d) => d.id),
         ]);
         const nextIds = value.specializationDomainIds.filter((id) => allowed.has(id));
         if (nextIds.length !== value.specializationDomainIds.length) {
@@ -267,7 +267,7 @@ const EncadrantAcademicScopeFields: FunctionComponent<EncadrantAcademicScopeFiel
       .catch(() => setTechDomains([]))
       .finally(() => setLoadingTechDomains(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filiereIdsKey, i18n.language, showTechDomains]);
+  }, [filiereIdsKey, i18n.language, showTechDomainsField]);
 
 
 
@@ -587,14 +587,10 @@ const EncadrantAcademicScopeFields: FunctionComponent<EncadrantAcademicScopeFiel
         />
       ) : null}
 
-      {showTechDomains ? (
+      {techDomains.length > 0 ? (
         <AdminTagMultiSelect
           id="enc-scope-tech-domains"
-          label={
-            hasTechProgram && !hasBusinessProgram
-              ? t(`${ENC_PREFIX}.specializationDomains`)
-              : t(`${ENC_PREFIX}.technicalSpecializationDomains`)
-          }
+          label={t(`${ENC_PREFIX}.technicalSpecializationDomains`)}
           hint={t(`${ENC_PREFIX}.technicalSpecializationDomainsHint`)}
           values={selectedTechDomainIds.map(String)}
           options={techDomainTagOptions}

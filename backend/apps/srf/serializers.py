@@ -198,8 +198,10 @@ class SubmitPaymentProofSerializer(serializers.Serializer):
     proof_file = serializers.FileField()
 
 
-def account_to_table_row(account: FinancialAccount) -> dict:
+def account_to_table_row(account: FinancialAccount, request=None) -> dict:
     """Map FinancialAccount → frontend table row status."""
+    from apps.stage.services.chat_service import _student_avatar_url
+
     status_map = {
         'CLEAR': 'Paid',
         'PARTIAL': 'Partially Paid',
@@ -215,7 +217,8 @@ def account_to_table_row(account: FinancialAccount) -> dict:
 
     sp = account.student_profile
     profile = getattr(sp.user, 'profile', None)
-    name = sp.user.email
+    email = sp.user.email if sp.user else ''
+    name = email
     if profile:
         name = f'{profile.first_name} {profile.last_name}'.strip() or name
     cg = sp.class_group
@@ -236,6 +239,8 @@ def account_to_table_row(account: FinancialAccount) -> dict:
     return {
         'id': str(account.pk),
         'studentName': name,
+        'studentEmail': email,
+        'studentAvatarUrl': _student_avatar_url(sp, request),
         'className': cg.name if cg else sp.current_class or '',
         'amountDue': float(account.total_amount),
         'amountPaid': float(account.paid_amount),

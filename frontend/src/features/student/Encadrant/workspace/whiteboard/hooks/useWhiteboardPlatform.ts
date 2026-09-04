@@ -1,13 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { exportToBlob, exportToCanvas, serializeAsJSON } from '@excalidraw/excalidraw';
-import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
+import { exportToBlob, exportToCanvas } from '@excalidraw/excalidraw';
+import type { BinaryFiles, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import { jsPDF } from 'jspdf';
 
-import { WHITEBOARD_STORAGE_KEY, whiteboardVersions } from '../data/whiteboardMock';
+import { whiteboardVersions } from '../data/whiteboardMock';
 import { resolveCanvasBackgroundColor } from '../utils/whiteboardColorUtils';
+import {
+  findWorkspaceBoard,
+  upsertWorkspaceBoard,
+  type WorkspaceBoardStatus,
+} from '../utils/whiteboardBoardRegistry';
+import {
+  countLiveWhiteboardElements,
+  writeWhiteboardScene,
+} from '../utils/whiteboardSceneStorage';
 
 const AUTOSAVE_PREF_KEY = 'esca-whiteboard-autosave-enabled';
-const AUTOSAVE_INTERVAL_MS = 30_000;
+const AUTOSAVE_DEBOUNCE_MS = 400;
+
+type SceneSnapshot = {
+  elements: Parameters<typeof writeWhiteboardScene>[1];
+  appState: Parameters<typeof writeWhiteboardScene>[2];
+  files: BinaryFiles;
+};
 
 function readAutoSavePref(): boolean {
   try {
@@ -18,8 +33,30 @@ function readAutoSavePref(): boolean {
   }
 }
 
-export function useWhiteboardPlatform(backgroundColor: string, backgroundOpacity: number) {
+function snapshotFromApi(
+  api: ExcalidrawImperativeAPI,
+  canvasColor: string,
+): SceneSnapshot {
+  return {
+    elements: api.getSceneElements(),
+    appState: {
+      ...api.getAppState(),
+      viewBackgroundColor: canvasColor,
+    },
+    files: api.getFiles(),
+  };
+}
+
+export function useWhiteboardPlatform(
+  storageKey: string,
+  backgroundColor: string,
+  backgroundOpacity: number,
+  boardId?: string,
+) {
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
+  const sceneRef = useRef<SceneSnapshot | null>(null);
+  const debounceRef = useRef<number | null>(null);
+  const skipPersistRef = useRef(false);
   const canvasColorRef = useRef(
     resolveCanvasBackgroundColor(backgroundColor, backgroundOpacity),
   );
@@ -36,27 +73,70 @@ export function useWhiteboardPlatform(backgroundColor: string, backgroundOpacity
 
   const setApi = useCallback((api: ExcalidrawImperativeAPI) => {
     apiRef.current = api;
+    sceneRef.current = snapshotFromApi(api, canvasColorRef.current);
   }, []);
 
-  const saveBoard = useCallback(() => {
-    const api = apiRef.current;
-    if (!api) return;
-    try {
-      const elements = api.getSceneElements();
-      if (elements.length === 0) return;
-      const appState = {
-        ...api.getAppState(),
-        viewBackgroundColor: canvasColorRef.current,
-      };
-      const files = api.getFiles();
-      const payload = serializeAsJSON(elements, appState, files, 'local');
-      localStorage.setItem(WHITEBOARD_STORAGE_KEY, payload);
+  const persistSnapshot = useCallback(
+    (snapshot: SceneSnapshot | null, status?: WorkspaceBoardStatus): boolean => {
+      if (skipPersistRef.current) return false;
+      if (!snapshot || countLiveWhiteboardElements(snapshot.elements) === 0) return false;
+      const wrote = writeWhiteboardScene(
+        storageKey,
+        snapshot.elements,
+        {
+          ...snapshot.appState,
+          viewBackgroundColor: canvasColorRef.current,
+        },
+        snapshot.files,
+      );
+      if (!wrote) return false;
+      if (boardId) {
+        const current = findWorkspaceBoard(boardId);
+        upsertWorkspaceBoard(boardId, status ?? current?.status ?? 'draft');
+      }
       const label = new Date().toLocaleTimeString();
       setSavedLabel((prev) => (prev === label ? prev : label));
-    } catch {
-      setSavedLabel(null);
+      return true;
+    },
+    [boardId, storageKey],
+  );
+
+  const abandonUnsavedEdits = useCallback(() => {
+    skipPersistRef.current = true;
+    if (debounceRef.current != null) {
+      window.clearTimeout(debounceRef.current);
+      debounceRef.current = null;
     }
   }, []);
+
+  const saveBoard = useCallback((status?: WorkspaceBoardStatus): boolean => {
+    if (skipPersistRef.current) return false;
+    if (debounceRef.current != null) {
+      window.clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+    const api = apiRef.current;
+    const snapshot = api ? snapshotFromApi(api, canvasColorRef.current) : sceneRef.current;
+    if (snapshot) sceneRef.current = snapshot;
+    return persistSnapshot(snapshot, status);
+  }, [persistSnapshot]);
+
+  const onSceneChange = useCallback(
+    (
+      elements: SceneSnapshot['elements'],
+      appState: SceneSnapshot['appState'],
+      files: BinaryFiles,
+    ) => {
+      sceneRef.current = { elements, appState, files };
+      if (!autoSaveEnabled) return;
+      if (debounceRef.current != null) window.clearTimeout(debounceRef.current);
+      debounceRef.current = window.setTimeout(() => {
+        debounceRef.current = null;
+        persistSnapshot(sceneRef.current);
+      }, AUTOSAVE_DEBOUNCE_MS);
+    },
+    [autoSaveEnabled, persistSnapshot],
+  );
 
   const exportPng = useCallback(async () => {
     const api = apiRef.current;
@@ -128,16 +208,24 @@ export function useWhiteboardPlatform(backgroundColor: string, backgroundOpacity
   }, []);
 
   useEffect(() => {
-    if (!autoSaveEnabled) return;
-    const tick = () => {
-      if (apiRef.current) saveBoard();
+    const flush = () => {
+      if (document.visibilityState === 'hidden') saveBoard();
     };
-    const id = window.setInterval(tick, AUTOSAVE_INTERVAL_MS);
-    return () => window.clearInterval(id);
-  }, [autoSaveEnabled, saveBoard]);
+    const onHide = () => saveBoard();
+    document.addEventListener('visibilitychange', flush);
+    window.addEventListener('pagehide', onHide);
+    window.addEventListener('beforeunload', onHide);
+    return () => {
+      document.removeEventListener('visibilitychange', flush);
+      window.removeEventListener('pagehide', onHide);
+      window.removeEventListener('beforeunload', onHide);
+      saveBoard();
+    };
+  }, [saveBoard]);
 
   return {
     setApi,
+    onSceneChange,
     versionPanelOpen,
     setVersionPanelOpen,
     shareOpen,
@@ -147,6 +235,7 @@ export function useWhiteboardPlatform(backgroundColor: string, backgroundOpacity
     autoSaveEnabled,
     setAutoSave,
     saveBoard,
+    abandonUnsavedEdits,
     exportPng,
     exportPdf,
     isExporting,

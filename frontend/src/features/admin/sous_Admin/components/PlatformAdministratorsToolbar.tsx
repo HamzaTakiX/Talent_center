@@ -1,5 +1,5 @@
 import { FunctionComponent, ReactNode, useState } from 'react';
-import { Upload } from 'lucide-react';
+import { Shield, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAdminCopy, useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
 import { AdminListToolbar, AdminModuleHeader } from '../../ui';
@@ -33,6 +33,7 @@ const PlatformAdministratorsToolbar: FunctionComponent<PlatformAdministratorsToo
   />
   <AdminModuleHeader
     layout="toolbar"
+    icon={Shield}
     title={t('admin.modules.administrators.title')}
     subtitle={t('admin.modules.administrators.subtitle')}
     actions={
@@ -42,6 +43,7 @@ const PlatformAdministratorsToolbar: FunctionComponent<PlatformAdministratorsToo
         searchPlaceholder={searchPh}
         toolbarAriaLabel={filterLabel('filterAdministrators')}
         createLabel={createLabel('admin')}
+        createVariant="primary"
         onCreate={onCreateAdmin}
         actionExtra={
           <button

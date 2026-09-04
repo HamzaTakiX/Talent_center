@@ -72,7 +72,10 @@
 
 .auth-bg {
   background-color: var(--auth-bg);
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition:
+    background-color var(--admin-theme-duration, 200ms) var(--admin-theme-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+    color var(--admin-theme-duration, 200ms) var(--admin-theme-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+    border-color var(--admin-theme-duration, 200ms) var(--admin-theme-easing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 .auth-screen {

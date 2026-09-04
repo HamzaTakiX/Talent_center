@@ -1,26 +1,33 @@
-import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  Briefcase,
   CheckCircle2,
+  Code2,
   Gauge,
   HelpCircle,
+  LayoutList,
   Lightbulb,
+  MessageSquare,
   Mic,
   RefreshCw,
   Loader2,
   RotateCcw,
   Send,
   SkipForward,
+  Sparkles,
   StopCircle,
+  Target,
   Timer,
   Trophy,
   Volume2,
-  X,
+  type LucideIcon,
 } from 'lucide-react';
 import { transcribeInterviewAudio } from '../../../api/offerAiCoachApi';
 import type { AnswerFeedback, InterviewQuestion, LiveFeedbackCategory, SimulatorConfig } from '../../types/interviewSimulatorDashboard';
 import { AnimatedCounter, ScoreBar, TypingText, fadeUp } from './InterviewPrimitives';
+import { interviewerAvatarUrl, interviewerInitials } from '../../utils/interviewerAvatars';
 
 type BrowserSpeechRecognition = {
   lang: string;
@@ -32,6 +39,22 @@ type BrowserSpeechRecognition = {
   maxAlternatives?: number;
   start: () => void;
   stop: () => void;
+};
+
+const LIVE_FEEDBACK_ICONS: Record<string, LucideIcon> = {
+  communication: MessageSquare,
+  technical: Code2,
+  confidence: Sparkles,
+  structure: LayoutList,
+  relevance: Target,
+  professionalism: Briefcase,
+};
+
+const liveScoreTone = (score: number) => {
+  if (score >= 75) return 'high';
+  if (score >= 50) return 'medium';
+  if (score > 0) return 'low';
+  return 'idle';
 };
 
 interface InterviewActiveSessionProps {
@@ -52,7 +75,6 @@ interface InterviewActiveSessionProps {
   onSubmit: () => void;
   onSkip: () => void;
   onNext: () => void;
-  onExit: () => void;
   onEndSimulation: () => void;
   isBusy: boolean;
 }
@@ -75,7 +97,6 @@ const InterviewActiveSession: FunctionComponent<InterviewActiveSessionProps> = (
   onSubmit,
   onSkip,
   onNext,
-  onExit,
   onEndSimulation,
   isBusy,
 }) => {
@@ -437,72 +458,103 @@ const InterviewActiveSession: FunctionComponent<InterviewActiveSessionProps> = (
     stopMicTest();
   }, [stopBackendSttRecording, stopMediaRecorderStream, stopMicTest]);
 
-  const liveStatus = useMemo<'listening' | 'speaking' | 'thinking' | 'idle'>(() => {
-    if (recognitionActive || isRecording) return 'listening';
-    if (questionSpeaking) return 'speaking';
-    if (showFeedback) return 'thinking';
-    return 'idle';
-  }, [isRecording, questionSpeaking, recognitionActive, showFeedback]);
-
-  const liveStatusLabel = useMemo(() => {
-    if (liveStatus === 'listening') return 'Listening';
-    if (liveStatus === 'speaking') return 'Speaking';
-    if (liveStatus === 'thinking') return 'Thinking';
-    return 'Idle';
-  }, [liveStatus]);
-
   return (
     <div className="sr-is sr-is-active">
       <header className="sr-is-active__topbar">
-        <button type="button" className="sr-is-icon-btn sr-is-active__exit-btn" onClick={onExit} aria-label={t('student.internshipOffers.interviewSim.active.exit')}>
-          <X className="h-4 w-4" />
-        </button>
-
-        <div className={`sr-is-active__live-pill sr-is-active__live-pill--${liveStatus}`}>
-          <span className="sr-is-active__live-dot" aria-hidden />
-          <span className="sr-is-active__live-label">AI {liveStatusLabel}</span>
-        </div>
-
         <div className="sr-is-active__topbar-stats">
-          <div className="sr-is-active__stat sr-is-active__stat-card">
-            <span className="sr-is-active__stat-icon" aria-hidden>
-              <Timer className="h-4 w-4" />
-            </span>
-            <span className="sr-is-active__stat-body">
-              <span className="sr-is-active__stat-label">
-                {t('student.internshipOffers.interviewSim.active.time')}
-              </span>
-              <span className={`sr-is-active__stat-value${timeRemaining <= 30 ? ' sr-is-active__stat-value--warning' : ''}`}>
+          <article
+            className="admin-students-stat-card admin-students-stat-card--compact sr-is-active__stat-card"
+            style={
+              {
+                '--student-stat-accent': timeRemaining <= 30 ? '#f97316' : '#3b82f6',
+                '--student-stat-accent-bg':
+                  timeRemaining <= 30 ? 'rgba(249, 115, 22, 0.16)' : 'rgba(59, 130, 246, 0.16)',
+              } as CSSProperties
+            }
+          >
+            <div className="admin-students-stat-card__body">
+              <div className="admin-students-stat-card__head">
+                <span className="admin-students-stat-card__icon" aria-hidden>
+                  <Timer className="h-4 w-4" strokeWidth={1.8} />
+                </span>
+                <p className="admin-students-stat-card__title">
+                  {t('student.internshipOffers.interviewSim.active.time')}
+                </p>
+              </div>
+              <p
+                className={`admin-students-stat-card__value${
+                  timeRemaining <= 30 ? ' sr-is-active__stat-value--warning' : ''
+                }`}
+              >
                 {formatTime(timeRemaining)}
+              </p>
+              <span className="admin-students-stat-card__badge">
+                {timeRemaining <= 30
+                  ? t('student.internshipOffers.interviewSim.active.timeUrgent', {
+                      defaultValue: 'Urgent',
+                    })
+                  : t('student.internshipOffers.interviewSim.active.timeLive', {
+                      defaultValue: 'En cours',
+                    })}
               </span>
-            </span>
-          </div>
+            </div>
+          </article>
 
-          <div className="sr-is-active__stat sr-is-active__stat-card">
-            <span className="sr-is-active__stat-icon" aria-hidden>
-              <Gauge className="h-4 w-4" />
-            </span>
-            <span className="sr-is-active__stat-body">
-              <span className="sr-is-active__stat-label">
-                {t('student.internshipOffers.interviewSim.active.difficulty')}
+          <article
+            className="admin-students-stat-card admin-students-stat-card--compact sr-is-active__stat-card"
+            style={
+              {
+                '--student-stat-accent': '#6366f1',
+                '--student-stat-accent-bg': 'rgba(99, 102, 241, 0.16)',
+              } as CSSProperties
+            }
+          >
+            <div className="admin-students-stat-card__body">
+              <div className="admin-students-stat-card__head">
+                <span className="admin-students-stat-card__icon" aria-hidden>
+                  <Gauge className="h-4 w-4" strokeWidth={1.8} />
+                </span>
+                <p className="admin-students-stat-card__title">
+                  {t('student.internshipOffers.interviewSim.active.difficulty')}
+                </p>
+              </div>
+              <p className="admin-students-stat-card__value capitalize">{config.difficulty}</p>
+              <span className="admin-students-stat-card__badge">
+                {t('student.internshipOffers.interviewSim.active.difficultyBadge', {
+                  defaultValue: 'Niveau',
+                })}
               </span>
-              <span className="sr-is-active__stat-value capitalize">{config.difficulty}</span>
-            </span>
-          </div>
+            </div>
+          </article>
 
-          <div className="sr-is-active__stat sr-is-active__stat-card">
-            <span className="sr-is-active__stat-icon" aria-hidden>
-              <Trophy className="h-4 w-4" />
-            </span>
-            <span className="sr-is-active__stat-body">
-              <span className="sr-is-active__stat-label">
-                {t('student.internshipOffers.interviewSim.active.score')}
-              </span>
-              <span className="sr-is-active__stat-value sr-is-active__stat-value--accent">
+          <article
+            className="admin-students-stat-card admin-students-stat-card--compact sr-is-active__stat-card"
+            style={
+              {
+                '--student-stat-accent': '#f59e0b',
+                '--student-stat-accent-bg': 'rgba(245, 158, 11, 0.16)',
+              } as CSSProperties
+            }
+          >
+            <div className="admin-students-stat-card__body">
+              <div className="admin-students-stat-card__head">
+                <span className="admin-students-stat-card__icon" aria-hidden>
+                  <Trophy className="h-4 w-4" strokeWidth={1.8} />
+                </span>
+                <p className="admin-students-stat-card__title">
+                  {t('student.internshipOffers.interviewSim.active.score')}
+                </p>
+              </div>
+              <p className="admin-students-stat-card__value">
                 <AnimatedCounter value={sessionScore} />
+              </p>
+              <span className="admin-students-stat-card__badge">
+                {t('student.internshipOffers.interviewSim.active.scoreBadge', {
+                  defaultValue: 'Points',
+                })}
               </span>
-            </span>
-          </div>
+            </div>
+          </article>
         </div>
 
         <button
@@ -512,7 +564,7 @@ const InterviewActiveSession: FunctionComponent<InterviewActiveSessionProps> = (
           aria-label={t('student.internshipOffers.interviewSim.active.endSimulation')}
         >
           <StopCircle className="h-4 w-4" aria-hidden />
-          {t('student.internshipOffers.interviewSim.active.endSimulation')}
+          {t('student.internshipOffers.interviewSim.active.end')}
         </button>
       </header>
 
@@ -520,7 +572,24 @@ const InterviewActiveSession: FunctionComponent<InterviewActiveSessionProps> = (
         <div className="sr-is-active__main">
           <motion.div className="sr-is-glass sr-is-interviewer" {...fadeUp}>
             <div className="sr-is-interviewer__avatar" aria-hidden>
-              {currentQuestion.interviewerName.split(' ').map((n) => n[0]).join('')}
+              <img
+                src={
+                  currentQuestion.interviewerAvatarUrl ??
+                  interviewerAvatarUrl(currentQuestion.interviewerName)
+                }
+                alt=""
+                className="sr-is-interviewer__avatar-img"
+                loading="lazy"
+                onError={(event) => {
+                  const target = event.currentTarget;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling;
+                  if (fallback instanceof HTMLElement) fallback.hidden = false;
+                }}
+              />
+              <span className="sr-is-interviewer__avatar-fallback" hidden>
+                {interviewerInitials(currentQuestion.interviewerName)}
+              </span>
             </div>
             <div>
               <p className="m-0 text-sm font-bold text-[var(--admin-text)]">{currentQuestion.interviewerName}</p>
@@ -678,19 +747,47 @@ const InterviewActiveSession: FunctionComponent<InterviewActiveSessionProps> = (
         </div>
 
         <aside className="sr-is-active__feedback">
-          <h3 className="sr-is-section-title text-sm">
-            <Lightbulb className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
-            {t('student.internshipOffers.interviewSim.feedback.liveTitle')}
-          </h3>
-          {liveFeedback.map((cat, i) => (
-            <div key={cat.id} className="sr-is-feedback-cat">
-              <div className="sr-is-feedback-cat__head">
-                <span>{t(cat.labelKey)}</span>
-                <span className="font-bold">{cat.score}%</span>
-              </div>
-              <ScoreBar score={cat.score} delay={i * 0.08} />
+          <header className="sr-is-live-eval__header">
+            <span className="sr-is-live-eval__header-icon" aria-hidden>
+              <Lightbulb className="h-4 w-4" strokeWidth={1.8} />
+            </span>
+            <div className="sr-is-live-eval__header-copy">
+              <h3 className="sr-is-live-eval__title">
+                {t('student.internshipOffers.interviewSim.feedback.liveTitle')}
+              </h3>
+              <p className="sr-is-live-eval__subtitle">
+                {t('student.internshipOffers.interviewSim.feedback.liveSubtitle', {
+                  defaultValue: 'Scores mis à jour à chaque réponse',
+                })}
+              </p>
             </div>
-          ))}
+          </header>
+
+          <div className="sr-is-live-eval__list">
+            {liveFeedback.map((cat, i) => {
+              const Icon = LIVE_FEEDBACK_ICONS[cat.id] ?? Gauge;
+              const tone = liveScoreTone(cat.score);
+
+              return (
+                <div
+                  key={cat.id}
+                  className={`sr-is-live-eval__item sr-is-live-eval__item--${tone}`}
+                  style={{ '--live-eval-delay': `${i * 40}ms` } as CSSProperties}
+                >
+                  <div className="sr-is-live-eval__item-head">
+                    <span className="sr-is-live-eval__item-icon" aria-hidden>
+                      <Icon className="h-3.5 w-3.5" strokeWidth={1.9} />
+                    </span>
+                    <span className="sr-is-live-eval__item-label">{t(cat.labelKey)}</span>
+                    <span className="sr-is-live-eval__item-score">
+                      <AnimatedCounter value={cat.score} suffix="%" />
+                    </span>
+                  </div>
+                  <ScoreBar score={cat.score} delay={i * 0.08} className="sr-is-live-eval__bar" />
+                </div>
+              );
+            })}
+          </div>
         </aside>
       </div>
     </div>

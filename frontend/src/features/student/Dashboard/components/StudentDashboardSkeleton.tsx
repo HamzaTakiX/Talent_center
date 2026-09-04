@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { DashboardStatsSkeleton, DashboardChartSkeleton, DashboardPanelSkeleton } from '../../../admin/dashboard/ui/DashboardSkeleton';
+import { DashboardChartSkeleton, DashboardPanelSkeleton } from '../../../admin/dashboard/ui/DashboardSkeleton';
 
 export const StudentDashboardPageSkeleton: FunctionComponent = () => (
   <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-5 pb-6 sm:space-y-6 md:space-y-7">
@@ -13,7 +13,23 @@ export const StudentDashboardPageSkeleton: FunctionComponent = () => (
         ))}
       </div>
     </div>
-    <DashboardStatsSkeleton />
+    <div
+      className="student-task-platform grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 xl:grid-cols-5 sm:gap-4"
+      aria-hidden
+    >
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          className="box-border min-h-[7.25rem] overflow-hidden rounded-[16px] border border-solid border-[var(--admin-border)] p-4"
+        >
+          <div className="mb-3 flex items-center gap-2.5">
+            <div className="admin-shimmer h-9 w-9 rounded-[0.625rem]" />
+            <div className="admin-shimmer h-3 w-24 rounded" />
+          </div>
+          <div className="admin-shimmer h-7 w-12 rounded" />
+        </div>
+      ))}
+    </div>
     <DashboardChartSkeleton />
     <div className="student-dashboard-main-grid">
       <div className="flex flex-col gap-5">

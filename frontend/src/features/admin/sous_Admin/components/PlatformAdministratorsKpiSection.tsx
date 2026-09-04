@@ -1,15 +1,28 @@
-import { FunctionComponent, useMemo } from 'react';
+import { CSSProperties, FunctionComponent, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Briefcase, FileText, MessageSquare, Shield, Wallet } from 'lucide-react';
 import type { AdminAdministratorRow } from '../../api/types';
-import StudentDashboardStatCard from '../../student/components/StudentDashboardStatCard';
+import { easePremium } from '../../dashboard/ui/animations';
+import { useTranslateAdminLabel } from '../../i18n/useTranslateAdminLabel';
+import { AdminKpiStripSkeleton } from '../../ui/AdminSectionSkeleton';
 import { PLATFORM_ADMIN_KPI_STAT_TO_PATH } from '../constants/platformAdministratorsNavigation';
-import type { PlatformAdminKpiStatKey, PlatformAdministratorsKpiStat } from '../types/platformAdministrators';
-import AdminKpiGrid from '../../ui/AdminKpiGrid';
+import type { PlatformAdminKpiStatKey } from '../types/platformAdministrators';
 
 interface PlatformAdministratorsKpiSectionProps {
   rows: AdminAdministratorRow[];
   loading?: boolean;
+}
+
+interface AdminKpiCardItem {
+  labelKey: string;
+  statKey: PlatformAdminKpiStatKey;
+  value: string;
+  badge: string;
+  Icon: typeof Shield;
+  accent: string;
+  accentBg: string;
+  piePercent?: number;
 }
 
 const PlatformAdministratorsKpiSection: FunctionComponent<PlatformAdministratorsKpiSectionProps> = ({
@@ -17,78 +30,137 @@ const PlatformAdministratorsKpiSection: FunctionComponent<PlatformAdministrators
   loading = false,
 }) => {
   const navigate = useNavigate();
+  const translateLabel = useTranslateAdminLabel();
 
-  const stats = useMemo((): PlatformAdministratorsKpiStat[] => {
+  const stats = useMemo<AdminKpiCardItem[]>(() => {
+    const total = rows.length;
     const countByRole = (slug: string) =>
       rows.filter((r) => r.role_slugs.includes(slug as never)).length;
+    const ratioFromTotal = (value: number) => (total > 0 ? Math.round((value / total) * 100) : 0);
+
+    const stageCount = countByRole('stage');
+    const financeCount = countByRole('finance');
+    const docsCount = countByRole('documents');
+    const comCount = countByRole('communication');
+
     return [
       {
-        label: 'Total Admins',
         labelKey: 'administrators.totalAdmins',
-        statKey: 'total',
-        value: loading ? 0 : rows.length,
+        statKey: 'total' as PlatformAdminKpiStatKey,
+        value: String(total),
+        badge: `${rows.filter((r) => r.is_active).length} actifs`,
         Icon: Shield,
-        iconBgClass: 'bg-[#a855f7]',
+        accent: '#a855f7',
+        accentBg: 'rgba(168, 85, 247, 0.16)',
       },
       {
-        label: 'Admin Stage',
         labelKey: 'administrators.stage',
-        statKey: 'stage',
-        value: loading ? 0 : countByRole('stage'),
+        statKey: 'stage' as PlatformAdminKpiStatKey,
+        value: String(stageCount),
+        badge: `${ratioFromTotal(stageCount)}% du total`,
         Icon: Briefcase,
-        iconBgClass: 'bg-[#3b82f6]',
+        accent: '#3b82f6',
+        accentBg: 'rgba(59, 130, 246, 0.16)',
+        piePercent: ratioFromTotal(stageCount),
       },
       {
-        label: 'Admin Finance',
         labelKey: 'administrators.finance',
-        statKey: 'finance',
-        value: loading ? 0 : countByRole('finance'),
+        statKey: 'finance' as PlatformAdminKpiStatKey,
+        value: String(financeCount),
+        badge: `${ratioFromTotal(financeCount)}% du total`,
         Icon: Wallet,
-        iconBgClass: 'bg-[#22c55e]',
+        accent: '#22c55e',
+        accentBg: 'rgba(34, 197, 94, 0.16)',
+        piePercent: ratioFromTotal(financeCount),
       },
       {
-        label: 'Admin Documents',
         labelKey: 'administrators.documents',
-        statKey: 'documents',
-        value: loading ? 0 : countByRole('documents'),
+        statKey: 'documents' as PlatformAdminKpiStatKey,
+        value: String(docsCount),
+        badge: `${ratioFromTotal(docsCount)}% du total`,
         Icon: FileText,
-        iconBgClass: 'bg-[#f97316]',
+        accent: '#f97316',
+        accentBg: 'rgba(249, 115, 22, 0.16)',
+        piePercent: ratioFromTotal(docsCount),
       },
       {
-        label: 'Admin Communication',
         labelKey: 'administrators.communication',
-        statKey: 'communication',
-        value: loading ? 0 : countByRole('communication'),
+        statKey: 'communication' as PlatformAdminKpiStatKey,
+        value: String(comCount),
+        badge: `${ratioFromTotal(comCount)}% du total`,
         Icon: MessageSquare,
-        iconBgClass: 'bg-[#6366f1]',
+        accent: '#6366f1',
+        accentBg: 'rgba(99, 102, 241, 0.16)',
+        piePercent: ratioFromTotal(comCount),
       },
     ];
-  }, [rows, loading]);
+  }, [rows]);
+
+  if (loading && rows.length === 0) {
+    return <AdminKpiStripSkeleton count={5} />;
+  }
 
   return (
-    <AdminKpiGrid columns={5}>
-      {stats.map((stat, index) => (
-        <StudentDashboardStatCard
-          key={stat.statKey}
-          label={stat.label}
-          labelKey={stat.labelKey}
-          value={stat.value}
-          IconComponent={stat.Icon}
-          iconBgClass={stat.iconBgClass}
-          index={index}
-          onClick={
-            stat.statKey === 'total'
-              ? undefined
-              : () =>
-                  navigate(
-                    PLATFORM_ADMIN_KPI_STAT_TO_PATH[
-                      stat.statKey as Exclude<PlatformAdminKpiStatKey, 'total'>
-                    ],
-                  )
-          }
-        />
-      ))}
-    </AdminKpiGrid>
+    <div className="admin-students-stats-grid admin-students-stats-grid--center-last">
+      {stats.map((card, index) => {
+        const title = translateLabel(card.labelKey, card.labelKey);
+        const isClickable = card.statKey !== 'total';
+
+        return (
+          <motion.article
+            key={card.statKey}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05, duration: 0.4, ease: easePremium }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            className={`admin-students-stat-card${card.piePercent != null ? ' admin-students-stat-card--rate' : ''}${isClickable ? ' cursor-pointer' : ''}`}
+            style={
+              {
+                '--student-stat-accent': card.accent,
+                '--student-stat-accent-bg': card.accentBg,
+              } as CSSProperties
+            }
+            onClick={
+              isClickable
+                ? () =>
+                    navigate(
+                      PLATFORM_ADMIN_KPI_STAT_TO_PATH[
+                        card.statKey as Exclude<PlatformAdminKpiStatKey, 'total'>
+                      ],
+                    )
+                : undefined
+            }
+          >
+            <div className="admin-students-stat-card__body">
+              <div className="admin-students-stat-card__head">
+                <span className="admin-students-stat-card__icon">
+                  <card.Icon className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+                </span>
+                <p className="admin-students-stat-card__title">{title}</p>
+              </div>
+
+              <p className="admin-students-stat-card__value">{card.value}</p>
+              <span className="admin-students-stat-card__badge">{card.badge}</span>
+            </div>
+
+            {card.piePercent != null ? (
+              <div
+                className="admin-students-stat-card__pie"
+                style={
+                  {
+                    '--student-stat-pie': card.piePercent,
+                  } as CSSProperties
+                }
+                role="img"
+                aria-label={`${title} ${card.piePercent}%`}
+              >
+                <span className="admin-students-stat-card__pie-inner">{card.piePercent}%</span>
+              </div>
+            ) : null}
+          </motion.article>
+        );
+      })}
+    </div>
   );
 };
 

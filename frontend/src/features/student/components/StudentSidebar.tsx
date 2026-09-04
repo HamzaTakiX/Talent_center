@@ -12,6 +12,7 @@ import {
   CalendarDays,
   CheckSquare,
   Users,
+  Video,
   FilePenLine,
   PenLine,
   LucideIcon,
@@ -32,7 +33,7 @@ import {
   type StudentNavChildId,
   type StudentNavSectionId,
 } from '../config/studentNavConfig';
-import { STUDENT_NAV_CHAT_MODULES } from '../../shared/contextual-chat/config/chatNavModuleMap';
+import { STUDENT_NAV_CHAT_SCOPES, resolveChatNavUnread } from '../../shared/contextual-chat/config/chatNavModuleMap';
 import { useChatUnread } from '../../shared/contextual-chat/context/ChatUnreadContext';
 import NavChatUnreadBadge from '../../shared/contextual-chat/components/NavChatUnreadBadge';
 
@@ -47,6 +48,7 @@ const subIconMap: Record<StudentNavChildId, LucideIcon> = {
   agenda: CalendarDays,
   task: CheckSquare,
   workspace: Users,
+  meetings: Video,
   report: FilePenLine,
 };
 
@@ -56,6 +58,7 @@ interface SidebarMenuButtonProps {
   label: string;
   expandable?: boolean;
   expanded?: boolean;
+  unreadCount?: number;
   onClick: () => void;
 }
 
@@ -65,6 +68,7 @@ const SidebarMenuButton: FunctionComponent<SidebarMenuButtonProps> = ({
   label,
   expandable,
   expanded,
+  unreadCount = 0,
   onClick,
 }) => (
   <button type="button" onClick={onClick} className={`admin-nav-item ${active ? 'admin-nav-item-active' : ''}`}>
@@ -75,6 +79,8 @@ const SidebarMenuButton: FunctionComponent<SidebarMenuButtonProps> = ({
     <motion.div layout className="flex min-w-0 flex-1 items-center">
       <span className="relative truncate leading-5 text-inherit">{label}</span>
     </motion.div>
+    {!expandable && unreadCount > 0 ? <NavChatUnreadBadge count={unreadCount} /> : null}
+    {expandable && !expanded && unreadCount > 0 ? <NavChatUnreadBadge count={unreadCount} /> : null}
     {expandable && (
       <ChevronDown
         className={`relative h-4 w-4 shrink-0 text-[var(--admin-text-muted)] transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
@@ -147,7 +153,7 @@ const StudentSidebar: FunctionComponent<StudentSidebarProps> = ({ mobileOpen, on
   const { theme } = useAdminTheme();
   const pathname = location.pathname;
   const escaLogo = theme === 'dark' ? escaLogoDark : escaLogoLight;
-  const { getModuleUnread } = useChatUnread();
+  const { getScopedUnread } = useChatUnread();
 
   const [manuallyExpanded, setManuallyExpanded] = useState<StudentNavSectionId[]>([]);
   const [manuallyCollapsed, setManuallyCollapsed] = useState<StudentNavSectionId[]>([]);
@@ -205,7 +211,7 @@ const StudentSidebar: FunctionComponent<StudentSidebarProps> = ({ mobileOpen, on
         }`}
       />
       <aside
-        className={`admin-glass-sidebar fixed inset-y-0 left-0 z-50 flex h-screen w-[272px] flex-none flex-col overflow-hidden shadow-admin-lg transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:relative lg:z-auto lg:translate-x-0 lg:shadow-none ${
+        className={`admin-glass-sidebar fixed inset-y-0 left-0 z-50 flex h-screen w-[272px] flex-none flex-col overflow-hidden shadow-admin-lg lg:relative lg:z-auto lg:translate-x-0 lg:shadow-none ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -235,6 +241,8 @@ const StudentSidebar: FunctionComponent<StudentSidebarProps> = ({ mobileOpen, on
             const isActive = activeSection === item.id;
             const isExpanded = item.expandable ? isSectionExpanded(item.id) : false;
             const sectionPath = getSectionPath(item.id);
+            const sectionChatScope = STUDENT_NAV_CHAT_SCOPES[item.id];
+            const sectionUnread = resolveChatNavUnread(sectionChatScope, getScopedUnread);
 
             return (
               <motion.div key={item.id} layout="position" className="w-full min-w-0">
@@ -250,6 +258,7 @@ const StudentSidebar: FunctionComponent<StudentSidebarProps> = ({ mobileOpen, on
                   label={navLabel(item.id)}
                   expandable={item.expandable}
                   expanded={isExpanded}
+                  unreadCount={sectionUnread}
                   onClick={() => {
                     if (sectionPath) navigate(sectionPath);
                     if (item.expandable) toggleSectionExpand(item.id);
@@ -266,8 +275,8 @@ const StudentSidebar: FunctionComponent<StudentSidebarProps> = ({ mobileOpen, on
                     {item.children.map((child) => {
                       const subPath = getChildPath(item.id, child);
                       const isSubActive = isChildNavActive(item.id, child, pathname);
-                      const chatModule = child === 'chat' ? STUDENT_NAV_CHAT_MODULES[item.id] : undefined;
-                      const unreadCount = chatModule ? getModuleUnread(chatModule) : 0;
+                      const chatScope = child === 'chat' ? STUDENT_NAV_CHAT_SCOPES[item.id] : undefined;
+                      const unreadCount = resolveChatNavUnread(chatScope, getScopedUnread);
                       return (
                         <SidebarSubButton
                           key={child}

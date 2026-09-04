@@ -69,3 +69,26 @@ class AiConversation(models.Model):
 
     def __str__(self) -> str:
         return f'{self.role}@{self.session_id} ({self.created_at:%Y-%m-%d %H:%M})'
+
+
+class RagChunk(models.Model):
+    """Career-coach RAG chunk stored in PostgreSQL (one row per student chunk)."""
+
+    student_id = models.IntegerField(db_index=True)
+    chunk_id = models.CharField(max_length=128)
+    text = models.TextField()
+    metadata = models.JSONField(default=dict, blank=True)
+    embedding = models.JSONField(default=list, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'career_coach_rag_chunks'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student_id', 'chunk_id'],
+                name='career_coach_rag_student_chunk_uniq',
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.student_id}:{self.chunk_id}'

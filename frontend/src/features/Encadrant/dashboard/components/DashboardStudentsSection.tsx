@@ -1,11 +1,15 @@
 import { FunctionComponent, useMemo, useState } from 'react';
-import { DASHBOARD_SECTION_CARD } from '../constants/dashboardLayout';
+import { Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import DashboardSectionHeader from '../../../admin/dashboard/components/DashboardSectionHeader';
+import DashboardPanel from '../../../admin/dashboard/ui/DashboardPanel';
 import { assignedStudentsMock } from '../data';
 import { filterStudentsByQuery } from '../utils/filterStudentsByQuery';
 import DashboardStudentsGrid from './DashboardStudentsGrid';
 import DashboardStudentsToolbar from './DashboardStudentsToolbar';
 
 const DashboardStudentsSection: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredStudents = useMemo(
@@ -14,23 +18,22 @@ const DashboardStudentsSection: FunctionComponent = () => {
   );
 
   return (
-    <section className={DASHBOARD_SECTION_CARD} aria-labelledby="encadrant-my-students-title">
-      <header className="flex min-w-0 flex-col gap-1">
-        <h2
-          id="encadrant-my-students-title"
-          className="m-0 text-xl font-semibold leading-7 tracking-tight text-[#171717] sm:text-2xl"
-        >
-          My Students
-        </h2>
-        <p className="m-0 text-sm font-normal leading-5 text-[#717182]">
-          Monitor and manage your assigned students
-        </p>
-      </header>
+    <DashboardPanel
+      id="encadrant-my-students"
+      className="admin-section-panel w-full min-w-0 max-w-full"
+      aria-label={t('encadrant.dashboard.assignedStudents')}
+    >
+      <DashboardSectionHeader
+        icon={<Users strokeWidth={1.75} aria-hidden />}
+        title={t('encadrant.dashboard.assignedStudents')}
+        subtitle={t('encadrant.dashboard.description')}
+      />
 
-      <DashboardStudentsToolbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-
-      <DashboardStudentsGrid students={filteredStudents} />
-    </section>
+      <div className="flex min-w-0 flex-col gap-4 px-4 pb-5 pt-1 sm:gap-5 sm:px-5 sm:pb-6">
+        <DashboardStudentsToolbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+        <DashboardStudentsGrid students={filteredStudents} />
+      </div>
+    </DashboardPanel>
   );
 };
 

@@ -10,14 +10,17 @@ import {
   useState,
 } from 'react';
 import { fetchChatInboxSummary } from '../api/chatApi';
+import { scopeUnreadKey } from '../config/chatNavModuleMap';
 import { useChatPresenceWebSocket } from '../hooks/useChatPresenceWebSocket';
 import type { ChatWsEvent } from '../hooks/useChatWebSocket';
 import type { ChatModule } from '../types';
 
 type ModuleUnreadMap = Partial<Record<ChatModule, number>>;
+type ScopedUnreadMap = Partial<Record<string, number>>;
 
 interface ChatUnreadContextValue {
   getModuleUnread: (module: ChatModule) => number;
+  getScopedUnread: (module: ChatModule, entityType?: string) => number;
   refresh: () => Promise<void>;
 }
 
@@ -27,18 +30,28 @@ const INBOX_REFRESH_EVENTS = new Set(['inbox.updated', 'message.created', 'read_
 
 export const ChatUnreadProvider: FunctionComponent<{ children: ReactNode }> = ({ children }) => {
   const [unreadByModule, setUnreadByModule] = useState<ModuleUnreadMap>({});
+  const [unreadByScope, setUnreadByScope] = useState<ScopedUnreadMap>({});
   const refreshTimerRef = useRef<number | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      const modules = await fetchChatInboxSummary();
-      const next: ModuleUnreadMap = {};
+      const { modules, scopes } = await fetchChatInboxSummary();
+      const nextModule: ModuleUnreadMap = {};
       for (const item of modules) {
         if (item.unread > 0) {
-          next[item.module] = item.unread;
+          nextModule[item.module] = item.unread;
         }
       }
-      setUnreadByModule(next);
+
+      const nextScope: ScopedUnreadMap = {};
+      for (const item of scopes) {
+        if (item.unread > 0) {
+          nextScope[scopeUnreadKey(item.module, item.entity_type)] = item.unread;
+        }
+      }
+
+      setUnreadByModule(nextModule);
+      setUnreadByScope(nextScope);
     } catch {
       /* silent — sidebar badge is non-critical */
     }
@@ -81,9 +94,12 @@ export const ChatUnreadProvider: FunctionComponent<{ children: ReactNode }> = ({
   const value = useMemo<ChatUnreadContextValue>(
     () => ({
       getModuleUnread: (module: ChatModule) => unreadByModule[module] ?? 0,
+      getScopedUnread: (module: ChatModule, entityType?: string) =>
+        unreadByScope[scopeUnreadKey(module, entityType)] ??
+        (entityType ? 0 : unreadByModule[module] ?? 0),
       refresh,
     }),
-    [refresh, unreadByModule],
+    [refresh, unreadByModule, unreadByScope],
   );
 
   return <ChatUnreadContext.Provider value={value}>{children}</ChatUnreadContext.Provider>;
@@ -97,7 +113,7 @@ export function useChatUnread(): ChatUnreadContextValue {
   return ctx;
 }
 
-export function useChatUnreadCount(module: ChatModule | undefined): number {
-  const { getModuleUnread } = useChatUnread();
-  return module ? getModuleUnread(module) : 0;
+export function useChatUnreadCount(module: ChatModule | undefined, entityType?: string): number {
+  const { getScopedUnread } = useChatUnread();
+  return module ? getScopedUnread(module, entityType) : 0;
 }

@@ -20,7 +20,7 @@ const DetailsSectionCard: FunctionComponent<DetailsSectionCardProps> = ({
   return (
     <section
       id={id}
-      className={`${DETAILS_SURFACE_CARD_ELEVATED} box-border w-full min-w-0 max-w-full ${padding} ${className}`}
+      className={`${DETAILS_SURFACE_CARD_ELEVATED} box-border flex h-full min-h-0 w-full min-w-0 max-w-full flex-col ${padding} ${className}`}
     >
       {children}
     </section>

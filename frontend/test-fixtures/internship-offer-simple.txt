@@ -1,0 +1,12 @@
+Title: Full Stack Developer Internship
+Company: TechCorp Morocco
+Location: Casablanca
+Type: PFE
+
+Description:
+We are looking for a motivated intern to join our product team and contribute to real-world web applications used by thousands of users across Morocco.
+
+Required Skills:
+React, Node.js, Python
+
+Deadline: 2025-12-31

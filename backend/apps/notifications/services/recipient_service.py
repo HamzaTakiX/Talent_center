@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Callable
 
 from apps.notifications.events.registry import EventConfig
+from apps.notifications.events.resolvers.agenda import resolve_agenda_participants
 from apps.notifications.events.resolvers.announcements import resolve_announcement_audience
 from apps.notifications.events.resolvers.base import ResolvedRecipient
 from apps.notifications.events.resolvers.chat import resolve_chat_participants
@@ -34,6 +35,7 @@ RESOLVER_MAP: dict[str, Callable[[NotificationEvent], list[ResolvedRecipient]]] 
     'user_from_payload': resolve_user_from_payload,
     'supervision_parties': resolve_supervision_parties,
     'actor_only': resolve_actor_only,
+    'agenda_participants': resolve_agenda_participants,
 }
 
 

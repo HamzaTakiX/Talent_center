@@ -1,11 +1,10 @@
 import { CSSProperties, FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Eye, MapPin, Users } from 'lucide-react';
-import { staggerItem } from '../../dashboard/ui/animations';
+import { Award, Eye, MapPin, Users } from 'lucide-react';
+import { easePremium } from '../../dashboard/ui/animations';
 import { useTranslateAdminLabel } from '../../i18n/useTranslateAdminLabel';
 import OfferCompanyLogo from './OfferCompanyLogo';
-import { formatOfferDetailDateOnly } from '../utils/offerDetailViewModel';
 import type { PopularOfferBrief } from '../types';
 
 interface InternshipPopularOfferCardProps {
@@ -13,6 +12,7 @@ interface InternshipPopularOfferCardProps {
   labelKey?: string;
   offer: PopularOfferBrief;
   index?: number;
+  compact?: boolean;
 }
 
 const InternshipPopularOfferCard: FunctionComponent<InternshipPopularOfferCardProps> = ({
@@ -20,76 +20,66 @@ const InternshipPopularOfferCard: FunctionComponent<InternshipPopularOfferCardPr
   labelKey,
   offer,
   index = 0,
+  compact = false,
 }) => {
   const { t } = useTranslation();
   const translateLabel = useTranslateAdminLabel();
+  const title = translateLabel(label, labelKey);
   const accent = '#06b6d4';
-  const accentBg = 'rgba(6, 182, 212, 0.12)';
-  const toneStyle = {
-    '--stat-accent': accent,
-    '--stat-accent-bg': accentBg,
-  } as CSSProperties;
-
-  const deadlineLabel = offer.applicationDeadline
-    ? formatOfferDetailDateOnly(offer.applicationDeadline)
-    : null;
+  const accentBg = 'rgba(6, 182, 212, 0.16)';
 
   return (
-    <motion.div
-      variants={staggerItem}
-      custom={index}
-      style={toneStyle}
-      className="admin-kpi-cell admin-kpi-cell--static admin-kpi-cell--popular-offer"
+    <motion.article
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.35, ease: easePremium }}
+      whileHover={{ scale: 1.02, y: -2 }}
+      className={[
+        'admin-students-stat-card admin-offers-popular-stat-card',
+        compact ? 'admin-students-stat-card--compact' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      style={
+        {
+          '--student-stat-accent': accent,
+          '--student-stat-accent-bg': accentBg,
+        } as CSSProperties
+      }
     >
-      <span
-        className="absolute bottom-2 left-0 top-2 w-[3px] rounded-r-full opacity-80"
-        style={{ background: accent }}
-        aria-hidden
-      />
-      <OfferCompanyLogo
-        url={offer.companyLogoUrl}
-        companyName={offer.companyName}
-        size="kpi"
-      />
-      <span className="min-w-0 flex-1 overflow-hidden">
-        <span className="admin-kpi-label admin-kpi-label--compact block truncate">
-          {translateLabel(label, labelKey)}
-        </span>
-        <span className="admin-kpi-popular-offer__title mt-0.5 block truncate">
-          {offer.title}
-        </span>
-        <span className="admin-kpi-popular-offer__company mt-0.5 block truncate">
-          {offer.companyName}
-        </span>
-        <span className="admin-kpi-popular-offer__meta mt-1">
-          <span className="admin-kpi-popular-offer__meta-item">
-            <Eye className="h-3 w-3 shrink-0" strokeWidth={1.75} aria-hidden />
-            <span>
-              {offer.viewCount} {t('admin.kpi.offers.popularOffer.views')}
-            </span>
+      <div className="admin-students-stat-card__body">
+        <div className="admin-students-stat-card__head">
+          <span className="admin-students-stat-card__icon">
+            {offer.companyLogoUrl ? (
+              <OfferCompanyLogo url={offer.companyLogoUrl} companyName={offer.companyName} size="table" />
+            ) : (
+              <Award className={compact ? 'h-4 w-4' : 'h-5 w-5'} strokeWidth={1.8} aria-hidden />
+            )}
           </span>
-          <span className="admin-kpi-popular-offer__meta-item">
+          <p className="admin-students-stat-card__title">{title}</p>
+        </div>
+
+        <p className="admin-students-stat-card__value admin-offers-popular-stat-card__title">{offer.title}</p>
+        <span className="admin-students-stat-card__badge">{offer.companyName}</span>
+
+        <div className="admin-offers-popular-stat-card__meta">
+          <span>
+            <Eye className="h-3 w-3 shrink-0" strokeWidth={1.75} aria-hidden />
+            {offer.viewCount} {t('admin.kpi.offers.popularOffer.views')}
+          </span>
+          <span>
             <Users className="h-3 w-3 shrink-0" strokeWidth={1.75} aria-hidden />
-            <span>
-              {offer.applicationCount} {t('admin.tables.columns.applicants')}
-            </span>
+            {offer.applicationCount} {t('admin.tables.columns.applicants')}
           </span>
           {offer.locationCity ? (
-            <span className="admin-kpi-popular-offer__meta-item">
+            <span>
               <MapPin className="h-3 w-3 shrink-0" strokeWidth={1.75} aria-hidden />
-              <span className="truncate">{offer.locationCity}</span>
+              {offer.locationCity}
             </span>
           ) : null}
-          {deadlineLabel ? (
-            <span className="admin-kpi-popular-offer__meta-item">
-              <Calendar className="h-3 w-3 shrink-0" strokeWidth={1.75} aria-hidden />
-              <span>{deadlineLabel}</span>
-            </span>
-          ) : null}
-        </span>
-      </span>
-      <span className="admin-kpi-cell__chevron-spacer" aria-hidden />
-    </motion.div>
+        </div>
+      </div>
+    </motion.article>
   );
 };
 

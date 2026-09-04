@@ -36,7 +36,9 @@ const payload = {
   VITE_AUTH0_DOMAIN: env.VITE_AUTH0_DOMAIN ?? '',
   VITE_AUTH0_CLIENT_ID: env.VITE_AUTH0_CLIENT_ID ?? '',
   VITE_AUTH0_AUDIENCE: env.VITE_AUTH0_AUDIENCE ?? '',
+  VITE_AUTH0_CONNECTION: env.VITE_AUTH0_CONNECTION ?? '',
   VITE_API_URL: sanitizeApiUrl(env.VITE_API_URL),
+  VITE_APP_URL: (env.VITE_APP_URL ?? '').trim().replace(/\/+$/, ''),
 };
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });

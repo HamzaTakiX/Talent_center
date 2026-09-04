@@ -18,6 +18,7 @@ export const studentCopyAr = {
     agenda: 'الأجندة',
     task: 'المهام',
     workspace: 'مساحة العمل',
+    meetings: 'الاجتماعات',
     report: 'التقارير',
     closeMenu: 'إغلاق قائمة التنقل',
   },
@@ -49,6 +50,7 @@ export const studentCopyAr = {
       agenda: 'الأجندة',
       task: 'المهام',
       workspace: 'مساحة العمل',
+      meetings: 'الاجتماعات',
       whiteboard: 'السبورة',
       report: 'التقارير',
       srfChat: 'دردشة SRF',
@@ -171,6 +173,7 @@ export const studentCopyAr = {
       interviews: 'مقابلات',
       accepted: 'مقبولة',
       rejected: 'مرفوضة',
+      share: '{{value}}٪ من إجمالي الطلبات',
     },
     chart: {
       title: 'نشاط الأسبوع',
@@ -196,6 +199,11 @@ export const studentCopyAr = {
       improveProfile: 'تحسين الملف',
       viewAllActivity: 'كل النشاط',
       match: 'تطابق',
+    },
+    errors: {
+      loadTitle: 'تعذّر تحميل لوحة التحكم',
+      loadFailed: 'تعذّر تحميل بعض بيانات لوحة التحكم. يُرجى المحاولة مرة أخرى.',
+      retry: 'إعادة المحاولة',
     },
     empty: {
       noAlerts: 'لا توجد تنبيهات حالياً',

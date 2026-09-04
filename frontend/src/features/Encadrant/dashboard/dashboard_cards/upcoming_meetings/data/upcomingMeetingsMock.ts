@@ -28,6 +28,7 @@ export const upcomingMeetingsMock: UpcomingMeeting[] = [
     type: 'online',
     typeLabel: 'Online',
     showJoinMeeting: true,
+    plannedStart: '2026-04-21T14:30:00',
   },
   {
     id: '3',

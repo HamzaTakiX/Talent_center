@@ -1,10 +1,19 @@
-import { ChangeEvent, FunctionComponent, useState } from 'react';
-import { Download, Loader2, Upload } from 'lucide-react';
+import { ChangeEvent, DragEvent, FunctionComponent, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  CheckCircle2,
+  Download,
+  FileSpreadsheet,
+  Loader2,
+  Upload,
+  X,
+  XCircle,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { adminEncadrantsApi } from '../../api/encadrants';
 import type { AdminBulkImportResult } from '../../api/types';
+import { easePremium } from '../../dashboard/ui/animations';
 import AdminModal from '../../ui/AdminModal';
-import { AdminFormFileInput } from '../../shared/forms/AdminFormPrimitives';
 
 const IMPORT_PREFIX = 'admin.modules.encadrants.import';
 
@@ -29,6 +38,7 @@ const EncadrantsImportModal: FunctionComponent<EncadrantsImportModalProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<AdminBulkImportResult | null>(null);
 
@@ -36,6 +46,7 @@ const EncadrantsImportModal: FunctionComponent<EncadrantsImportModalProps> = ({
     setFile(null);
     setError('');
     setResult(null);
+    setDragging(false);
     setFileInputKey((k) => k + 1);
   };
 
@@ -45,10 +56,21 @@ const EncadrantsImportModal: FunctionComponent<EncadrantsImportModalProps> = ({
     onClose();
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const acceptFile = (next: File | null) => {
     setError('');
     setResult(null);
-    setFile(e.target.files?.[0] ?? null);
+    setFile(next);
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    acceptFile(e.target.files?.[0] ?? null);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setDragging(false);
+    const dropped = e.dataTransfer.files?.[0] ?? null;
+    if (dropped) acceptFile(dropped);
   };
 
   const handleDownloadTemplate = () => {
@@ -83,97 +105,220 @@ const EncadrantsImportModal: FunctionComponent<EncadrantsImportModalProps> = ({
     }
   };
 
+  const closeLabel = result
+    ? t(`${IMPORT_PREFIX}.actions.close`)
+    : t(`${IMPORT_PREFIX}.actions.cancel`);
+
   return (
     <AdminModal
       open={open}
       onClose={handleClose}
       title={t(`${IMPORT_PREFIX}.title`)}
       description={t(`${IMPORT_PREFIX}.description`)}
-      maxWidthClass="max-w-lg"
+      maxWidthClass="max-w-[520px]"
       closeAriaLabel={t('common.close')}
+      headerIcon={Upload}
+      headerIconColor="var(--admin-brand)"
+      headerIconBg="color-mix(in srgb, var(--admin-brand) 14%, var(--admin-bg-elevated))"
+      modalClassName="admin-import-modal"
+      bodyClassName="admin-import-modal__body"
       footer={
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="admin-import-modal__footer">
           <button
             type="button"
             onClick={handleClose}
             disabled={loading}
-            className="rounded-lg border border-[var(--admin-border)] px-4 py-2 text-sm font-medium text-[var(--admin-text)] hover:bg-[var(--admin-surface-hover)] disabled:opacity-50"
+            className="admin-module-toolbar__btn"
           >
-            {result ? t(`${IMPORT_PREFIX}.actions.close`) : t(`${IMPORT_PREFIX}.actions.cancel`)}
+            <X className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+            <span>{closeLabel}</span>
           </button>
           {!result ? (
             <button
               type="button"
-              onClick={handleImport}
+              onClick={() => void handleImport()}
               disabled={loading || !file}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--admin-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+              className="admin-module-toolbar__btn admin-import-modal__btn-primary"
+              aria-busy={loading}
             >
               {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
               ) : (
-                <Upload className="h-4 w-4" aria-hidden />
+                <Upload className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
               )}
-              {t(`${IMPORT_PREFIX}.actions.import`)}
+              <span>
+                {loading
+                  ? t(`${IMPORT_PREFIX}.actions.importing`, { defaultValue: 'Importing…' })
+                  : t(`${IMPORT_PREFIX}.actions.import`)}
+              </span>
             </button>
           ) : null}
         </div>
       }
     >
-      <div className="space-y-4 text-sm text-[var(--admin-text-secondary)]">
-        <p>{t(`${IMPORT_PREFIX}.hint`)}</p>
-        <button
-          type="button"
-          onClick={handleDownloadTemplate}
-          className="inline-flex items-center gap-2 text-sm font-medium text-[var(--admin-accent)] hover:underline"
+      <div className="admin-import-modal__content">
+        <motion.div
+          className="admin-import-modal__hero"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: easePremium }}
         >
-          <Download className="h-4 w-4" aria-hidden />
-          {t(`${IMPORT_PREFIX}.downloadTemplate`)}
-        </button>
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[var(--admin-text)]">
-            {t(`${IMPORT_PREFIX}.fileLabel`)}
-          </label>
-          <AdminFormFileInput
+          <p className="admin-import-modal__hint">{t(`${IMPORT_PREFIX}.hint`)}</p>
+          <button
+            type="button"
+            onClick={handleDownloadTemplate}
+            className="admin-import-modal__template-btn"
+          >
+            <Download className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+            <span>{t(`${IMPORT_PREFIX}.downloadTemplate`)}</span>
+          </button>
+        </motion.div>
+
+        <motion.label
+          htmlFor={`encadrants-import-file-${fileInputKey}`}
+          className={[
+            'admin-import-modal__dropzone',
+            dragging ? 'admin-import-modal__dropzone--dragging' : '',
+            file ? 'admin-import-modal__dropzone--ready' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            setDragging(false);
+          }}
+          onDrop={handleDrop}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.38, ease: easePremium, delay: 0.06 }}
+        >
+          <span className="admin-import-modal__dropzone-icon" aria-hidden>
+            {file ? (
+              <FileSpreadsheet className="h-5 w-5" strokeWidth={1.75} />
+            ) : (
+              <Upload className="h-5 w-5" strokeWidth={1.75} />
+            )}
+          </span>
+          <span className="admin-import-modal__dropzone-copy">
+            <span className="admin-import-modal__dropzone-title">
+              {file
+                ? file.name
+                : t(`${IMPORT_PREFIX}.dropzoneTitle`, {
+                    defaultValue: 'Drop your CSV or Excel file here',
+                  })}
+            </span>
+            <span className="admin-import-modal__dropzone-sub">
+              {file
+                ? t(`${IMPORT_PREFIX}.dropzoneChange`, {
+                    defaultValue: 'Click or drop another file to replace',
+                  })
+                : t(`${IMPORT_PREFIX}.fileLabel`)}
+            </span>
+          </span>
+          <input
+            id={`encadrants-import-file-${fileInputKey}`}
             key={fileInputKey}
+            type="file"
+            className="sr-only"
             accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
             onChange={handleFileChange}
           />
-          {file ? (
-            <p className="mt-2 text-xs text-[var(--admin-text-secondary)]">{file.name}</p>
+        </motion.label>
+
+        <AnimatePresence mode="wait">
+          {error ? (
+            <motion.div
+              key="error"
+              className="admin-import-modal__alert admin-import-modal__alert--error"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.25 }}
+              role="alert"
+            >
+              <XCircle className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+              <span>{error}</span>
+            </motion.div>
           ) : null}
-        </div>
-        {error ? (
-          <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
-            {error}
-          </p>
-        ) : null}
-        {result ? (
-          <div className="space-y-2 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] p-3">
-            <p className="font-medium text-[var(--admin-text)]">
-              {t(`${IMPORT_PREFIX}.result.summary`, {
-                success: result.success_rows,
-                total: result.total_rows,
-                errors: result.error_rows,
-              })}
-            </p>
-            {result.errors.length > 0 ? (
-              <ul className="max-h-40 space-y-1 overflow-y-auto text-xs text-red-400">
-                {result.errors.slice(0, 20).map((err) => (
-                  <li key={`${err.row}-${err.email}`}>
-                    {t(`${IMPORT_PREFIX}.result.rowError`, {
-                      row: err.row,
-                      email: err.email || '—',
-                      message: err.message,
-                    })}
-                  </li>
-                ))}
-                {result.errors.length > 20 ? (
-                  <li>{t(`${IMPORT_PREFIX}.result.moreErrors`, { count: result.errors.length - 20 })}</li>
-                ) : null}
-              </ul>
-            ) : null}
-          </div>
-        ) : null}
+
+          {result ? (
+            <motion.div
+              key="result"
+              className="admin-import-modal__result"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.3, ease: easePremium }}
+            >
+              <div className="admin-import-modal__stats">
+                <div className="admin-import-modal__stat admin-import-modal__stat--success">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+                  <div>
+                    <strong>{result.success_rows}</strong>
+                    <span>
+                      {t(`${IMPORT_PREFIX}.result.successLabel`, { defaultValue: 'Created' })}
+                    </span>
+                  </div>
+                </div>
+                <div className="admin-import-modal__stat">
+                  <FileSpreadsheet className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+                  <div>
+                    <strong>{result.total_rows}</strong>
+                    <span>
+                      {t(`${IMPORT_PREFIX}.result.totalLabel`, { defaultValue: 'Total rows' })}
+                    </span>
+                  </div>
+                </div>
+                <div className="admin-import-modal__stat admin-import-modal__stat--error">
+                  <XCircle className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+                  <div>
+                    <strong>{result.error_rows}</strong>
+                    <span>
+                      {t(`${IMPORT_PREFIX}.result.errorsLabel`, { defaultValue: 'Errors' })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="admin-import-modal__result-summary">
+                {t(`${IMPORT_PREFIX}.result.summary`, {
+                  success: result.success_rows,
+                  total: result.total_rows,
+                  errors: result.error_rows,
+                })}
+              </p>
+
+              {result.errors.length > 0 ? (
+                <ul className="admin-import-modal__errors">
+                  {result.errors.slice(0, 20).map((err) => (
+                    <li key={`${err.row}-${err.email}`}>
+                      {t(`${IMPORT_PREFIX}.result.rowError`, {
+                        row: err.row,
+                        email: err.email || '—',
+                        message: err.message,
+                      })}
+                    </li>
+                  ))}
+                  {result.errors.length > 20 ? (
+                    <li>
+                      {t(`${IMPORT_PREFIX}.result.moreErrors`, {
+                        count: result.errors.length - 20,
+                      })}
+                    </li>
+                  ) : null}
+                </ul>
+              ) : null}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
     </AdminModal>
   );

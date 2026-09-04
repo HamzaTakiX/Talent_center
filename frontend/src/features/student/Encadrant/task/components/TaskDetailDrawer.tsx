@@ -1,15 +1,28 @@
 import { FunctionComponent, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Paperclip, MessageSquare, History } from 'lucide-react';
+import {
+  Calendar,
+  History,
+  MessageSquare,
+  Paperclip,
+  Plus,
+  TrendingUp,
+  User,
+  X,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { taskDetailActivity } from '../data/taskPlatformMock';
 import type { StudentPlatformTask } from '../types';
-import { TASK_CATEGORY_CLASS } from '../constants/taskCategories';
+import { getTaskAssignee } from '../data/taskAssignees';
+import TaskAssigneeChip from './TaskAssigneeChip';
+import TaskChatSection from './TaskChatSection';
 
 interface TaskDetailDrawerProps {
   task: StudentPlatformTask | null;
   onClose: () => void;
 }
+
+const activityIcons = [Plus, TrendingUp, MessageSquare];
 
 const TaskDetailDrawer: FunctionComponent<TaskDetailDrawerProps> = ({ task, onClose }) => {
   const { t } = useTranslation();
@@ -36,66 +49,149 @@ const TaskDetailDrawer: FunctionComponent<TaskDetailDrawerProps> = ({ task, onCl
           />
           <motion.aside
             className="student-task-drawer"
+            data-category={task.category}
+            data-priority={task.priority}
+            data-status={task.status}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 380, damping: 32 }}
             role="dialog"
             aria-modal="true"
+            aria-labelledby="student-task-drawer-title"
           >
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <span className={`text-xs font-bold uppercase ${TASK_CATEGORY_CLASS[task.category]}`}>
-                  {t(`student.encadrant.task.platform.categories.${task.category}`)}
-                </span>
-                <h2 className="m-0 mt-1 text-lg font-bold text-[var(--admin-text)]">{t(task.titleKey)}</h2>
-              </div>
-              <button type="button" className="admin-icon-btn" onClick={onClose} aria-label={t('student.encadrant.task.platform.close')}>
+            <span className="student-task-drawer-accent" aria-hidden />
+
+            <div className="student-task-drawer-top">
+              <span className="student-task-drawer-category">
+                {t(`student.encadrant.task.platform.categories.${task.category}`)}
+              </span>
+              <button
+                type="button"
+                className="student-task-drawer-close"
+                onClick={onClose}
+                aria-label={t('student.encadrant.task.platform.close')}
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-sm text-[var(--admin-text-secondary)]">{t(task.descriptionKey)}</p>
-            <dl className="mt-4 grid gap-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-[var(--admin-text-muted)]">{t('student.encadrant.task.platform.drawer.due')}</dt>
-                <dd className="m-0 font-medium">{task.dueAt}</dd>
+
+            <h2 id="student-task-drawer-title" className="student-task-drawer-title">
+              {t(task.titleKey)}
+            </h2>
+            <p className="student-task-drawer-desc">{t(task.descriptionKey)}</p>
+
+            <div className="student-task-drawer-tags">
+              <span className={`admin-badge student-task-priority--${task.priority}`}>
+                {t(`student.encadrant.task.platform.priorities.${task.priority}`)}
+              </span>
+              <span className={`admin-badge student-task-status--${task.status}`}>
+                {t(`student.encadrant.task.platform.status.${task.status}`)}
+              </span>
+            </div>
+
+            <section className="student-task-drawer-progress" aria-label={t('student.encadrant.task.platform.drawer.progress')}>
+              <div
+                className="student-task-drawer-ring"
+                style={{ '--ring-p': task.progress } as React.CSSProperties}
+              >
+                <span className="student-task-drawer-ring-inner">{task.progress}%</span>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-[var(--admin-text-muted)]">{t('student.encadrant.task.platform.drawer.supervisor')}</dt>
-                <dd className="m-0 font-medium">{t(task.supervisorKey)}</dd>
+              <div className="student-task-drawer-progress-copy">
+                <div className="student-task-drawer-progress-head">
+                  <span>{t('student.encadrant.task.platform.drawer.progress')}</span>
+                  <strong>{task.progress}%</strong>
+                </div>
+                <div
+                  className="student-task-drawer-progress-track"
+                  role="progressbar"
+                  aria-valuenow={task.progress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
+                  <motion.div
+                    className="student-task-drawer-progress-fill"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${task.progress}%` }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                </div>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-[var(--admin-text-muted)]">{t('student.encadrant.task.platform.drawer.progress')}</dt>
-                <dd className="m-0 font-medium text-[var(--admin-brand)]">{task.progress}%</dd>
+            </section>
+
+            <div className="student-task-drawer-meta">
+              <div className={`student-task-drawer-meta-card ${task.daysRemaining <= 3 ? 'is-urgent' : ''}`}>
+                <Calendar className="h-4 w-4" aria-hidden />
+                <div>
+                  <span>{t('student.encadrant.task.platform.drawer.due')}</span>
+                  <strong>{task.dueAt}</strong>
+                  <em>{t('student.encadrant.task.platform.remaining', { days: task.daysRemaining })}</em>
+                </div>
               </div>
-            </dl>
-            <section className="mt-6">
-              <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
+              <div className="student-task-drawer-meta-card">
+                <User className="h-4 w-4" aria-hidden />
+                <div>
+                  <span>{t('student.encadrant.task.platform.drawer.supervisor')}</span>
+                  <TaskAssigneeChip
+                    assignee={getTaskAssignee(task.assignedByKey ?? task.supervisorKey)}
+                    compact
+                    showLabel={false}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <section className="student-task-drawer-block">
+              <h3>
                 <Paperclip className="h-4 w-4" aria-hidden />
                 {t('student.encadrant.task.platform.drawer.attachments')}
               </h3>
-              <p className="text-xs text-[var(--admin-text-muted)]">{t('student.encadrant.task.platform.drawer.attachmentsHint')}</p>
+              <div className="student-task-drawer-empty">
+                <span className="student-task-drawer-empty-icon" aria-hidden>
+                  <Paperclip className="h-5 w-5" />
+                </span>
+                <p>{t('student.encadrant.task.platform.drawer.attachmentsHint')}</p>
+              </div>
             </section>
-            <section className="mt-4">
-              <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
-                <MessageSquare className="h-4 w-4" aria-hidden />
-                {t('student.encadrant.task.platform.drawer.comments')}
-              </h3>
-              <p className="text-xs text-[var(--admin-text-muted)]">{t('student.encadrant.task.platform.drawer.commentsHint')}</p>
-            </section>
-            <section className="mt-4">
-              <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
+
+            <TaskChatSection
+              taskId={task.id}
+              taskTitle={t(task.titleKey)}
+              taskSubtitle={[
+                t(`student.encadrant.task.platform.status.${task.status}`),
+                task.dueAt,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              assignee={getTaskAssignee(task.assignedByKey ?? task.supervisorKey)}
+            />
+
+            <section className="student-task-drawer-block student-task-drawer-activity">
+              <h3>
                 <History className="h-4 w-4" aria-hidden />
                 {t('student.encadrant.task.platform.drawer.activity')}
               </h3>
-              <ul className="m-0 list-none space-y-2 p-0">
-                {taskDetailActivity.map((a) => (
-                  <li key={a.id} className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-muted)] px-3 py-2 text-xs">
-                    <p className="m-0 font-medium text-[var(--admin-text)]">{t(a.messageKey)}</p>
-                    <p className="m-0 mt-0.5 text-[var(--admin-text-muted)]">{t(a.timeKey)}</p>
-                  </li>
-                ))}
-              </ul>
+              <ol className="student-task-drawer-timeline">
+                {taskDetailActivity.map((item, index) => {
+                  const Icon = activityIcons[index] ?? History;
+                  return (
+                    <li key={item.id} className="student-task-drawer-timeline-item">
+                      <span className="student-task-drawer-timeline-rail" aria-hidden>
+                        <span className="student-task-drawer-timeline-dot">
+                          <Icon className="h-3 w-3" />
+                        </span>
+                        {index < taskDetailActivity.length - 1 ? (
+                          <span className="student-task-drawer-timeline-line" />
+                        ) : null}
+                      </span>
+                      <div className="student-task-drawer-timeline-card">
+                        <p>{t(item.messageKey)}</p>
+                        <time>{t(item.timeKey)}</time>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
             </section>
           </motion.aside>
         </>

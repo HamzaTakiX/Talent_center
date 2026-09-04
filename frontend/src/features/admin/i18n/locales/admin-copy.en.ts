@@ -268,6 +268,7 @@ export const adminCopyEn = {
     "createAdministrator": {
       "title": "Create New Administrator",
       "subtitle": "Add a new admin user with specific permissions",
+      "heroBadge": "New account",
       "fields": {
         "fullName": "Full Name",
         "email": "School SSO Email",
@@ -393,20 +394,23 @@ export const adminCopyEn = {
       "internshipAmbiguous": "Multiple types possible. Specify the specialization."
     },
     "createEncadrant": {
-      "title": "Add New Supervisor",
-      "subtitle": "Register a supervisor with ESCA SSO and academic scope",
+      "title": "New supervisor",
+      "subtitle": "Create the account and set their ESCA academic scope.",
+      "heroBadge": "New account",
       "editTitle": "Edit supervisor",
-      "editSubtitle": "Update identity, academic scope, capacity, and access.",
+      "editSubtitle": "Update identity, scope, capacity, and access.",
       "fields": {
         "fullName": "Full name",
-        "email": "ESCA SSO email",
-        "emailHint": "@groupe-esca.ma address required for SSO login.",
+        "email": "ESCA email",
+        "emailHint": "@groupe-esca.ma address used to sign in.",
         "maxStudents": "Maximum students",
         "specializationDomains": "Specialization domains",
+        "ssoEnabled": "Prepare SSO login",
+        "ssoEnabledHint": "This email can use school SSO once it is available. Email and password login still works.",
         "grantAccess": "Platform access",
-        "grantAccessHint": "Allow login via ESCA SSO when enabled by super admin.",
+        "grantAccessHint": "Allows sign-in. Without this, the supervisor cannot log in.",
         "isActive": "Active supervisor",
-        "isActiveHint": "Inactive supervisors are hidden from assignment workflows."
+        "isActiveHint": "Inactive accounts do not appear in assignments."
       },
       "placeholders": {
         "fullName": "e.g. Ahmed Bennani",
@@ -415,13 +419,15 @@ export const adminCopyEn = {
       },
       "sections": {
         "identity": "Basic information",
-        "identityHint": "Legal name and official ESCA SSO email. No password is required.",
+        "identityHint": "Name and ESCA email. A password is generated automatically.",
         "academicScope": "Academic scope",
-        "academicScopeHint": "Program, levels, academic years, expertise domains, and ESCA sectors. Each step unlocks the next.",
+        "academicScopeHint": "Choose the program, then levels, years, and domains.",
         "supervision": "Supervision capacity",
-        "supervisionHint": "Maximum number of students this supervisor can handle.",
-        "access": "Access control",
-        "accessHint": "Supervisors authenticate via SSO only. Access is granted by super admin."
+        "supervisionHint": "How many students this supervisor can follow at most.",
+        "access": "Access",
+        "accessHint": "Email and password now, SSO later with the same email.",
+        "credentials": "Credentials",
+        "credentialsHint": "Generated password for the first sign-in. Copy it and share it securely."
       },
       "domains": {
         "webDevelopment": "Web Development",
@@ -441,28 +447,28 @@ export const adminCopyEn = {
         "filiereHint": "Select at least one ESCA program.",
         "selectFiliere": "Choose a program",
         "academicYears": "Academic years",
-        "academicYearsHint": "Years covered by this scope (after levels).",
+        "academicYearsHint": "Years covered by this scope.",
         "selectAcademicYears": "Choose academic years",
         "levels": "Levels",
-        "levelsHint": "ESCA study levels (after program).",
+        "levelsHint": "Study levels for the selected programs.",
         "selectLevels": "Choose levels",
         "specializationDomains": "Specialization domains",
-        "specializationDomainsHint": "Business expertise linked to selected programs (Finance, Marketing, Audit…).",
+        "specializationDomainsHint": "Business expertise linked to the programs (Finance, Marketing, Audit…).",
         "selectSpecializationDomains": "Choose specialization domains",
         "technicalSpecializationDomains": "Technical domains (optional)",
-        "technicalSpecializationDomainsHint": "IT internships or skills (development, data, cybersecurity…). Shown separately from business.",
+        "technicalSpecializationDomainsHint": "IT skills (development, data, cybersecurity…). Shown separately from business domains.",
         "selectTechnicalSpecializationDomains": "Choose technical domains",
         "sectors": "ESCA sector",
-        "sectorsHint": "ESCA sector for the selected level.",
+        "sectorsHint": "Sector for the selected level.",
         "selectSectors": "Choose specialization",
         "needsFiliere": "Select a program first.",
         "needsLevel": "Select at least one level first."
       },
       "messages": {
-        "requiredIdentity": "Full name and ESCA SSO email are required.",
+        "requiredIdentity": "Full name and ESCA email are required.",
         "requiredFullName": "Full name is required.",
-        "requiredEmail": "SSO email is required.",
-        "invalidEmailDomain": "Email must use the @groupe-esca.ma domain.",
+        "requiredEmail": "Email is required.",
+        "invalidEmailDomain": "Email must use @groupe-esca.ma.",
         "invalidEmailFormat": "Invalid email format.",
         "requiredFiliere": "Select at least one program.",
         "requiredAcademicYear": "Select at least one academic year.",
@@ -474,13 +480,16 @@ export const adminCopyEn = {
         "maxStudentsMin": "Capacity must be at least 1 student.",
         "validationSummary": "Fix the highlighted fields before saving.",
         "createSuccess": "Supervisor created successfully.",
+        "createSuccessWithPassword": "Account created. Copy the password below so the supervisor can sign in.",
         "updateSuccess": "Supervisor updated successfully.",
         "saveError": "Could not save supervisor. Please try again."
       },
       "supervisedInternships": {
         "label": "Supervised internship types",
-        "hint": "Assignment only matches students whose internship type is selected here.",
-        "placeholder": "Choose internship types…"
+        "hint": "Types from the internship framework of the selected levels (Academic structure).",
+        "autoHint": "Determined automatically from the selected academic levels.",
+        "placeholder": "Choose internship types…",
+        "emptyForLevels": "No internship type configured for these levels."
       },
       "detail": {
         "filieres": "Programs / filières",
@@ -500,7 +509,8 @@ export const adminCopyEn = {
       "actions": {
         "cancel": "Cancel",
         "submit": "Create supervisor",
-        "save": "Save changes"
+        "save": "Save changes",
+        "done": "Done"
       }
     },
     "createAnnouncement": {
@@ -1111,7 +1121,19 @@ export const adminCopyEn = {
         },
         "errors": {
           "title": "Could not extract data from this URL",
-          "retry": "Try again"
+          "retry": "Try again",
+          "invalid_url": "This URL is not valid. Paste the full link to the offer page, starting with https://",
+          "unreachable": "This website could not be reached. Check the link or try again later.",
+          "not_found": "The offer page no longer exists at this address (HTTP 404).",
+          "timeout": "The website took too long to respond. Try again in a moment.",
+          "blocked": "This website blocks automated reading. Copy the offer text and use \"Paste text\" instead.",
+          "not_html": "This link does not point to a web page (it may be a PDF or a file).",
+          "empty_page": "The page was reached but contained no readable content.",
+          "unsupported_website": "This website is not supported yet. Copy the offer text and use \"Paste text\" instead.",
+          "no_content_extracted": "The page was read but no offer details could be identified. Copy the offer text and use \"Paste text\" instead.",
+          "extraction_failed": "The offer details could not be extracted from this page. Copy the offer text and use \"Paste text\" instead.",
+          "import_failed": "The import failed. Check the link and try again.",
+          "unexpected_error": "Something went wrong. Try again or enter the offer manually."
         },
         "loading": {
           "analyzingPage": "Reading page…",
@@ -1135,12 +1157,14 @@ export const adminCopyEn = {
         "reset": "Paste new text",
         "extractedSummary": "{{count}} fields extracted successfully",
         "extractedHint": "Review the extracted fields below, edit if needed, then save as draft or publish.",
+        "missingHint": "Still to fill in manually: {{fields}}.",
         "viewOriginalText": "View original text",
         "formatHintTitle": "Expected format (click to expand)",
         "formatHint": "Title: [Offer title]\nCompany: [Company name]\nLocation: [City, Country]\nType: [PFE / Internship / Alternance…]\n\nDescription:\n[General description of the offer]\n\nMissions / Responsibilities:\n[List of tasks]\n\nRequired Profile / Requirements:\n[Required qualifications]\n\nSkills / Technologies:\n[Comma or line-separated list]\n\nLanguages: French, English\n\nBenefits:\n[What the intern will gain]\n\nDeadline: YYYY-MM-DD",
         "errors": {
           "title": "Could not extract offer information",
-          "no_fields_extracted": "No recognizable sections found. Please make sure the text contains labeled sections (e.g. \"Title:\", \"Description:\", \"Skills:\").",
+          "no_fields_extracted": "Could not identify the offer title. Add a \"Title: …\" line at the top of the text, or enter the offer manually.",
+          "text_too_short": "The pasted text is too short to work with. Paste the full posting (title, company, description).",
           "parse_failed": "An error occurred while reading the text. Please try again."
         }
       }
@@ -1148,10 +1172,12 @@ export const adminCopyEn = {
     "createStudent": {
       "title": "Add student",
       "subtitle": "Create an account and assign field, class, and platform access.",
+      "heroBadge": "New account",
       "editTitle": "Manage student account",
       "editSubtitle": "Update access, academic assignment, and credentials.",
       "fields": {
         "email": "Email",
+        "emailHint": "Address used for email / password login and SSO.",
         "firstName": "First name",
         "lastName": "Last name",
         "studentNumber": "Student ID",
@@ -1160,7 +1186,9 @@ export const adminCopyEn = {
         "class": "Class",
         "accountStatus": "Account status",
         "ssoAccess": "SSO access (school)",
+        "ssoAccessHint": "Enables Microsoft / SSO sign-in once the account is authorized.",
         "grantPlatformAccess": "Grant platform access immediately",
+        "grantPlatformAccessHint": "Without this, the student cannot sign in to Talent Center.",
         "platformAccess": "Platform access granted"
       },
       "placeholders": {
@@ -1352,7 +1380,13 @@ export const adminCopyEn = {
         "level": "Academic level",
         "year": "Academic year",
         "duration": "Duration hint",
-        "order": "Display order"
+        "order": "Display order",
+        "businessDomains": "Specialization domains",
+        "businessDomainsHint": "Business expertise offered to supervisors for this program.",
+        "techDomains": "Technical domains",
+        "techDomainsHint": "IT skills linked to this program (tech internships, data, cybersecurity…).",
+        "selectBusinessDomains": "Choose specialization domains",
+        "selectTechDomains": "Choose technical domains"
       },
       "status": {
         "active": "Active",
@@ -1502,17 +1536,28 @@ export const adminCopyEn = {
       "repairScopes": "Fill missing levels",
       "repairScopesSuccess": "{{count}} supervisor(s) updated with levels, year, and internship types.",
       "repairScopesError": "Could not repair academic scopes.",
-      "incompleteScopeBanner": "{{count}} supervisor(s) have an incomplete academic scope (levels, year, or internship types). Click to auto-fill.",
+      "scopeAlert": {
+        "title": "Incomplete academic scope",
+        "badge": "{{count}} to complete",
+        "description": "These supervisors are missing levels, an academic year, or internship types. Auto-fill them from their programs to make assignment more accurate.",
+        "dismiss": "Dismiss this warning"
+      },
+      "actions": {
+        "menuAria": "Actions for {{name}}"
+      },
       "import": {
         "title": "Import supervisors",
         "description": "Create multiple supervisor accounts from a CSV or Excel file.",
         "hint": "Columns: email (@groupe-esca.ma), full name, program codes (pge), level codes (y4,y5 — optional, inferred if empty), academic years (2025-2026), supervised internship type codes (optional, inferred), max students, platform access, active, domain codes (optional).",
         "downloadTemplate": "Download CSV template",
-        "fileLabel": "File to import",
+        "fileLabel": "Click to browse, or drag and drop a .csv / .xlsx file",
+        "dropzoneTitle": "Drop your CSV or Excel file here",
+        "dropzoneChange": "Click or drop another file to replace",
         "actions": {
           "cancel": "Cancel",
           "close": "Close",
-          "import": "Run import"
+          "import": "Run import",
+          "importing": "Importing…"
         },
         "errors": {
           "noFile": "Select a CSV or Excel (.xlsx) file.",
@@ -1521,7 +1566,10 @@ export const adminCopyEn = {
         "result": {
           "summary": "{{success}} / {{total}} supervisor(s) created, {{errors}} error(s).",
           "rowError": "Row {{row}} ({{email}}): {{message}}",
-          "moreErrors": "… and {{count}} more error(s)."
+          "moreErrors": "… and {{count}} more error(s).",
+          "successLabel": "Created",
+          "totalLabel": "Total rows",
+          "errorsLabel": "Errors"
         }
       }
     },
@@ -1922,7 +1970,13 @@ export const adminCopyEn = {
           "paid": "Paid",
           "overdue": "Overdue",
           "outstandingAmount": "Outstanding Amount",
-          "averagePaymentRate": "Average Payment Rate"
+          "averagePaymentRate": "Average Payment Rate",
+          "badges": {
+            "allAccounts": "All accounts",
+            "percentOfTotal": "{{percent}}% of total",
+            "outstanding": "Still to collect",
+            "avgRate": "Average level"
+          }
         },
         "empty": {
           "importData": "Import Financial Data"
@@ -2387,6 +2441,20 @@ export const adminCopyEn = {
         "title": "Report details",
         "general": "General information",
         "dates": "Dates"
+      },
+      "analytics": {
+        "validationRate": "Validation rate",
+        "successRate": "Internship success",
+        "riskDist": "Risk distribution",
+        "totalCaption": "total",
+        "riskEmptyTitle": "No risk reported",
+        "riskEmptyDesc": "The breakdown will appear as soon as a report flags a risk level.",
+        "riskLevel": {
+          "CRITICAL": "Critical",
+          "HIGH": "High",
+          "MEDIUM": "Medium",
+          "LOW": "Low"
+        }
       }
     },
     "meetings": {
@@ -2423,7 +2491,9 @@ export const adminCopyEn = {
         "title": "Supervision analytics",
         "completedVsDelayed": "Completed vs delayed",
         "distribution": "Meetings distribution",
-        "totalCaption": "total"
+        "totalCaption": "total",
+        "distributionEmptyTitle": "No meetings recorded",
+        "distributionEmptyDesc": "The status breakdown appears as soon as a meeting is scheduled."
       },
       "insights": {
         "title": "Key observations",
@@ -2538,6 +2608,7 @@ export const adminCopyEn = {
   },
   "common": {
     "loading": "Loading…",
+    "auto": "Auto",
     "yes": "Yes",
     "no": "No",
     "breadcrumbs": {
@@ -2546,6 +2617,7 @@ export const adminCopyEn = {
       "offers": "Internship offers",
       "announcements": "Announcements",
       "encadrants": "Supervisors",
+      "newEncadrant": "New supervisor",
       "administrators": "Administrators",
       "newAdministrator": "New administrator",
       "documents": "Documents",
@@ -2584,6 +2656,8 @@ export const adminCopyEn = {
     "delete": {
       "confirm": "Delete permanently",
       "confirmWithCount": "Delete ({{count}})",
+      "deleting": "Deleting…",
+      "irreversible": "This action cannot be undone.",
       "startSelection": "Select to delete",
       "cancelSelection": "Cancel",
       "selectedCount": "{{count}} selected",
@@ -2607,6 +2681,8 @@ export const adminCopyEn = {
     "detailModal": {
       "close": "Close",
       "readOnlyHint": "Read-only view. Use Edit to make changes.",
+      "copyValue": "Copy {{label}}",
+      "copiedValue": "{{label}} copied",
       "sections": {
         "identity": "Identity",
         "roles": "Roles & permissions",
@@ -2703,8 +2779,21 @@ export const adminCopyEn = {
         "chatUnavailable": "Only available for active student accounts.",
         "chatOpenError": "Could not open the conversation. Please try again."
       },
+      "credentials": {
+        "title": "Account password",
+        "hint": "Generated automatically when the account was created. Copy it to share with the user.",
+        "loading": "Loading password…",
+        "error": "Could not load this password.",
+        "copy": "Copy password",
+        "copied": "Copied",
+        "show": "Show password",
+        "hide": "Hide password",
+        "regenerate": "Regenerate",
+        "regenerateError": "Could not regenerate this password."
+      },
       "encadrant": {
-        "title": "Supervisor details"
+        "title": "Supervisor details",
+        "sendMessage": "Send message"
       },
       "announcement": {
         "title": "Announcement details"
@@ -4090,6 +4179,10 @@ export const adminCopyEn = {
       "acceptanceRate": "Acceptance Rate",
       "mostPopular": "Most Popular",
       "notDetectedYet": "Not detected yet",
+      "shareOfTotal": "{{percent}}% of total",
+      "activeCountBadge": "{{count}} active",
+      "applicationsBadge": "Applications",
+      "acceptanceBadge": "Average rate",
       "popularOffer": {
         "views": "views"
       },
@@ -4194,6 +4287,13 @@ export const adminCopyEn = {
     "title": "Supervisor Assignment",
     "open": "Open",
     "subtitle": "Assign students to supervisors based on program, level, sector, and workload.",
+    "heroBadge": "Smart engine",
+    "heroChips": {
+      "internship": "Internship type",
+      "program": "Program",
+      "sector": "Sector",
+      "workload": "Workload"
+    },
     "academicYear": "Academic year",
     "currentYear": "current",
     "respectLocks": "Respect locked assignments",
@@ -4231,6 +4331,8 @@ export const adminCopyEn = {
       "filterExcluded": "Excluded from assignment",
       "paginationLabel": "supervisors",
       "emptyFilters": "No supervisors match your criteria.",
+      "emptyNone": "No supervisors to display yet.",
+      "emptyNoneHint": "Supervisors appear here after an assignment run, or when they are available for this academic year.",
       "studentsCount": "{{count}} student(s)",
       "expandStudents": "Show student list ({{count}})",
       "collapseStudents": "Hide student list"
@@ -4243,6 +4345,30 @@ export const adminCopyEn = {
       "workloadPaginationLabel": "supervisors",
       "workloadAria": "Supervisor workload chart",
       "noData": "No data"
+    },
+    "manualAssign": {
+      "openFor": "Manage assignments for {{name}}",
+      "title": "Assign students for {{name}}",
+      "titleFallback": "Manual assignment",
+      "description": "Pick students compatible with this supervisor's program, levels, and specialties.",
+      "searchStudents": "Search students…",
+      "filterAria": "Filter students",
+      "filterCompatible": "Compatible",
+      "filterAssignedHere": "Assigned here",
+      "filterUnassigned": "Unassigned",
+      "filterAll": "All students",
+      "studentsShown": "{{count}} student(s) shown",
+      "empty": "No students match your search or filters.",
+      "assign": "Assign",
+      "assigning": "Assigning…",
+      "unassign": "Remove",
+      "removing": "Removing…",
+      "assignedHere": "Assigned",
+      "assignedTo": "Currently with {{name}}",
+      "notCompatible": "Outside scope",
+      "capacityFull": "This supervisor has reached maximum capacity.",
+      "capacityFullShort": "Full",
+      "capacityOpen": "Open"
     },
     "success": {
       "applied": "Assignments saved successfully.",
@@ -4263,6 +4389,9 @@ export const adminCopyEn = {
       "count": "{{count}} affected",
       "expandDetails": "Show affected records",
       "collapseDetails": "Hide affected records",
+      "recommendationsLabel": "Recommended actions",
+      "issuesSectionTitle": "Detected issues",
+      "recordsUnavailable": "Detailed records are not available for this issue.",
       "noIssues": "No issues to display.",
       "blockedToast": "Assignment blocked. Fix critical issues before running.",
       "confirmTitle": "Continue with warnings?",
@@ -4274,7 +4403,9 @@ export const adminCopyEn = {
       "banner": {
         "blockedTitle": "Assignment cannot run",
         "warningTitle": "Warnings detected",
-        "subtitle": "{{blocking}} critical · {{warnings}} warning(s)"
+        "subtitle": "{{blocking}} critical · {{warnings}} warning(s)",
+        "criticalCount": "{{count}} critical",
+        "warningCount": "{{count}} warning(s)"
       },
       "phase": {
         "validating": "Validating prerequisites…",
@@ -4400,6 +4531,12 @@ export const adminCopyEn = {
       "coverageRatio": "Coverage ratio",
       "supervisedTypes": "Supervised types",
       "missingCoverage": "Gaps in supervision",
+      "statGapCenterLabel": "Gaps",
+      "statCoverageCenterLabel": "Coverage",
+      "statGapTypesLegend": "Uncovered types",
+      "statCoveredTypesLegend": "Covered types",
+      "statCoveredStudentsLegend": "Covered",
+      "statUncoveredStudentsLegend": "Uncovered",
       "studentsLabel": "students",
       "encadrantsLabel": "supervisors",
       "shareOfTotal": "{{percent}}% of total",
@@ -4420,6 +4557,11 @@ export const adminCopyEn = {
       "insightDominant": "{{type}} is the largest student cohort ({{count}}%)",
       "insightDiversified": "Internship types are evenly distributed across students",
       "uncoveredTitle": "Internship types with no available supervisor",
+      "uncoveredHint": "These internship types have students waiting but no matching supervisor.",
+      "uncoveredTypesBadge": "{{count}} types",
+      "uncoveredStudentsBadge": "{{count}} student(s)",
+      "uncoveredExpandTypes": "Show internship types ({{count}})",
+      "uncoveredCollapseTypes": "Hide internship types",
       "uncoveredRow": "{{type}}: {{count}} student(s)"
     }
   },

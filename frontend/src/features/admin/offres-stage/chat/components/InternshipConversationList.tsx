@@ -381,7 +381,10 @@ const InternshipConversationList: FunctionComponent<Props> = ({
             archivedCount={primaryFilterCounts.archived}
             hasActiveFilters={hasActiveFilters}
             filtersOpen={filtersOpen}
-            onToggleArchive={() => onSetPrimary(viewingArchived ? 'all' : 'archived')}
+            showArchive={!isStudent}
+            onToggleArchive={
+              isStudent ? undefined : () => onSetPrimary(viewingArchived ? 'all' : 'archived')
+            }
             onToggleFilters={() => setFiltersOpen((v) => !v)}
           />
         }
@@ -393,7 +396,7 @@ const InternshipConversationList: FunctionComponent<Props> = ({
         </p>
       ) : null}
 
-      {viewingArchived ? (
+      {viewingArchived && !isStudent ? (
         <div className="isi-archived-strip">
           <Archive className="isi-archived-strip-icon" strokeWidth={2} aria-hidden />
           <span className="isi-archived-strip-label">{t('archivedBanner')}</span>

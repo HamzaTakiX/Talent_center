@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from core.media_urls import build_absolute_media_url
 
+from apps.accounts_et_roles.search import profile_name_search_q
 from apps.documents.models import (
     AdministrativeResource,
     DocumentRequest,
@@ -329,6 +330,16 @@ def _apply_search(qs, search: str):
         | Q(target_student_profile__user__email__icontains=search)
         | Q(target_student_profile__program_major__icontains=search)
         | Q(target_student_profile__current_class__icontains=search)
+        | profile_name_search_q(
+            search,
+            first_name_field='target_student_profile__user__profile__first_name',
+            last_name_field='target_student_profile__user__profile__last_name',
+        )
+        | profile_name_search_q(
+            search,
+            first_name_field='requested_by__profile__first_name',
+            last_name_field='requested_by__profile__last_name',
+        )
     )
 
 

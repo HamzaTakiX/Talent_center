@@ -16,7 +16,7 @@ const StudentRecommendedOffersCard: FunctionComponent = () => {
   const { offers, loading, error } = useStudentRecentOffers(2);
 
   return (
-    <DashboardPanel id="student-recent-offers" className="admin-section-panel w-full">
+    <DashboardPanel id="student-recent-offers" className="admin-section-panel w-full min-w-0 max-w-full">
       <StudentSectionHeader
         icon={<Clock strokeWidth={1.75} aria-hidden />}
         title={t('student.dashboard.sections.recentOffers')}
@@ -28,7 +28,7 @@ const StudentRecommendedOffersCard: FunctionComponent = () => {
         <p className="px-4 pt-2 text-sm text-[var(--admin-danger)]">{error}</p>
       ) : null}
 
-      <div className="student-dashboard-offers-grid-body">
+      <div className="student-dashboard-offers-grid-body box-border min-w-0 max-w-full overflow-x-clip">
         {loading ? (
           <InternshipOffersGridSkeleton layout="recommended" count={2} />
         ) : offers.length === 0 ? (

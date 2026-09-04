@@ -17,8 +17,10 @@ export type NotificationCategory =
   | 'srf'
   | 'cv_analysis'
   | 'interview_simulator'
+  | 'career_coach'
   | 'system'
-  | 'supervision';
+  | 'supervision'
+  | 'agenda';
 
 export type NotificationSection = 'all' | 'unread' | 'read' | 'archived' | 'action_required';
 

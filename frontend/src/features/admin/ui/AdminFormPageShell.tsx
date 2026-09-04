@@ -14,6 +14,7 @@ export interface AdminFormBreadcrumb {
 interface AdminFormPageShellProps {
   backLabel: string;
   onBack: () => void;
+  hideBack?: boolean;
   breadcrumbs?: AdminFormBreadcrumb[];
   /** Hero page (même style que dashboard / profil). */
   heroTitle?: string;
@@ -37,6 +38,7 @@ const widthClass = {
 const AdminFormPageShell: FunctionComponent<AdminFormPageShellProps> = ({
   backLabel,
   onBack,
+  hideBack = false,
   breadcrumbs,
   heroTitle,
   heroSubtitle,
@@ -80,14 +82,16 @@ const AdminFormPageShell: FunctionComponent<AdminFormPageShellProps> = ({
         </nav>
       )}
 
-      <button
-        type="button"
-        onClick={onBack}
-        className="admin-btn-secondary inline-flex h-9 w-fit shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium"
-      >
-        <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
-        <span className="leading-5">{backLabel}</span>
-      </button>
+      {!hideBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="admin-btn-secondary inline-flex h-9 w-fit shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium"
+        >
+          <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
+          <span className="leading-5">{backLabel}</span>
+        </button>
+      )}
 
       {heroContent ??
         (heroTitle ? (

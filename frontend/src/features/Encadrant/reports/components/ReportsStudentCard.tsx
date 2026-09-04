@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getEncadrantReportsStudentDetailPath } from '../constants/routes';
 import {
   REPORTS_INFO_BLOCK,
@@ -13,7 +14,6 @@ import {
   REPORTS_PROGRESS_TRACK,
   REPORTS_PROGRESS_VALUE,
   REPORTS_PROGRESS_WRAP,
-  REPORTS_STATUS_BADGE,
   REPORTS_STUDENT_CARD,
   REPORTS_STUDENT_HEADER,
   REPORTS_STUDENT_LEVEL,
@@ -28,11 +28,12 @@ interface ReportsStudentCardProps {
 
 const ReportsStudentCard: FunctionComponent<ReportsStudentCardProps> = ({ student }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const statusStyle = REPORTS_STATUS_STYLES[student.status];
 
   return (
     <article
-      className={`${REPORTS_STUDENT_CARD} cursor-pointer transition-colors hover:border-[rgba(0,0,0,0.12)] hover:shadow-[0_2px_8px_rgba(16,24,40,0.06)]`}
+      className={`${REPORTS_STUDENT_CARD} cursor-pointer transition-colors hover:border-[var(--admin-border)] hover:shadow-[0_2px_8px_rgba(16,24,40,0.06)]`}
       role="button"
       tabIndex={0}
       onClick={() => navigate(getEncadrantReportsStudentDetailPath(student.id))}
@@ -48,35 +49,33 @@ const ReportsStudentCard: FunctionComponent<ReportsStudentCardProps> = ({ studen
           <h3 className={REPORTS_STUDENT_NAME}>{student.name}</h3>
           <p className={REPORTS_STUDENT_LEVEL}>{student.level}</p>
         </div>
-        <span
-          className={`${REPORTS_STATUS_BADGE} ${statusStyle.badgeBg} ${statusStyle.badgeText}`}
-        >
-          {statusStyle.label}
-        </span>
+        <span className={statusStyle.badge}>{t(statusStyle.labelKey)}</span>
       </div>
 
       <div className={REPORTS_INFO_BLOCK}>
         <div className={REPORTS_INFO_ROW}>
-          <span className={REPORTS_INFO_LABEL}>Total Reports</span>
+          <span className={REPORTS_INFO_LABEL}>{t('encadrant.reports.totalReports')}</span>
           <p className={REPORTS_INFO_VALUE}>{student.totalReports}</p>
         </div>
 
         <div className={REPORTS_INFO_ROW}>
-          <span className={REPORTS_INFO_LABEL}>Last Report</span>
+          <span className={REPORTS_INFO_LABEL}>{t('encadrant.common.lastReport')}</span>
           <p className={REPORTS_INFO_VALUE}>{student.lastReportTitle}</p>
           <p className={REPORTS_INFO_SUB}>{student.lastReportDate}</p>
         </div>
 
         <div className={REPORTS_INFO_ROW}>
-          <span className={REPORTS_INFO_LABEL}>Next Report</span>
+          <span className={REPORTS_INFO_LABEL}>{t('encadrant.common.nextReport')}</span>
           <p className={REPORTS_INFO_VALUE}>{student.nextReportTitle}</p>
-          <p className={REPORTS_INFO_SUB}>Due: {student.nextReportDue}</p>
+          <p className={REPORTS_INFO_SUB}>
+            {t('encadrant.task.due')}: {student.nextReportDue}
+          </p>
         </div>
       </div>
 
       <div className={REPORTS_PROGRESS_WRAP}>
         <div className={REPORTS_PROGRESS_HEADER}>
-          <span className={REPORTS_PROGRESS_LABEL}>Progress</span>
+          <span className={REPORTS_PROGRESS_LABEL}>{t('encadrant.common.progress')}</span>
           <span className={REPORTS_PROGRESS_VALUE}>{student.progressPercent}%</span>
         </div>
         <div

@@ -1,16 +1,18 @@
 import { FunctionComponent, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Clock, Globe, GraduationCap, MapPin, Wallet } from 'lucide-react';
+import { Calendar, Clock, Globe, GraduationCap, Info, MapPin, Wallet } from 'lucide-react';
 import type { InternshipOfferDetails } from '../../types';
-import { DETAILS_SECTION_TITLE } from '../../constants/internshipOfferDetailsStyles';
 import DetailsSectionCard from './DetailsSectionCard';
+import DetailsSectionHeading from './DetailsSectionHeading';
 
 interface InternshipOfferDetailsKeyFactsProps {
   offer: InternshipOfferDetails;
+  className?: string;
 }
 
 const InternshipOfferDetailsKeyFacts: FunctionComponent<InternshipOfferDetailsKeyFactsProps> = ({
   offer,
+  className = '',
 }) => {
   const { t } = useTranslation();
 
@@ -87,11 +89,11 @@ const InternshipOfferDetailsKeyFacts: FunctionComponent<InternshipOfferDetailsKe
   if (!facts.length) return null;
 
   return (
-    <DetailsSectionCard>
-      <h2 className={`${DETAILS_SECTION_TITLE} m-0 mb-4`}>
+    <DetailsSectionCard className={className}>
+      <DetailsSectionHeading icon={Info}>
         {t('student.internshipOffers.details.keyInfo')}
-      </h2>
-      <dl className="m-0 grid grid-cols-1 gap-3 p-0 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-3.5 lg:grid-cols-1">
+      </DetailsSectionHeading>
+      <dl className="m-0 grid min-h-0 flex-1 grid-cols-1 content-start gap-3 p-0">
         {facts.map(({ icon: Icon, label, value }) => (
           <div
             key={label}

@@ -10,10 +10,12 @@ export interface ChatEmptyStateStats {
   unread?: number;
   pending?: number;
   resolved?: number;
+  availableAdmins?: number;
   labels?: {
     unread?: string;
     pending?: string;
     resolved?: string;
+    availableAdmins?: string;
   };
 }
 

@@ -13,7 +13,7 @@ from django.utils import timezone
 from apps.accounts_et_roles.models import User
 from apps.authentication.utils import envelope
 
-from .models import Channel, Conversation, ConversationContext, Message, Tag
+from .models import Channel, Conversation, ConversationContext, Message
 from .permissions import conversations_for_user, user_can_access_conversation
 from .serializers import (
     ChannelListSerializer,
@@ -57,9 +57,51 @@ class ChatTagListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        qs = Tag.objects.all().order_by('code')
+        from .services.tag_authorization import module_tag_catalog, tags_queryset_for_user
+
+        module = (request.query_params.get('module') or '').strip().lower()
+        if not module:
+            return Response(envelope(False, 'module query param required'), status=400)
+        if not module_tag_catalog(module):
+            return Response(envelope(False, 'Unknown chat module'), status=400)
+
+        qs = tags_queryset_for_user(request.user, module)
         ser = TagSerializer(qs, many=True)
         return Response(envelope(True, 'Tags loaded', data=ser.data))
+
+
+class ChatEntityReferenceListView(APIView):
+    """List taggable entities for the current user in a chat module."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .services.entity_reference_service import list_entity_references
+        from .services.tag_authorization import module_tag_catalog
+
+        module = (request.query_params.get('module') or '').strip().lower()
+        if not module:
+            return Response(envelope(False, 'module query param required'), status=400)
+        if not module_tag_catalog(module):
+            return Response(envelope(False, 'Unknown chat module'), status=400)
+
+        conversation_id = request.query_params.get('conversation_id')
+        conv_id = int(conversation_id) if conversation_id and str(conversation_id).isdigit() else None
+        q = request.query_params.get('q') or None
+
+        if conv_id:
+            conv = Conversation.objects.filter(pk=conv_id).first()
+            if not conv or not user_can_access_conversation(request.user, conv):
+                return Response(envelope(False, 'Conversation not found'), status=404)
+
+        items = list_entity_references(
+            request.user,
+            module,
+            conversation_id=conv_id,
+            q=q,
+            request=request,
+        )
+        return Response(envelope(True, 'Entity references loaded', data=items))
 
 
 class ChatConversationListView(APIView):
@@ -128,6 +170,14 @@ class ChatConversationDetailView(APIView):
         )
         if not conv:
             return Response(envelope(False, 'Conversation not found'), status=404)
+        ctx = getattr(conv, 'context', None)
+        if ctx and ctx.module == ConversationContext.Module.SRF:
+            from apps.srf.services.chat_service import refresh_srf_conversation_snapshot
+
+            refresh_srf_conversation_snapshot(conv, request=request)
+            conv.refresh_from_db()
+            if hasattr(conv, 'context') and conv.context:
+                conv.context.refresh_from_db()
         ser = ConversationListSerializer(conv, context={'request': request})
         return Response(envelope(True, 'Conversation detail', data=ser.data))
 
@@ -150,6 +200,7 @@ class ChatMessageListView(APIView):
         payload = dict(ser.validated_data)
         metadata = payload.pop('metadata_json', {})
         tag_codes = payload.pop('tag_codes', [])
+        entity_refs = payload.pop('entity_refs', [])
         if isinstance(tag_codes, str):
             import json
 
@@ -157,6 +208,13 @@ class ChatMessageListView(APIView):
                 tag_codes = json.loads(tag_codes)
             except (json.JSONDecodeError, TypeError):
                 tag_codes = []
+        if isinstance(entity_refs, str):
+            import json
+
+            try:
+                entity_refs = json.loads(entity_refs)
+            except (json.JSONDecodeError, TypeError):
+                entity_refs = []
         uploaded_files = list(request.FILES.getlist('files'))
         try:
             msg = send_message(
@@ -164,6 +222,7 @@ class ChatMessageListView(APIView):
                 conversation_id=conversation_id,
                 metadata=metadata,
                 tag_codes=tag_codes,
+                entity_refs=entity_refs,
                 uploaded_files=uploaded_files or None,
                 **payload,
             )
@@ -269,7 +328,7 @@ class ChatInboxSummaryView(APIView):
     def get(self, request):
         from .services.inbox_summary import build_inbox_summary
 
-        return Response(envelope(True, 'Inbox summary', data={'modules': build_inbox_summary(request.user)}))
+        return Response(envelope(True, 'Inbox summary', data=build_inbox_summary(request.user)))
 
 
 class ChatModuleMetricsView(APIView):
@@ -278,7 +337,8 @@ class ChatModuleMetricsView(APIView):
     def get(self, request, module: str):
         if not module:
             return Response(envelope(False, 'module required'), status=400)
-        data = compute_module_metrics(request.user, module=module)
+        entity_type = (request.query_params.get('entity_type') or '').strip() or None
+        data = compute_module_metrics(request.user, module=module, entity_type=entity_type)
         return Response(envelope(True, 'Chat metrics loaded', data=data))
 
 

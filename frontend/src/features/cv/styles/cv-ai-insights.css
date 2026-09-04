@@ -3,38 +3,42 @@
  * Calm surfaces, glass hints, radial scores. No neon / crypto aesthetics.
  */
 
-/* —— Toolbar analyze —— */
+/* —— Toolbar analyze (outline blue, transparent fill) —— */
 [data-admin-theme] .cv-ai-analyze-btn {
-  background: var(--admin-brand);
-  color: #fff !important;
-  border: 1px solid color-mix(in srgb, var(--admin-brand) 80%, #000);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 12px color-mix(in srgb, var(--admin-brand) 22%, transparent);
+  min-height: 2.5rem;
+  border-radius: var(--admin-radius-sm, 0.65rem);
+  background: transparent;
+  color: var(--admin-brand) !important;
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 70%, var(--admin-border));
+  box-shadow: none;
 }
 
 [data-admin-theme='light'] .cv-ai-analyze-btn {
-  background: var(--admin-brand);
-  color: #fff !important;
-  border: 1px solid color-mix(in srgb, var(--admin-brand) 70%, #0f172a);
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.08),
-    0 4px 14px color-mix(in srgb, var(--admin-brand) 28%, transparent);
+  background: color-mix(in srgb, #fff 70%, transparent);
+  color: var(--admin-brand) !important;
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 55%, var(--admin-border));
+  box-shadow: none;
 }
 
 [data-admin-theme='light'] .cv-ai-analyze-btn:hover:not(:disabled) {
-  filter: brightness(1.05);
-  box-shadow:
-    0 2px 6px rgba(15, 23, 42, 0.1),
-    0 6px 18px color-mix(in srgb, var(--admin-brand) 32%, transparent);
+  filter: none;
+  background: color-mix(in srgb, var(--admin-brand) 8%, #fff);
+  border-color: var(--admin-brand);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--admin-brand) 12%, transparent);
 }
 
 [data-admin-theme] .cv-ai-analyze-btn:hover:not(:disabled) {
-  filter: brightness(1.04);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--admin-brand) 28%, transparent);
+  filter: none;
+  background: color-mix(in srgb, var(--admin-brand) 12%, transparent);
+  border-color: var(--admin-brand);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--admin-brand) 14%, transparent);
 }
 
 [data-admin-theme='dark'] .cv-ai-analyze-btn {
-  color: #fff !important;
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--admin-brand) 18%, transparent);
+  background: transparent;
+  color: var(--admin-brand) !important;
+  border-color: color-mix(in srgb, var(--admin-brand) 55%, var(--admin-border));
+  box-shadow: none;
 }
 
 [data-admin-theme] .cv-ai-analyze-btn svg {

@@ -8,7 +8,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { Archive, ArchiveRestore, Loader2, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Loader2, MessageSquare, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { CoachConversation } from '../types/careerCoach';
 
@@ -192,8 +192,15 @@ const CareerCoachConversationItem: FunctionComponent<CareerCoachConversationItem
             <span className="sr-acc-sidebar__item-title">
               {isPending ? (
                 <Loader2 size={14} className="sr-acc-sidebar__item-spinner" aria-hidden />
-              ) : null}
-              {preview}
+              ) : (
+                <MessageSquare
+                  size={15}
+                  strokeWidth={1.85}
+                  className="sr-acc-sidebar__item-icon"
+                  aria-hidden
+                />
+              )}
+              <span className="sr-acc-sidebar__item-label">{preview}</span>
             </span>
           </button>
 

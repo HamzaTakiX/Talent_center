@@ -1,46 +1,48 @@
+import {
+  ENC_BADGE_DANGER,
+  ENC_BADGE_INFO,
+  ENC_BADGE_SUCCESS,
+  ENC_BADGE_WARNING,
+  ENC_TONE_ICON,
+} from '../../constants/encadrantTokens';
 import type { ReportStudentStatus, ReportsSummaryTone } from '../types';
 
 export const REPORTS_SUMMARY_STYLES: Record<
   ReportsSummaryTone,
   { iconBg: string; iconText: string }
 > = {
-  blue: { iconBg: 'bg-[#3b82f6]', iconText: 'text-white' },
-  orange: { iconBg: 'bg-[#f97316]', iconText: 'text-white' },
-  red: { iconBg: 'bg-[#ef4444]', iconText: 'text-white' },
-  green: { iconBg: 'bg-[#22c55e]', iconText: 'text-white' },
+  blue: ENC_TONE_ICON.blue,
+  orange: ENC_TONE_ICON.orange,
+  red: ENC_TONE_ICON.red,
+  green: ENC_TONE_ICON.green,
 };
 
 export const REPORTS_STATUS_STYLES: Record<
   ReportStudentStatus,
   {
-    badgeBg: string;
-    badgeText: string;
+    badge: string;
     progress: string;
-    label: string;
+    labelKey: string;
   }
 > = {
   on_track: {
-    badgeBg: 'bg-[#dbeafe]',
-    badgeText: 'text-[#1d4ed8]',
-    progress: 'bg-[#3b82f6]',
-    label: 'On track',
+    badge: ENC_BADGE_INFO,
+    progress: 'bg-[var(--admin-brand)]',
+    labelKey: 'encadrant.reports.status.onTrack',
   },
   at_risk: {
-    badgeBg: 'bg-[#ffedd5]',
-    badgeText: 'text-[#c2410c]',
-    progress: 'bg-[#f97316]',
-    label: 'At risk',
+    badge: ENC_BADGE_WARNING,
+    progress: 'bg-[color-mix(in_srgb,#d97706_95%,transparent)]',
+    labelKey: 'encadrant.reports.status.atRisk',
   },
   ahead: {
-    badgeBg: 'bg-[#dcfce7]',
-    badgeText: 'text-[#15803d]',
-    progress: 'bg-[#22c55e]',
-    label: 'Ahead',
+    badge: ENC_BADGE_SUCCESS,
+    progress: 'bg-[color-mix(in_srgb,#059669_95%,transparent)]',
+    labelKey: 'encadrant.reports.status.ahead',
   },
   delayed: {
-    badgeBg: 'bg-[#fee2e2]',
-    badgeText: 'text-[#b91c1c]',
-    progress: 'bg-[#ef4444]',
-    label: 'Delayed',
+    badge: ENC_BADGE_DANGER,
+    progress: 'bg-[var(--admin-danger)]',
+    labelKey: 'encadrant.reports.status.delayed',
   },
 };

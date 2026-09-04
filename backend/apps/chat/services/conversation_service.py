@@ -115,6 +115,25 @@ def should_filter_offer_threads_by_student_messages(user: User, *, module: str) 
     return user.role in (User.RoleChoices.ADMIN, User.RoleChoices.STUDENT) or user.is_superuser
 
 
+def apply_platform_admin_inbox_visibility_filters(qs, *, entity_type: str | None = None):
+    """
+    Admin platform inbox: student/encadrant desk threads only appear after the first message.
+    admin_desk threads are unchanged.
+    """
+    desk_types = ('student_desk', 'student_admin_dm', 'encadrant_desk')
+
+    if entity_type in desk_types:
+        return qs.filter(last_message_at__isnull=False)
+    if entity_type == 'admin_desk':
+        return qs
+    if entity_type is None:
+        return qs.filter(
+            Q(context__entity_type='admin_desk')
+            | Q(last_message_at__isnull=False, context__entity_type__in=desk_types)
+        )
+    return qs
+
+
 def list_module_conversations(
     user: User,
     *,
@@ -143,6 +162,21 @@ def list_module_conversations(
         qs = qs.exclude(metadata_json__contains={'admin_inbox_archived': True})
     if (
         not include_archived
+        and module == ConversationContext.Module.ENCADRANT
+        and user.role
+        in (User.RoleChoices.ADMIN, User.RoleChoices.SUPERVISOR)
+    ):
+        qs = qs.exclude(metadata_json__contains={'admin_inbox_archived': True})
+    if (
+        module == ConversationContext.Module.ENCADRANT
+        and user.role == User.RoleChoices.SUPERVISOR
+        and (not entity_type or entity_type == 'supervision_dm')
+    ):
+        from apps.encadrant.services.chat_service import sync_supervision_dms_for_encadrant
+
+        sync_supervision_dms_for_encadrant(user)
+    if (
+        not include_archived
         and module in (ConversationContext.Module.DOCUMENTS, ConversationContext.Module.SRF)
         and user.role == User.RoleChoices.ADMIN
     ):
@@ -154,6 +188,7 @@ def list_module_conversations(
         and user.role == User.RoleChoices.ADMIN
     ):
         qs = qs.filter(last_message_at__isnull=False)
+        qs = qs.filter(context__entity_type='financial_support')
     # Offer threads are created when a student opens chat, but should only appear in
     # inbox lists once the student has actually asked or commented.
     if should_filter_offer_threads_by_student_messages(user, module=module):
@@ -168,6 +203,10 @@ def list_module_conversations(
         from .platform_chat_service import sync_student_admin_dms_for_student
 
         sync_student_admin_dms_for_student(user)
+    # Platform desk threads (student / encadrant) are created on demand when admin or
+    # student opens chat — never bulk-synced on inbox list load.
+    if module == ConversationContext.Module.PLATFORM and user.role == User.RoleChoices.ADMIN:
+        qs = apply_platform_admin_inbox_visibility_filters(qs, entity_type=entity_type)
     if (
         module == ConversationContext.Module.PLATFORM
         and entity_type == 'admin_desk'
@@ -370,6 +409,18 @@ def apply_smart_action(
                 srf_chat.unarchive_student_srf_conversation(conversation, actor)
             else:
                 srf_chat.unarchive_srf_conversation(conversation, actor)
+
+    # Supervision DM (student ↔ encadrant): staff-side archive only (never student).
+    if ctx and ctx.module == ConversationContext.Module.ENCADRANT:
+        from .platform_chat_service import (
+            archive_platform_desk_conversation,
+            unarchive_platform_desk_conversation,
+        )
+
+        if action_code == 'archive_conversation':
+            archive_platform_desk_conversation(conversation, actor)
+        elif action_code == 'unarchive_conversation':
+            unarchive_platform_desk_conversation(conversation, actor)
 
     record_chat_action(
         action_code=action_code,

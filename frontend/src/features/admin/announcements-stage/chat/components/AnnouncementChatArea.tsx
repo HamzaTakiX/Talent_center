@@ -1,10 +1,4 @@
-import {
-  FunctionComponent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { FunctionComponent, useEffect, useRef } from 'react';
 import {
   InternshipChatMessagesSkeleton,
   InternshipChatWorkspaceSkeleton,
@@ -16,6 +10,9 @@ import {
   toChatToolMessages,
   useChatConversationTools,
 } from '../../../../shared/chat-design-system';
+import ChatComposerModuleExtras from '../../../../shared/contextual-chat/components/ChatComposerModuleExtras';
+import { useSupportChatAreaComposer } from '../../../../shared/contextual-chat/hooks/useSupportChatAreaComposer';
+import type { ChatEntityReference } from '../../../../shared/contextual-chat/types/chatEntityTypes';
 import { useChatEmptyState } from '../../../i18n/useAdminCopy';
 import type { AnnouncementConversation, InboxStats } from '../types/announcementChatTypes';
 import AnnouncementChatHeader from './AnnouncementChatHeader';
@@ -27,7 +24,7 @@ type Props = {
   conversationLoading?: boolean;
   statsLoading?: boolean;
   peerTyping?: boolean;
-  onSend: (text: string) => void;
+  onSend: (text: string, tagCodes?: string[], entityRefs?: ChatEntityReference[]) => void;
   onTyping?: (isTyping: boolean) => void;
   onBack?: () => void;
   onMarkResolved: () => void;
@@ -49,8 +46,10 @@ const AnnouncementChatArea: FunctionComponent<Props> = ({
   onArchive,
   onUnarchive,
 }) => {
-  const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const composer = useSupportChatAreaComposer(conversation?.id, (text, _files, tagCodes, entityRefs) => {
+    onSend(text, tagCodes, entityRefs);
+  });
 
   const chatTools = useChatConversationTools({
     messages: toChatToolMessages(conversation?.messages ?? []),
@@ -65,17 +64,6 @@ const AnnouncementChatArea: FunctionComponent<Props> = ({
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [conversation?.messages.length, conversation?.id, peerTyping]);
-
-  useEffect(() => {
-    setDraft('');
-  }, [conversation?.id]);
-
-  const handleSend = useCallback(() => {
-    const text = draft.trim();
-    if (!text) return;
-    onSend(text);
-    setDraft('');
-  }, [draft, onSend]);
 
   const emptyState = useChatEmptyState('announcements');
 
@@ -128,11 +116,22 @@ const AnnouncementChatArea: FunctionComponent<Props> = ({
       {chatTools.panels}
 
       <SupportMessageComposer
-        value={draft}
-        onChange={setDraft}
-        onSend={handleSend}
+        value={composer.draft}
+        onChange={composer.setDraft}
+        onSend={composer.handleSend}
         onTyping={onTyping}
         showVoice={false}
+        extraActions={
+          <ChatComposerModuleExtras
+            chatModule="announcements"
+            conversationId={conversation.id}
+            composer={composer}
+            disabled={conversation.archived}
+            showTagPicker={false}
+          />
+        }
+        pendingEntities={composer.pendingEntities}
+        onRemovePendingEntity={composer.removePendingEntity}
       />
     </section>
   );

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { initialPlatformTasks } from '../data/taskPlatformMock';
-import type { StudentPlatformTask, TaskFilters, TaskStatus, TaskViewMode } from '../types';
+import type { StudentPlatformTask, TaskFilters, TaskSortKey, TaskStatus, TaskViewMode } from '../types';
 import { filterPlatformTasks } from '../utils/filterPlatformTasks';
+import { sortPlatformTasks } from '../utils/sortPlatformTasks';
 
 const defaultFilters: TaskFilters = {
   status: 'all',
@@ -14,11 +16,13 @@ const defaultFilters: TaskFilters = {
 };
 
 export function useTaskPlatform() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<StudentPlatformTask[]>(initialPlatformTasks);
   const [viewMode, setViewMode] = useState<TaskViewMode>('kanban');
   const [filters, setFilters] = useState<TaskFilters>(defaultFilters);
   const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<TaskSortKey>('dueAsc');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -27,23 +31,30 @@ export function useTaskPlatform() {
     return () => window.clearTimeout(timer);
   }, []);
 
+  const translate = useCallback((key: string) => t(key), [t]);
+
   const filteredTasks = useMemo(
-    () => filterPlatformTasks(tasks, filters, search),
-    [tasks, filters, search],
+    () =>
+      sortPlatformTasks(filterPlatformTasks(tasks, filters, search, translate), sort, translate),
+    [tasks, filters, search, sort, translate],
   );
 
   const selectedTask = useMemo(
-    () => tasks.find((t) => t.id === selectedTaskId) ?? null,
+    () => tasks.find((task) => task.id === selectedTaskId) ?? null,
     [tasks, selectedTaskId],
   );
 
-  const supervisorTasks = useMemo(
-    () => tasks.filter((t) => t.fromSupervisor),
-    [tasks],
+  const supervisorTasks = useMemo(() => tasks.filter((task) => task.fromSupervisor), [tasks]);
+
+  const activeFilterCount = useMemo(
+    () =>
+      (Object.keys(filters) as (keyof TaskFilters)[]).filter((key) => filters[key] !== 'all')
+        .length,
+    [filters],
   );
 
   const updateTaskStatus = useCallback((taskId: string, status: TaskStatus) => {
-    setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status } : t)));
+    setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status } : task)));
   }, []);
 
   const resetFilters = useCallback(() => setFilters(defaultFilters), []);
@@ -58,8 +69,11 @@ export function useTaskPlatform() {
     setFilters,
     search,
     setSearch,
+    sort,
+    setSort,
     filtersOpen,
     setFiltersOpen,
+    activeFilterCount,
     selectedTask,
     setSelectedTaskId,
     supervisorTasks,

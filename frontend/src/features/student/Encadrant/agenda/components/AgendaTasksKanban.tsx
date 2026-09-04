@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { fadeInUp } from '../../../../admin/dashboard/ui/animations';
 import StudentSearchEmptyState from '../../../ui/StudentSearchEmptyState';
-import { agendaPersonalTasks } from '../data/agendaPlatformMock';
+import { agendaAssignedTasks } from '../data/agendaPlatformMock';
 import { AGENDA_GLASS_CARD } from '../constants/agendaLayout';
 import { AGENDA_PRIORITY_CLASS } from '../constants/agendaPriorities';
 import type { AgendaTaskStatus } from '../types';
@@ -14,16 +14,16 @@ const AgendaTasksKanban: FunctionComponent = () => {
   const { t } = useTranslation();
 
   const byStatus = useMemo(() => {
-    const map: Record<AgendaTaskStatus, typeof agendaPersonalTasks> = {
+    const map: Record<AgendaTaskStatus, typeof agendaAssignedTasks> = {
       todo: [],
       in_progress: [],
       completed: [],
     };
-    agendaPersonalTasks.forEach((task) => map[task.status].push(task));
+    agendaAssignedTasks.forEach((task) => map[task.status].push(task));
     return map;
   }, []);
 
-  const isEmpty = agendaPersonalTasks.length === 0;
+  const isEmpty = agendaAssignedTasks.length === 0;
 
   return (
     <motion.section {...fadeInUp} className={`${AGENDA_GLASS_CARD} student-agenda-glass min-w-0`}>

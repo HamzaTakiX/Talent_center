@@ -17,7 +17,6 @@ import InternshipOfferDetailsHeader from '../../../student/internship_offers/com
 import InternshipOfferDetailsMain from '../../../student/internship_offers/components/details/InternshipOfferDetailsMain';
 import { DETAILS_PAGE_SECTION_GAP } from '../../../student/internship_offers/constants/internshipOfferDetailsStyles';
 import { INTERNSHIP_OFFERS_PAGE_ROOT } from '../../../student/internship_offers/constants/internshipOffersLayout';
-import BackToOffersLink from '../../../student/internship_offers/components/BackToOffersLink';
 import { adminCrudRoutes } from '../../shared/navigation/adminCrudRoutes';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
 import InternshipOfferPageSkeleton from '../../../student/internship_offers/components/loading/InternshipOfferPageSkeleton';
@@ -66,11 +65,6 @@ const ViewInternshipOfferPage: FunctionComponent = () => {
         id="admin-internship-offer-details-root"
         className={`${INTERNSHIP_OFFERS_PAGE_ROOT} ${DETAILS_PAGE_SECTION_GAP}`}
       >
-        <BackToOffersLink
-          to="/admin/internship-offers"
-          label={t('admin.modules.offers.detailPage.backToOffers')}
-        />
-
         <InternshipOfferDetailsHeader
           offer={studentOffer}
           mode="admin"
@@ -79,6 +73,8 @@ const ViewInternshipOfferPage: FunctionComponent = () => {
           adminUiStatusLabel={offerStatus(viewModel.uiStatus)}
           adminUiStatusBadgeVariant={uiStatusBadge}
           onEdit={() => navigate(adminCrudRoutes.internshipOfferEdit(viewModel.id))}
+          backTo="/admin/internship-offers"
+          backLabel={t('admin.modules.offers.detailPage.backToOffers')}
         />
 
         <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(260px,1fr)] lg:gap-6">

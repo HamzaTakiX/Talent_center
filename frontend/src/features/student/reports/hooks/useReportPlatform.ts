@@ -5,15 +5,17 @@ import {
   getReportDocument,
   saveReportToStorage,
 } from '../data/reportPlatformMock';
+import { loadAssignedReportModel } from '../data/reportModelGuideMock';
 import { REPORT_TITLE_MAX_LENGTH } from '../constants/limits';
 import type {
   AutoSaveState,
   ReportAnalytics,
   ReportComment,
-  ReportReference,
   ReportStatus,
   StudentReportDocument,
 } from '../types';
+import type { ReportModelGuide } from '../types/reportModelGuide';
+import { calculateReportModelProgress } from '../utils/reportModelProgress';
 
 const AUTOSAVE_DELAY_MS = 2000;
 const AUTOSAVE_PREF_KEY = 'esca-report-autosave-enabled';
@@ -46,17 +48,24 @@ export function useReportPlatform(reportId: string) {
   const [savedLabel, setSavedLabel] = useState<string | null>(null);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [versionPanelOpen, setVersionPanelOpen] = useState(false);
-  const [referencesPanelOpen, setReferencesPanelOpen] = useState(false);
+  const [modelGuidePanelOpen, setModelGuidePanelOpen] = useState(false);
   const [exportPanelOpen, setExportPanelOpen] = useState(false);
+  const [modelGuide, setModelGuide] = useState<ReportModelGuide | null>(() => loadAssignedReportModel());
+  const [modelGuideState, setModelGuideState] = useState<'loading' | 'ready' | 'empty' | 'error'>('ready');
+  const [isDirty, setIsDirty] = useState(false);
   const saveTimerRef = useRef<number | null>(null);
+  const reportRef = useRef(report);
+  reportRef.current = report;
 
   useEffect(() => {
     const doc = ensureReportContent(getReportDocument(reportId));
     setReport(doc);
+    setIsDirty(false);
   }, [reportId]);
 
   const persist = useCallback((doc: StudentReportDocument) => {
     saveReportToStorage(doc);
+    setIsDirty(false);
   }, []);
 
   const setAutoSave = useCallback((enabled: boolean) => {
@@ -75,6 +84,7 @@ export function useReportPlatform(reportId: string) {
 
   const scheduleAutoSave = useCallback(
     (doc: StudentReportDocument) => {
+      setIsDirty(true);
       if (!autoSaveEnabled) return;
       if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
       setAutoSaveState('saving');
@@ -101,14 +111,45 @@ export function useReportPlatform(reportId: string) {
   );
 
   const saveNow = useCallback(() => {
+    if (saveTimerRef.current) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
     setAutoSaveState('saving');
-    const updated = { ...report, lastModified: new Date().toISOString() };
+    const updated = { ...reportRef.current, lastModified: new Date().toISOString() };
     persist(updated);
     setReport(updated);
     setSavedLabel(new Date().toLocaleTimeString());
     setAutoSaveState('saved');
     window.setTimeout(() => setAutoSaveState('idle'), 2500);
-  }, [persist, report]);
+  }, [persist]);
+
+  const discardChanges = useCallback(() => {
+    if (saveTimerRef.current) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    const doc = ensureReportContent(getReportDocument(reportId));
+    setReport(doc);
+    setIsDirty(false);
+    setAutoSaveState('idle');
+  }, [reportId]);
+
+  const flushPendingSave = useCallback(() => {
+    if (saveTimerRef.current) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+      const updated = { ...reportRef.current, lastModified: new Date().toISOString() };
+      persist(updated);
+      setReport(updated);
+      setSavedLabel(new Date().toLocaleTimeString());
+      setAutoSaveState('saved');
+      return;
+    }
+    if (isDirty) {
+      saveNow();
+    }
+  }, [isDirty, persist, saveNow]);
 
   const setTitle = useCallback(
     (title: string) => {
@@ -208,29 +249,18 @@ export function useReportPlatform(reportId: string) {
     [scheduleAutoSave],
   );
 
-  const addReference = useCallback(
-    (ref: Omit<ReportReference, 'id'>) => {
-      setReport((prev) => {
-        const references = [...prev.references, { ...ref, id: `ref-${Date.now()}` }];
-        const next = { ...prev, references, lastModified: new Date().toISOString() };
-        scheduleAutoSave(next);
-        return next;
-      });
-    },
-    [scheduleAutoSave],
-  );
-
-  const removeReference = useCallback(
-    (refId: string) => {
-      setReport((prev) => {
-        const references = prev.references.filter((r) => r.id !== refId);
-        const next = { ...prev, references, lastModified: new Date().toISOString() };
-        scheduleAutoSave(next);
-        return next;
-      });
-    },
-    [scheduleAutoSave],
-  );
+  const refreshModelGuide = useCallback(() => {
+    setModelGuideState('loading');
+    window.setTimeout(() => {
+      try {
+        const model = loadAssignedReportModel();
+        setModelGuide(model);
+        setModelGuideState(model ? 'ready' : 'empty');
+      } catch {
+        setModelGuideState('error');
+      }
+    }, 250);
+  }, []);
 
   const analytics: ReportAnalytics = useMemo(() => {
     const wordCount = countWords(report.content);
@@ -238,14 +268,15 @@ export function useReportPlatform(reportId: string) {
       100,
       Math.round((wordCount / report.targetWords) * 100),
     );
+    const structure = calculateReportModelProgress(modelGuide, report.content);
     return {
       wordCount,
       completionPercent,
       readingTimeMinutes: Math.max(1, Math.ceil(wordCount / 200)),
-      referenceCount: report.references.length,
+      structureProgressPercent: structure.overallPercent,
       imageCount: countImages(report.content),
     };
-  }, [report]);
+  }, [report, modelGuide]);
 
   const exportPrint = useCallback(() => {
     window.print();
@@ -255,27 +286,31 @@ export function useReportPlatform(reportId: string) {
     report,
     updateContent,
     saveNow,
+    discardChanges,
+    flushPendingSave,
     setTitle,
     setStatus,
     autoSaveState,
     autoSaveEnabled,
     setAutoSave,
     savedLabel,
+    isDirty,
     analytics,
     rightPanelOpen,
     setRightPanelOpen,
     versionPanelOpen,
     setVersionPanelOpen,
-    referencesPanelOpen,
-    setReferencesPanelOpen,
+    modelGuidePanelOpen,
+    setModelGuidePanelOpen,
+    modelGuide,
+    modelGuideState,
+    refreshModelGuide,
     exportPanelOpen,
     setExportPanelOpen,
     restoreVersion,
     createVersion,
     updateComment,
     replyToComment,
-    addReference,
-    removeReference,
     exportPrint,
   };
 }

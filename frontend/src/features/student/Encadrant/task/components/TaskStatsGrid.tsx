@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import { CSSProperties, FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
 import {
   CheckCircle2,
@@ -23,6 +23,12 @@ const icons = {
   completionRate: Percent,
 } as const;
 
+function parsePercentValue(value: string): number | null {
+  const match = value.trim().match(/^(\d+(?:\.\d+)?)\s*%$/);
+  if (!match) return null;
+  return Math.min(100, Math.max(0, Number(match[1])));
+}
+
 const TaskStatsGrid: FunctionComponent = () => {
   const { t } = useTranslation();
 
@@ -30,10 +36,22 @@ const TaskStatsGrid: FunctionComponent = () => {
     <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 xl:grid-cols-5 sm:gap-4">
       {taskPlatformKpis.map((kpi, index) => {
         const Icon = icons[kpi.id as keyof typeof icons];
-        const max = Math.max(...kpi.sparkline, 1);
-        const trendClass =
-          kpi.trend > 0 ? 'text-[#22c55e]' : kpi.trend < 0 ? 'text-[#f87171]' : 'text-[var(--admin-text-muted)]';
+        const trendTone = kpi.trend > 0 ? 'up' : kpi.trend < 0 ? 'down' : 'flat';
         const TrendIcon = kpi.trend > 0 ? TrendingUp : kpi.trend < 0 ? TrendingDown : Minus;
+        const trendLabel = t('student.encadrant.task.platform.kpi.trend', { value: Math.abs(kpi.trend) });
+        const piePercent =
+          kpi.id === 'completionRate' ? parsePercentValue(kpi.value) : (kpi.ratio ?? null);
+        const pieGain = piePercent != null && kpi.trend > 0 ? Math.min(kpi.trend, piePercent) : 0;
+        const pieLoss = piePercent != null && kpi.trend < 0 ? Math.min(Math.abs(kpi.trend), 100 - piePercent) : 0;
+        const pieBase = piePercent != null ? Math.max(0, piePercent - pieGain) : 0;
+        const pieEnd = piePercent != null ? Math.min(100, piePercent + pieLoss) : 0;
+        const title = t(`student.encadrant.task.platform.kpi.${kpi.id}`);
+        const pieLabel =
+          piePercent != null
+            ? kpi.id === 'completionRate'
+              ? `${title} ${piePercent}%`
+              : t('student.encadrant.task.platform.kpi.share', { value: piePercent })
+            : '';
 
         return (
           <motion.article
@@ -42,30 +60,39 @@ const TaskStatsGrid: FunctionComponent = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05, duration: 0.4, ease: easePremium }}
             whileHover={{ scale: 1.02, y: -2 }}
-            className={`${TASK_GLASS_CARD} student-task-glass student-task-kpi`}
+            className={`${TASK_GLASS_CARD} student-task-glass student-task-kpi${piePercent != null ? ' student-task-kpi--rate' : ''}`}
           >
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--admin-brand-muted)] text-[var(--admin-brand)]">
-              <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-            </span>
-            <div>
-              <p className="m-0 text-xs font-medium uppercase tracking-wide text-[var(--admin-text-muted)]">
-                {t(`student.encadrant.task.platform.kpi.${kpi.id}`)}
-              </p>
-              <p className="m-0 mt-0.5 text-2xl font-bold text-[var(--admin-text)]">{kpi.value}</p>
+            <div className="student-task-kpi__body">
+              <div className="student-task-kpi__top">
+                <div className="student-task-kpi__head">
+                  <span className="student-task-kpi__icon">
+                    <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                  </span>
+                  <p className="student-task-kpi__title">{title}</p>
+                </div>
+              </div>
+              <p className="m-0 text-2xl font-bold text-[var(--admin-text)]">{kpi.value}</p>
+              <span className={`student-task-kpi__badge student-task-kpi__badge--${trendTone}`}>
+                <TrendIcon className="h-2.5 w-2.5 shrink-0" strokeWidth={2.4} aria-hidden />
+                {trendLabel}
+              </span>
             </div>
-            <p className={`m-0 inline-flex items-center gap-1 text-xs font-semibold ${trendClass}`}>
-              <TrendIcon className="h-3.5 w-3.5" aria-hidden />
-              {t('student.encadrant.task.platform.kpi.trend', { value: Math.abs(kpi.trend) })}
-            </p>
-            <div className="student-task-kpi__spark" aria-hidden>
-              {kpi.sparkline.map((v, i) => (
-                <span
-                  key={`${kpi.id}-s-${i}`}
-                  className="student-task-kpi__bar"
-                  style={{ height: `${(v / max) * 100}%` }}
-                />
-              ))}
-            </div>
+            {piePercent != null ? (
+              <div
+                className={`student-task-kpi__pie${pieGain > 0 ? ' student-task-kpi__pie--gain' : ''}${pieLoss > 0 ? ' student-task-kpi__pie--loss' : ''}`}
+                style={
+                  {
+                    '--pie-p': piePercent,
+                    '--pie-base': pieBase,
+                    '--pie-end': pieEnd,
+                  } as CSSProperties
+                }
+                role="img"
+                aria-label={pieLabel}
+              >
+                <span className="student-task-kpi__pie-inner">{piePercent}%</span>
+              </div>
+            ) : null}
           </motion.article>
         );
       })}

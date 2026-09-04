@@ -16,7 +16,7 @@ const StudentDetailPage: FunctionComponent = () => {
   }
 
   return (
-    <EncadrantLayout headerTitle={student.name} headerSubtitle="Encadrant Portal">
+    <EncadrantLayout>
       <div id="encadrant-student-detail-root" className={STUDENT_DETAIL_PAGE_ROOT}>
         <BackToDashboardButton />
         <StudentDetailPanel student={student} />

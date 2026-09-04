@@ -11,6 +11,8 @@ export type ChatToolMessage = {
   messageType?: string;
   attachments?: ChatAttachmentView[];
   attachmentName?: string;
+  tags?: string[];
+  entityRefs?: import('../../contextual-chat/types/chatEntityTypes').ChatEntityReference[];
 };
 
 export type SharedAttachmentItem = {

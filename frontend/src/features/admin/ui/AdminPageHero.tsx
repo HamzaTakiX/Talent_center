@@ -39,19 +39,27 @@ const AdminPageHero: FunctionComponent<AdminPageHeroProps> = ({
     />
 
     <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 items-start gap-3">
-        {Icon ? (
-          <span className="admin-page-hero__icon" aria-hidden>
-            <Icon className="h-6 w-6" strokeWidth={1.75} />
-          </span>
-        ) : null}
-        <div className="min-w-0">
-          {badge ? <div className="mb-2">{badge}</div> : null}
-          <h1 className="text-xl font-bold tracking-tight text-[var(--admin-text)] sm:text-2xl">{title}</h1>
-          {subtitle && (
-            <p className="mt-1 text-sm text-[var(--admin-text-secondary)]">{subtitle}</p>
-          )}
+      <div className="min-w-0">
+        {badge ? <div className="mb-2">{badge}</div> : null}
+        <div className="flex min-w-0 items-center gap-3">
+          {Icon ? (
+            <span className="admin-page-hero__icon" aria-hidden>
+              <Icon className="h-6 w-6" strokeWidth={1.75} />
+            </span>
+          ) : null}
+          <h1 className="min-w-0 text-xl font-bold tracking-tight text-[var(--admin-text)] sm:text-2xl">
+            {title}
+          </h1>
         </div>
+        {subtitle && (
+          <p
+            className={`mt-1 text-sm text-[var(--admin-text-secondary)] ${
+              Icon ? 'sm:ms-[3.75rem]' : ''
+            }`}
+          >
+            {subtitle}
+          </p>
+        )}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>

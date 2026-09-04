@@ -86,6 +86,7 @@ function resolveCounterparty(
   email?: string;
   avatarUrl?: string;
   userId?: number | null;
+  encadrantProfileId?: number | null;
   roleLabel?: string;
 } {
   const isStudentDm =
@@ -129,6 +130,53 @@ function resolveCounterparty(
     };
   }
 
+  if (entityType === 'encadrant_desk' || entityType === 'supervision_dm') {
+    const participant = dto.participants.find((p) => !dto.last_message_is_own) ?? dto.participants[0];
+    if (viewerRole === 'admin' || entityType === 'supervision_dm') {
+      // Student viewing supervision_dm (or admin viewing encadrant_desk): show encadrant.
+      if (entityType === 'supervision_dm' && viewerRole === 'student') {
+        return {
+          displayName: str(snap.encadrant_name) || participant?.full_name || dto.title || 'Encadrant',
+          email: str(snap.encadrant_email) || participant?.email || undefined,
+          avatarUrl: resolveSnapshotAvatar(snap.encadrant_avatar_url),
+          userId: (snap.encadrant_user_id as number | null) ?? participant?.user_id ?? null,
+          roleLabel: str(snap.encadrant_role_label) || 'Encadrant',
+          encadrantProfileId: (snap.encadrant_profile_id as number | null) ?? null,
+        };
+      }
+      if (entityType === 'supervision_dm' && viewerRole !== 'student') {
+        return {
+          displayName: str(snap.student_name) || participant?.full_name || dto.title || 'Étudiant',
+          email: str(snap.student_email) || participant?.email || undefined,
+          avatarUrl: resolveSnapshotAvatar(snap.student_avatar_url),
+          userId: (snap.student_user_id as number | null) ?? participant?.user_id ?? null,
+          roleLabel: 'Étudiant',
+        };
+      }
+      if (entityType === 'encadrant_desk' && viewerRole === 'admin') {
+        return {
+          displayName: str(snap.encadrant_name) || participant?.full_name || dto.title || 'Encadrant',
+          email: str(snap.encadrant_email) || participant?.email || undefined,
+          avatarUrl: resolveSnapshotAvatar(snap.encadrant_avatar_url),
+          userId: (snap.encadrant_user_id as number | null) ?? participant?.user_id ?? null,
+          roleLabel: str(snap.encadrant_role_label) || 'Encadrant',
+          encadrantProfileId: (snap.encadrant_profile_id as number | null) ?? null,
+        };
+      }
+    }
+    return {
+      displayName: str(snap.admin_name) || str(snap.student_name) || participant?.full_name || dto.title || 'Contact',
+      email: str(snap.admin_email) || str(snap.student_email) || participant?.email || undefined,
+      avatarUrl: resolveSnapshotAvatar(snap.admin_avatar_url, snap.student_avatar_url),
+      userId:
+        (snap.admin_user_id as number | null) ??
+        (snap.student_user_id as number | null) ??
+        participant?.user_id ??
+        null,
+      roleLabel: str(snap.admin_role_label) || 'Contact',
+    };
+  }
+
   const participant = dto.participants.find((p) => !dto.last_message_is_own) ?? dto.participants[0];
   return {
     displayName: participant?.full_name || dto.title || 'Contact',
@@ -166,7 +214,12 @@ export function mapPlatformDeskMessages(
   dtos: MessageDto[],
   studentUserId: number | null,
   viewerRole: PlatformDeskViewerRole,
+  entityType?: PlatformDeskEntityType,
 ): PlatformDeskMessage[] {
+  const deskPeerThread =
+    entityType === 'admin_desk' ||
+    entityType === 'encadrant_desk' ||
+    entityType === 'supervision_dm';
   return [...dtos]
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
     .filter((m) => {
@@ -183,21 +236,25 @@ export function mapPlatformDeskMessages(
         ? 'in'
         : m.is_own
           ? 'out'
-          : viewerRole === 'student'
-            ? !isStudentSender
-              ? 'in'
-              : 'out'
-            : isStudentSender
-              ? 'in'
-              : 'out';
+          : deskPeerThread
+            ? 'in'
+            : viewerRole === 'student'
+              ? !isStudentSender
+                ? 'in'
+                : 'out'
+              : isStudentSender
+                ? 'in'
+                : 'out';
       return {
         id: getMessageStableKey(m),
         direction,
         text: m.body,
         time: formatTime(m.created_at),
-        messageType: m.message_type,
+        messageType: m.message_type as PlatformDeskMessage['messageType'],
         smartActionCode,
         createdAt: m.created_at,
+        tags: m.tags?.length ? m.tags : undefined,
+        entityRefs: m.entity_refs?.length ? m.entity_refs : undefined,
         attachmentName: m.attachments?.[0]?.original_filename,
         attachments: mapMessageAttachments(m),
         ...mapOwnMessageReadState(m),
@@ -216,6 +273,12 @@ export function mapPlatformDeskConversationDto(
   const counterparty = resolveCounterparty(dto, ctx, snap, entityType, viewerRole);
   const urgency = (ctx?.urgency ?? 'NONE').toUpperCase();
   const lastMsg = messages[messages.length - 1];
+  const specializationDomains = Array.isArray(snap.specialization_domains)
+    ? snap.specialization_domains.map((item) => str(item)).filter(Boolean)
+    : [];
+  const supervisedInternshipTypes = Array.isArray(snap.supervised_internship_types)
+    ? snap.supervised_internship_types.map((item) => str(item)).filter(Boolean)
+    : [];
 
   return {
     id: String(dto.id),
@@ -235,7 +298,19 @@ export function mapPlatformDeskConversationDto(
     contextKind: ctx?.context_kind,
     urgency,
     userId: counterparty.userId,
+    encadrantProfileId: counterparty.encadrantProfileId ?? null,
+    specializationDomains,
+    supervisedInternshipTypes,
+    currentStudents:
+      typeof snap.current_students === 'number'
+        ? snap.current_students
+        : Number(snap.current_students) || 0,
+    maxStudents:
+      typeof snap.max_students === 'number' ? snap.max_students : Number(snap.max_students) || 0,
+    acceptingStudents: snap.accepting_students === true,
+    isEncadrantActive: snap.is_encadrant_active !== false,
     studentUserId: ctx?.student_user_id ?? (snap.student_user_id as number | null) ?? null,
+    studentProfileId: (snap.student_profile_id as number | null) ?? null,
     lastMessage: dto.last_preview || lastMsg?.text || '',
     timeLabel: formatRelative(dto.last_message_at),
     lastMessageAt: dto.last_message_at,
@@ -273,6 +348,13 @@ export function toDeskConversationRecord(conversation: PlatformDeskConversation)
     avatarUrl: conversation.avatarUrl,
     roleLabel: conversation.roleLabel,
     userId: conversation.userId ?? undefined,
+    encadrantProfileId: conversation.encadrantProfileId ?? undefined,
+    specializationDomains: conversation.specializationDomains,
+    supervisedInternshipTypes: conversation.supervisedInternshipTypes,
+    currentStudents: conversation.currentStudents,
+    maxStudents: conversation.maxStudents,
+    acceptingStudents: conversation.acceptingStudents,
+    isEncadrantActive: conversation.isEncadrantActive,
     archived: conversation.archived,
     resolved: conversation.resolved,
     urgent: conversation.urgent,

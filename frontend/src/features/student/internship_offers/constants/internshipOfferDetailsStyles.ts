@@ -54,13 +54,14 @@ export const DETAILS_TAG_NEUTRAL = 'admin-badge admin-badge--neutral';
 
 
 
-export const DETAILS_PAGE_SECTION_GAP = 'flex min-w-0 flex-col gap-4 sm:gap-5';
+export const DETAILS_PAGE_SECTION_GAP = 'flex min-w-0 flex-col gap-3 sm:gap-4';
 
-
+/** Espacement page détail — plus serré que la liste offres (évite les trous visuels). */
+export const DETAILS_PAGE_ROOT =
+  'admin-page mx-auto flex w-full min-w-0 max-w-[1600px] flex-col gap-3 scroll-mt-4 pb-2 sm:gap-4 sm:pb-4';
 
 export const DETAILS_MATCH_ZONE =
-
-  'mt-6 flex min-w-0 flex-col gap-4 border-t border-[var(--admin-border)] pt-6 sm:mt-8 sm:gap-5 sm:pt-8';
+  'flex min-w-0 flex-col gap-3 border-t border-[var(--admin-border)] pt-4 sm:gap-4 sm:pt-5';
 
 export const DETAILS_SIMULATION_CTA =
   'student-interview-sim-cta inline-flex items-center justify-center gap-2.5 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-brand)] focus-visible:ring-offset-2';

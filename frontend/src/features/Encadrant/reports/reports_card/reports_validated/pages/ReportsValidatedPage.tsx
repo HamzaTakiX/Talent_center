@@ -4,7 +4,7 @@ import { ReportsValidatedStudentsSection, ReportsValidatedSummaryGrid } from '..
 import { REPORTS_VALIDATED_PAGE_ROOT } from '../constants/reportsValidatedLayout';
 
 const ReportsValidatedPage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Reports Validated" headerSubtitle="Encadrant Portal">
+  <EncadrantLayout>
     <div id="encadrant-reports-validated-root" className={REPORTS_VALIDATED_PAGE_ROOT}>
       <ReportsValidatedSummaryGrid />
       <ReportsValidatedStudentsSection />

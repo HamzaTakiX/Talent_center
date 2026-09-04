@@ -1,6 +1,7 @@
 import { FunctionComponent, useMemo, useState } from 'react';
-import { Archive, MessageSquare, Search, X } from 'lucide-react';
+import { Archive, MessageSquare, Search, Shield, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useInternshipInboxCopy } from '../../../offres-stage/hooks/useOffersListLabels';
 import InternshipSidebarEmptyState from '../../../offres-stage/chat/components/InternshipSidebarEmptyState';
 import { InternshipChatSidebarSkeleton } from '../../../offres-stage/chat/components/InternshipChatLoadingSkeletons';
@@ -18,6 +19,7 @@ import type {
 } from '../types/platformDeskChatTypes';
 import PlatformDeskSupportStatusBadge from './PlatformDeskSupportStatusBadge';
 import { visibleSupportStatus } from '../utils/platformDeskSupportStatus';
+import { resolveStudentPlatformDeskRoleLabel } from '../../../../student/support/chat/utils/platformDeskStudentLabels';
 
 type Props = {
   conversations: PlatformDeskConversation[];
@@ -38,6 +40,7 @@ type Props = {
   sidebarIcon?: LucideIcon;
   showAcademicFilters?: boolean;
   viewerRole?: PlatformDeskViewerRole;
+  showArchive?: boolean;
   onSetPrimary: (v: PlatformDeskInboxFilters['primary']) => void;
   onToggleStudentAcademicFilter: (
     key: keyof import('../../chat-filters/studentAcademicChatFilterTypes').StudentAcademicChatFilters,
@@ -68,6 +71,7 @@ const PlatformDeskConversationList: FunctionComponent<Props> = ({
   sidebarIcon: SidebarIcon = MessageSquare,
   showAcademicFilters = true,
   viewerRole = 'admin',
+  showArchive = true,
   onSetPrimary,
   onToggleStudentAcademicFilter,
   onToggleQuickFilter,
@@ -77,6 +81,7 @@ const PlatformDeskConversationList: FunctionComponent<Props> = ({
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { t } = useInternshipInboxCopy();
+  const { t: tStudent } = useTranslation();
   const viewingArchived = filters.primary === 'archived';
 
   const quickFilters = useMemo(
@@ -100,7 +105,10 @@ const PlatformDeskConversationList: FunctionComponent<Props> = ({
             archivedCount={primaryFilterCounts.archived}
             hasActiveFilters={hasActiveFilters}
             filtersOpen={filtersOpen}
-            onToggleArchive={() => onSetPrimary(viewingArchived ? 'all' : 'archived')}
+            showArchive={showArchive}
+            onToggleArchive={
+              showArchive ? () => onSetPrimary(viewingArchived ? 'all' : 'archived') : undefined
+            }
             onToggleFilters={() => setFiltersOpen((v) => !v)}
           />
         }
@@ -112,7 +120,7 @@ const PlatformDeskConversationList: FunctionComponent<Props> = ({
         </p>
       ) : null}
 
-      {viewingArchived ? (
+      {showArchive && viewingArchived ? (
         <div className="isi-archived-strip">
           <Archive className="isi-archived-strip-icon" strokeWidth={2} aria-hidden />
           <span className="isi-archived-strip-label">{t('archivedBanner')}</span>
@@ -204,12 +212,23 @@ const PlatformDeskConversationList: FunctionComponent<Props> = ({
           conversations.map((conv) => {
             const active = conv.id === selectedId;
             const supportStatus = visibleSupportStatus(conv, viewerRole);
+            const roleLabel =
+              viewerRole === 'student'
+                ? resolveStudentPlatformDeskRoleLabel(conv.roleLabel, tStudent)
+                : conv.roleLabel;
+            const useAdminDeskStyle = viewerRole === 'student' && !showAcademicFilters;
             return (
               <button
                 key={conv.id}
                 type="button"
                 onClick={() => onSelect(conv.id)}
-                className={`isi-conv-item ${active ? 'isi-conv-item--active' : ''}`}
+                className={[
+                  'isi-conv-item',
+                  useAdminDeskStyle ? 'isi-conv-item--admin-desk' : '',
+                  active ? 'isi-conv-item--active' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
                 <InternshipStudentAvatar
                   url={conv.avatarUrl}
@@ -219,26 +238,53 @@ const PlatformDeskConversationList: FunctionComponent<Props> = ({
                   size="list"
                 />
                 <div className="isi-conv-body">
-                  <div className="isi-conv-row">
-                    <div className="isi-conv-name-row">
-                      <span className="isi-conv-name">{conv.displayName}</span>
-                      {supportStatus ? (
-                        <PlatformDeskSupportStatusBadge
-                          status={supportStatus}
-                          viewerRole={viewerRole}
-                          inline
-                        />
+                  {useAdminDeskStyle ? (
+                    <>
+                      <div className="isi-conv-row">
+                        <span className="isi-conv-name">{conv.displayName}</span>
+                        {conv.timeLabel ? <span className="isi-conv-time">{conv.timeLabel}</span> : null}
+                      </div>
+                      <div className="isi-conv-meta">
+                        {roleLabel ? (
+                          <span className="isi-conv-role-chip">
+                            <Shield className="isi-conv-role-chip__icon" strokeWidth={2.25} aria-hidden />
+                            {roleLabel}
+                          </span>
+                        ) : null}
+                        {supportStatus ? (
+                          <PlatformDeskSupportStatusBadge
+                            status={supportStatus}
+                            viewerRole={viewerRole}
+                            inline
+                          />
+                        ) : null}
+                      </div>
+                      {conv.lastMessage ? <p className="isi-conv-preview">{conv.lastMessage}</p> : null}
+                    </>
+                  ) : (
+                    <>
+                      <div className="isi-conv-row">
+                        <div className="isi-conv-name-row">
+                          <span className="isi-conv-name">{conv.displayName}</span>
+                          {supportStatus ? (
+                            <PlatformDeskSupportStatusBadge
+                              status={supportStatus}
+                              viewerRole={viewerRole}
+                              inline
+                            />
+                          ) : null}
+                        </div>
+                        {conv.timeLabel ? <span className="isi-conv-time">{conv.timeLabel}</span> : null}
+                      </div>
+                      {showAcademicFilters && conv.program && conv.program !== '—' ? (
+                        <p className="isi-conv-offer">{conv.program}</p>
                       ) : null}
-                    </div>
-                    {conv.timeLabel ? <span className="isi-conv-time">{conv.timeLabel}</span> : null}
-                  </div>
-                  {showAcademicFilters && conv.program && conv.program !== '—' ? (
-                    <p className="isi-conv-offer">{conv.program}</p>
-                  ) : null}
-                  {!showAcademicFilters && conv.roleLabel ? (
-                    <p className="isi-conv-offer">{conv.roleLabel}</p>
-                  ) : null}
-                  {conv.lastMessage ? <p className="isi-conv-preview">{conv.lastMessage}</p> : null}
+                      {!showAcademicFilters && roleLabel ? (
+                        <p className="isi-conv-offer isi-conv-offer--admin-role">{roleLabel}</p>
+                      ) : null}
+                      {conv.lastMessage ? <p className="isi-conv-preview">{conv.lastMessage}</p> : null}
+                    </>
+                  )}
                 </div>
                 {conv.unreadCount > 0 ? (
                   <span className="isi-unread">

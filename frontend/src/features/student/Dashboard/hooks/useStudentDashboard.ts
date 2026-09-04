@@ -108,14 +108,14 @@ export function useStudentDashboard() {
       setHistoryEvents(historyCenter.timeline?.items ?? []);
       setCvDashboard(cvResult.ok ? cvResult.response.dashboard : null);
     } catch (err) {
-      setError(parseAdminApiError(err, 'dashboard_load_failed').message);
+      setError(parseAdminApiError(err, t('student.dashboard.errors.loadFailed')).message);
       setJourney(null);
       setHistoryEvents([]);
       setCvDashboard(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void refresh();

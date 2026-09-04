@@ -9,11 +9,11 @@ import {
 } from '@dnd-kit/core';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Brain, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useAdminBackLabel } from '../../../i18n/useAdminCopy';
 import AdminBackButton from '../../../ui/AdminBackButton';
 import AdminModulePageShell from '../../../ui/AdminModulePageShell';
-import AdminPageHero from '../../../ui/AdminPageHero';
+import SmartAssignmentPageHero from '../components/SmartAssignmentPageHero';
 import { academicReferenceApi } from '../../../api/reference';
 import {
   SmartAssignmentPrecheckError,
@@ -26,16 +26,23 @@ import type {
   SmartAssignmentResultsPayload,
   SmartAssignmentRunPayload,
   SmartAssignmentStudentRow,
+  SmartAssignmentEncadrantCard,
 } from '../../../api/types';
 import { useAdminToast } from '../../../dashboard/context/AdminToastContext';
 import SmartAssignmentStatsBar from '../components/SmartAssignmentStatsBar';
 import SmartAssignmentToolbar from '../components/SmartAssignmentToolbar';
 import SmartAssignmentWorkloadChart from '../components/SmartAssignmentWorkloadChart';
 import SmartAssignmentInternshipAnalyticsPanel from '../components/SmartAssignmentInternshipAnalytics';
+import SmartAssignmentUncoveredTypesPanel from '../components/SmartAssignmentUncoveredTypesPanel';
 import EncadrantsAssignmentGrid from '../components/EncadrantsAssignmentGrid';
 import SmartAssignmentValidationBanner from '../components/validation/SmartAssignmentValidationBanner';
 import SmartAssignmentValidationDetailsModal from '../components/validation/SmartAssignmentValidationDetailsModal';
 import SmartAssignmentRunConfirmModal from '../components/validation/SmartAssignmentRunConfirmModal';
+import SmartAssignmentManualAssignModal from '../components/SmartAssignmentManualAssignModal';
+import {
+  buildEncadrantAssignmentMap,
+  collectEligibleStudents,
+} from '../utils/manualAssignUtils';
 
 type RunPhase = 'idle' | 'validating' | 'running' | 'previewing';
 
@@ -65,6 +72,10 @@ const SmartAssignmentPage: FunctionComponent = () => {
   const [excludedStudents] = useState<Set<number>>(new Set());
   const [respectLocks, setRespectLocks] = useState(true);
   const [activeDragStudent, setActiveDragStudent] = useState<SmartAssignmentStudentRow | null>(null);
+  const [manualAssignEncadrant, setManualAssignEncadrant] = useState<SmartAssignmentEncadrantCard | null>(
+    null,
+  );
+  const [assigningStudentId, setAssigningStudentId] = useState<number | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -195,31 +206,59 @@ const SmartAssignmentPage: FunctionComponent = () => {
     void executeEngine(pendingDryRun, strategy);
   };
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    setActiveDragStudent(null);
-    const { active, over } = event;
-    if (!over || !active.data.current?.student) return;
+  const reassignStudent = useCallback(
+    async (student: SmartAssignmentStudentRow, encadrantProfileId: number | null) => {
+      setAssigningStudentId(student.student_profile_id);
+      try {
+        await smartAssignmentApi.reassign({
+          student_profile_id: student.student_profile_id,
+          encadrant_profile_id: encadrantProfileId,
+          academic_year: academicYear,
+        });
+        await loadResults();
+        toastSuccess(t('admin.smartAssignment.success.reassigned'));
+      } catch {
+        toastError(t('admin.smartAssignment.errors.reassignFailed'));
+      } finally {
+        setAssigningStudentId(null);
+      }
+    },
+    [academicYear, loadResults, t, toastError, toastSuccess],
+  );
 
-    const student = active.data.current.student as SmartAssignmentStudentRow;
-    const overId = String(over.id);
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      setActiveDragStudent(null);
+      const { active, over } = event;
+      if (!over || !active.data.current?.student) return;
 
-    let targetEncadrantId: number | null = null;
-    if (overId.startsWith('encadrant-')) {
-      targetEncadrantId = parseInt(overId.replace('encadrant-', ''), 10);
-    }
+      const student = active.data.current.student as SmartAssignmentStudentRow;
+      const overId = String(over.id);
 
-    try {
-      await smartAssignmentApi.reassign({
-        student_profile_id: student.student_profile_id,
-        encadrant_profile_id: targetEncadrantId,
-        academic_year: academicYear,
-      });
-      await loadResults();
-      toastSuccess(t('admin.smartAssignment.success.reassigned'));
-    } catch {
-      toastError(t('admin.smartAssignment.errors.reassignFailed'));
-    }
-  };
+      let targetEncadrantId: number | null = null;
+      if (overId.startsWith('encadrant-')) {
+        targetEncadrantId = parseInt(overId.replace('encadrant-', ''), 10);
+      }
+
+      await reassignStudent(student, targetEncadrantId);
+    },
+    [reassignStudent],
+  );
+
+  const handleManualAssign = useCallback(
+    (student: SmartAssignmentStudentRow) => {
+      if (!manualAssignEncadrant) return;
+      void reassignStudent(student, manualAssignEncadrant.encadrant_profile_id);
+    },
+    [manualAssignEncadrant, reassignStudent],
+  );
+
+  const handleManualUnassign = useCallback(
+    (student: SmartAssignmentStudentRow) => {
+      void reassignStudent(student, null);
+    },
+    [reassignStudent],
+  );
 
   const handleToggleLock = async (assignmentId: number, locked: boolean) => {
     try {
@@ -247,6 +286,25 @@ const SmartAssignmentPage: FunctionComponent = () => {
     return data.encadrants;
   }, [data]);
 
+  const eligibleStudents = useMemo(
+    () => (data ? collectEligibleStudents(data) : []),
+    [data],
+  );
+
+  const assignmentMap = useMemo(
+    () => (data ? buildEncadrantAssignmentMap(data) : new Map()),
+    [data],
+  );
+
+  const manualAssignEncadrantLive = useMemo(() => {
+    if (!manualAssignEncadrant || !data) return manualAssignEncadrant;
+    return (
+      data.encadrants.find(
+        (enc) => enc.encadrant_profile_id === manualAssignEncadrant.encadrant_profile_id,
+      ) ?? manualAssignEncadrant
+    );
+  }, [data, manualAssignEncadrant]);
+
   const phaseLabel =
     runPhase === 'validating'
       ? t('admin.smartAssignment.validation.phase.validating')
@@ -264,15 +322,11 @@ const SmartAssignmentPage: FunctionComponent = () => {
         className="mb-4 w-fit shrink-0 !rounded-lg"
       />
 
-      <AdminPageHero
-        title={t('admin.smartAssignment.title')}
-        subtitle={t('admin.smartAssignment.subtitle')}
-        badge={
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--admin-brand-muted)] text-[var(--admin-brand)]">
-            <Brain className="h-5 w-5" aria-hidden />
-          </span>
-        }
-        className="mb-6"
+      <SmartAssignmentPageHero />
+
+      <SmartAssignmentUncoveredTypesPanel
+        analytics={data?.internship_analytics}
+        loading={loading}
       />
 
       <SmartAssignmentToolbar
@@ -339,6 +393,7 @@ const SmartAssignmentPage: FunctionComponent = () => {
             encadrants={displayEncadrants}
             excludedIds={excludedEncadrants}
             loading={loading && !data}
+            onSelectEncadrant={setManualAssignEncadrant}
           />
         </div>
         <DragOverlay>
@@ -362,6 +417,17 @@ const SmartAssignmentPage: FunctionComponent = () => {
         isPreview={pendingDryRun}
         loading={isEngineBusy}
         onConfirm={handleConfirmRun}
+      />
+
+      <SmartAssignmentManualAssignModal
+        open={manualAssignEncadrant !== null}
+        encadrant={manualAssignEncadrantLive}
+        students={eligibleStudents}
+        assignmentMap={assignmentMap}
+        assigningId={assigningStudentId}
+        onClose={() => setManualAssignEncadrant(null)}
+        onAssign={handleManualAssign}
+        onUnassign={handleManualUnassign}
       />
     </AdminModulePageShell>
   );

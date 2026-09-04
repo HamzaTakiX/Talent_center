@@ -4,7 +4,7 @@ import { ReportsSubmittedStudentsSection, ReportsSubmittedSummaryGrid } from '..
 import { REPORTS_SUBMITTED_PAGE_ROOT } from '../constants/reportsSubmittedLayout';
 
 const ReportsSubmittedPage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Reports Submitted" headerSubtitle="Encadrant Portal">
+  <EncadrantLayout>
     <div id="encadrant-reports-submitted-root" className={REPORTS_SUBMITTED_PAGE_ROOT}>
       <ReportsSubmittedSummaryGrid />
       <ReportsSubmittedStudentsSection />

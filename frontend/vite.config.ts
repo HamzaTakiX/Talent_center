@@ -13,9 +13,13 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, rootDir, '');
   const hasAuth0 =
     Boolean(env.VITE_AUTH0_DOMAIN?.trim()) && Boolean(env.VITE_AUTH0_CLIENT_ID?.trim());
+  const appUrl = (env.VITE_APP_URL || '').trim().replace(/\/+$/, '');
   console.log(
     `[vite] Auth0 env at build: domain=${env.VITE_AUTH0_DOMAIN ? 'set' : 'MISSING'}, clientId=${env.VITE_AUTH0_CLIENT_ID ? 'set' : 'MISSING'}`,
   );
+  if (appUrl) {
+    console.log(`[vite] Open the app at: ${appUrl}`);
+  }
   if (mode === 'production' && !hasAuth0) {
     console.warn(
       '[vite] VITE_AUTH0_DOMAIN / VITE_AUTH0_CLIENT_ID are empty — set them in Vercel Environment Variables and redeploy.',
@@ -38,17 +42,19 @@ export default defineConfig(({ mode }) => {
     server: {
     port: 5173,
     host: '0.0.0.0',
+    // Allow http://talent-center.localhost:5173 (Auth0 treats *.localhost as verifiable).
+    allowedHosts: ['talent-center.localhost', '.localhost', 'localhost'],
     proxy: {
       '/media': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://localhost:8000',
+        target: 'ws://127.0.0.1:8000',
         ws: true,
         changeOrigin: true,
       },

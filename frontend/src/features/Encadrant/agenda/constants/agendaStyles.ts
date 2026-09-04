@@ -1,13 +1,30 @@
+import {
+  ENC_BADGE_DANGER,
+  ENC_BADGE_INFO,
+  ENC_BADGE_SUCCESS,
+} from '../../constants/encadrantTokens';
 import type { AgendaMeetingStatus, AgendaMeetingType, AgendaSummaryTone } from '../types';
 
 export const AGENDA_SUMMARY_STYLES: Record<
   AgendaSummaryTone,
   { iconWrap: string; iconText: string }
 > = {
-  blue: { iconWrap: 'bg-[#eff6ff]', iconText: 'text-[#2563eb]' },
-  green: { iconWrap: 'bg-[#f0fdf4]', iconText: 'text-[#16a34a]' },
-  purple: { iconWrap: 'bg-[#faf5ff]', iconText: 'text-[#9333ea]' },
-  red: { iconWrap: 'bg-[#fef2f2]', iconText: 'text-[#dc2626]' },
+  blue: {
+    iconWrap: 'bg-[var(--admin-brand-muted)]',
+    iconText: 'text-[var(--admin-brand)]',
+  },
+  green: {
+    iconWrap: 'bg-[color-mix(in_srgb,#059669_12%,var(--admin-bg-elevated))]',
+    iconText: 'text-[#059669]',
+  },
+  purple: {
+    iconWrap: 'bg-[var(--admin-brand-muted)]',
+    iconText: 'text-[var(--admin-brand)]',
+  },
+  red: {
+    iconWrap: 'bg-[color-mix(in_srgb,var(--admin-danger)_12%,var(--admin-bg-elevated))]',
+    iconText: 'text-[var(--admin-danger)]',
+  },
 };
 
 export const AGENDA_EVENT_STYLES: Record<
@@ -15,23 +32,23 @@ export const AGENDA_EVENT_STYLES: Record<
   { card: string; duration: string }
 > = {
   'in-person': {
-    card: 'border-[#bfdbfe] bg-[#eff6ff]',
-    duration: 'text-[#2563eb]',
+    card: 'border-[color-mix(in_srgb,var(--admin-brand)_35%,var(--admin-border))] bg-[var(--admin-brand-muted)]',
+    duration: 'text-[var(--admin-brand)]',
   },
   online: {
-    card: 'border-[#ddd6fe] bg-[#f5f3ff]',
-    duration: 'text-[#7c3aed]',
+    card: 'border-[var(--admin-brand)] bg-[var(--admin-brand-muted)]',
+    duration: 'text-[var(--admin-brand)]',
   },
 };
 
 export const AGENDA_STATUS_BADGE: Record<AgendaMeetingStatus, string> = {
-  upcoming: 'bg-[#dbeafe] text-[#1d4ed8]',
-  completed: 'bg-[#dcfce7] text-[#15803d]',
-  missed: 'bg-[#fee2e2] text-[#b91c1c]',
+  upcoming: ENC_BADGE_INFO,
+  completed: ENC_BADGE_SUCCESS,
+  missed: ENC_BADGE_DANGER,
 };
 
-export const AGENDA_STATUS_LABEL: Record<AgendaMeetingStatus, string> = {
-  upcoming: 'Upcoming',
-  completed: 'Completed',
-  missed: 'Missed',
+export const AGENDA_STATUS_LABEL_KEY: Record<AgendaMeetingStatus, string> = {
+  upcoming: 'encadrant.status.upcoming',
+  completed: 'encadrant.status.completed',
+  missed: 'encadrant.status.missed',
 };

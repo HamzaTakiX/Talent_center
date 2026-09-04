@@ -9,14 +9,44 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { REPORTS_HUB_KPI_SKELETON_COUNT } from '../../constants/limits';
 import type { HubKpiMetrics } from '../../types';
+import ReportsHubSkeletonBlock from './ReportsHubSkeletonBlock';
 
 interface ReportsHubKpiGridProps {
   metrics: HubKpiMetrics;
+  loading?: boolean;
 }
 
-const ReportsHubKpiGrid: FunctionComponent<ReportsHubKpiGridProps> = ({ metrics }) => {
+const ReportsHubKpiGrid: FunctionComponent<ReportsHubKpiGridProps> = ({
+  metrics,
+  loading = false,
+}) => {
   const { t } = useTranslation();
+  const loadingLabel = t('student.reports.hub.loading', { defaultValue: 'Chargement…' });
+
+  if (loading) {
+    return (
+      <div
+        className="sr-hub-kpi-grid"
+        role="status"
+        aria-busy="true"
+        aria-label={loadingLabel}
+      >
+        <span className="sr-only">{loadingLabel}</span>
+        {Array.from({ length: REPORTS_HUB_KPI_SKELETON_COUNT }, (_, i) => (
+          <div key={i} className="sr-hub-kpi">
+            <ReportsHubSkeletonBlock className="h-8 w-8 shrink-0 rounded-lg" />
+            <div className="sr-hub-kpi__body min-w-0 flex-1">
+              <ReportsHubSkeletonBlock className="h-2.5 w-16" />
+              <ReportsHubSkeletonBlock className="mt-2 h-6 w-14" />
+              <ReportsHubSkeletonBlock className="mt-1.5 h-2.5 w-24" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const cards = [
     {

@@ -1,4 +1,5 @@
 import { FunctionComponent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DASHBOARD_STUDENTS_GRID } from '../constants/dashboardLayout';
 import type { AssignedStudent } from '../types';
 import DashboardStudentCard from './DashboardStudentCard';
@@ -8,9 +9,13 @@ interface DashboardStudentsGridProps {
 }
 
 const DashboardStudentsGrid: FunctionComponent<DashboardStudentsGridProps> = ({ students }) => {
+  const { t } = useTranslation();
+
   if (students.length === 0) {
     return (
-      <p className="m-0 py-8 text-center text-sm text-[#717182]">No students match your search.</p>
+      <p className="m-0 py-8 text-center text-sm text-[var(--admin-text-secondary)]">
+        {t('encadrant.common.emptySearch')}
+      </p>
     );
   }
 

@@ -9,7 +9,7 @@ import '../../../../cv/styles/cv-ai-insights.css';
 const CvBuilderWorkspace: FunctionComponent = () => (
   <div data-cv-editor-shell className="flex h-full min-h-0 w-full flex-col overflow-hidden">
     <CvAiConfigBanner />
-    <CvEditorToolbar />
+    <CvEditorToolbar hideBack />
     <div className="cv-editor-main relative min-h-0 flex-1 flex flex-col overflow-hidden">
       <CvQuickBuilderEmbed className="min-h-0 flex-1" />
       <CvAiOverviewPanel />

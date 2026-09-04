@@ -5,12 +5,14 @@ import type {
   AnalyticsOverview,
   AuditEntry,
   CategoryConfig,
+  EmailEventCatalogItem,
   EmailTemplateDetail,
   EmailTemplateRow,
   GeneralSettings,
   ProviderConfig,
   QueueItem,
   SenderIdentity,
+  TemplateVariable,
 } from '../types/emailSystemTypes';
 
 const BASE = '/admin/email-system';
@@ -133,6 +135,74 @@ export const emailSystemApi = {
   testTemplate: async (code: string, payload: { recipient_email: string; language: string }) => {
     const res = await apiClient.post<ApiEnvelope<Record<string, unknown>>>(`${BASE}/templates/${code}/test/`, payload);
     return res.data;
+  },
+
+  safePreviewTemplate: async (code: string, language: string) => {
+    const res = await apiClient.post<
+      ApiEnvelope<{ subject: string; body_html: string; body_text: string; event_code: string; is_test_preview: boolean }>
+    >(`${BASE}/templates/${code}/safe-preview/`, { language });
+    return res.data.data;
+  },
+
+  safeTestTemplate: async (code: string, payload: { recipient_email: string; language: string }) => {
+    const res = await apiClient.post<ApiEnvelope<Record<string, unknown>>>(
+      `${BASE}/templates/${code}/safe-test/`,
+      payload,
+    );
+    return res.data;
+  },
+
+  createTemplate: async (payload: {
+    code: string;
+    name: string;
+    event_code: string;
+    category: string;
+    language?: string;
+    subject_template: string;
+    body_html_template?: string;
+    body_text_template?: string;
+    set_as_selected?: boolean;
+    set_as_default?: boolean;
+  }): Promise<EmailTemplateDetail> => {
+    const res = await apiClient.post<ApiEnvelope<EmailTemplateDetail>>(`${BASE}/templates/create/`, payload);
+    return res.data.data;
+  },
+
+  duplicateTemplate: async (code: string, payload: { new_code: string; new_name?: string }) => {
+    const res = await apiClient.post<ApiEnvelope<EmailTemplateDetail>>(
+      `${BASE}/templates/${code}/duplicate/`,
+      payload,
+    );
+    return res.data.data;
+  },
+
+  archiveTemplate: async (code: string) => {
+    const res = await apiClient.post<ApiEnvelope<EmailTemplateDetail>>(`${BASE}/templates/${code}/archive/`);
+    return res.data.data;
+  },
+
+  selectTemplate: async (code: string) => {
+    const res = await apiClient.post<ApiEnvelope<EmailTemplateDetail>>(`${BASE}/templates/${code}/select/`);
+    return res.data.data;
+  },
+
+  setDefaultTemplate: async (code: string) => {
+    const res = await apiClient.post<ApiEnvelope<EmailTemplateDetail>>(`${BASE}/templates/${code}/default/`);
+    return res.data.data;
+  },
+
+  listEvents: async (): Promise<EmailEventCatalogItem[]> => {
+    const res = await apiClient.get<ApiEnvelope<{ items: EmailEventCatalogItem[] }>>(`${BASE}/events/`);
+    return res.data.data.items;
+  },
+
+  getEventVariables: async (
+    eventCode: string,
+  ): Promise<{ event_code: string; variables: TemplateVariable[]; sample_context: Record<string, string> }> => {
+    const res = await apiClient.get<
+      ApiEnvelope<{ event_code: string; variables: TemplateVariable[]; sample_context: Record<string, string> }>
+    >(`${BASE}/events/${encodeURIComponent(eventCode)}/variables/`);
+    return res.data.data;
   },
 
   getAnalytics: async (days: number): Promise<AnalyticsOverview> => {

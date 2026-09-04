@@ -1,5 +1,5 @@
 import { FunctionComponent, ReactNode } from 'react';
-import { Eye, Pencil } from 'lucide-react';
+import { Eye, Loader2, MessageSquare, Pencil } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminModal from './AdminModal';
@@ -16,6 +16,10 @@ export interface AdminEntityDetailModalProps {
   description?: string;
   sections: AdminDetailSection[];
   onEdit?: () => void;
+  /** Opens platform desk chat — rendered as a standard footer secondary button. */
+  onSendMessage?: () => void;
+  sendMessageLoading?: boolean;
+  sendMessageLabel?: string;
   maxWidthClass?: string;
   headerContent?: ReactNode;
   showReadOnlyBanner?: boolean;
@@ -23,6 +27,8 @@ export interface AdminEntityDetailModalProps {
   headerIcon?: LucideIcon;
   /** Optional extra control(s) in the footer, before the edit action. */
   footerExtra?: ReactNode;
+  /** Extra content after the read-only fields (credentials, etc.). */
+  afterSections?: ReactNode;
 }
 
 const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = ({
@@ -32,20 +38,41 @@ const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = (
   description,
   sections,
   onEdit,
+  onSendMessage,
+  sendMessageLoading = false,
+  sendMessageLabel,
   maxWidthClass = 'max-w-[720px]',
   headerContent,
   showReadOnlyBanner = true,
   headerIcon,
   footerExtra,
+  afterSections,
 }) => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
 
-  const footer = onEdit || footerExtra ? (
+  const footer = onEdit || footerExtra || onSendMessage ? (
     <>
       <button type="button" className={adminFormBtnSecondaryClass} onClick={onClose}>
         {t('admin.common.detailModal.close')}
       </button>
+      {onSendMessage ? (
+        <button
+          type="button"
+          className={adminFormBtnSecondaryClass}
+          onClick={onSendMessage}
+          disabled={sendMessageLoading}
+        >
+          {sendMessageLoading ? (
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin" strokeWidth={1.75} aria-hidden />
+          ) : (
+            <MessageSquare className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+          )}
+          {sendMessageLoading
+            ? t('admin.common.detailModal.student.openingChat')
+            : sendMessageLabel ?? t('admin.common.detailModal.student.sendMessage')}
+        </button>
+      ) : null}
       {footerExtra}
       {onEdit ? (
         <button
@@ -82,6 +109,7 @@ const AdminEntityDetailModal: FunctionComponent<AdminEntityDetailModalProps> = (
         </div>
       ) : null}
       <AdminDetailGrid sections={sections} />
+      {afterSections}
     </AdminModal>
   );
 };

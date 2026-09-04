@@ -56,6 +56,19 @@ export const encadrantPortalChatInitialMessages: Record<string, ChatMessage[]> =
       text: 'I uploaded the revised Technical Specifications — ready for your review.',
       time: '10:52',
     },
+    {
+      id: 'enc-chat1m4',
+      direction: 'in',
+      text: 'Meeting request',
+      time: '10:55',
+      messageType: 'MEETING_REQUEST',
+      meetingRequest: {
+        requestId: 'mr-demo-enc-1',
+        mode: 'video',
+        status: 'pending',
+        title: 'Report review session',
+      },
+    },
   ],
   'enc-chat2': [
     {

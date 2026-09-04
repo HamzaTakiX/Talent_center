@@ -7,7 +7,11 @@ import { staggerContainer } from '../../dashboard/ui/animations';
 import CreateOfferStudio from '../components/create/CreateOfferStudio';
 import OfferStudioLoadingSkeleton from '../components/create/OfferStudioLoadingSkeleton';
 import { useStageOfferDetail } from '../hooks/useStageOffers';
-import { mapBackendStatusToUi, mapStageDetailToCreateOfferForm } from '../../../shared/utils/stageMappers';
+import {
+  mapBackendStatusToUi,
+  mapStageDetailToCreateOfferForm,
+  resolveStageOfferLogoUrl,
+} from '../../../shared/utils/stageMappers';
 import '../styles/create-offer-studio.css';
 
 const EditInternshipOfferPage: FunctionComponent = () => {
@@ -70,6 +74,7 @@ const EditInternshipOfferPage: FunctionComponent = () => {
           initialForm={initialForm}
           offerStatus={mapBackendStatusToUi(offer.status)}
           lastUpdatedAt={offer.updated_at ?? offer.created_at ?? null}
+          companyLogoUrl={resolveStageOfferLogoUrl(offer)}
           onBack={goBack}
         />
       </motion.div>

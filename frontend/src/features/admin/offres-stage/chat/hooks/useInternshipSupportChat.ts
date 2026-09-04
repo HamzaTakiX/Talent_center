@@ -645,7 +645,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
   );
 
   const sendMessage = useCallback(
-    async (text: string, files?: File[]) => {
+    async (text: string, files?: File[], tagCodes?: string[], entityRefs?: import('../../../../shared/contextual-chat/types/chatEntityTypes').ChatEntityReference[]) => {
       if (!selectedId || (!text.trim() && !files?.length)) return;
       const conversationId = Number(selectedId);
       if (!Number.isFinite(conversationId)) return;
@@ -689,7 +689,7 @@ export function useInternshipSupportChat(inboxMode: 'admin' | 'student' = 'admin
         ),
       );
       try {
-        const saved = await sendChatMessage(conversationId, trimmed, undefined, files);
+        const saved = await sendChatMessage(conversationId, trimmed, tagCodes, files, entityRefs);
         if (!saved) {
           throw new Error('send failed');
         }

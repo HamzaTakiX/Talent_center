@@ -8,7 +8,7 @@ export type EmailSystemTab =
   | 'advanced';
 
 export type ProviderStatus = 'connected' | 'disconnected' | 'connection_error';
-export type EmailProviderType = 'mock' | 'sendgrid' | 'ses' | 'mailgun' | 'smtp';
+export type EmailProviderType = 'mock' | 'sendgrid' | 'brevo' | 'ses' | 'mailgun' | 'smtp';
 
 export interface GeneralSettings {
   platform_email_enabled: boolean;
@@ -56,13 +56,26 @@ export interface CategoryConfig {
   digest_enabled: boolean;
 }
 
+export interface TemplateVariable {
+  key: string;
+  label: string;
+  description: string;
+  sample: string;
+  required: boolean;
+}
+
 export interface EmailTemplateRow {
   id: number;
   code: string;
+  name: string;
+  event_code: string;
   channel: string;
   category: string;
   version: number;
   is_active: boolean;
+  is_selected: boolean;
+  is_default: boolean;
+  status: 'active' | 'archived' | string;
   languages: string[];
 }
 
@@ -75,6 +88,17 @@ export interface TemplateTranslation {
 
 export interface EmailTemplateDetail extends EmailTemplateRow {
   translations: TemplateTranslation[];
+  available_variables?: TemplateVariable[];
+}
+
+export interface EmailEventCatalogItem {
+  event_code: string;
+  category: string;
+  priority: string;
+  template_code: string;
+  channels: string[];
+  email_kind: string;
+  variables: TemplateVariable[];
 }
 
 export interface AdvancedSettings {

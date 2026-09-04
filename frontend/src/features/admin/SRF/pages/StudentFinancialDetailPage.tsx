@@ -7,6 +7,7 @@ import { srfApi, srfRoutes, type SrfStudentFinancialDetail } from '../../api/srf
 import { SrfErrorState } from '../components/SrfModuleStates';
 import SrfStudentDetailSkeleton from '../components/student-detail/SrfStudentDetailSkeleton';
 import SrfStudentDetailView from '../components/student-detail/SrfStudentDetailView';
+import '../styles/admin-srf.css';
 
 const StudentFinancialDetailPage: FunctionComponent = () => {
   const { t } = useTranslation();
@@ -15,6 +16,9 @@ const StudentFinancialDetailPage: FunctionComponent = () => {
   const [detail, setDetail] = useState<SrfStudentFinancialDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const backLabel = t('admin.modules.srf.detail.back');
+  const goBack = useCallback(() => navigate(srfRoutes.hub), [navigate]);
 
   const load = useCallback(async () => {
     if (!accountId) return;
@@ -38,7 +42,7 @@ const StudentFinancialDetailPage: FunctionComponent = () => {
   if (loading) {
     return (
       <AdminModulePageShell width="wide">
-        <AdminBackButton onClick={() => navigate(srfRoutes.hub)} label={t('admin.modules.srf.detail.back')} className="mb-4" />
+        <AdminBackButton onClick={goBack} label={backLabel} className="mb-4 w-fit shrink-0" />
         <SrfStudentDetailSkeleton />
       </AdminModulePageShell>
     );
@@ -47,7 +51,7 @@ const StudentFinancialDetailPage: FunctionComponent = () => {
   if (error || !detail) {
     return (
       <AdminModulePageShell width="wide">
-        <AdminBackButton onClick={() => navigate(srfRoutes.hub)} label={t('admin.modules.srf.detail.back')} />
+        <AdminBackButton onClick={goBack} label={backLabel} className="mb-4 w-fit shrink-0" />
         <SrfErrorState onRetry={() => void load()} />
       </AdminModulePageShell>
     );
@@ -55,8 +59,7 @@ const StudentFinancialDetailPage: FunctionComponent = () => {
 
   return (
     <AdminModulePageShell width="wide">
-      <AdminBackButton onClick={() => navigate(srfRoutes.hub)} label={t('admin.modules.srf.detail.back')} className="mb-4" />
-      <SrfStudentDetailView detail={detail} />
+      <SrfStudentDetailView detail={detail} backLabel={backLabel} onBack={goBack} />
     </AdminModulePageShell>
   );
 };

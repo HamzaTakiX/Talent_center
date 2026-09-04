@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/emit-auth-env.mjs && tsc && vite build",
-    "predev": "node scripts/emit-auth-env.mjs"
+    "predev": "node scripts/emit-auth-env.mjs",
+    "check:parse-text": "node scripts/check-parse-offer-text.mjs",
+    "check:module-permissions": "node scripts/check-module-permissions.mjs",
+    "check:error-locales": "node scripts/check-error-locales.mjs",
+    "check": "npm run check:parse-text && npm run check:module-permissions && npm run check:error-locales"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.15.1",
@@ -14,6 +18,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@excalidraw/excalidraw": "^0.18.0",
+    "@jitsi/react-sdk": "^1.4.4",
     "@tiptap/extension-color": "^3.24.0",
     "@tiptap/extension-font-family": "^3.24.0",
     "@tiptap/extension-highlight": "^3.24.0",
@@ -33,7 +38,7 @@
     "@tiptap/react": "^3.24.0",
     "@tiptap/starter-kit": "^3.24.0",
     "axios": "^1.13.6",
-    "framer-motion": "^12.38.0",
+    "framer-motion": "^12.43.0",
     "html2canvas": "^1.4.1",
     "i18next": "^26.2.0",
     "jspdf": "^4.2.1",
@@ -45,7 +50,9 @@
     "react-dom": "^18.2.0",
     "react-i18next": "^17.0.8",
     "react-konva": "^18.2.10",
-    "react-router-dom": "^6.20.0"
+    "react-router-dom": "^6.20.0",
+    "tiptap-pagination-plus": "^3.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@haze-ui/preset": "^0.0.7",

@@ -1,3 +1,118 @@
+/* Smart assignment — section headers (Supervisors / Workload) */
+.sa-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.sa-section-head__icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  color: var(--admin-brand);
+  background: color-mix(in srgb, var(--admin-brand) 16%, var(--admin-surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--admin-brand) 25%, transparent);
+}
+
+.sa-section-head__copy {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.sa-section-head__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  color: var(--admin-text);
+}
+
+.sa-section-head__subtitle {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--admin-text-secondary);
+}
+
+.sa-workload-row {
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
+  background: color-mix(in srgb, var(--admin-surface) 88%, transparent);
+}
+
+[data-admin-theme='dark'] .sa-workload-row {
+  background: color-mix(in srgb, #0f172a 55%, var(--admin-surface));
+  border-color: color-mix(in srgb, var(--admin-brand) 10%, var(--admin-border));
+}
+
+.sa-workload-row + .sa-workload-row {
+  margin-block-start: 0.55rem;
+}
+
+.sa-workload-row__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-end: 0.45rem;
+}
+
+.sa-workload-row__identity {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sa-workload-row__identity .isi-avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.5625rem;
+}
+
+.sa-workload-row__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.sa-workload-row__count {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-text-secondary);
+}
+
+.sa-workload-row__track {
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--admin-surface-inset, var(--admin-border));
+}
+
+.sa-workload-row__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
 /* Smart assignment — section loading skeletons */
 .sa-section-skeleton {
   min-width: 0;

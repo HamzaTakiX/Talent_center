@@ -81,8 +81,11 @@ export const adminStudentsApi = {
     return response.data.data;
   },
 
-  regeneratePassword: async (id: number): Promise<void> => {
-    await apiClient.post(`/admin/students/${id}/regenerate-password`);
+  regeneratePassword: async (id: number): Promise<string> => {
+    const response = await apiClient.post<ApiEnvelope<{ password: string }>>(
+      `/admin/students/${id}/regenerate-password`,
+    );
+    return response.data.data.password;
   },
 
   revealCredential: async (id: number): Promise<string> => {

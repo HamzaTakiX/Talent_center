@@ -1,5 +1,6 @@
-import { FunctionComponent, useMemo, useState } from 'react';
+import { FunctionComponent, useMemo } from 'react';
 import { Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   AGENDA_ADD_DAY_BTN,
   AGENDA_DAY_BODY,
@@ -12,10 +13,10 @@ import {
 import { agendaMeetingsMock, agendaWeekDaysMock } from '../data';
 import type { AgendaMeetingEvent, AgendaWeekDay } from '../types';
 import AgendaEventCard from './AgendaEventCard';
-import AgendaEventModal from './AgendaEventModal';
 
 interface AgendaWeekGridProps {
   searchQuery: string;
+  onEventClick: (event: AgendaMeetingEvent) => void;
 }
 
 function filterEvents(events: AgendaMeetingEvent[], query: string): AgendaMeetingEvent[] {
@@ -34,24 +35,25 @@ const DayColumn: FunctionComponent<{
   day: AgendaWeekDay;
   events: AgendaMeetingEvent[];
   onEventClick: (event: AgendaMeetingEvent) => void;
-}> = ({ day, events, onEventClick }) => (
+  addMeetingLabel: string;
+}> = ({ day, events, onEventClick, addMeetingLabel }) => (
   <div className={`${AGENDA_DAY_COLUMN} ${day.highlighted ? AGENDA_DAY_COLUMN_HIGHLIGHT : ''}`}>
     <div className={AGENDA_DAY_HEADER}>
       <div className="flex min-w-0 flex-col">
         <span
-          className={`text-[11px] font-medium uppercase leading-4 ${day.highlighted ? 'text-[#2563eb]' : 'text-[#717182]'}`}
+          className={`text-[11px] font-medium uppercase leading-4 ${day.highlighted ? 'text-[var(--admin-brand)]' : 'text-[var(--admin-text-secondary)]'}`}
         >
           {day.dayShort}
         </span>
         <span
           className={`mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold tabular-nums ${
-            day.highlighted ? 'bg-[#3b82f6] text-white' : 'text-[#171717]'
+            day.highlighted ? 'bg-[var(--admin-brand)] text-white' : 'text-[var(--admin-text)]'
           }`}
         >
           {day.dayNum}
         </span>
       </div>
-      <button type="button" className={AGENDA_ADD_DAY_BTN} aria-label={`Add meeting on ${day.dayShort} ${day.dayNum}`}>
+      <button type="button" className={AGENDA_ADD_DAY_BTN} aria-label={addMeetingLabel}>
         <Plus className="h-4 w-4" strokeWidth={1.75} aria-hidden />
       </button>
     </div>
@@ -63,8 +65,8 @@ const DayColumn: FunctionComponent<{
   </div>
 );
 
-const AgendaWeekGrid: FunctionComponent<AgendaWeekGridProps> = ({ searchQuery }) => {
-  const [selectedEvent, setSelectedEvent] = useState<AgendaMeetingEvent | null>(null);
+const AgendaWeekGrid: FunctionComponent<AgendaWeekGridProps> = ({ searchQuery, onEventClick }) => {
+  const { t } = useTranslation();
 
   const filtered = useMemo(() => filterEvents(agendaMeetingsMock, searchQuery), [searchQuery]);
 
@@ -82,21 +84,21 @@ const AgendaWeekGrid: FunctionComponent<AgendaWeekGridProps> = ({ searchQuery })
   }, [filtered]);
 
   return (
-    <>
-      <div className={AGENDA_WEEK_SCROLL}>
-        <div className={AGENDA_WEEK_GRID}>
-          {agendaWeekDaysMock.map((day) => (
-            <DayColumn
-              key={day.key}
-              day={day}
-              events={eventsByDay[day.key] ?? []}
-              onEventClick={setSelectedEvent}
-            />
-          ))}
-        </div>
+    <div className={AGENDA_WEEK_SCROLL}>
+      <div className={AGENDA_WEEK_GRID}>
+        {agendaWeekDaysMock.map((day) => (
+          <DayColumn
+            key={day.key}
+            day={day}
+            events={eventsByDay[day.key] ?? []}
+            onEventClick={onEventClick}
+            addMeetingLabel={t('encadrant.agenda.addMeetingOn', {
+              day: `${day.dayShort} ${day.dayNum}`,
+            })}
+          />
+        ))}
       </div>
-      <AgendaEventModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
-    </>
+    </div>
   );
 };
 

@@ -9,7 +9,7 @@ from apps.accounts_et_roles.services import ensure_user_profile
 from apps.admin_management.models import AdminProfile, EncadrantProfile
 
 from ..providers.base import ProviderIdentity
-from .credentials import generate_secure_password, set_student_password
+from .credentials import provision_user_password
 from .security import log_event
 
 User = get_user_model()
@@ -31,8 +31,7 @@ def complete_first_sso_login(*, user, actor=None) -> dict:
         user.save(update_fields=['first_login_completed', 'updated_at'])
         return {'first_login': True, 'password_generated': False}
 
-    plaintext = generate_secure_password()
-    set_student_password(user=user, plaintext=plaintext, generated_by=actor)
+    provision_user_password(user=user, generated_by=actor)
     user.first_login_completed = True
     user.save(update_fields=['first_login_completed', 'updated_at'])
 
@@ -137,8 +136,7 @@ def complete_first_supervisor_sso_login(*, user, identity: ProviderIdentity | No
         defaults={'max_concurrent_students': supervisor.student_capacity or 15},
     )
 
-    plaintext = generate_secure_password()
-    set_student_password(user=user, plaintext=plaintext)
+    provision_user_password(user=user)
     user.first_login_completed = True
     if user.account_status == User.AccountStatus.AUTHORIZED:
         user.account_status = User.AccountStatus.ACTIVE

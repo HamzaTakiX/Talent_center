@@ -18,6 +18,7 @@ export const studentCopyEn = {
     agenda: 'Agenda',
     task: 'Tasks',
     workspace: 'Workspace',
+    meetings: 'Meetings',
     report: 'Reports',
     closeMenu: 'Close navigation menu',
   },
@@ -49,6 +50,7 @@ export const studentCopyEn = {
       agenda: 'Agenda',
       task: 'Tasks',
       workspace: 'Workspace',
+      meetings: 'Meetings',
       whiteboard: 'Whiteboard',
       report: 'Reports',
       srfChat: 'SRF Chat',
@@ -171,6 +173,7 @@ export const studentCopyEn = {
       interviews: 'Interviews',
       accepted: 'Accepted',
       rejected: 'Rejected',
+      share: '{{value}}% of all applications',
     },
     chart: {
       title: 'Weekly activity',
@@ -196,6 +199,11 @@ export const studentCopyEn = {
       improveProfile: 'Improve profile',
       viewAllActivity: 'View all activity',
       match: 'Match',
+    },
+    errors: {
+      loadTitle: 'Unable to load dashboard',
+      loadFailed: 'Some dashboard data could not be loaded. Please try again.',
+      retry: 'Retry',
     },
     empty: {
       noAlerts: 'No alerts right now',

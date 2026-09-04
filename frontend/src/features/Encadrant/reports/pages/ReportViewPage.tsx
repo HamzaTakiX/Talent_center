@@ -25,7 +25,7 @@ const ReportViewPage: FunctionComponent = () => {
   }
 
   return (
-    <EncadrantLayout headerTitle="Reports" headerSubtitle="Encadrant Portal">
+    <EncadrantLayout>
       <div id="encadrant-report-view-root" className={REPORT_VIEW_PAGE_ROOT}>
         <div className={REPORT_VIEW_GRID}>
           <ReportViewDetailsCard report={report} />

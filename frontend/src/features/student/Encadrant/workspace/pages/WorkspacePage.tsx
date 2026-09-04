@@ -1,51 +1,48 @@
 ﻿import { FunctionComponent } from 'react';
 import StudentLayout from '../../../components/StudentLayout';
 import WorkspacePageHeader from '../components/WorkspacePageHeader';
+import WorkspaceBoardsSection from '../components/WorkspaceBoardsSection';
 import WorkspaceStatsGrid from '../components/WorkspaceStatsGrid';
-import WorkspaceCollaboratorsHub from '../components/WorkspaceCollaboratorsHub';
-import WorkspaceWhiteboardLaunchCard from '../components/WorkspaceWhiteboardLaunchCard';
 import WorkspaceGlobalSearch from '../components/WorkspaceGlobalSearch';
 import WorkspaceTabNav from '../components/WorkspaceTabNav';
 import WorkspaceTabPanel from '../components/WorkspaceTabPanel';
-import WorkspaceFeedbackSection from '../components/WorkspaceFeedbackSection';
-import WorkspaceKnowledgeSection from '../components/WorkspaceKnowledgeSection';
-import WorkspaceMeetingsHub from '../components/WorkspaceMeetingsHub';
-import WorkspaceProgressPanel from '../components/WorkspaceProgressPanel';
-import WorkspaceNotificationsPanel from '../components/WorkspaceNotificationsPanel';
-import { WORKSPACE_PAGE_ROOT } from '../constants/workspaceLayout';
+import {
+  WORKSPACE_GLASS_CARD,
+  WORKSPACE_HUB_ELEMENT_ID,
+  WORKSPACE_PAGE_ROOT,
+} from '../constants/workspaceLayout';
 import { useWorkspacePlatform } from '../hooks/useWorkspacePlatform';
 
 const WorkspacePage: FunctionComponent = () => {
   const platform = useWorkspacePlatform();
+  const { loading } = platform;
 
   return (
     <StudentLayout>
       <div id="student-encadrant-workspace-root" className={WORKSPACE_PAGE_ROOT}>
-        <WorkspacePageHeader />
-        <WorkspaceStatsGrid />
-        <WorkspaceCollaboratorsHub />
-        <WorkspaceWhiteboardLaunchCard />
-        <WorkspaceGlobalSearch
-          search={platform.search}
-          onSearchChange={platform.setSearch}
-          results={platform.searchResults}
-        />
-        <WorkspaceTabNav activeTab={platform.activeTab} onTabChange={platform.setActiveTab} />
-        <WorkspaceTabPanel
-          activeTab={platform.activeTab}
-          loading={platform.loading}
-          documentsView={platform.documentsView}
-          onDocumentsViewChange={platform.setDocumentsView}
-        />
-        <div className="student-workspace-two-col">
-          <WorkspaceFeedbackSection />
-          <WorkspaceKnowledgeSection />
-        </div>
-        <WorkspaceMeetingsHub />
-        <div className="student-workspace-two-col">
-          <WorkspaceProgressPanel />
-          <WorkspaceNotificationsPanel />
-        </div>
+        <WorkspacePageHeader onCreateWorkspace={platform.createWorkspace} />
+        <WorkspaceStatsGrid loading={loading} kpis={platform.kpis} />
+        <WorkspaceBoardsSection loading={loading} />
+        <section
+          id={WORKSPACE_HUB_ELEMENT_ID}
+          className={`${WORKSPACE_GLASS_CARD} student-workspace-hub`}
+          aria-busy={loading || undefined}
+        >
+          <WorkspaceGlobalSearch
+            search={platform.search}
+            onSearchChange={platform.setSearch}
+          />
+          <WorkspaceTabNav activeTab={platform.activeTab} onTabChange={platform.setActiveTab} />
+          <WorkspaceTabPanel
+            activeTab={platform.activeTab}
+            loading={loading}
+            search={platform.search}
+            notes={platform.notes}
+            documentsState={platform.documents}
+            documentsView={platform.documentsView}
+            onDocumentsViewChange={platform.setDocumentsView}
+          />
+        </section>
       </div>
     </StudentLayout>
   );

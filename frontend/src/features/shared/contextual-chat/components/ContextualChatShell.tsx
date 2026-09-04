@@ -350,6 +350,8 @@ const ContextualChatShellInner: FunctionComponent<ContextualChatShellProps> = ({
 
       }
 
+      chatModule={module}
+
     />
 
   );

@@ -21,12 +21,17 @@ from apps.admin_management.models import (
     Assignment,
     EncadrantProfile,
 )
-from apps.admin_management.services.encadrants import _assigned_student_count
+from apps.admin_management.services.encadrants import (
+    _assigned_student_count,
+    build_encadrant_scope_payload,
+    build_encadrant_specialization_payload,
+)
 from apps.admin_management.services.specialization_domains import (
     get_encadrant_domain_codes,
     match_student_to_domain_codes,
 )
 from apps.admin_management.services.supervised_internship_types import (
+    build_encadrant_supervised_internship_payload,
     get_encadrant_supervised_internship_type_ids,
 )
 
@@ -123,6 +128,7 @@ class EncadrantAnalysis:
     user_id: int
     full_name: str
     email: str
+    avatar_url: Optional[str]
     specialization_domains: list[str]
     max_capacity: int
     current_load: int
@@ -237,6 +243,12 @@ def analyze_student(
     )
 
 
+def _profile_avatar_url(profile) -> Optional[str]:
+    if not profile or not getattr(profile, 'avatar', None):
+        return None
+    return profile.avatar.url
+
+
 def analyze_encadrant(encadrant: EncadrantProfile) -> EncadrantAnalysis:
     supervisor: SupervisorProfile = encadrant.supervisor_profile
     user = supervisor.user
@@ -256,6 +268,7 @@ def analyze_encadrant(encadrant: EncadrantProfile) -> EncadrantAnalysis:
         user_id=user.pk,
         full_name=full_name,
         email=user.email,
+        avatar_url=_profile_avatar_url(profile),
         specialization_domains=get_encadrant_domain_codes(encadrant),
         max_capacity=max_cap,
         current_load=load,
@@ -683,6 +696,7 @@ def _encadrant_result_payload(enc: EncadrantAnalysis, projected_load: int) -> di
         'user_id': enc.user_id,
         'full_name': enc.full_name,
         'email': enc.email,
+        'avatar_url': enc.avatar_url,
         'specialization_domains': enc.specialization_domains,
         'supervised_internship_type_ids': enc.supervised_internship_type_ids,
         'current_load': projected_load,
@@ -799,6 +813,10 @@ def build_assignment_results_payload(academic_year: str = '') -> dict[str, Any]:
     students_qs = get_eligible_students_queryset(year)
     encadrants_qs = EncadrantProfile.objects.filter(is_active=True).select_related(
         'supervisor_profile__user__profile',
+    ).prefetch_related(
+        'specialization_domains',
+        'supervised_internship_types__academic_level',
+        'supervised_internship_types__academic_sector',
     )
 
     encadrant_cards: list[dict[str, Any]] = []
@@ -821,6 +839,9 @@ def build_assignment_results_payload(academic_year: str = '') -> dict[str, Any]:
         max_cap = enc_analysis.max_capacity
         encadrant_cards.append({
             **_encadrant_result_payload(enc_analysis, load),
+            'specialization_domains': build_encadrant_specialization_payload(enc),
+            'scope': build_encadrant_scope_payload(enc),
+            'supervised_internship_types': build_encadrant_supervised_internship_payload(enc),
             'students': assigned_students,
         })
 

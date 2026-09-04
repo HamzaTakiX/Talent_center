@@ -4,7 +4,7 @@ import { ReportsLateStudentsSection, ReportsLateSummaryGrid } from '../component
 import { REPORTS_LATE_PAGE_ROOT } from '../constants/reportsLateLayout';
 
 const ReportsLatePage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Reports Late" headerSubtitle="Encadrant Portal">
+  <EncadrantLayout>
     <div id="encadrant-reports-late-root" className={REPORTS_LATE_PAGE_ROOT}>
       <ReportsLateSummaryGrid />
       <ReportsLateStudentsSection />

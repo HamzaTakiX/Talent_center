@@ -9,9 +9,21 @@ export const documentsStatIconMap: Record<DocumentsStatIconKey, typeof FileText>
   reserved: Calendar,
 };
 
+/** Accents style admin students KPI (glass + pie). */
+export const documentsStatAccentMap: Record<
+  DocumentsStatIconKey,
+  { accent: string; accentBg: string }
+> = {
+  total: { accent: '#3b82f6', accentBg: 'rgba(59, 130, 246, 0.16)' },
+  pending: { accent: '#f59e0b', accentBg: 'rgba(245, 158, 11, 0.16)' },
+  validated: { accent: '#22c55e', accentBg: 'rgba(34, 197, 94, 0.16)' },
+  reserved: { accent: '#6366f1', accentBg: 'rgba(99, 102, 241, 0.16)' },
+};
+
+/** @deprecated Prefer documentsStatAccentMap for admin-style KPI cards. */
 export const documentsStatColorMap: Record<DocumentsStatIconKey, string> = {
-  total: 'bg-[#2b7fff]',
-  pending: 'bg-[#a855f7]',
+  total: 'bg-[#3b82f6]',
+  pending: 'bg-[#f59e0b]',
   validated: 'bg-[#22c55e]',
   reserved: 'bg-[#6366f1]',
 };

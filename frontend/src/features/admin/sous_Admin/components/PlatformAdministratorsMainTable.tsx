@@ -17,7 +17,10 @@ import {
   AdminSearchEmptyState,
   AdminTableEmptyState,
   AdminTableScroll,
+  AdminTableSelectCheckbox,
   AdminTableSkeletonRows,
+  AdminTableFillerRows,
+  adminTableFillerCount,
 } from '../../ui';
 import AdministratorDetailModal from './AdministratorDetailModal';
 import AdministratorActions from './AdministratorActions';
@@ -112,6 +115,7 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
               key={row.id}
               title={row.full_name}
               meta={row.email}
+              onClick={() => setViewRow(row)}
               badges={
                 <>
                   {roleSlugs.map((slug) => (
@@ -171,15 +175,11 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
             <tr>
               {selectionMode ? (
                 <th className="w-10">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-[var(--admin-border)] accent-[var(--admin-accent)]"
+                  <AdminTableSelectCheckbox
                     checked={selection.allOnPageSelected}
-                    ref={(el) => {
-                      if (el) el.indeterminate = selection.someOnPageSelected;
-                    }}
+                    indeterminate={selection.someOnPageSelected}
                     onChange={selection.toggleAllOnPage}
-                    aria-label={t('admin.common.delete.clearSelection')}
+                    ariaLabel={t('admin.common.delete.clearSelection')}
                   />
                 </th>
               ) : null}
@@ -198,20 +198,23 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
             ) : rows.length === 0 ? (
               <AdminTableEmptyState colSpan={colSpan} title={emptyState('administratorsSearch')} />
             ) : (
-              rows.map((row) => {
+              <>
+              {rows.map((row) => {
                 const superAdmin = isSuperAdminAdministrator(row);
                 const roleSlugs = administratorRoleSlugs(row);
                 return (
-                <tr key={row.id}>
+                <tr
+                  key={row.id}
+                  className="admin-table-row--interactive"
+                  onClick={() => setViewRow(row)}
+                >
                   {selectionMode ? (
-                    <td>
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-[var(--admin-border)] accent-[var(--admin-accent)]"
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <AdminTableSelectCheckbox
                         checked={selection.isSelected(row.id)}
                         onChange={() => selection.toggleRow(row.id)}
                         disabled={superAdmin}
-                        aria-label={row.full_name || row.email}
+                        ariaLabel={row.full_name || row.email}
                       />
                     </td>
                   ) : null}
@@ -255,7 +258,10 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
                         : t('admin.tables.administrators.onboardingPending')}
                     </span>
                   </td>
-                  <td className="admin-students-table__actions text-end">
+                  <td
+                    className="admin-students-table__actions text-end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <AdministratorActions
                       administrator={row}
                       onView={() => setViewRow(row)}
@@ -273,7 +279,13 @@ const PlatformAdministratorsMainTable: FunctionComponent<PlatformAdministratorsM
                   </td>
                 </tr>
                 );
-              })
+              })}
+              <AdminTableFillerRows
+                variant="administrator"
+                selectionMode={selectionMode}
+                rows={adminTableFillerCount(rows.length)}
+              />
+              </>
             )}
           </tbody>
         </AdminTableScroll>

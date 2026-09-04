@@ -89,6 +89,8 @@ class ConversationContextSerializer(serializers.ModelSerializer):
         return resolve_student_for_context(
             student_user_id=obj.student_user_id,
             snapshot=obj.context_snapshot_json or {},
+            entity_id=obj.entity_id,
+            entity_type=obj.entity_type,
         )
 
     def get_student_display_name(self, obj) -> str:
@@ -97,6 +99,9 @@ class ConversationContextSerializer(serializers.ModelSerializer):
         return resolve_student_display_name_for_context(
             student_user_id=obj.student_user_id,
             snapshot=obj.context_snapshot_json or {},
+            entity_label=obj.entity_label,
+            entity_id=obj.entity_id,
+            entity_type=obj.entity_type,
         )
 
     def get_student_avatar_url(self, obj) -> str | None:
@@ -314,6 +319,7 @@ class MessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.SerializerMethodField()
     attachments = MessageAttachmentSerializer(many=True, read_only=True)
     tags = serializers.SerializerMethodField()
+    entity_refs = serializers.SerializerMethodField()
     reactions = MessageReactionSerializer(many=True, read_only=True)
     is_own = serializers.SerializerMethodField()
     read_by = serializers.SerializerMethodField()
@@ -334,6 +340,7 @@ class MessageSerializer(serializers.ModelSerializer):
             'metadata_json',
             'attachments',
             'tags',
+            'entity_refs',
             'reactions',
             'is_own',
             'read_by',
@@ -347,6 +354,33 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def get_tags(self, obj) -> list[str]:
         return [mt.tag.code for mt in obj.message_tags.select_related('tag').all()]
+
+    def get_entity_refs(self, obj) -> list[dict]:
+        refs = (obj.metadata_json or {}).get('entity_refs')
+        if not isinstance(refs, list):
+            return []
+        clean: list[dict] = []
+        for raw in refs:
+            if not isinstance(raw, dict):
+                continue
+            entity_type = raw.get('entity_type')
+            entity_id = raw.get('entity_id')
+            label = raw.get('label')
+            if not entity_type or not entity_id or not label:
+                continue
+            item = {
+                'entity_type': str(entity_type),
+                'entity_id': str(entity_id),
+                'label': str(label),
+            }
+            if raw.get('subtitle'):
+                item['subtitle'] = str(raw['subtitle'])
+            if raw.get('image_url'):
+                item['image_url'] = str(raw['image_url'])
+            if raw.get('module'):
+                item['module'] = str(raw['module'])
+            clean.append(item)
+        return clean
 
     def get_is_own(self, obj) -> bool:
         request = self.context.get('request')
@@ -405,6 +439,7 @@ class MessageCreateSerializer(serializers.Serializer):
     )
     parent_message_id = serializers.IntegerField(required=False, allow_null=True)
     tag_codes = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    entity_refs = serializers.ListField(child=serializers.DictField(), required=False, default=list)
     metadata_json = serializers.JSONField(required=False, default=dict)
 
     def validate(self, attrs):

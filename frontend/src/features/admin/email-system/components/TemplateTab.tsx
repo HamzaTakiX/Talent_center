@@ -1,10 +1,15 @@
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, FileCode2, Layers, RefreshCw } from 'lucide-react';
+import { Archive, Copy, Eye, FileCode2, Layers, Plus, RefreshCw, Send, Star } from 'lucide-react';
 import AdminSelect from '../../account/components/AdminSelect';
 import { AdminFormField, AdminFormInput, AdminFormTextarea } from '../../shared/forms/AdminFormPrimitives';
 import { emailSystemApi } from '../api/emailSystemApi';
-import type { EmailTemplateRow, GeneralSettings } from '../types/emailSystemTypes';
+import type {
+  EmailEventCatalogItem,
+  EmailTemplateRow,
+  GeneralSettings,
+  TemplateVariable,
+} from '../types/emailSystemTypes';
 import {
   AdminButton,
   EmailSystemAlert,
@@ -37,25 +42,54 @@ const TemplateTab: FunctionComponent<Props> = ({ general }) => {
   const [previewSubject, setPreviewSubject] = useState('');
   const [previewMode, setPreviewMode] = useState<'draft' | 'rendered'>('draft');
   const [msg, setMsg] = useState<{ tone: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [events, setEvents] = useState<EmailEventCatalogItem[]>([]);
+  const [eventFilter, setEventFilter] = useState('');
+  const [variables, setVariables] = useState<TemplateVariable[]>([]);
+  const [testEmail, setTestEmail] = useState('');
+
 
   const languageOptions = [
     { value: 'fr', label: 'Français' },
     { value: 'en', label: 'English' },
   ];
 
+  const eventOptions = useMemo(
+    () => [
+      { value: '', label: t(`${PREFIX}.allEvents`, { defaultValue: 'All notification types' }) },
+      ...events.map((ev) => ({ value: ev.event_code, label: `${ev.event_code} (${ev.category})` })),
+    ],
+    [events, t],
+  );
+
+  const filteredTemplates = useMemo(() => {
+    if (!eventFilter) return templates;
+    return templates.filter((tpl) => (tpl as EmailTemplateRow).event_code === eventFilter);
+  }, [templates, eventFilter]);
+
   const templateOptions = useMemo(
     () => [
       { value: '', label: t(`${PREFIX}.selectTemplate`) },
-      ...templates.map((tpl) => ({ value: tpl.code, label: tpl.code })),
+      ...filteredTemplates.map((tpl) => ({
+        value: tpl.code,
+        label: `${(tpl as EmailTemplateRow).name || tpl.code}${
+          (tpl as EmailTemplateRow).is_selected ? ' ★' : ''
+        }${(tpl as EmailTemplateRow).is_default ? ' (default)' : ''}`,
+      })),
     ],
-    [templates, t],
+    [filteredTemplates, t],
   );
+
+  const selectedMeta = templates.find((tpl) => tpl.code === selected) as EmailTemplateRow | undefined;
 
   const loadTemplates = useCallback(async () => {
     setLoading(true);
     try {
-      const items = await emailSystemApi.listTemplates();
+      const [items, catalog] = await Promise.all([
+        emailSystemApi.listTemplates(),
+        emailSystemApi.listEvents().catch(() => [] as EmailEventCatalogItem[]),
+      ]);
       setTemplates(items);
+      setEvents(catalog);
       setSelected((prev) => prev || items[0]?.code || '');
     } catch {
       setMsg({ tone: 'error', text: t(`${PREFIX}.loadError`) });
@@ -79,6 +113,15 @@ const TemplateTab: FunctionComponent<Props> = ({ general }) => {
         setPreviewHtml(tr.body_html_template || '');
         setPreviewSubject(tr.subject_template);
       }
+      if (detail.available_variables?.length) {
+        setVariables(detail.available_variables);
+      } else if (detail.event_code) {
+        void emailSystemApi.getEventVariables(detail.event_code).then((res) => {
+          setVariables(res.variables || []);
+        }).catch(() => setVariables([]));
+      } else {
+        setVariables([]);
+      }
     });
   }, [selected, language]);
 
@@ -92,15 +135,131 @@ const TemplateTab: FunctionComponent<Props> = ({ general }) => {
   const renderWithVariables = async () => {
     if (!selected) return;
     try {
-      const rendered = await emailSystemApi.previewTemplate(selected, language);
+      const rendered = await emailSystemApi.safePreviewTemplate(selected, language);
       setPreviewHtml(rendered.body_html);
       setPreviewSubject(rendered.subject);
       setPreviewMode('rendered');
       setMsg({ tone: 'info', text: t(`${PREFIX}.renderedHint`) });
     } catch {
-      setMsg({ tone: 'error', text: t(`${PREFIX}.renderError`) });
+      try {
+        const rendered = await emailSystemApi.previewTemplate(selected, language);
+        setPreviewHtml(rendered.body_html);
+        setPreviewSubject(rendered.subject);
+        setPreviewMode('rendered');
+        setMsg({ tone: 'info', text: t(`${PREFIX}.renderedHint`) });
+      } catch {
+        setMsg({ tone: 'error', text: t(`${PREFIX}.renderError`) });
+      }
     }
   };
+
+  const markSelected = async () => {
+    if (!selected) return;
+    try {
+      await emailSystemApi.selectTemplate(selected);
+      setMsg({ tone: 'success', text: t(`${PREFIX}.selectedOk`, { defaultValue: 'Template selected for this event.' }) });
+      await loadTemplates();
+    } catch {
+      setMsg({ tone: 'error', text: t(`${PREFIX}.selectedError`, { defaultValue: 'Could not select template.' }) });
+    }
+  };
+
+  const markDefault = async () => {
+    if (!selected) return;
+    try {
+      await emailSystemApi.setDefaultTemplate(selected);
+      setMsg({ tone: 'success', text: t(`${PREFIX}.defaultOk`, { defaultValue: 'Template set as default for this event.' }) });
+      await loadTemplates();
+    } catch {
+      setMsg({ tone: 'error', text: t(`${PREFIX}.defaultError`, { defaultValue: 'Could not set default template.' }) });
+    }
+  };
+
+  const sendTest = async () => {
+    if (!selected || !testEmail) return;
+    try {
+      const res = await emailSystemApi.safeTestTemplate(selected, {
+        recipient_email: testEmail,
+        language,
+      });
+      setMsg({
+        tone: res.success ? 'success' : 'error',
+        text: res.message || (res.success ? 'Test email sent' : 'Test email failed'),
+      });
+    } catch {
+      setMsg({ tone: 'error', text: t(`${PREFIX}.testError`, { defaultValue: 'Test send failed.' }) });
+    }
+  };
+
+  const copyVariable = async (key: string) => {
+    const token = `{{ ${key} }}`;
+    try {
+      await navigator.clipboard.writeText(token);
+      setMsg({ tone: 'info', text: t(`${PREFIX}.copied`, { defaultValue: `Copied ${token}` }) });
+    } catch {
+      setMsg({ tone: 'error', text: 'Copy failed' });
+    }
+  };
+
+
+  const createNew = async () => {
+    if (!eventFilter) {
+      setMsg({ tone: 'error', text: t(`${PREFIX}.pickEventFirst`, { defaultValue: 'Select a notification type first.' }) });
+      return;
+    }
+    const code = window.prompt(t(`${PREFIX}.newCodePrompt`, { defaultValue: 'New template code (slug)' }) || '');
+    if (!code) return;
+    const name = window.prompt(t(`${PREFIX}.newNamePrompt`, { defaultValue: 'Template name' }) || '', code) || code;
+    try {
+      const created = await emailSystemApi.createTemplate({
+        code: code.trim(),
+        name: name.trim(),
+        event_code: eventFilter,
+        category: events.find((e) => e.event_code === eventFilter)?.category || 'system',
+        language,
+        subject_template: subject || '{{ title }}',
+        body_html_template: bodyHtml || '<p>{{ body }}</p>',
+        set_as_selected: false,
+        set_as_default: false,
+      });
+      setMsg({ tone: 'success', text: t(`${PREFIX}.createdOk`, { defaultValue: 'Template created.' }) });
+      await loadTemplates();
+      setSelected(created.code);
+    } catch {
+      setMsg({ tone: 'error', text: t(`${PREFIX}.createdError`, { defaultValue: 'Could not create template.' }) });
+    }
+  };
+
+  const duplicateCurrent = async () => {
+    if (!selected) return;
+    const newCode = window.prompt(
+      t(`${PREFIX}.duplicateCodePrompt`, { defaultValue: 'Code for the duplicate' }) || '',
+      `${selected}_copy`,
+    );
+    if (!newCode) return;
+    try {
+      const dup = await emailSystemApi.duplicateTemplate(selected, { new_code: newCode.trim() });
+      setMsg({ tone: 'success', text: t(`${PREFIX}.duplicatedOk`, { defaultValue: 'Template duplicated.' }) });
+      await loadTemplates();
+      setSelected(dup.code);
+    } catch {
+      setMsg({ tone: 'error', text: t(`${PREFIX}.duplicatedError`, { defaultValue: 'Could not duplicate template.' }) });
+    }
+  };
+
+  const archiveCurrent = async () => {
+    if (!selected) return;
+    if (!window.confirm(t(`${PREFIX}.archiveConfirm`, { defaultValue: 'Archive this template?' }))) return;
+    try {
+      await emailSystemApi.archiveTemplate(selected);
+      setMsg({ tone: 'success', text: t(`${PREFIX}.archivedOk`, { defaultValue: 'Template archived.' }) });
+      setSelected('');
+      await loadTemplates();
+    } catch {
+      setMsg({ tone: 'error', text: t(`${PREFIX}.archivedError`, { defaultValue: 'Could not archive template.' }) });
+    }
+  };
+
 
   const save = async () => {
     if (!selected) return;
@@ -140,7 +299,19 @@ const TemplateTab: FunctionComponent<Props> = ({ general }) => {
           </AdminButton>
         }
       >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <AdminSelect
+            id="event-filter"
+            label={t(`${PREFIX}.notificationType`, { defaultValue: 'Notification type' })}
+            value={eventFilter}
+            options={eventOptions}
+            onChange={(v) => {
+              setEventFilter(v);
+              const first = templates.find((tpl) => !v || (tpl as EmailTemplateRow).event_code === v);
+              if (first) setSelected(first.code);
+            }}
+            searchable
+          />
           <AdminSelect
             id="template-picker"
             label={t(`${PREFIX}.template`)}
@@ -205,6 +376,28 @@ const TemplateTab: FunctionComponent<Props> = ({ general }) => {
                 {t(`${PREFIX}.variablesHint`)}
               </p>
 
+              {variables.length ? (
+                <div className="mb-3 rounded-lg border border-[var(--admin-border)] p-3">
+                  <p className="mb-2 text-xs font-semibold text-[var(--admin-text)]">
+                    {t(`${PREFIX}.availableVariables`, { defaultValue: 'Available variables' })}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {variables.map((variable) => (
+                      <button
+                        key={variable.key}
+                        type="button"
+                        className="inline-flex items-center gap-1 rounded border border-[var(--admin-border)] px-2 py-1 text-xs"
+                        title={variable.description}
+                        onClick={() => void copyVariable(variable.key)}
+                      >
+                        <Copy className="h-3 w-3" aria-hidden />
+                        {`{{ ${variable.key} }}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
               <EmailSystemFormActions className="email-system-template-editor__actions border-t-0 pt-0">
                 <AdminButton variant="primary" size="md" disabled={saving} onClick={() => void save()}>
                   {t(`${PREFIX}.save`)}
@@ -213,7 +406,39 @@ const TemplateTab: FunctionComponent<Props> = ({ general }) => {
                   <Eye className="h-4 w-4" aria-hidden />
                   {t(`${PREFIX}.renderPreview`)}
                 </AdminButton>
+                <AdminButton variant="outline" size="md" onClick={() => void markSelected()}>
+                  <Star className="h-4 w-4" aria-hidden />
+                  {t(`${PREFIX}.setSelected`, { defaultValue: 'Set selected' })}
+                </AdminButton>
+                <AdminButton variant="outline" size="md" onClick={() => void markDefault()}>
+                  {t(`${PREFIX}.setDefault`, { defaultValue: 'Set default' })}
+                </AdminButton>
+                <AdminButton variant="outline" size="md" onClick={() => void createNew()}>
+                  <Plus className="h-4 w-4" aria-hidden />
+                  {t(`${PREFIX}.create`, { defaultValue: 'Create' })}
+                </AdminButton>
+                <AdminButton variant="outline" size="md" onClick={() => void duplicateCurrent()}>
+                  {t(`${PREFIX}.duplicate`, { defaultValue: 'Duplicate' })}
+                </AdminButton>
+                <AdminButton variant="outline" size="md" onClick={() => void archiveCurrent()}>
+                  <Archive className="h-4 w-4" aria-hidden />
+                  {t(`${PREFIX}.archive`, { defaultValue: 'Archive' })}
+                </AdminButton>
               </EmailSystemFormActions>
+
+              <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                <AdminFormInput
+                  id="test-email"
+                  type="email"
+                  placeholder={t(`${PREFIX}.testEmailPlaceholder`, { defaultValue: 'test@example.com' })}
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                />
+                <AdminButton variant="outline" size="md" disabled={!testEmail} onClick={() => void sendTest()}>
+                  <Send className="h-4 w-4" aria-hidden />
+                  {t(`${PREFIX}.sendTest`, { defaultValue: 'Send test' })}
+                </AdminButton>
+              </div>
 
               {msg ? <EmailSystemAlert tone={msg.tone}>{msg.text}</EmailSystemAlert> : null}
             </div>

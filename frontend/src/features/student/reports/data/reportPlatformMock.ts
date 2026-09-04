@@ -1,12 +1,12 @@
 import type {
   ReportAcademicProgress,
   ReportComment,
-  ReportReference,
   ReportSection,
   ReportVersion,
   StudentReportDocument,
   StudentReportSummary,
 } from '../types';
+import { defaultReportModelGuide } from './reportModelGuideMock';
 
 const DEFAULT_SECTIONS: Omit<ReportSection, 'content'>[] = [
   { id: 'intro', title: 'Introduction', wordCount: 145, completionPercent: 85, status: 'complete' },
@@ -24,7 +24,7 @@ const SECTION_CONTENT: Record<string, string> = {
   intro: `<h2>Contexte et problématique</h2><p>Ce mémoire s'inscrit dans le cadre du Projet de Fin d'Études (PFE) au sein de la filière Informatique. L'objectif principal est de concevoir et développer une plateforme moderne de gestion des talents académiques.</p><p>La problématique centrale concerne l'optimisation du suivi des stages et de la rédaction des rapports académiques dans un environnement universitaire numérique.</p>`,
   'lit-review': `<h2>État de l'art</h2><p>Les systèmes de gestion académique (LMS) ont connu une évolution significative ces dernières années. Des plateformes comme Moodle, Canvas et Blackboard dominent le marché éducatif.</p><ul><li>Approches collaboratives de rédaction</li><li>Outils de suivi de stage</li><li>Intégration IA pour l'assistance à la rédaction</li></ul>`,
   methodology: `<h2>Approche méthodologique</h2><p>Nous adoptons une méthodologie agile combinant des sprints de deux semaines avec des revues régulières auprès de l'encadrant académique.</p>`,
-  references: `<p>Les références bibliographiques seront générées automatiquement via le gestionnaire intégré.</p>`,
+  references: `<p>Complétez les références bibliographiques selon le style demandé par votre encadrant.</p>`,
 };
 
 export const REPORT_STORAGE_PREFIX = 'tc-student-report-';
@@ -39,7 +39,7 @@ export const academicProgress: ReportAcademicProgress = {
 export const hubReports: StudentReportSummary[] = [
   {
     id: 'rpt-main-2026',
-    title: 'Mémoire PFE — Talent Center Platform',
+    title: 'Mémoire PFE Talent Center',
     lastModified: '2026-05-30T14:22:00',
     progress: 42,
     supervisor: 'Dr. Amine Benali',
@@ -49,7 +49,7 @@ export const hubReports: StudentReportSummary[] = [
   },
   {
     id: 'rpt-draft-notes',
-    title: 'Notes préliminaires — Chapitre 2',
+    title: 'Notes préliminaires, chapitre 2',
     lastModified: '2026-05-28T09:15:00',
     progress: 18,
     supervisor: 'Dr. Amine Benali',
@@ -59,7 +59,7 @@ export const hubReports: StudentReportSummary[] = [
   },
   {
     id: 'rpt-interim-may',
-    title: 'Rapport intermédiaire — Mai 2026',
+    title: 'Rapport intermédiaire, mai 2026',
     lastModified: '2026-05-15T16:40:00',
     progress: 100,
     supervisor: 'Dr. Amine Benali',
@@ -72,7 +72,7 @@ export const hubReports: StudentReportSummary[] = [
     title: 'Modèle officiel PFE ESCA',
     lastModified: '2026-01-10T08:00:00',
     progress: 0,
-    supervisor: '—',
+    supervisor: '-',
     status: 'draft',
     wordCount: 0,
     category: 'templates',
@@ -80,10 +80,10 @@ export const hubReports: StudentReportSummary[] = [
   },
   {
     id: 'rpt-template-ieee',
-    title: 'Modèle IEEE — Article technique',
+    title: 'Modèle IEEE, article technique',
     lastModified: '2026-01-10T08:00:00',
     progress: 0,
-    supervisor: '—',
+    supervisor: '-',
     status: 'draft',
     wordCount: 0,
     category: 'templates',
@@ -91,7 +91,7 @@ export const hubReports: StudentReportSummary[] = [
   },
   {
     id: 'rpt-2025-archive',
-    title: 'Rapport de stage — Été 2025',
+    title: 'Rapport de stage, été 2025',
     lastModified: '2025-09-20T11:30:00',
     progress: 100,
     supervisor: 'Prof. Leila Mansouri',
@@ -133,25 +133,6 @@ const defaultComments: ReportComment[] = [
   },
 ];
 
-const defaultReferences: ReportReference[] = [
-  {
-    id: 'ref1',
-    style: 'apa',
-    authors: 'Smith, J., & Johnson, M.',
-    title: 'Collaborative Writing in Academic Settings',
-    year: '2024',
-    source: 'Journal of Educational Technology, 45(2), 112-128',
-  },
-  {
-    id: 'ref2',
-    style: 'ieee',
-    authors: 'Chen, L. et al.',
-    title: 'AI-Assisted Academic Report Management',
-    year: '2025',
-    source: 'IEEE Transactions on Learning Technologies, 18(1), 45-58',
-  },
-];
-
 function buildSections(): ReportSection[] {
   return DEFAULT_SECTIONS.map((s) => ({
     ...s,
@@ -173,8 +154,14 @@ function countWordsInHtml(html: string): number {
 }
 
 export function ensureReportContent(doc: StudentReportDocument): StudentReportDocument {
-  if (doc.content?.trim()) return doc;
-  return { ...doc, content: mergeSectionsContent(doc.sections) };
+  const migrated = { ...doc };
+  // Drop legacy bibliography field if present in older localStorage payloads.
+  delete (migrated as StudentReportDocument & { references?: unknown }).references;
+  if (!migrated.assignedModelId) {
+    migrated.assignedModelId = defaultReportModelGuide.id;
+  }
+  if (migrated.content?.trim()) return migrated;
+  return { ...migrated, content: mergeSectionsContent(migrated.sections) };
 }
 
 export function createDefaultReport(id: string): StudentReportDocument {
@@ -185,18 +172,18 @@ export function createDefaultReport(id: string): StudentReportDocument {
 
   return {
     id,
-    title: 'Mémoire PFE — Talent Center Platform',
+    title: 'Mémoire PFE Talent Center',
     status: 'draft',
     supervisor: 'Dr. Amine Benali',
     targetWords: 8000,
     content,
     sections,
     comments: defaultComments,
-    references: defaultReferences,
+    assignedModelId: defaultReportModelGuide.id,
     versions: [
       {
         id: 'v3',
-        label: 'Version 3 — Retours encadrant',
+        label: 'Version 3, retours encadrant',
         createdAt: '2026-05-30T14:22:00',
         wordCount,
         snapshot,
@@ -204,14 +191,14 @@ export function createDefaultReport(id: string): StudentReportDocument {
       },
       {
         id: 'v2',
-        label: 'Version 2 — Revue littérature',
+        label: 'Version 2, revue de littérature',
         createdAt: '2026-05-25T11:00:00',
         wordCount: 720,
         snapshot: { ...snapshot, 'lit-review': SECTION_CONTENT['lit-review'] ?? '' },
       },
       {
         id: 'v1',
-        label: 'Version 1 — Première ébauche',
+        label: 'Version 1, première ébauche',
         createdAt: '2026-05-20T09:30:00',
         wordCount: 145,
         snapshot: { intro: SECTION_CONTENT.intro ?? '' },
@@ -251,7 +238,6 @@ export const aiAssistantActions = [
   { id: 'grammar', labelKey: 'grammarCheck' },
   { id: 'conclusion', labelKey: 'generateConclusion' },
   { id: 'abstract', labelKey: 'generateAbstract' },
-  { id: 'references', labelKey: 'suggestReferences' },
 ] as const;
 
 export const workflowSteps = [
@@ -284,49 +270,6 @@ export const reportJourneySteps = [
   { id: 'approved', labelKey: 'journeyApproved', state: 'upcoming' as const },
 ];
 
-export const hubRecentActivity = [
-  {
-    id: 'a1',
-    type: 'edit' as const,
-    title: 'Section Méthodologie mise à jour',
-    description: 'Mémoire PFE — Talent Center Platform',
-    time: '2026-05-30T14:22:00',
-    reportId: 'rpt-main-2026',
-  },
-  {
-    id: 'a2',
-    type: 'feedback' as const,
-    title: 'Nouveau commentaire encadrant',
-    description: 'Revue de littérature — 3 références demandées',
-    time: '2026-05-29T10:00:00',
-    reportId: 'rpt-main-2026',
-  },
-  {
-    id: 'a3',
-    type: 'version' as const,
-    title: 'Version 3 enregistrée',
-    description: 'Retours encadrant intégrés',
-    time: '2026-05-30T14:22:00',
-    reportId: 'rpt-main-2026',
-  },
-  {
-    id: 'a4',
-    type: 'reference' as const,
-    title: 'Référence APA ajoutée',
-    description: 'Smith & Johnson (2024)',
-    time: '2026-05-28T11:30:00',
-    reportId: 'rpt-main-2026',
-  },
-  {
-    id: 'a5',
-    type: 'submit' as const,
-    title: 'Rapport intermédiaire soumis',
-    description: 'En attente de validation encadrant',
-    time: '2026-05-15T16:40:00',
-    reportId: 'rpt-interim-may',
-  },
-];
-
 export const hubSupervisorFeedback = [
   {
     id: 'sf1',
@@ -349,7 +292,7 @@ export const hubSupervisorFeedback = [
   {
     id: 'sf3',
     author: 'Dr. Amine Benali',
-    text: 'Bon travail sur la méthodologie agile — précisez les critères d\'évaluation.',
+    text: 'Bon travail sur la méthodologie agile. Précisez les critères d\'évaluation.',
     section: 'Méthodologie',
     priority: 'low' as const,
     createdAt: '2026-05-25T09:15:00',
@@ -362,35 +305,35 @@ export const hubDocumentsReferences = [
     id: 'd1',
     name: 'Smith & Johnson (2024)',
     type: 'reference' as const,
-    meta: 'APA · Journal of Educational Technology',
+    meta: 'APA, Journal of Educational Technology',
     updatedAt: '2026-05-28T11:30:00',
   },
   {
     id: 'd2',
     name: 'Chen et al. (2025)',
     type: 'reference' as const,
-    meta: 'IEEE · Learning Technologies',
+    meta: 'IEEE, Learning Technologies',
     updatedAt: '2026-05-26T14:00:00',
   },
   {
     id: 'd3',
     name: 'Modèle officiel PFE ESCA',
     type: 'template' as const,
-    meta: 'Structure · 9 sections',
+    meta: 'Structure, 9 sections',
     updatedAt: '2026-01-10T08:00:00',
   },
   {
     id: 'd4',
-    name: 'Bibliographie_Mai2026.bib',
+    name: 'Bibliographie mai 2026.bib',
     type: 'bibliography' as const,
-    meta: 'BibTeX · 12 entrées',
+    meta: 'BibTeX, 12 entrées',
     updatedAt: '2026-05-20T16:00:00',
   },
   {
     id: 'd5',
-    name: 'Chapter_2_Draft.pdf',
+    name: 'Chapitre 2 brouillon.pdf',
     type: 'attachment' as const,
-    meta: 'PDF · 2.4 Mo',
+    meta: 'PDF, 2.4 Mo',
     updatedAt: '2026-05-22T10:45:00',
   },
 ];

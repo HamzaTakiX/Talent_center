@@ -1,12 +1,12 @@
-import { FunctionComponent, useState } from 'react';
-import { ChevronLeft, ChevronRight, Filter, LayoutGrid, List, Search } from 'lucide-react';
+import { ChangeEvent, FunctionComponent, useState } from 'react';
+import { ChevronLeft, ChevronRight, Filter, LayoutGrid, List } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { AdminSearchInput } from '../../../admin/ui';
 import {
   AGENDA_FILTER_BTN,
   AGENDA_MONTH_NAV,
   AGENDA_MONTH_NAV_BTN,
-  AGENDA_SEARCH_INPUT,
   AGENDA_SEARCH_ROW,
-  AGENDA_SEARCH_WRAP,
   AGENDA_SECTION_CARD,
   AGENDA_TOOLBAR_ROW,
   AGENDA_VIEW_TOGGLE,
@@ -15,18 +15,21 @@ import {
   AGENDA_VIEW_TOGGLE_BTN_INACTIVE,
 } from '../constants/agendaLayout';
 import { agendaMonthLabel } from '../data';
-import type { AgendaViewMode } from '../types';
+import type { AgendaMeetingEvent, AgendaViewMode } from '../types';
+import AgendaEventModal from './AgendaEventModal';
 import AgendaListView from './AgendaListView';
 import AgendaWeekGrid from './AgendaWeekGrid';
 
 const AgendaCalendarSection: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<AgendaViewMode>('week');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState<AgendaMeetingEvent | null>(null);
 
   return (
-    <section className={AGENDA_SECTION_CARD} aria-label="Calendar">
+    <section className={AGENDA_SECTION_CARD} aria-label={t('encadrant.agenda.calendarAria')}>
       <div className={AGENDA_TOOLBAR_ROW}>
-        <div className={AGENDA_VIEW_TOGGLE} role="group" aria-label="Calendar view">
+        <div className={AGENDA_VIEW_TOGGLE} role="group" aria-label={t('encadrant.agenda.viewModeAria')}>
           <button
             type="button"
             onClick={() => setViewMode('week')}
@@ -36,7 +39,7 @@ const AgendaCalendarSection: FunctionComponent = () => {
             aria-pressed={viewMode === 'week'}
           >
             <LayoutGrid className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-            Week
+            {t('encadrant.agenda.views.week')}
           </button>
           <button
             type="button"
@@ -47,48 +50,44 @@ const AgendaCalendarSection: FunctionComponent = () => {
             aria-pressed={viewMode === 'list'}
           >
             <List className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-            List
+            {t('encadrant.agenda.views.list')}
           </button>
         </div>
 
         <div className={AGENDA_MONTH_NAV}>
-          <button type="button" className={AGENDA_MONTH_NAV_BTN} aria-label="Previous month">
-            <ChevronLeft className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+          <button type="button" className={AGENDA_MONTH_NAV_BTN} aria-label={t('encadrant.agenda.prevMonth')}>
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" strokeWidth={1.75} aria-hidden />
           </button>
-          <span className="min-w-[6.5rem] px-1 text-center text-sm font-medium capitalize leading-5 text-[#171717] sm:min-w-[7rem] sm:text-base">
+          <span className="min-w-[6.5rem] px-1 text-center text-sm font-medium capitalize leading-5 text-[var(--admin-text)] sm:min-w-[7rem] sm:text-base">
             {agendaMonthLabel}
           </span>
-          <button type="button" className={AGENDA_MONTH_NAV_BTN} aria-label="Next month">
-            <ChevronRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+          <button type="button" className={AGENDA_MONTH_NAV_BTN} aria-label={t('encadrant.agenda.nextMonth')}>
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" strokeWidth={1.75} aria-hidden />
           </button>
         </div>
       </div>
 
       <div className={AGENDA_SEARCH_ROW}>
-        <div className={AGENDA_SEARCH_WRAP}>
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9ca3af]"
-            strokeWidth={1.75}
-            aria-hidden
-          />
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by student or meeting title..."
-            className={AGENDA_SEARCH_INPUT}
-          />
-        </div>
-        <button type="button" className={AGENDA_FILTER_BTN} aria-label="Filter meetings">
+        <AdminSearchInput
+          value={searchQuery}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+          onClear={() => setSearchQuery('')}
+          placeholder={t('encadrant.common.searchStudent')}
+          aria-label={t('encadrant.common.searchStudent')}
+          containerClassName="min-w-0 flex-1"
+        />
+        <button type="button" className={AGENDA_FILTER_BTN} aria-label={t('encadrant.common.filter')}>
           <Filter className="h-4 w-4" strokeWidth={1.75} aria-hidden />
         </button>
       </div>
 
       {viewMode === 'week' ? (
-        <AgendaWeekGrid searchQuery={searchQuery} />
+        <AgendaWeekGrid searchQuery={searchQuery} onEventClick={setSelectedEvent} />
       ) : (
-        <AgendaListView searchQuery={searchQuery} />
+        <AgendaListView searchQuery={searchQuery} onEventClick={setSelectedEvent} />
       )}
+
+      <AgendaEventModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </section>
   );
 };

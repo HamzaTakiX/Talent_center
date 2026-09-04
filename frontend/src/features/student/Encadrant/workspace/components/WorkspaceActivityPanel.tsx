@@ -1,9 +1,10 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useMemo } from 'react';
 import { FileUp, MessageSquare, Video, CheckCircle, FileText, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { workspaceActivities } from '../data/workspacePlatformMock';
 import type { ActivityType } from '../types';
 import StudentSearchEmptyState from '../../../ui/StudentSearchEmptyState';
+import { isWorkspaceSearchActive, matchesWorkspaceSearch } from '../utils/workspaceSearch';
 
 const activityIcons: Record<ActivityType, typeof FileUp> = {
   upload: FileUp,
@@ -14,32 +15,69 @@ const activityIcons: Record<ActivityType, typeof FileUp> = {
   report: FileText,
 };
 
-const WorkspaceActivityPanel: FunctionComponent = () => {
+interface WorkspaceActivityPanelProps {
+  search: string;
+}
+
+const WorkspaceActivityPanel: FunctionComponent<WorkspaceActivityPanelProps> = ({ search }) => {
   const { t } = useTranslation();
+  const isSearching = isWorkspaceSearchActive(search);
+
+  const filteredActivities = useMemo(
+    () =>
+      workspaceActivities.filter((item) =>
+        matchesWorkspaceSearch(search, [
+          t(item.messageKey),
+          t(item.actorKey),
+          t(item.timeKey),
+          t(`student.encadrant.workspace.platform.activity.types.${item.type}`),
+        ]),
+      ),
+    [search, t],
+  );
 
   return (
-    <div className="p-4 sm:p-5">
-      {workspaceActivities.length === 0 ? (
-        <StudentSearchEmptyState titleKey="student.encadrant.workspace.platform.empty.activityTitle" descriptionKey="student.encadrant.workspace.platform.empty.activityDesc" variant="inline" />
+    <div className="student-workspace-hub-tab student-workspace-activity-tab flex h-full min-h-0 flex-col">
+      {filteredActivities.length === 0 ? (
+        <StudentSearchEmptyState
+          titleKey={
+            isSearching ? undefined : 'student.encadrant.workspace.platform.empty.activityTitle'
+          }
+          descriptionKey={
+            isSearching ? undefined : 'student.encadrant.workspace.platform.empty.activityDesc'
+          }
+          variant="inline"
+          className="student-workspace-hub-empty"
+        />
       ) : (
-        <div>
-          {workspaceActivities.map((item) => {
+        <ol className="student-workspace-activity">
+          {filteredActivities.map((item) => {
             const Icon = activityIcons[item.type];
             return (
-              <div key={item.id} className="student-workspace-activity-row">
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--admin-brand-muted)] text-[var(--admin-brand)]">
-                  <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+              <li
+                key={item.id}
+                className={`student-workspace-activity__item student-workspace-activity__item--${item.type}`}
+              >
+                <span className="student-workspace-activity__marker" aria-hidden>
+                  <Icon className="h-4 w-4" strokeWidth={1.75} />
                 </span>
-                <div>
-                  <p className="m-0 text-sm font-medium text-[var(--admin-text)]">{t(item.messageKey)}</p>
-                  <p className="m-0 mt-0.5 text-xs text-[var(--admin-text-muted)]">
-                    {t(item.actorKey)} · {t(item.timeKey)}
+                <div className="student-workspace-activity__body">
+                  <p className="student-workspace-activity__message">{t(item.messageKey)}</p>
+                  <p className="student-workspace-activity__meta">
+                    <span className="student-workspace-activity__actor">{t(item.actorKey)}</span>
+                    <span className="student-workspace-activity__sep" aria-hidden>
+                      ·
+                    </span>
+                    <span className="student-workspace-activity__time">{t(item.timeKey)}</span>
                   </p>
                 </div>
-              </div>
+                <span className="student-workspace-activity__type">
+                  {t(`student.encadrant.workspace.platform.activity.types.${item.type}`)}
+                </span>
+              </li>
             );
           })}
-        </div>
+        </ol>
       )}
     </div>
   );

@@ -157,17 +157,22 @@ export function mapStageOfferToStudentCard(
   };
 }
 
-function extractRecommendationTags(rec: StageRecommendation): string[] {
-  const fromSkills = (rec.required_skills ?? []).map(String).filter(Boolean).slice(0, 3);
-  if (fromSkills.length) return fromSkills;
+function extractRecommendationReasonLabels(rec: StageRecommendation): string[] {
+  const labels: string[] = [];
+  const seen = new Set<string>();
 
-  const fromOfferType = String(rec.offer_type ?? '').trim();
-  if (fromOfferType) return [fromOfferType];
+  const push = (raw: string) => {
+    const label = raw.trim();
+    if (!label) return;
+    const key = label.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    labels.push(label);
+  };
 
-  const fromReasons: string[] = [];
   for (const reason of rec.reasons ?? []) {
-    if (typeof reason === 'string' && reason.trim()) {
-      fromReasons.push(reason.trim());
+    if (typeof reason === 'string') {
+      push(reason);
       continue;
     }
     if (!reason || typeof reason !== 'object') continue;
@@ -175,16 +180,23 @@ function extractRecommendationTags(rec: StageRecommendation): string[] {
     const entry = reason as Record<string, unknown>;
     if (Array.isArray(entry.matched)) {
       for (const skill of entry.matched) {
-        const label = String(skill ?? '').trim();
-        if (label) fromReasons.push(label);
+        push(String(skill ?? ''));
       }
-      continue;
     }
-    const label = String(entry.reason ?? entry.label ?? '').trim();
-    if (label) fromReasons.push(label);
+    push(String(entry.reason ?? entry.label ?? ''));
   }
 
-  return fromReasons.slice(0, 3);
+  return labels;
+}
+
+function extractRecommendationTags(rec: StageRecommendation): string[] {
+  const fromSkills = (rec.required_skills ?? []).map(String).filter(Boolean).slice(0, 3);
+  if (fromSkills.length) return fromSkills;
+
+  const fromOfferType = String(rec.offer_type ?? '').trim();
+  if (fromOfferType) return [fromOfferType];
+
+  return extractRecommendationReasonLabels(rec).slice(0, 3);
 }
 
 function resolveRecommendationLocation(rec: StageRecommendation): string {
@@ -199,6 +211,7 @@ export function mapRecommendationToStudentCard(
   matchPercent?: number,
 ): StudentInternshipOffer {
   const category = (rec.offer_type || 'Business') as StudentInternshipOffer['category'];
+  const matchReasons = extractRecommendationReasonLabels(rec).slice(0, 4);
   return {
     id: rec.offer_uuid,
     title: rec.offer_title,
@@ -208,8 +221,9 @@ export function mapRecommendationToStudentCard(
       : null,
     location: resolveRecommendationLocation(rec),
     tags: extractRecommendationTags(rec),
-    matchPercent: matchPercent ?? Math.round(rec.score),
+    matchPercent: matchPercent != null && matchPercent > 0 ? matchPercent : Math.round(Number(rec.score) || 0),
     category,
+    matchReasons: matchReasons.length ? matchReasons : undefined,
   };
 }
 

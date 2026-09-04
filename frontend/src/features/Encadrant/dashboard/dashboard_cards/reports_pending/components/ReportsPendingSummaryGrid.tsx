@@ -1,14 +1,49 @@
-import { FunctionComponent } from 'react';
-import { REPORTS_PENDING_STATS_GRID } from '../constants/reportsPendingLayout';
+import { FunctionComponent, useMemo } from 'react';
+import { AlertTriangle, CheckCircle2, FilePenLine } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import PlatformKpiStrip from '../../../../../../design-system/PlatformKpiStrip';
+import { encadrantKpiTone } from '../../../../constants/encadrantKpiTones';
 import { reportsPendingSummaryMock } from '../data';
-import ReportsPendingSummaryCard from './ReportsPendingSummaryCard';
+import type { ReportsPendingSummaryStat } from '../types';
 
-const ReportsPendingSummaryGrid: FunctionComponent = () => (
-  <section aria-label="Reports pending summary" className={REPORTS_PENDING_STATS_GRID}>
-    {reportsPendingSummaryMock.map((stat) => (
-      <ReportsPendingSummaryCard key={stat.label} stat={stat} />
-    ))}
-  </section>
-);
+const iconMap = {
+  document: FilePenLine,
+  alert: AlertTriangle,
+  check: CheckCircle2,
+} as const;
+
+const labelKeyByIcon: Record<ReportsPendingSummaryStat['icon'], string> = {
+  document: 'encadrant.dashboard.pendingReports.kpi.totalPending',
+  alert: 'encadrant.dashboard.pendingReports.kpi.late',
+  check: 'encadrant.dashboard.pendingReports.kpi.onTime',
+};
+
+const ReportsPendingSummaryGrid: FunctionComponent = () => {
+  const { t } = useTranslation();
+
+  const items = useMemo(
+    () =>
+      reportsPendingSummaryMock.map((stat) => {
+        const tones = encadrantKpiTone(stat.tone);
+        return {
+          id: stat.icon,
+          label: t(labelKeyByIcon[stat.icon]),
+          value: String(stat.value),
+          icon: iconMap[stat.icon],
+          accent: tones.accent,
+          accentBg: tones.bg,
+        };
+      }),
+    [t],
+  );
+
+  return (
+    <PlatformKpiStrip
+      items={items}
+      columns={3}
+      ariaLabel={t('encadrant.dashboard.pendingReports.title')}
+    />
+  );
+};
 
 export default ReportsPendingSummaryGrid;

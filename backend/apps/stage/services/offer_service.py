@@ -12,12 +12,17 @@ from django.utils import timezone
 
 from apps.stage.models import InternshipOffer, OfferTargetingRule
 from apps.stage.services.audit_hooks import record_offer_event
-from apps.stage.services.exceptions import DuplicateOfferError, OfferValidationError
+from apps.stage.services.exceptions import (
+    DuplicateOfferError,
+    OfferTransitionError,
+    OfferValidationError,
+)
 from apps.stage.services.notifications import notify_offer_published
 from apps.stage.services.offer_lifecycle import (
     STUDENT_APPLYABLE_STATUSES,
     transition_offer,
 )
+from apps.stage.services.offer_types import resolve_offer_type
 from apps.stage.services.permissions import assert_can_manage_offers
 
 REQUIRED_PUBLISH_FIELDS = (
@@ -50,6 +55,29 @@ def validate_offer_for_publish(offer: InternshipOffer) -> list[str]:
     if not offer.application_deadline:
         errors.append('application_deadline is required for publishing.')
     return errors
+
+
+def missing_publish_requirements(offer: InternshipOffer) -> list[str]:
+    """Field keys blocking publication, for localized client-side messaging."""
+    missing: list[str] = []
+    for field in REQUIRED_PUBLISH_FIELDS:
+        value = getattr(offer, field, None)
+        if not value or (isinstance(value, str) and not value.strip()):
+            missing.append(field)
+    if not offer.required_skills:
+        missing.append('required_skills')
+    if not offer.targeting_rules.filter(is_active=True).exists():
+        missing.append('targeting')
+    if not offer.application_deadline:
+        missing.append('application_deadline')
+    return missing
+
+
+def _raise_publish_gate(offer: InternshipOffer, errors: list[str]) -> None:
+    raise OfferValidationError(
+        '; '.join(errors),
+        details={'missing_fields': missing_publish_requirements(offer)},
+    )
 
 
 def evaluate_publish_readiness(offer: InternshipOffer) -> dict[str, Any]:
@@ -159,7 +187,7 @@ def create_offer_draft(*, actor, data: dict[str, Any]) -> InternshipOffer:
         location_country=(data.get('location_country', '') or '')[:128],
         is_remote=data.get('is_remote', False),
         is_hybrid=data.get('is_hybrid', False),
-        offer_type=data.get('offer_type', InternshipOffer.OfferType.INTERNSHIP),
+        offer_type=resolve_offer_type(data.get('offer_type')),
         duration_months=data.get('duration_months'),
         start_date=data.get('start_date'),
         end_date=data.get('end_date'),
@@ -193,14 +221,19 @@ def create_offer_draft(*, actor, data: dict[str, Any]) -> InternshipOffer:
         internship_types=data.get('internship_types'),
         raw_rules=data.get('targeting_rules') or [],
     )
-    for rule in targeting_rules:
-        OfferTargetingRule.objects.create(
-            offer=offer,
-            rule_type=rule['rule_type'],
-            value_json=rule.get('value_json', {}),
-            is_inclusive=rule.get('is_inclusive', True),
-            priority=rule.get('priority', 0),
-        )
+    if targeting_rules:
+        OfferTargetingRule.objects.bulk_create([
+            OfferTargetingRule(
+                offer=offer,
+                rule_type=rule['rule_type'],
+                value_json=rule.get('value_json', {}),
+                is_inclusive=rule.get('is_inclusive', True),
+                priority=rule.get('priority', 0),
+            )
+            for rule in targeting_rules
+        ])
+
+    offer = InternshipOffer.objects.prefetch_related('targeting_rules').get(pk=offer.pk)
 
     record_offer_event(
         action='CREATE',
@@ -243,6 +276,9 @@ def update_offer(*, offer: InternshipOffer, actor, data: dict[str, Any]) -> Inte
                     **(desc_incoming if isinstance(desc_incoming, dict) else {}),
                 }
             setattr(offer, field, merged)
+            continue
+        if field == 'offer_type':
+            setattr(offer, field, resolve_offer_type(data[field]))
             continue
         setattr(offer, field, data[field])
     offer.save()
@@ -299,7 +335,7 @@ def submit_for_review(*, offer: InternshipOffer, actor) -> InternshipOffer:
     assert_can_manage_offers(actor)
     errors = validate_offer_for_publish(offer)
     if errors:
-        raise OfferValidationError('; '.join(errors))
+        _raise_publish_gate(offer, errors)
     previous = offer.status
     offer = transition_offer(
         offer,
@@ -324,7 +360,7 @@ def publish_offer(*, offer: InternshipOffer, actor, open_immediately: bool = Tru
     assert_can_manage_offers(actor)
     errors = validate_offer_for_publish(offer)
     if errors:
-        raise OfferValidationError('; '.join(errors))
+        _raise_publish_gate(offer, errors)
 
     dup = detect_duplicate_offer(
         title=offer.title,
@@ -361,20 +397,16 @@ def publish_offer(*, offer: InternshipOffer, actor, open_immediately: bool = Tru
     )
     notify_offer_published(offer, actor)
 
-    try:
-        from apps.stage.services.ai_pipeline.pipeline import process_offer_publish
-        process_offer_publish(offer)
-    except Exception:
-        pass
-
-    try:
-        from apps.stage.services.matching_service import recalculate_matches_for_offer
-
-        recalculate_matches_for_offer(offer, trigger='OFFER_PUBLISHED')
-    except Exception:
-        pass
+    offer_id = offer.pk
+    transaction.on_commit(lambda: _schedule_offer_post_publish(offer_id))
 
     return offer
+
+
+def _schedule_offer_post_publish(offer_id: int) -> None:
+    from apps.stage.jobs.celery_tasks import schedule_offer_post_publish
+
+    schedule_offer_post_publish(offer_id)
 
 
 @transaction.atomic

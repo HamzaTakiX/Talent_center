@@ -76,7 +76,7 @@ def _serialize_work_mode(wm: WorkMode, lang: str) -> dict:
 
 
 def _management_filiere_qs(*, include_archived: bool = False):
-    qs = Filiere.objects.all()
+    qs = Filiere.objects.prefetch_related('specialization_domains')
     if not include_archived:
         qs = qs.filter(is_archived=False)
     return qs.order_by('sort_order', 'code')
@@ -122,10 +122,13 @@ def _management_work_mode_qs(*, include_archived: bool = False):
 
 def serialize_management_filiere(f: Filiere, lang: str) -> dict:
     data = serialize_filiere(f, lang)
+    domains = [d for d in f.specialization_domains.all() if d.is_active]
+    domains.sort(key=lambda d: (d.category, d.sort_order, d.name))
     data.update({
         'description': f.description,
         'sort_order': f.sort_order,
         'is_archived': f.is_archived,
+        'specialization_domain_ids': [d.id for d in domains],
     })
     return data
 
@@ -358,6 +361,8 @@ def seed_default_work_modes() -> None:
 
 @transaction.atomic
 def create_filiere(*, actor, data: dict[str, Any], lang: str) -> dict:
+    from apps.admin_management.services.specialization_domains import set_filiere_specialization_domains
+
     code = slugify(data.get('code') or data.get('name_en') or data.get('name', ''))[:64]
     name_fr, name_en = bilingual_name_payload(data)
     obj = Filiere(
@@ -372,6 +377,8 @@ def create_filiere(*, actor, data: dict[str, Any], lang: str) -> dict:
     )
     apply_bilingual_names_to_entity(obj, data)
     obj.save()
+    if 'specialization_domain_ids' in data:
+        set_filiere_specialization_domains(obj, list(data.get('specialization_domain_ids') or []))
     _audit(
         entity_type='FILIERE',
         entity_id=obj.id,
@@ -386,6 +393,8 @@ def create_filiere(*, actor, data: dict[str, Any], lang: str) -> dict:
 
 @transaction.atomic
 def update_filiere(*, actor, filiere_id: int, data: dict[str, Any], lang: str) -> dict:
+    from apps.admin_management.services.specialization_domains import set_filiere_specialization_domains
+
     obj = Filiere.objects.get(pk=filiere_id)
     old = serialize_management_filiere(obj, lang)
     if 'description' in data:
@@ -398,6 +407,8 @@ def update_filiere(*, actor, filiere_id: int, data: dict[str, Any], lang: str) -
         obj.is_active = bool(data['is_active'])
     apply_bilingual_names_to_entity(obj, data)
     obj.save()
+    if 'specialization_domain_ids' in data:
+        set_filiere_specialization_domains(obj, list(data.get('specialization_domain_ids') or []))
     new = serialize_management_filiere(obj, lang)
     _audit(
         entity_type='FILIERE',

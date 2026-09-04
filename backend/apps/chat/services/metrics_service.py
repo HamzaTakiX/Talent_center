@@ -11,6 +11,7 @@ from apps.accounts_et_roles.models import User
 from apps.chat.models import Conversation, ConversationContext, Message
 from apps.chat.permissions import conversations_for_user
 from apps.chat.services.conversation_service import (
+    apply_platform_admin_inbox_visibility_filters,
     filter_offer_threads_with_student_messages,
     should_filter_offer_threads_by_student_messages,
 )
@@ -18,14 +19,16 @@ from apps.chat.services.message_service import unread_count_for_user
 
 
 def _waiting_states(last_sender_role: str | None, workflow_state: str) -> tuple[bool, bool]:
-    if workflow_state in {
-        ConversationContext.WorkflowState.WAITING_ADMIN,
-        ConversationContext.WorkflowState.NEW,
-        ConversationContext.WorkflowState.ESCALATED,
-    }:
-        return True, False
+    if workflow_state == ConversationContext.WorkflowState.RESOLVED:
+        return False, False
     if workflow_state == ConversationContext.WorkflowState.WAITING_STUDENT:
         return False, True
+    if workflow_state == ConversationContext.WorkflowState.WAITING_ADMIN:
+        return True, False
+    if workflow_state == ConversationContext.WorkflowState.ESCALATED:
+        return True, False
+    if not last_sender_role:
+        return workflow_state == ConversationContext.WorkflowState.NEW, False
     if last_sender_role == User.RoleChoices.STUDENT:
         return True, False
     if last_sender_role == User.RoleChoices.ADMIN:
@@ -45,14 +48,34 @@ def _last_message_sender_role(conversation: Conversation) -> str | None:
     return msg.sender.role
 
 
-def compute_module_metrics(user: User, *, module: str) -> dict[str, Any]:
+def compute_module_metrics(
+    user: User,
+    *,
+    module: str,
+    entity_type: str | None = None,
+) -> dict[str, Any]:
     qs = (
         conversations_for_user(user)
         .filter(context__module=module, is_archived=False)
         .select_related('context')
     )
+    if (
+        module == ConversationContext.Module.PLATFORM
+        and user.role == User.RoleChoices.ADMIN
+    ):
+        qs = qs.exclude(metadata_json__contains={'admin_inbox_archived': True})
+        qs = apply_platform_admin_inbox_visibility_filters(qs, entity_type=entity_type)
+    if entity_type:
+        qs = qs.filter(context__entity_type=entity_type)
     if should_filter_offer_threads_by_student_messages(user, module=module):
         qs = filter_offer_threads_with_student_messages(qs)
+    if (
+        module == ConversationContext.Module.SRF
+        and user.role == User.RoleChoices.ADMIN
+    ):
+        qs = qs.exclude(metadata_json__contains={'admin_inbox_archived': True})
+        qs = qs.filter(context__entity_type='financial_support')
+        qs = qs.filter(last_message_at__isnull=False)
     convs = list(qs.order_by('-last_message_at')[:500])
 
     now = timezone.now()

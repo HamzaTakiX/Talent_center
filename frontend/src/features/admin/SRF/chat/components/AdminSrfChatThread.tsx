@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ChatEmptyState from '../../../shared/admin-module-chat/components/ChatEmptyState';
@@ -8,11 +8,15 @@ import {
   InternshipChatMessagesSkeleton,
   InternshipChatWorkspaceSkeleton,
 } from '../../../offres-stage/chat/components/InternshipChatLoadingSkeletons';
+import InternshipStudentAvatar from '../../../offres-stage/chat/components/InternshipStudentAvatar';
 import {
   StandardChatMessageThread,
   toChatToolMessages,
   useChatConversationTools,
 } from '../../../../shared/chat-design-system';
+import ChatComposerModuleExtras from '../../../../shared/contextual-chat/components/ChatComposerModuleExtras';
+import { useSupportChatAreaComposer } from '../../../../shared/contextual-chat/hooks/useSupportChatAreaComposer';
+import type { ChatEntityReference } from '../../../../shared/contextual-chat/types/chatEntityTypes';
 import type { AdminSrfConversation, InboxStats } from '../types/adminSrfChatTypes';
 
 type Props = {
@@ -21,7 +25,7 @@ type Props = {
   messagesLoading?: boolean;
   conversationLoading?: boolean;
   statsLoading?: boolean;
-  onSend: (text: string) => void;
+  onSend: (text: string, tagCodes?: string[], entityRefs?: ChatEntityReference[]) => void;
   onBack?: () => void;
   onArchive: () => void;
   onUnarchive: () => void;
@@ -40,8 +44,10 @@ const AdminSrfChatThread: FunctionComponent<Props> = ({
 }) => {
   const { t } = useTranslation();
   const emptyState = useChatEmptyState('srf');
-  const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const composer = useSupportChatAreaComposer(conversation?.id, (text, _files, tagCodes, entityRefs) => {
+    onSend(text, tagCodes, entityRefs);
+  });
 
   const messages = conversation?.messages ?? [];
   const chatTools = useChatConversationTools({
@@ -57,17 +63,6 @@ const AdminSrfChatThread: FunctionComponent<Props> = ({
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages.length, conversation?.id, chatTools.searchQuery]);
-
-  useEffect(() => {
-    setDraft('');
-  }, [conversation?.id]);
-
-  const handleSend = useCallback(() => {
-    const text = draft.trim();
-    if (!text || !conversation) return;
-    onSend(text);
-    setDraft('');
-  }, [conversation, draft, onSend]);
 
   if ((conversationLoading || messagesLoading) && !conversation) {
     return <InternshipChatWorkspaceSkeleton />;
@@ -105,9 +100,13 @@ const AdminSrfChatThread: FunctionComponent<Props> = ({
           ) : null}
           <div className="isi-chat-header-main min-w-0">
             <div className="isi-chat-header-identity">
-              <span className="isi-avatar isi-avatar--header bg-[var(--admin-brand)] text-white">
-                {conversation.studentInitials}
-              </span>
+              <InternshipStudentAvatar
+                url={conversation.studentAvatarUrl}
+                name={conversation.studentName}
+                email={conversation.studentEmail}
+                initials={conversation.studentInitials}
+                size="header"
+              />
               <h2 className="isi-chat-name truncate">{conversation.studentName}</h2>
             </div>
             <p className="isi-chat-meta truncate">{conversation.statusLabel}</p>
@@ -134,13 +133,24 @@ const AdminSrfChatThread: FunctionComponent<Props> = ({
       {chatTools.panels}
 
       <SupportMessageComposer
-        value={draft}
-        onChange={setDraft}
-        onSend={handleSend}
+        value={composer.draft}
+        onChange={composer.setDraft}
+        onSend={composer.handleSend}
         placeholder={t('admin.modules.srf.chat.composerPlaceholder', {
           defaultValue: 'Écrire un message…',
         })}
         showVoice={false}
+        extraActions={
+          <ChatComposerModuleExtras
+            chatModule="srf"
+            conversationId={conversation.id}
+            composer={composer}
+            disabled={conversation.archived}
+            showTagPicker={false}
+          />
+        }
+        pendingEntities={composer.pendingEntities}
+        onRemovePendingEntity={composer.removePendingEntity}
       />
     </section>
   );

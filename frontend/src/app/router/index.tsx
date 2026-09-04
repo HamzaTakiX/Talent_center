@@ -173,14 +173,48 @@ import {
   EncadrantReportPage as StudentEncadrantReportPage,
   EncadrantTaskPage as StudentEncadrantTaskPage,
   EncadrantWorkspacePage as StudentEncadrantWorkspacePage,
+  EncadrantMeetingsPage as StudentEncadrantMeetingsPage,
   EncadrantWhiteboardPage as StudentEncadrantWhiteboardPage,
 } from '../../features/student/Encadrant';
+import StudentMeetingRoomPage from '../../features/student/Encadrant/meeting/pages/StudentMeetingRoomPage';
 import {
   ReportEditorPage as StudentReportEditorPage,
   ReportsHubPage as StudentReportsHubPage,
 } from '../../features/student/reports';
 import { SrfChatPage as StudentSrfChatPage, SrfPage as StudentSrfPage } from '../../features/student/SRF';
 import StudentSupportChatPage from '../../features/student/support/chat/pages/StudentSupportChatPage';
+
+// Encadrant (supervisor) portal — separate from admin console
+import { EncadrantDashboardPage, EncadrantStudentDetailPage } from '../../features/Encadrant/dashboard';
+import { EncadrantAssignedStudentsPage } from '../../features/Encadrant/dashboard/dashboard_cards/assigned_students';
+import { EncadrantStudentsAtRiskPage } from '../../features/Encadrant/dashboard/dashboard_cards/students_at_risk';
+import { EncadrantUpcomingMeetingsPage } from '../../features/Encadrant/dashboard/dashboard_cards/upcoming_meetings';
+import { EncadrantReportsPendingPage as EncadrantDashboardReportsPendingPage } from '../../features/Encadrant/dashboard/dashboard_cards/reports_pending';
+import { EncadrantChatPage as EncadrantPortalChatPage } from '../../features/Encadrant/chat';
+import EncadrantMeetingRoomPage from '../../features/Encadrant/meeting/pages/EncadrantMeetingRoomPage';
+import { EncadrantAgendaPage as EncadrantPortalAgendaPage } from '../../features/Encadrant/agenda';
+import {
+  EncadrantTaskPage as EncadrantPortalTaskPage,
+  EncadrantCreateTaskManuallyPage,
+  EncadrantAiTaskCreationPage,
+  EncadrantStudentTaskDetailPage,
+} from '../../features/Encadrant/task';
+import { EncadrantTasksUpcomingPage } from '../../features/Encadrant/task/task_cards/tasks_upcoming';
+import { EncadrantTasksInProgressPage } from '../../features/Encadrant/task/task_cards/tasks_in_progress';
+import { EncadrantTasksDonePage } from '../../features/Encadrant/task/task_cards/tasks_done';
+import {
+  EncadrantWorkspacePage as EncadrantPortalWorkspacePage,
+  EncadrantWorkspaceStudentDetailPage,
+} from '../../features/Encadrant/workspace';
+import {
+  EncadrantReportsPage as EncadrantPortalReportsPage,
+  EncadrantStudentReportsDetailPage,
+  EncadrantReportViewPage,
+  EncadrantReportsSubmittedPage,
+  EncadrantReportsPendingCardPage,
+  EncadrantReportsLatePage,
+  EncadrantReportsValidatedPage,
+} from '../../features/Encadrant/reports';
 
 // CV Pages
 import CVListPage from '../../features/cv/pages/CVListPage';
@@ -330,6 +364,10 @@ export const router = createBrowserRouter(
         element: <StudentEncadrantChatPage />
       },
       {
+        path: '/student/encadrant/meeting/:sessionId',
+        element: <StudentMeetingRoomPage />
+      },
+      {
         path: '/student/support/chat',
         element: <StudentSupportChatPage />
       },
@@ -346,11 +384,19 @@ export const router = createBrowserRouter(
         element: <StudentEncadrantWorkspacePage />
       },
       {
+        path: '/student/encadrant/meetings',
+        element: <StudentEncadrantMeetingsPage />
+      },
+      {
         path: '/student/workspace/whiteboard',
         element: <StudentEncadrantWhiteboardPage />
       },
       {
         path: '/student/encadrant/workspace/whiteboard',
+        element: <StudentEncadrantWhiteboardPage />
+      },
+      {
+        path: '/student/encadrant/workspace/board/:boardId',
         element: <StudentEncadrantWhiteboardPage />
       },
       {
@@ -961,6 +1007,109 @@ export const router = createBrowserRouter(
         path: '/admin/students-unpaid-srf',
         element: <StudentsUnpaidSrfPage />
       },
+
+      // ── Encadrant portal (SUPERVISOR) ─────────────────────────────────
+      {
+        path: '/encadrant',
+        element: <EncadrantDashboardPage />
+      },
+      {
+        path: '/encadrant/dashboard/assigned-students',
+        element: <EncadrantAssignedStudentsPage />
+      },
+      {
+        path: '/encadrant/dashboard/students-at-risk',
+        element: <EncadrantStudentsAtRiskPage />
+      },
+      {
+        path: '/encadrant/dashboard/upcoming-meetings',
+        element: <EncadrantUpcomingMeetingsPage />
+      },
+      {
+        path: '/encadrant/dashboard/reports-pending',
+        element: <EncadrantDashboardReportsPendingPage />
+      },
+      {
+        path: '/encadrant/students/:studentId',
+        element: <EncadrantStudentDetailPage />
+      },
+      {
+        path: '/encadrant/chat',
+        element: <EncadrantPortalChatPage />
+      },
+      {
+        path: '/encadrant/meeting/:sessionId',
+        element: <EncadrantMeetingRoomPage />
+      },
+      {
+        path: '/encadrant/agenda',
+        element: <EncadrantPortalAgendaPage />
+      },
+      {
+        path: '/encadrant/task',
+        element: <EncadrantPortalTaskPage />
+      },
+      {
+        path: '/encadrant/task/create-manually',
+        element: <EncadrantCreateTaskManuallyPage />
+      },
+      {
+        path: '/encadrant/task/ai-task-creation',
+        element: <EncadrantAiTaskCreationPage />
+      },
+      {
+        path: '/encadrant/task/tasks-upcoming',
+        element: <EncadrantTasksUpcomingPage />
+      },
+      {
+        path: '/encadrant/task/tasks-in-progress',
+        element: <EncadrantTasksInProgressPage />
+      },
+      {
+        path: '/encadrant/task/tasks-done',
+        element: <EncadrantTasksDonePage />
+      },
+      {
+        path: '/encadrant/task/students/:studentId',
+        element: <EncadrantStudentTaskDetailPage />
+      },
+      {
+        path: '/encadrant/workspace',
+        element: <EncadrantPortalWorkspacePage />
+      },
+      {
+        path: '/encadrant/workspace/students/:studentId',
+        element: <EncadrantWorkspaceStudentDetailPage />
+      },
+      {
+        path: '/encadrant/reports',
+        element: <EncadrantPortalReportsPage />
+      },
+      {
+        path: '/encadrant/reports/submitted',
+        element: <EncadrantReportsSubmittedPage />
+      },
+      {
+        path: '/encadrant/reports/pending',
+        element: <EncadrantReportsPendingCardPage />
+      },
+      {
+        path: '/encadrant/reports/late',
+        element: <EncadrantReportsLatePage />
+      },
+      {
+        path: '/encadrant/reports/validated',
+        element: <EncadrantReportsValidatedPage />
+      },
+      {
+        path: '/encadrant/reports/students/:studentId',
+        element: <EncadrantStudentReportsDetailPage />
+      },
+      {
+        path: '/encadrant/reports/students/:studentId/reports/:reportId',
+        element: <EncadrantReportViewPage />
+      },
+
       {
         path: '/cv',
         element: <CVListPage />
@@ -979,7 +1128,7 @@ export const router = createBrowserRouter(
       },
       {
         path: '*',
-        element: <Navigate to="/student-dashboard" replace />
+        element: <DashboardRedirect />
       }
         ]
       }

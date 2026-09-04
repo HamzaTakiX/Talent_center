@@ -15,10 +15,10 @@ export const InternshipChatSidebarSkeleton: FunctionComponent = () => {
   return (
     <aside className="isi-sidebar" aria-busy="true" aria-live="polite">
       <div className="isi-sidebar-head isi-sidebar-head--brand">
-        <div className="isi-sidebar-brand">
-          <Shimmer className="isi-sidebar-brand-icon !rounded-[0.75rem]" />
-          <div className="isi-sidebar-brand-copy min-w-0 flex-1 space-y-1.5">
-            <Shimmer className="h-[0.9375rem] w-28" />
+        <div className="platform-header-brand">
+          <Shimmer className="platform-header-brand-icon !rounded-[0.625rem]" />
+          <div className="platform-header-brand-text min-w-0 space-y-1">
+            <Shimmer className="h-[0.8125rem] w-28" />
             <Shimmer className="h-2.5 w-20" />
           </div>
         </div>

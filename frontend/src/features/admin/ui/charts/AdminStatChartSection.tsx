@@ -37,22 +37,17 @@ const AdminStatChartSection: FunctionComponent<AdminStatChartSectionProps> = ({
       aria-labelledby={`chart-heading-${chartId}`}
       aria-busy={loading}
     >
-      <motion.div className="flex flex-col gap-1 border-b border-[var(--admin-border)] px-4 py-3 sm:px-5 sm:py-3.5">
-        <motion.div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg)] text-[var(--admin-text-secondary)] sm:h-9 sm:w-9">
-            <BarChart3 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-          </span>
-          <motion.div className="min-w-0">
-            <h2
-              id={`chart-heading-${chartId}`}
-              className="font-inter text-sm font-semibold leading-snug text-[var(--admin-text)] sm:text-base"
-            >
-              {heading}
-            </h2>
-            <p className="mt-0.5 text-xs leading-relaxed text-[var(--admin-text-secondary)] sm:text-sm">{desc}</p>
-          </motion.div>
-        </motion.div>
-      </motion.div>
+      <header className="admin-stat-chart-section__header">
+        <span className="admin-stat-chart-section__icon" aria-hidden>
+          <BarChart3 className="h-[1.125rem] w-[1.125rem]" strokeWidth={2} />
+        </span>
+        <div className="admin-stat-chart-section__copy">
+          <h2 id={`chart-heading-${chartId}`} className="admin-stat-chart-section__title">
+            {heading}
+          </h2>
+          {desc ? <p className="admin-stat-chart-section__subtitle">{desc}</p> : null}
+        </div>
+      </header>
       <motion.div className="admin-section-panel__content px-4 py-3 sm:px-5 sm:py-4">
         {loading ? <AdminChartDonutSkeleton /> : children ?? <StatPageChart chartId={chartId} />}
       </motion.div>

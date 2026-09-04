@@ -125,6 +125,92 @@ export const AdminKpiStripSkeleton: FunctionComponent<AdminKpiStripSkeletonProps
   </AdminSectionSkeletonShell>
 );
 
+interface AdminStudentsStatsSkeletonProps {
+  count?: number;
+  /** Grille compacte 3 colonnes (ex. offres de stage). */
+  compact?: boolean;
+  /**
+   * Affiche un placeholder pie sur certaines cartes (comme les stats “rate”).
+   * - `true` / `"every-third"` : variété visuelle (1 sans pie, 2 avec…)
+   * - `"all-but-first"` : 1re carte KPI total sans pie, les autres avec (page student)
+   */
+  withPiePattern?: boolean | 'every-third' | 'all-but-first';
+}
+
+/** Skeleton aligné sur `.admin-students-stat-card` / grille stats étudiants. */
+export const AdminStudentsStatsSkeleton: FunctionComponent<AdminStudentsStatsSkeletonProps> = ({
+  count = 6,
+  compact = false,
+  withPiePattern = true,
+}) => (
+  <AdminSectionSkeletonShell>
+    <motion.div
+      className={[
+        'admin-students-stats-grid',
+        compact ? 'admin-offers-stats-grid' : '',
+        'admin-students-stats-skeleton',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: { transition: { staggerChildren: 0.04, ease: easePremium } },
+      }}
+      aria-hidden
+    >
+      {Array.from({ length: count }).map((_, index) => {
+        const pieMode =
+          withPiePattern === true || withPiePattern === 'every-third'
+            ? 'every-third'
+            : withPiePattern === 'all-but-first'
+              ? 'all-but-first'
+              : false;
+        const showPie =
+          pieMode === 'all-but-first'
+            ? index > 0
+            : pieMode === 'every-third'
+              ? index % 3 !== 0
+              : false;
+        return (
+          <motion.div
+            key={index}
+            className={[
+              'admin-students-stat-card',
+              'admin-students-stats-skeleton__card',
+              compact ? 'admin-students-stat-card--compact' : '',
+              showPie ? 'admin-students-stat-card--rate' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            variants={{
+              hidden: { opacity: 0, y: 8 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: easePremium } },
+            }}
+          >
+            <div className="admin-students-stat-card__body">
+              <div className="admin-students-stat-card__head">
+                <Shimmer
+                  className={`shrink-0 rounded-[0.5rem] ${compact ? 'h-[1.875rem] w-[1.875rem]' : 'h-9 w-9'}`}
+                />
+                <Shimmer className={`h-3 flex-1 ${compact ? 'max-w-[5.5rem]' : 'max-w-[7rem]'}`} />
+              </div>
+              <Shimmer className={`rounded-md ${compact ? 'h-6 w-14' : 'h-7 w-16'}`} />
+              <Shimmer className={`rounded-full ${compact ? 'h-4 w-16' : 'h-[1.35rem] w-20'}`} />
+            </div>
+            {showPie ? (
+              <Shimmer
+                className={`shrink-0 rounded-full ${compact ? 'h-[4.25rem] w-[4.25rem]' : 'h-[6.25rem] w-[6.25rem]'}`}
+              />
+            ) : null}
+          </motion.div>
+        );
+      })}
+    </motion.div>
+  </AdminSectionSkeletonShell>
+);
+
 interface AdminPanelListSkeletonProps {
   rows?: number;
 }

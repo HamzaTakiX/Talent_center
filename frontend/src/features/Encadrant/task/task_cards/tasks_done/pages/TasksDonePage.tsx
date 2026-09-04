@@ -4,7 +4,7 @@ import { TasksDoneStudentsSection, TasksDoneSummaryGrid } from '../components';
 import { TASKS_DONE_PAGE_ROOT } from '../constants/tasksDoneLayout';
 
 const TasksDonePage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Tasks Done" headerSubtitle="Encadrant Portal">
+  <EncadrantLayout>
     <div id="encadrant-tasks-done-root" className={TASKS_DONE_PAGE_ROOT}>
       <TasksDoneSummaryGrid />
       <TasksDoneStudentsSection />

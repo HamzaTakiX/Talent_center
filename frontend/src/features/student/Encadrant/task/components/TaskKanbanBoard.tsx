@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -60,27 +61,28 @@ const DraggableTaskCard: FunctionComponent<{
   });
 
   const style = {
-    transform: CSS.Translate.toString(transform),
+    // DragOverlay renders the moving card; keep the source as a static placeholder.
+    transform: isDragging ? undefined : CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.35 : 1,
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="student-task-kanban-draggable"
+      {...listeners}
+      {...attributes}
+    >
       <TaskRichCard
         task={task}
         onClick={onSelect}
         isDragging={isDragging}
         compact
         dragHandle={
-          <button
-            type="button"
-            className="shrink-0 cursor-grab text-[var(--admin-text-muted)] active:cursor-grabbing"
-            {...listeners}
-            {...attributes}
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Drag"
-          >
+          <span className="student-task-card-drag" aria-hidden>
             <GripVertical className="h-4 w-4" />
-          </button>
+          </span>
         }
       />
     </div>
@@ -94,6 +96,7 @@ const TaskKanbanBoard: FunctionComponent<TaskKanbanBoardProps> = ({
   loading,
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [overlayWidth, setOverlayWidth] = useState<number | undefined>();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor),
@@ -118,9 +121,16 @@ const TaskKanbanBoard: FunctionComponent<TaskKanbanBoardProps> = ({
 
   const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
+    const rect = event.active.rect.current.translated ?? event.active.rect.current.initial;
+    setOverlayWidth(rect?.width);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
+    setOverlayWidth(undefined);
     if (!over) return;
     const taskId = String(active.id);
     let newStatus = String(over.id) as TaskStatus;
@@ -144,7 +154,11 @@ const TaskKanbanBoard: FunctionComponent<TaskKanbanBoardProps> = ({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
-      onDragStart={(e) => setActiveId(String(e.active.id))}
+      onDragStart={handleDragStart}
+      onDragCancel={() => {
+        setActiveId(null);
+        setOverlayWidth(undefined);
+      }}
       onDragEnd={handleDragEnd}
     >
       <div className="student-task-kanban">
@@ -157,10 +171,13 @@ const TaskKanbanBoard: FunctionComponent<TaskKanbanBoardProps> = ({
           />
         ))}
       </div>
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeTask ? (
-          <div className="w-[260px]">
-            <TaskRichCard task={activeTask} onClick={() => {}} isDragging compact />
+          <div
+            className="student-task-kanban-overlay"
+            style={overlayWidth ? { width: overlayWidth } : undefined}
+          >
+            <TaskRichCard task={activeTask} onClick={() => {}} compact lifted />
           </div>
         ) : null}
       </DragOverlay>

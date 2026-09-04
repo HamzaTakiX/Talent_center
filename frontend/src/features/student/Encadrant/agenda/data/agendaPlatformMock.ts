@@ -2,13 +2,16 @@ import type {
   AgendaDeadlineItem,
   AgendaExportAction,
   AgendaNotification,
-  AgendaPersonalTask,
+  AgendaAssignedTask,
   AgendaPlatformEvent,
   AgendaProgressMetric,
   AgendaStatCard,
   AgendaSupervisorMeeting,
   AgendaTimelineStep,
 } from '../types';
+
+/** Mock events are anchored in April 2026 — used for upcoming badge/panel, not calendar "today". */
+export const AGENDA_DEMO_NOW = new Date('2026-04-16T12:00:00');
 
 export const agendaPlatformStats: AgendaStatCard[] = [
   { id: 'meetings', value: '4', trend: 12, iconKey: 'meetings' },
@@ -101,7 +104,7 @@ export const agendaPlatformEvents: AgendaPlatformEvent[] = [
   },
 ];
 
-export const agendaPersonalTasks: AgendaPersonalTask[] = [
+export const agendaAssignedTasks: AgendaAssignedTask[] = [
   {
     id: 'task-1',
     titleKey: 'student.encadrant.agenda.platform.tasks.literatureReview',

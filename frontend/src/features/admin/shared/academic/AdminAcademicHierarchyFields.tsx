@@ -1,6 +1,7 @@
 import { type FunctionComponent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Sparkles, Zap } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import AdminDerivedFieldCard, { type AdminDerivedFieldStatus } from '../forms/AdminDerivedFieldCard';
 import { academicReferenceApi } from '../../api/reference';
 import type {
   AcademicHierarchyValue,
@@ -12,7 +13,7 @@ import type {
   InternshipTypeOption,
 } from '../../api/types';
 import AdminSelect from '../../account/components/AdminSelect';
-import { adminFormGridClass } from '../forms/adminFormClasses';
+import { adminAcademicHierarchyGridClass } from '../forms/adminFormClasses';
 
 const PREFIX = 'admin.forms.academicHierarchy';
 
@@ -388,6 +389,22 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
     t,
   ]);
 
+  const internshipAutoStatus = useMemo((): AdminDerivedFieldStatus => {
+    if (loadingInternships) return 'loading';
+    if (!value.levelId) return 'empty';
+    if (internshipTypes.length > 1 && showSector && !value.sectorId) return 'warning';
+    if (internshipTypes.length > 1) return 'warning';
+    if (internshipTypes.length === 1 || value.internshipTypeId) return 'resolved';
+    return 'empty';
+  }, [
+    loadingInternships,
+    value.levelId,
+    value.sectorId,
+    value.internshipTypeId,
+    internshipTypes.length,
+    showSector,
+  ]);
+
   useEffect(() => {
     if (!autoResolveInternship) return;
     if (internshipTypes.length === 1) {
@@ -401,7 +418,7 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
   }, [autoResolveInternship, internshipTypes, value.internshipTypeId, patch]);
 
   return (
-    <div className={adminFormGridClass}>
+    <div className={adminAcademicHierarchyGridClass}>
       {/* Programme / Filière */}
       <CascadeField loading={loadingFilieres}>
         <AdminSelect
@@ -443,57 +460,6 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
         </CascadeField>
       ) : null}
 
-      {/* Type de stage — auto-résolu ou select manuel */}
-      {autoResolveInternship ? (
-        <div className="admin-form-field">
-          <div className="acad-internship-auto__label-row">
-            <label
-              className="admin-form-label text-sm font-semibold text-[var(--admin-text)]"
-              htmlFor={`${idPrefix}-internship-auto`}
-            >
-              {t(`${PREFIX}.internshipType`)}
-            </label>
-            <span className="acad-internship-auto__badge" aria-hidden>
-              <Sparkles className="h-2.5 w-2.5 shrink-0" strokeWidth={2.5} />
-              Auto
-            </span>
-          </div>
-
-          <div className="acad-internship-auto__card">
-            <p className="acad-internship-auto__hint">{t(`${PREFIX}.internshipAutoHint`)}</p>
-            <div
-              id={`${idPrefix}-internship-auto`}
-              className="acad-internship-auto__value"
-              aria-live="polite"
-            >
-              {loadingInternships ? (
-                <>
-                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden strokeWidth={2} />
-                  <span>{t(`${PREFIX}.internshipResolving`)}</span>
-                </>
-              ) : (
-                <>
-                  <Zap className="h-3.5 w-3.5 shrink-0" aria-hidden strokeWidth={2} />
-                  <span>{resolvedInternshipLabel || '—'}</span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <CascadeField loading={loadingInternships}>
-          <AdminSelect
-            id={`${idPrefix}-internship`}
-            label={t(`${PREFIX}.internshipType`)}
-            value={value.internshipTypeId}
-            onChange={(internshipTypeId) => patch({ internshipTypeId })}
-            options={internshipOptions}
-            disabled={!value.levelId || loadingInternships}
-            searchable={internshipTypes.length > 4}
-          />
-        </CascadeField>
-      )}
-
       {/* Année académique */}
       <AdminSelect
         id={`${idPrefix}-year`}
@@ -519,6 +485,33 @@ const AdminAcademicHierarchyFields: FunctionComponent<AdminAcademicHierarchyFiel
           />
         </CascadeField>
       ) : null}
+
+      {/* Type de stage — auto-résolu ou select manuel (après filière/niveau) */}
+      {autoResolveInternship ? (
+        <AdminDerivedFieldCard
+          id={`${idPrefix}-internship-auto`}
+          label={t(`${PREFIX}.internshipType`)}
+          hint={t(`${PREFIX}.internshipAutoHint`)}
+          autoBadge
+          compact
+          status={internshipAutoStatus}
+          value={resolvedInternshipLabel}
+          loadingLabel={t(`${PREFIX}.internshipResolving`)}
+          emptyLabel={t(`${PREFIX}.internshipPending`)}
+        />
+      ) : (
+        <CascadeField loading={loadingInternships}>
+          <AdminSelect
+            id={`${idPrefix}-internship`}
+            label={t(`${PREFIX}.internshipType`)}
+            value={value.internshipTypeId}
+            onChange={(internshipTypeId) => patch({ internshipTypeId })}
+            options={internshipOptions}
+            disabled={!value.levelId || loadingInternships}
+            searchable={internshipTypes.length > 4}
+          />
+        </CascadeField>
+      )}
     </div>
   );
 };

@@ -135,7 +135,7 @@ const AnnouncementSupportInbox: FunctionComponent = () => {
             conversationLoading={conversationLoading}
             statsLoading={loading}
             peerTyping={peerTyping}
-            onSend={(text) => void sendMessage(text)}
+            onSend={(text, tagCodes, entityRefs) => void sendMessage(text, tagCodes, entityRefs)}
             onTyping={notifyTyping}
             onBack={() => setMobileView('list')}
             onMarkResolved={handleResolved}

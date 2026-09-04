@@ -1,6 +1,7 @@
 import { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getEncadrantReportsStudentDetailPath } from '../../../constants/routes';
 import {
   REPORTS_PENDING_FIELD_LABEL,
@@ -9,7 +10,6 @@ import {
   REPORTS_PENDING_FIELD_VALUE,
   REPORTS_PENDING_PROGRESS_TRACK,
   REPORTS_PENDING_REPORTS_COUNT,
-  REPORTS_PENDING_STATUS_BADGE,
   REPORTS_PENDING_STUDENT_CARD,
   REPORTS_PENDING_STUDENT_LEVEL,
   REPORTS_PENDING_STUDENT_NAME,
@@ -30,11 +30,12 @@ const ReportsPendingStudentCard: FunctionComponent<ReportsPendingStudentCardProp
   cardClassName = REPORTS_PENDING_STUDENT_CARD,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const statusStyle = REPORTS_PENDING_STATUS_STYLES[student.status];
 
   return (
     <article
-      className={`${cardClassName} cursor-pointer transition-colors hover:border-[rgba(0,0,0,0.12)] hover:shadow-[0_2px_8px_rgba(16,24,40,0.06)]`}
+      className={`${cardClassName} cursor-pointer transition-colors hover:border-[var(--admin-border)] hover:shadow-[0_2px_8px_rgba(16,24,40,0.06)]`}
       role="button"
       tabIndex={0}
       onClick={() => navigate(getEncadrantReportsStudentDetailPath(student.id))}
@@ -51,34 +52,40 @@ const ReportsPendingStudentCard: FunctionComponent<ReportsPendingStudentCardProp
           <p className={REPORTS_PENDING_STUDENT_LEVEL}>{student.level}</p>
         </div>
         <div className={REPORTS_PENDING_REPORTS_COUNT}>
-          <User className="h-4 w-4 shrink-0 text-[#9ca3af]" strokeWidth={1.75} aria-hidden />
-          <span className="whitespace-nowrap tabular-nums">{student.totalReports} reports</span>
+          <User className="h-4 w-4 shrink-0 text-[var(--admin-text-muted)]" strokeWidth={1.75} aria-hidden />
+          <span className="whitespace-nowrap tabular-nums">
+            {t('encadrant.reports.detail.subtitle', { count: student.totalReports })}
+          </span>
         </div>
       </div>
 
       <div className="flex min-w-0 flex-col gap-3">
         <div>
-          <p className={REPORTS_PENDING_FIELD_LABEL}>Last Report:</p>
+          <p className={REPORTS_PENDING_FIELD_LABEL}>{t('encadrant.common.lastReport')}:</p>
           <p className={REPORTS_PENDING_FIELD_VALUE}>{student.lastReportTitle}</p>
           <p className={REPORTS_PENDING_FIELD_SUB}>{student.lastReportDate}</p>
         </div>
         <div>
-          <p className={REPORTS_PENDING_FIELD_LABEL}>Next Report:</p>
+          <p className={REPORTS_PENDING_FIELD_LABEL}>{t('encadrant.common.nextReport')}:</p>
           <p className={REPORTS_PENDING_FIELD_VALUE}>{student.nextReportTitle}</p>
           {student.isOverdue ? (
             <p className={REPORTS_PENDING_FIELD_SUB_OVERDUE}>
-              Overdue: {student.nextReportDue}
+              {t('encadrant.common.overdue')}: {student.nextReportDue}
             </p>
           ) : (
-            <p className={REPORTS_PENDING_FIELD_SUB}>Due: {student.nextReportDue}</p>
+            <p className={REPORTS_PENDING_FIELD_SUB}>
+              {t('encadrant.task.due')}: {student.nextReportDue}
+            </p>
           )}
         </div>
       </div>
 
       <div className="flex min-w-0 flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium leading-5 text-[#171717]">Progress</span>
-          <span className="text-sm font-semibold tabular-nums leading-5 text-[#171717]">
+          <span className="text-sm font-medium leading-5 text-[var(--admin-text)]">
+            {t('encadrant.common.progress')}
+          </span>
+          <span className="text-sm font-semibold tabular-nums leading-5 text-[var(--admin-text)]">
             {student.progressPercent}%
           </span>
         </div>
@@ -96,11 +103,7 @@ const ReportsPendingStudentCard: FunctionComponent<ReportsPendingStudentCardProp
         </div>
       </div>
 
-      <span
-        className={`${REPORTS_PENDING_STATUS_BADGE} ${statusStyle.badgeBg} ${statusStyle.badgeText}`}
-      >
-        {statusStyle.label}
-      </span>
+      <span className={statusStyle.badge}>{t(statusStyle.labelKey)}</span>
     </article>
   );
 };

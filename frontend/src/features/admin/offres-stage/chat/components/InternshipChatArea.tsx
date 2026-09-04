@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useEffect, useRef } from 'react';
 import ChatEmptyState from '../../../shared/admin-module-chat/components/ChatEmptyState';
 import SupportMessageComposer from '../../../shared/admin-support-inbox/components/SupportMessageComposer';
 import {
@@ -6,6 +6,9 @@ import {
   toChatToolMessages,
   useChatConversationTools,
 } from '../../../../shared/chat-design-system';
+import ChatComposerModuleExtras from '../../../../shared/contextual-chat/components/ChatComposerModuleExtras';
+import type { ChatEntityReference } from '../../../../shared/contextual-chat/types/chatEntityTypes';
+import { useSupportChatAreaComposer } from '../../../../shared/contextual-chat/hooks/useSupportChatAreaComposer';
 import type { InboxStats, InternshipConversation } from '../types/internshipChatTypes';
 import { InternshipChatMessagesSkeleton, InternshipChatWorkspaceSkeleton } from './InternshipChatLoadingSkeletons';
 import InternshipChatHeader from './InternshipChatHeader';
@@ -23,7 +26,12 @@ type Props = {
   messagesLoading?: boolean;
   conversationLoading?: boolean;
   statsLoading?: boolean;
-  onSend: (text: string) => void;
+  onSend: (
+    text: string,
+    files?: File[],
+    tagCodes?: string[],
+    entityRefs?: ChatEntityReference[],
+  ) => void;
   onBack?: () => void;
   onMarkResolved: () => void;
   onArchive: () => void;
@@ -47,9 +55,9 @@ const InternshipChatArea: FunctionComponent<Props> = ({
   peerTyping = false,
   onTyping,
 }) => {
-  const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t, emptyState } = useInternshipInboxCopy();
+  const composer = useSupportChatAreaComposer(conversation?.id, onSend);
 
   const chatTools = useChatConversationTools({
     messages: toChatToolMessages(conversation?.messages ?? []),
@@ -64,17 +72,6 @@ const InternshipChatArea: FunctionComponent<Props> = ({
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [conversation?.messages.length, conversation?.id]);
-
-  useEffect(() => {
-    setDraft('');
-  }, [conversation?.id]);
-
-  const handleSend = useCallback(() => {
-    const text = draft.trim();
-    if (!text) return;
-    onSend(text);
-    setDraft('');
-  }, [draft, onSend]);
 
   if ((conversationLoading || messagesLoading) && !conversation) {
     return <InternshipChatWorkspaceSkeleton />;
@@ -140,15 +137,26 @@ const InternshipChatArea: FunctionComponent<Props> = ({
       {chatTools.panels}
 
       <SupportMessageComposer
-        value={draft}
-        onChange={setDraft}
-        onSend={handleSend}
+        value={composer.draft}
+        onChange={composer.setDraft}
+        onSend={composer.handleSend}
         onTyping={onTyping}
         placeholder={t('composerPlaceholder')}
         inputAriaLabel={t('composerPlaceholder')}
         attachAriaLabel={t('attachFile')}
         sendAriaLabel={t('sendMessage')}
         showVoice={false}
+        extraActions={
+          <ChatComposerModuleExtras
+            chatModule="offers"
+            conversationId={conversation.id}
+            composer={composer}
+            disabled={conversation.archived}
+            showTagPicker={false}
+          />
+        }
+        pendingEntities={composer.pendingEntities}
+        onRemovePendingEntity={composer.removePendingEntity}
       />
     </section>
   );

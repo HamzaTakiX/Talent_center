@@ -489,7 +489,7 @@ export function useDocumentSupportChat() {
   }, [clearStudentAcademicFilters]);
 
   const sendMessage = useCallback(
-    async (text: string, files?: File[]) => {
+    async (text: string, files?: File[], tagCodes?: string[], entityRefs?: import('../../../../shared/contextual-chat/types/chatEntityTypes').ChatEntityReference[]) => {
       const conversationId = Number(selectedId);
       if (!Number.isFinite(conversationId) || (!text.trim() && !files?.length)) return;
 
@@ -524,7 +524,7 @@ export function useDocumentSupportChat() {
       sendWsTyping(false);
 
       try {
-        const saved = await sendChatMessage(conversationId, trimmed, undefined, files);
+        const saved = await sendChatMessage(conversationId, trimmed, tagCodes, files, entityRefs);
         if (!saved) return;
         setMessagesByConv((prev) => {
           const existing = prev[conversationId] ?? [];

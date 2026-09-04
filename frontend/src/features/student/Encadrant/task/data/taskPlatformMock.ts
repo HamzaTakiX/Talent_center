@@ -2,19 +2,18 @@ import type {
   StudentPlatformTask,
   TaskDeadlineItem,
   TaskKpiStat,
-  TaskMilestone,
   TaskNotification,
-  TaskPriorityAlert,
   TaskProgressMetric,
   TaskActivityItem,
+  TaskFeedActivityItem,
 } from '../types';
 
 export const taskPlatformKpis: TaskKpiStat[] = [
-  { id: 'total', value: '24', trend: 8, sparkline: [12, 14, 15, 18, 20, 22, 24] },
-  { id: 'completed', value: '12', trend: 15, sparkline: [4, 5, 7, 8, 9, 11, 12] },
-  { id: 'pending', value: '9', trend: -3, sparkline: [14, 13, 12, 11, 10, 9, 9] },
-  { id: 'overdue', value: '3', trend: 12, sparkline: [1, 1, 2, 2, 2, 3, 3] },
-  { id: 'completionRate', value: '50%', trend: 6, sparkline: [32, 36, 38, 42, 45, 48, 50] },
+  { id: 'total', value: '24', trend: 8 },
+  { id: 'completed', value: '12', trend: 15 },
+  { id: 'pending', value: '9', trend: -3, ratio: 38 },
+  { id: 'overdue', value: '3', trend: 12, ratio: 13 },
+  { id: 'completionRate', value: '50%', trend: 6 },
 ];
 
 export const taskProgressMetrics: TaskProgressMetric[] = [
@@ -23,33 +22,6 @@ export const taskProgressMetrics: TaskProgressMetric[] = [
   { id: 'report', labelKey: 'student.encadrant.task.platform.progress.report', progress: 45 },
   { id: 'documents', labelKey: 'student.encadrant.task.platform.progress.documents', progress: 54 },
   { id: 'meetings', labelKey: 'student.encadrant.task.platform.progress.meetings', progress: 82 },
-];
-
-export const taskPriorityAlerts: TaskPriorityAlert[] = [
-  {
-    id: 'alert-1',
-    titleKey: 'student.encadrant.task.platform.alerts.deadlineTomorrow',
-    messageKey: 'student.encadrant.task.platform.alerts.deadlineTomorrowMsg',
-    severity: 'danger',
-  },
-  {
-    id: 'alert-2',
-    titleKey: 'student.encadrant.task.platform.alerts.missingDoc',
-    messageKey: 'student.encadrant.task.platform.alerts.missingDocMsg',
-    severity: 'warning',
-  },
-  {
-    id: 'alert-3',
-    titleKey: 'student.encadrant.task.platform.alerts.feedback',
-    messageKey: 'student.encadrant.task.platform.alerts.feedbackMsg',
-    severity: 'success',
-  },
-  {
-    id: 'alert-4',
-    titleKey: 'student.encadrant.task.platform.alerts.revision',
-    messageKey: 'student.encadrant.task.platform.alerts.revisionMsg',
-    severity: 'info',
-  },
 ];
 
 export const initialPlatformTasks: StudentPlatformTask[] = [
@@ -112,6 +84,9 @@ export const initialPlatformTasks: StudentPlatformTask[] = [
     daysRemaining: 12,
     progress: 0,
     supervisorKey: 'student.encadrant.task.platform.supervisors.bennani',
+    fromSupervisor: true,
+    assignedByKey: 'student.encadrant.task.platform.supervisors.bennani',
+    assignedAt: '2026-04-13',
   },
   {
     id: 'task-5',
@@ -124,30 +99,9 @@ export const initialPlatformTasks: StudentPlatformTask[] = [
     daysRemaining: 14,
     progress: 100,
     supervisorKey: 'student.encadrant.task.platform.supervisors.bennani',
-  },
-  {
-    id: 'task-6',
-    titleKey: 'student.encadrant.task.platform.items.convention',
-    descriptionKey: 'student.encadrant.task.platform.items.conventionDesc',
-    status: 'blocked',
-    priority: 'high',
-    category: 'administrative',
-    dueAt: '2026-04-22',
-    daysRemaining: 6,
-    progress: 30,
-    supervisorKey: 'student.encadrant.task.platform.supervisors.admin',
-  },
-  {
-    id: 'task-7',
-    titleKey: 'student.encadrant.task.platform.items.srfPayment',
-    descriptionKey: 'student.encadrant.task.platform.items.srfPaymentDesc',
-    status: 'todo',
-    priority: 'high',
-    category: 'srf',
-    dueAt: '2026-04-28',
-    daysRemaining: 12,
-    progress: 0,
-    supervisorKey: 'student.encadrant.task.platform.supervisors.finance',
+    fromSupervisor: true,
+    assignedByKey: 'student.encadrant.task.platform.supervisors.bennani',
+    assignedAt: '2026-04-08',
   },
   {
     id: 'task-8',
@@ -181,46 +135,6 @@ export const taskDeadlineItems: TaskDeadlineItem[] = [
     dueAt: '2026-04-20',
     daysRemaining: 4,
     risk: 'high',
-  },
-  {
-    id: 'dl-3',
-    titleKey: 'student.encadrant.task.platform.items.convention',
-    dueAt: '2026-04-22',
-    daysRemaining: 6,
-    risk: 'medium',
-  },
-];
-
-export const taskMilestones: TaskMilestone[] = [
-  {
-    id: 'm1',
-    labelKey: 'student.encadrant.task.platform.milestones.validated',
-    status: 'completed',
-    dateKey: 'student.encadrant.task.platform.milestones.dates.validated',
-  },
-  {
-    id: 'm2',
-    labelKey: 'student.encadrant.task.platform.milestones.supervisor',
-    status: 'completed',
-    dateKey: 'student.encadrant.task.platform.milestones.dates.supervisor',
-  },
-  {
-    id: 'm3',
-    labelKey: 'student.encadrant.task.platform.milestones.midterm',
-    status: 'current',
-    dateKey: 'student.encadrant.task.platform.milestones.dates.midterm',
-  },
-  {
-    id: 'm4',
-    labelKey: 'student.encadrant.task.platform.milestones.final',
-    status: 'upcoming',
-    dateKey: 'student.encadrant.task.platform.milestones.dates.final',
-  },
-  {
-    id: 'm5',
-    labelKey: 'student.encadrant.task.platform.milestones.defense',
-    status: 'upcoming',
-    dateKey: 'student.encadrant.task.platform.milestones.dates.defense',
   },
 ];
 
@@ -262,5 +176,48 @@ export const taskDetailActivity: TaskActivityItem[] = [
     id: 'a3',
     messageKey: 'student.encadrant.task.platform.activity.comment',
     timeKey: 'student.encadrant.task.platform.activity.time3',
+  },
+];
+
+export const taskFeedActivities: TaskFeedActivityItem[] = [
+  {
+    id: 'tf-1',
+    type: 'task',
+    messageKey: 'student.encadrant.task.platform.feed.assigned',
+    timeKey: 'student.encadrant.workspace.platform.time.30m',
+    actorKey: 'student.encadrant.workspace.platform.people.supervisor',
+    taskId: 'task-1',
+  },
+  {
+    id: 'tf-2',
+    type: 'comment',
+    messageKey: 'student.encadrant.task.platform.feed.comment',
+    timeKey: 'student.encadrant.workspace.platform.time.1h',
+    actorKey: 'student.encadrant.workspace.platform.people.supervisor',
+    taskId: 'task-2',
+  },
+  {
+    id: 'tf-3',
+    type: 'feedback',
+    messageKey: 'student.encadrant.task.platform.feed.feedback',
+    timeKey: 'student.encadrant.workspace.platform.time.2h',
+    actorKey: 'student.encadrant.workspace.platform.people.supervisor',
+    taskId: 'task-2',
+  },
+  {
+    id: 'tf-4',
+    type: 'upload',
+    messageKey: 'student.encadrant.task.platform.feed.upload',
+    timeKey: 'student.encadrant.workspace.platform.time.3h',
+    actorKey: 'student.encadrant.workspace.platform.people.student',
+    taskId: 'task-3',
+  },
+  {
+    id: 'tf-5',
+    type: 'task',
+    messageKey: 'student.encadrant.task.platform.feed.done',
+    timeKey: 'student.encadrant.workspace.platform.time.yesterday',
+    actorKey: 'student.encadrant.workspace.platform.people.student',
+    taskId: 'task-4',
   },
 ];

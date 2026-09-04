@@ -18,6 +18,7 @@ export const studentCopyFr = {
     agenda: 'Agenda',
     task: 'Tâches',
     workspace: 'Espace de travail',
+    meetings: 'Réunions',
     report: 'Rapports',
     closeMenu: 'Fermer le menu de navigation',
   },
@@ -49,6 +50,7 @@ export const studentCopyFr = {
       agenda: 'Agenda',
       task: 'Tâches',
       workspace: 'Espace de travail',
+      meetings: 'Réunions',
       whiteboard: 'Tableau blanc',
       report: 'Rapports',
       srfChat: 'SRF Chat',
@@ -171,6 +173,7 @@ export const studentCopyFr = {
       interviews: 'Entretiens',
       accepted: 'Acceptées',
       rejected: 'Refusées',
+      share: '{{value}} % de toutes les candidatures',
     },
     chart: {
       title: 'Activité de la semaine',
@@ -196,6 +199,11 @@ export const studentCopyFr = {
       improveProfile: 'Améliorer le profil',
       viewAllActivity: 'Tout l\'activité',
       match: 'Correspondance',
+    },
+    errors: {
+      loadTitle: 'Impossible de charger le tableau de bord',
+      loadFailed: 'Certaines données du tableau de bord n\'ont pas pu être chargées. Veuillez réessayer.',
+      retry: 'Réessayer',
     },
     empty: {
       noAlerts: 'Aucune alerte pour le moment',

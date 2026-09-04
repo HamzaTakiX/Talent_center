@@ -319,6 +319,9 @@ class ProviderCallbackView(APIView):
 class Auth0ExchangeView(APIView):
     """Exchange an Auth0 access token for platform JWT session tokens."""
 
+    # Ignore any stale platform JWT in Authorization; this endpoint authenticates
+    # the Auth0 access_token from the request body instead.
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):

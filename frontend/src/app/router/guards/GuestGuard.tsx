@@ -11,13 +11,16 @@ export const GuestGuard = () => {
   }
 
   if (isAuthReady && isAuthenticated && user) {
-    if (!user.student_profile?.identity_confirmed) {
-      return <Navigate to="/confirm-identity" replace />;
+    const role = normalizeRole(user.role);
+    if (role === 'STUDENT') {
+      if (!user.student_profile?.identity_confirmed) {
+        return <Navigate to="/confirm-identity" replace />;
+      }
+      if (!user.student_profile?.profile_completed) {
+        return <Navigate to="/complete-profile" replace />;
+      }
     }
-    if (!user.student_profile?.profile_completed) {
-      return <Navigate to="/complete-profile" replace />;
-    }
-    return <Navigate to={getDefaultHomePath(normalizeRole(user.role))} replace />;
+    return <Navigate to={getDefaultHomePath(role)} replace />;
   }
 
   return <Outlet />;

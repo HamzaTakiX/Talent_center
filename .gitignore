@@ -42,8 +42,6 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-db.sqlite3
-db.sqlite3-journal
 
 # Django user-uploaded files
 backend/media/

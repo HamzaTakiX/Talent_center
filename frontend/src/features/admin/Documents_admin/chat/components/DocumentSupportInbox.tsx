@@ -134,7 +134,7 @@ const DocumentSupportInbox: FunctionComponent = () => {
             conversationLoading={conversationLoading}
             statsLoading={loading}
             peerTyping={peerTyping}
-            onSend={(text, files) => void sendMessage(text, files)}
+            onSend={(text, files, tagCodes, entityRefs) => void sendMessage(text, files, tagCodes, entityRefs)}
             onTyping={notifyTyping}
             onBack={() => setMobileView('list')}
             onMarkResolved={handleResolved}

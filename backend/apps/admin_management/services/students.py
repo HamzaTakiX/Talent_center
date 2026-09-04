@@ -10,17 +10,19 @@ from django.utils import timezone
 from apps.admin_management.models import Assignment
 
 from apps.accounts_et_roles.models import StudentProfile, UserProfile
+from apps.accounts_et_roles.search import profile_name_search_q
 from apps.accounts_et_roles.services import change_account_status, ensure_user_profile
 from apps.admin_management.models import Assignment, ClassGroup, Filiere
 from apps.admin_management.services.academic_validation import validate_academic_selection
 from apps.authentication.models import StudentCredential
 from apps.authentication.services.credentials import (
-    generate_secure_password,
-    set_student_password,
+    provision_user_password,
+    regenerate_user_password,
 )
-from apps.authentication.services.platform_access import (
-    grant_platform_access,
-    revoke_platform_access,
+from .microsoft_access_sync import (
+    MicrosoftAccessSyncError,
+    apply_platform_access_with_microsoft_sync,
+    ensure_microsoft_assignment_for_new_user,
 )
 
 User = get_user_model()
@@ -108,8 +110,7 @@ def create_student(
         sso_enabled=sso_enabled,
         is_active=True,
     )
-    user.set_unusable_password()
-    user.save(update_fields=['password'])
+    provision_user_password(user=user, generated_by=created_by)
 
     UserProfile.objects.create(user=user, first_name=first_name, last_name=last_name)
     profile = StudentProfile.objects.create(
@@ -141,10 +142,6 @@ def create_student(
             is_active=True,
         )
 
-    if grant_access:
-        plaintext = generate_secure_password()
-        set_student_password(user=user, plaintext=plaintext, generated_by=created_by)
-
     try:
         from apps.history.integrations.students import student_created
 
@@ -170,6 +167,13 @@ def create_student(
     except Exception:
         pass
 
+    if grant_access:
+        try:
+            ensure_microsoft_assignment_for_new_user(user, granted_by=created_by)
+        except MicrosoftAccessSyncError:
+            # Local user remains but without platform access (compensated inside helper).
+            raise
+
     return user
 
 
@@ -188,9 +192,13 @@ def update_student_access(
     old_sso = user.sso_enabled
 
     if platform_access_granted is True:
-        grant_platform_access(user, granted_by=changed_by)
+        apply_platform_access_with_microsoft_sync(
+            user, grant=True, granted_by=changed_by,
+        )
     elif platform_access_granted is False:
-        revoke_platform_access(user)
+        apply_platform_access_with_microsoft_sync(
+            user, grant=False, granted_by=changed_by,
+        )
 
     if sso_enabled is not None:
         user.sso_enabled = sso_enabled
@@ -284,9 +292,7 @@ def update_student_profile(
 
 
 def regenerate_student_password(*, user: User, generated_by=None) -> str:
-    plaintext = generate_secure_password()
-    set_student_password(user=user, plaintext=plaintext, generated_by=generated_by)
-    return plaintext
+    return regenerate_user_password(user=user, generated_by=generated_by)
 
 
 def student_risk_flags(user: User) -> list[str]:
@@ -403,12 +409,15 @@ def list_students_queryset(*, search: str = '', status: str = '', acting_user=No
     if acting_user is not None:
         qs = filter_students_by_admin_scope(qs, acting_user)
     if search:
-        q = search.strip().lower()
+        q = search.strip()
         qs = qs.filter(
             Q(email__icontains=q)
-            | Q(profile__first_name__icontains=q)
-            | Q(profile__last_name__icontains=q)
             | Q(student_profile__student_number__icontains=q)
+            | profile_name_search_q(
+                q,
+                first_name_field='profile__first_name',
+                last_name_field='profile__last_name',
+            )
         )
     if status:
         qs = qs.filter(account_status=status)

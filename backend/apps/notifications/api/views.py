@@ -245,9 +245,8 @@ class NotificationPreferencesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        self._ensure_preferences(request.user)
         prefs = NotificationPreference.objects.filter(user=request.user)
-        if not prefs.exists():
-            prefs = self._default_preferences(request.user)
         return Response(envelope(
             success=True,
             message='Preferences retrieved',
@@ -275,18 +274,18 @@ class NotificationPreferencesView(APIView):
             data={'items': NotificationPreferenceSerializer(updated, many=True).data},
         ))
 
-    def _default_preferences(self, user):
+    def _ensure_preferences(self, user):
+        existing = set(
+            NotificationPreference.objects.filter(user=user).values_list('category', 'channel')
+        )
         rows = [
-            NotificationPreference(
-                user=user,
-                category=category.value,
-                channel=channel.value,
-            )
+            NotificationPreference(user=user, category=category.value, channel=channel.value)
             for category in Category
             for channel in NotificationRecipient.Channel
+            if (category.value, channel.value) not in existing
         ]
-        NotificationPreference.objects.bulk_create(rows, ignore_conflicts=True)
-        return list(NotificationPreference.objects.filter(user=user))
+        if rows:
+            NotificationPreference.objects.bulk_create(rows, ignore_conflicts=True)
 
 
 class NotificationCategoriesView(APIView):

@@ -15,6 +15,7 @@ from apps.notifications.services.preference_service import get_user_language, is
 from apps.notifications.services.queue_service import enqueue_recipient, mark_suppressed
 from apps.notifications.services.recipient_service import resolve_recipients
 from apps.notifications.services.security_service import check_rate_limit
+from apps.notifications.services.template_resolver import resolve_template
 from apps.notifications.services.template_service import render_notification
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ class NotificationEngine:
                     user=user,
                     channel=channel,
                     config=config,
-                    urgent=config.urgent,
+                    urgent=config.urgent or getattr(config, 'email_kind', '') == 'TRANSACTIONAL',
                 )
                 if not enabled:
                     recipient = self._create_recipient(
@@ -69,21 +70,29 @@ class NotificationEngine:
                         recipients_created.append(recipient)
                         continue
 
+                resolved_tpl = resolve_template(
+                    event_code=event.event_code,
+                    channel=channel,
+                    registry_template_code=config.template_code,
+                )
+                template_code = resolved_tpl.template_code
+
                 allowed, reason = check_rate_limit(
                     user=user,
                     channel=channel,
-                    template_code=config.template_code if channel == NotificationRecipient.Channel.EMAIL else '',
+                    template_code=template_code if channel == NotificationRecipient.Channel.EMAIL else '',
                 )
                 if not allowed:
                     recipient = self._create_recipient(
                         event, user, channel, config, language, suppressed=True,
+                        template_code=template_code,
                     )
                     mark_suppressed(recipient, reason)
                     recipients_created.append(recipient)
                     continue
 
                 rendered = render_notification(
-                    template_code=config.template_code,
+                    template_code=template_code,
                     channel=channel,
                     language=language,
                     context=context,
@@ -91,7 +100,11 @@ class NotificationEngine:
 
                 recipient = self._create_recipient(
                     event, user, channel, config, language,
-                    metadata={'role': resolved_recipient.role},
+                    template_code=template_code,
+                    metadata={
+                        'role': resolved_recipient.role,
+                        'template_source': resolved_tpl.source,
+                    },
                 )
                 recipients_created.append(recipient)
 
@@ -128,21 +141,23 @@ class NotificationEngine:
         status: str = NotificationRecipient.Status.PENDING,
         suppressed: bool = False,
         metadata: dict | None = None,
+        template_code: str | None = None,
     ) -> NotificationRecipient:
         final_status = NotificationRecipient.Status.SUPPRESSED if suppressed else status
+        resolved_code = template_code or config.template_code
         recipient, created = NotificationRecipient.objects.get_or_create(
             event=event,
             user=user,
             delivery_channel=channel,
             defaults={
                 'status': final_status,
-                'template_code': config.template_code,
+                'template_code': resolved_code,
                 'language': language,
                 'metadata_json': metadata or {},
             },
         )
         if not created and not suppressed:
-            recipient.template_code = config.template_code
+            recipient.template_code = resolved_code
             recipient.language = language
             recipient.status = final_status
             if metadata:

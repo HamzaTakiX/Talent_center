@@ -5,9 +5,10 @@ import {
 
 export type AppRole = 'STUDENT' | 'ADMIN' | 'STAFF' | 'SUPERVISOR' | 'UNKNOWN';
 
-export const ADMIN_APP_ROLES: AppRole[] = ['ADMIN', 'STAFF', 'SUPERVISOR'];
+/** Roles that use the admin console (/admin/*). Encadrants have their own app. */
+export const ADMIN_APP_ROLES: AppRole[] = ['ADMIN', 'STAFF'];
 
-export type RouteZone = 'neutral' | 'admin' | 'student' | 'cv';
+export type RouteZone = 'neutral' | 'admin' | 'student' | 'cv' | 'encadrant';
 
 export function normalizeRole(role: string | undefined): AppRole {
   const value = role?.toUpperCase().replace(/[\s-]+/g, '_');
@@ -32,6 +33,9 @@ export function getRouteZone(pathname: string): RouteZone {
   if (pathname === '/' || pathname === '') {
     return 'neutral';
   }
+  if (pathname.startsWith('/encadrant')) {
+    return 'encadrant';
+  }
   if (pathname.startsWith('/admin') || pathname === '/admin-dashboard') {
     return 'admin';
   }
@@ -51,6 +55,9 @@ export function roleCanAccessZone(role: AppRole, zone: RouteZone): boolean {
   if (zone === 'admin') {
     return isAdminAppRole(role);
   }
+  if (zone === 'encadrant') {
+    return role === 'SUPERVISOR';
+  }
   if (zone === 'student' || zone === 'cv') {
     return role === 'STUDENT';
   }
@@ -66,6 +73,9 @@ export function getDefaultHomePath(role: AppRole): string {
       return ONBOARDING_CV_EDITOR_PATH;
     }
     return '/student-dashboard';
+  }
+  if (role === 'SUPERVISOR') {
+    return '/encadrant';
   }
   if (isAdminAppRole(role)) {
     return '/admin/dashboard';

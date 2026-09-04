@@ -2,8 +2,8 @@ import { FunctionComponent } from 'react';
 import { AlertTriangle, ChevronRight, Info, ShieldAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { SmartAssignmentPrecheckResult } from '../../../../api/types';
-import SmartAssignmentSeverityBadge from './SmartAssignmentSeverityBadge';
-import { issueTitleKey, sortIssuesBySeverity } from '../../utils/validationIssueKeys';
+import { issueTitleKey, getIssueTranslationParams, sortIssuesBySeverity } from '../../utils/validationIssueKeys';
+import '../../styles/admin-smart-assignment-validation.css';
 
 interface SmartAssignmentValidationBannerProps {
   precheck: SmartAssignmentPrecheckResult;
@@ -22,50 +22,67 @@ const SmartAssignmentValidationBanner: FunctionComponent<SmartAssignmentValidati
   const title = isCritical
     ? t('admin.smartAssignment.validation.banner.blockedTitle')
     : t('admin.smartAssignment.validation.banner.warningTitle');
-  const subtitle = t('admin.smartAssignment.validation.banner.subtitle', {
-    blocking: precheck.blocking_count,
-    warnings: precheck.warning_count,
-  });
+  const hasCounts = precheck.blocking_count > 0 || precheck.warning_count > 0;
 
   return (
     <div
-      className={`mt-4 flex flex-wrap items-start gap-4 rounded-xl border p-4 shadow-sm ${
-        isCritical
-          ? 'border-red-500/40 bg-red-500/8'
-          : 'border-amber-500/35 bg-amber-500/8'
-      }`}
+      className={`sa-validation-banner ${isCritical ? 'sa-validation-banner--critical' : 'sa-validation-banner--warning'}`}
       role="alert"
     >
-      <span
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-          isCritical
-            ? 'bg-red-500/15 text-red-600 dark:text-red-400'
-            : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
-        }`}
-        aria-hidden
-      >
-        <Icon className="h-5 w-5" />
-      </span>
-      <div className="min-w-0 flex-1 space-y-1">
-        <p className="text-sm font-semibold text-[var(--admin-text)]">{title}</p>
-        <p className="text-xs text-[var(--admin-text-muted)]">{subtitle}</p>
-        {top ? (
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <SmartAssignmentSeverityBadge severity={top.severity} />
-            <span className="text-xs text-[var(--admin-text)]">
-              {t(issueTitleKey(top.code), { count: top.count })}
-            </span>
+      <div className="sa-validation-banner__glow" aria-hidden />
+      <div className="sa-validation-banner__mesh" aria-hidden />
+
+      <div className="sa-validation-banner__inner">
+        <div className="sa-validation-banner__icon-shell" aria-hidden>
+          <span className="sa-validation-banner__icon-ring" />
+          <span className="sa-validation-banner__icon">
+            <Icon className="h-5 w-5" strokeWidth={2} />
+          </span>
+        </div>
+
+        <div className="sa-validation-banner__body">
+          <div className="sa-validation-banner__head">
+            <h2 className="sa-validation-banner__title">{title}</h2>
+            {hasCounts ? (
+              <div className="sa-validation-banner__stats">
+                {precheck.blocking_count > 0 ? (
+                  <span className="sa-validation-banner__stat sa-validation-banner__stat--critical">
+                    {t('admin.smartAssignment.validation.banner.criticalCount', {
+                      count: precheck.blocking_count,
+                    })}
+                  </span>
+                ) : null}
+                {precheck.warning_count > 0 ? (
+                  <span className="sa-validation-banner__stat sa-validation-banner__stat--warning">
+                    {t('admin.smartAssignment.validation.banner.warningCount', {
+                      count: precheck.warning_count,
+                    })}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
           </div>
-        ) : null}
+
+          {top ? (
+            <div className="sa-validation-banner__issue">
+              <div className="sa-validation-banner__issue-main">
+                <span
+                  className={`sa-validation-banner__severity sa-validation-banner__severity--${top.severity}`}
+                >
+                  {t(`admin.smartAssignment.validation.severity.${top.severity}`)}
+                </span>
+                <p className="sa-validation-banner__issue-text">
+                  {t(issueTitleKey(top.code), getIssueTranslationParams(top))}
+                </p>
+              </div>
+              <button type="button" onClick={onViewDetails} className="sa-validation-banner__action">
+                {t('admin.smartAssignment.validation.viewDetails')}
+                <ChevronRight className="h-3 w-3 shrink-0" aria-hidden />
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={onViewDetails}
-        className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2 text-xs font-medium text-[var(--admin-brand)] hover:bg-[var(--admin-surface-hover)]"
-      >
-        {t('admin.smartAssignment.validation.viewDetails')}
-        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-      </button>
     </div>
   );
 };

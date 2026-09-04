@@ -1,10 +1,10 @@
 import { ChangeEvent, FunctionComponent } from 'react';
-import { Filter, Search } from 'lucide-react';
+import { Filter } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { AdminSearchInput } from '../../../../../admin/ui';
 import {
   ASSIGNED_STUDENTS_FILTER_BUTTON,
   ASSIGNED_STUDENTS_FILTER_GROUP,
-  ASSIGNED_STUDENTS_SEARCH_INPUT,
-  ASSIGNED_STUDENTS_SEARCH_WRAP,
   ASSIGNED_STUDENTS_TOOLBAR_ROW,
 } from '../constants/assignedStudentsLayout';
 
@@ -17,36 +17,39 @@ const AssignedStudentsToolbar: FunctionComponent<AssignedStudentsToolbarProps> =
   searchQuery,
   onSearchChange,
 }) => {
+  const { t } = useTranslation();
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     onSearchChange(event.target.value);
   };
 
   return (
     <div className={ASSIGNED_STUDENTS_TOOLBAR_ROW}>
-      <label className={ASSIGNED_STUDENTS_SEARCH_WRAP}>
-        <Search
-          className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#9ca3af]"
-          strokeWidth={1.75}
-          aria-hidden
-        />
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={handleChange}
-          placeholder="Search student..."
-          className={ASSIGNED_STUDENTS_SEARCH_INPUT}
-          aria-label="Search student"
-        />
-      </label>
+      <AdminSearchInput
+        value={searchQuery}
+        onChange={handleChange}
+        onClear={() => onSearchChange('')}
+        placeholder={t('encadrant.common.searchStudent')}
+        aria-label={t('encadrant.common.searchStudent')}
+        containerClassName="min-w-0 flex-1"
+      />
 
       <div className={ASSIGNED_STUDENTS_FILTER_GROUP}>
-        <button type="button" className={ASSIGNED_STUDENTS_FILTER_BUTTON} aria-label="Filter by Class">
+        <button
+          type="button"
+          className={ASSIGNED_STUDENTS_FILTER_BUTTON}
+          aria-label={t('encadrant.common.filterByClass')}
+        >
           <Filter className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-          Filter by Class
+          {t('encadrant.common.filterByClass')}
         </button>
-        <button type="button" className={ASSIGNED_STUDENTS_FILTER_BUTTON} aria-label="Filter by Status">
+        <button
+          type="button"
+          className={ASSIGNED_STUDENTS_FILTER_BUTTON}
+          aria-label={t('encadrant.common.filterByStatus')}
+        >
           <Filter className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-          Filter by Status
+          {t('encadrant.common.filterByStatus')}
         </button>
       </div>
     </div>
@@ -54,4 +57,3 @@ const AssignedStudentsToolbar: FunctionComponent<AssignedStudentsToolbarProps> =
 };
 
 export default AssignedStudentsToolbar;
-

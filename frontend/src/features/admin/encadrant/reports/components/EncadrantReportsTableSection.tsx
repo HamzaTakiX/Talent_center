@@ -3,23 +3,20 @@ import { useTranslation } from 'react-i18next';
 import { useAdminCopy, useAdminSearchPlaceholder } from '../../../i18n/useAdminCopy';
 import { useAdminTableValues } from '../../../i18n/useAdminTableValues';
 import AdminRowActions from '../../../ui/AdminRowActions';
-import AdminSelectField from '../../../ui/AdminSelectField';
 import {
   AlertCircle,
   AlertTriangle,
   CheckCircle,
   Clock,
-  FileText,
-  Filter,
-  Search,
-  X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { adminSupervisionReportsApi } from '../../../api/supervisionReports';
 import type { EncadrantReportRow, EncadrantReportStatus } from '../data/encadrantReportsMock';
 import AdminMobileRowCard from '../../../shared/AdminMobileRowCard';
 import {
+  AdminListToolbar,
   AdminMobileTableSkeleton,
+  AdminModuleHeader,
   AdminSearchEmptyState,
   AdminTableEmptyState,
   AdminTableSkeletonRows,
@@ -66,7 +63,7 @@ const EncadrantReportsTableSection: FunctionComponent<EncadrantReportsTableSecti
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { tableColumn, emptyState, filterLabel } = useAdminCopy();
+  const { tableColumn, emptyState } = useAdminCopy();
   const { reportStatus } = useAdminTableValues();
   const searchPh = useAdminSearchPlaceholder('reports');
 
@@ -74,7 +71,6 @@ const EncadrantReportsTableSection: FunctionComponent<EncadrantReportsTableSecti
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | EncadrantReportStatus>('all');
   const [reportTypeFilter, setReportTypeFilter] = useState('all');
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewRow, setViewRow] = useState<EncadrantReportRow | null>(null);
 
   useEffect(() => {
@@ -106,8 +102,6 @@ const EncadrantReportsTableSection: FunctionComponent<EncadrantReportsTableSecti
     [reportStatus, t],
   );
 
-  const hasActiveFilters = statusFilter !== 'all' || reportTypeFilter !== 'all';
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((r) => {
@@ -134,11 +128,6 @@ const EncadrantReportsTableSection: FunctionComponent<EncadrantReportsTableSecti
     navigate(`/admin/encadrant/reports/${id}`);
   };
 
-  const clearFilters = () => {
-    setStatusFilter('all');
-    setReportTypeFilter('all');
-  };
-
   return (
     <>
       <EncadrantReportDetailModal
@@ -148,88 +137,37 @@ const EncadrantReportsTableSection: FunctionComponent<EncadrantReportsTableSecti
       />
 
       <div className="box-border flex w-full min-h-[555px] min-w-0 flex-col admin-module-panel text-left text-base text-[var(--admin-text)] font-inter shadow-sm">
-        <div className="box-border flex w-full shrink-0 flex-col gap-4 px-4 pb-1.5 pt-6 sm:px-6 lg:flex-row lg:items-start lg:justify-between lg:gap-5">
-          <div className="flex min-h-0 min-w-0 flex-col items-start lg:max-w-[420px]">
-            <div className="relative flex min-h-[20px] w-full shrink-0 items-center gap-2">
-              <FileText className="relative h-5 w-5 shrink-0 text-[var(--admin-text)]" strokeWidth={1.75} aria-hidden />
-              <span className="relative font-inter text-base font-medium leading-5 text-[var(--admin-text)]">
-                {pageTitle ?? t('admin.modules.reports.title')}
-              </span>
-            </div>
-            <div className="relative mt-1 w-full shrink-0 text-sm leading-6 text-[var(--admin-text-secondary)]">
-              {pageSubtitle ?? t('admin.modules.reports.subtitle')}
-            </div>
-          </div>
-          <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 lg:w-auto lg:max-w-none">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-              <div className="relative h-9 min-w-0 flex-1 sm:max-w-[256px]">
-                <Search
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--admin-text-secondary)]"
-                  strokeWidth={1.75}
-                  aria-hidden
-                />
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={searchPh}
-                  className="box-border h-9 w-full rounded-num-8 border-0 admin-field border border-[var(--admin-border)] bg-[var(--admin-input-bg)] py-1 pl-9 pr-3 font-inter text-num-14 leading-5 text-[var(--admin-text)] placeholder:text-[var(--admin-text-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-brand-muted)]"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => setFiltersOpen((o) => !o)}
-                className={`box-border flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-num-8 border px-3 py-0 font-inter text-num-14 transition-colors ${
-                  filtersOpen || hasActiveFilters
-                    ? 'border-[var(--admin-brand)] bg-[var(--admin-brand-muted)] text-[var(--admin-brand)]'
-                    : 'border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] text-[var(--admin-text)] hover:bg-[var(--admin-row-hover)]'
-                }`}
-                aria-expanded={filtersOpen}
-                aria-label={filterLabel('filterReports')}
-              >
-                <Filter className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-                <span className="hidden sm:inline">{t('admin.common.actions.filter', { defaultValue: 'Filtrer' })}</span>
-                {hasActiveFilters ? (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--admin-brand)] px-1 text-[10px] font-semibold text-white">
-                    !
-                  </span>
-                ) : null}
-              </button>
-            </div>
-            {filtersOpen ? (
-              <div className="flex flex-col gap-2 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] p-3 sm:flex-row sm:items-end">
-                <AdminSelectField
-                  aria-label={t('admin.tables.reports.filterByStatus', {
-                    defaultValue: 'Filtrer par statut',
-                  })}
-                  value={statusFilter}
-                  onChange={(v) => setStatusFilter(v as 'all' | EncadrantReportStatus)}
-                  options={statusOptions}
-                  wrapperClassName="min-w-0 flex-1"
-                />
-                <AdminSelectField
-                  aria-label={t('admin.tables.reports.filterByType', {
-                    defaultValue: 'Filtrer par type',
-                  })}
-                  value={reportTypeFilter}
-                  onChange={setReportTypeFilter}
-                  options={reportTypeOptions}
-                  wrapperClassName="min-w-0 flex-1"
-                />
-                {hasActiveFilters ? (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="inline-flex h-10 shrink-0 items-center justify-center gap-1 rounded-lg border border-[var(--admin-border)] px-3 text-sm text-[var(--admin-text-secondary)] hover:bg-[var(--admin-row-hover)]"
-                  >
-                    <X className="h-4 w-4" aria-hidden />
-                    {t('admin.historyUi.timeline.clearFilters')}
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        </div>
+        <AdminModuleHeader
+          layout="toolbar"
+          title={pageTitle ?? t('admin.modules.reports.title')}
+          subtitle={pageSubtitle ?? t('admin.modules.reports.subtitle')}
+          actions={
+            <AdminListToolbar
+              searchValue={query}
+              onSearchChange={setQuery}
+              searchPlaceholder={searchPh}
+              toolbarAriaLabel={t('admin.tables.reports.filterByStatus', {
+                defaultValue: 'Filtrer par statut',
+              })}
+              filter1={{
+                value: statusFilter,
+                onChange: (value) => setStatusFilter(value as 'all' | EncadrantReportStatus),
+                options: statusOptions,
+                ariaLabel: t('admin.tables.reports.filterByStatus', {
+                  defaultValue: 'Filtrer par statut',
+                }),
+              }}
+              filter2={{
+                value: reportTypeFilter,
+                onChange: setReportTypeFilter,
+                options: reportTypeOptions,
+                ariaLabel: t('admin.tables.reports.filterByType', {
+                  defaultValue: 'Filtrer par type',
+                }),
+              }}
+            />
+          }
+        />
 
         <div className="box-border flex w-full min-w-0 flex-1 flex-col px-4 pb-6 pt-0 text-num-14 sm:px-6">
           <div className="space-y-3 lg:hidden">

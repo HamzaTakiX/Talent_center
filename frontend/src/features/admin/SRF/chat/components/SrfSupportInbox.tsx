@@ -4,7 +4,7 @@ import { CircleDollarSign } from 'lucide-react';
 
 import { useTranslation } from 'react-i18next';
 
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 
 import { srfApi } from '../../../api/srf';
 
@@ -34,7 +34,7 @@ const SrfSupportInbox: FunctionComponent = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const conversationFromUrl = searchParams.get('conversation') ?? '';
+  const location = useLocation();
 
   const accountFromUrl = searchParams.get('account') ?? '';
 
@@ -46,14 +46,9 @@ const SrfSupportInbox: FunctionComponent = () => {
 
   const openingAttemptRef = useRef<string | null>(null);
 
-  const handledInitialConversationRef = useRef<string | null>(null);
-
-  const autoSelectedRef = useRef(false);
-
 
 
   const {
-
     listItems,
 
     selected,
@@ -98,6 +93,8 @@ const SrfSupportInbox: FunctionComponent = () => {
 
     selectConversation,
 
+    clearSelection,
+
     sendMessage,
 
     toggleStudentAcademicFilter,
@@ -111,6 +108,32 @@ const SrfSupportInbox: FunctionComponent = () => {
     reloadConversations,
 
   } = useSrfSupportChat();
+
+
+
+  useEffect(() => {
+
+    const openingFromAccount =
+
+      searchParams.get('opening') === '1' && Boolean(searchParams.get('account')?.trim());
+
+    if (openingFromAccount || openingAccountChat) return;
+
+
+
+    clearSelection();
+
+    if (searchParams.get('conversation')) {
+
+      const next = new URLSearchParams(searchParams);
+
+      next.delete('conversation');
+
+      setSearchParams(next, { replace: true });
+
+    }
+
+  }, [location.key]);
 
 
 
@@ -222,60 +245,6 @@ const SrfSupportInbox: FunctionComponent = () => {
 
 
 
-  useEffect(() => {
-
-    const conversationId = conversationFromUrl.trim();
-
-    if (!conversationId) return;
-
-    if (handledInitialConversationRef.current === conversationId) return;
-
-    if (selectedId === conversationId && selected) return;
-
-
-
-    handledInitialConversationRef.current = conversationId;
-
-    autoSelectedRef.current = true;
-
-    void selectConversation(conversationId);
-
-  }, [conversationFromUrl, selectConversation, selected, selectedId]);
-
-
-
-  useEffect(() => {
-
-    if (loading || selectedId || autoSelectedRef.current) return;
-
-    if (conversationFromUrl.trim() || isOpeningFromAccount) return;
-
-    if (listItems.length === 0) return;
-
-
-
-    autoSelectedRef.current = true;
-
-    void selectConversation(listItems[0].id);
-
-  }, [
-
-    loading,
-
-    selectedId,
-
-    conversationFromUrl,
-
-    isOpeningFromAccount,
-
-    listItems,
-
-    selectConversation,
-
-  ]);
-
-
-
   const handleArchive = () => {
 
     if (!selectedId) return;
@@ -316,7 +285,7 @@ const SrfSupportInbox: FunctionComponent = () => {
 
 
 
-  const hasSelection = Boolean(selectedId) || isOpeningConversation;
+  const hasSelection = Boolean(selected) || isOpeningConversation;
 
 
 
@@ -412,7 +381,7 @@ const SrfSupportInbox: FunctionComponent = () => {
 
           messagesLoading={messagesLoading}
 
-          onSend={(text) => void sendMessage(text)}
+          onSend={(text, tagCodes, entityRefs) => void sendMessage(text, tagCodes, entityRefs)}
 
           onBack={() => setMobileView('list')}
 

@@ -260,6 +260,37 @@
     gap: 0;
   }
 
+  .student-document-detail-page__back {
+    margin: 0;
+    padding: 1rem 1.375rem 0;
+  }
+
+  @media (min-width: 640px) {
+    .student-document-detail-page__back {
+      padding: 1.25rem 1.75rem 0;
+    }
+  }
+
+  .student-document-detail-page__back + .student-document-detail-page__layout .student-document-detail-page__hero {
+    padding-top: 0.875rem;
+  }
+
+  .student-document-detail-page__panel--loading .student-document-detail-page__back {
+    padding-inline: 0;
+    padding-top: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .student-document-detail-page__empty {
+    padding: 1.25rem 1.375rem 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .student-document-detail-page__empty {
+      padding: 1.5rem 1.75rem 1.75rem;
+    }
+  }
+
   .student-document-detail-page__hero {
     position: relative;
     padding: 1.5rem 1.375rem 1.75rem;
@@ -411,10 +442,13 @@
   }
 
   .student-document-detail-page__card {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     gap: 0;
+    width: 100%;
     min-width: 0;
+    max-width: 100%;
     padding: 1.125rem 1.25rem;
     border: 1px solid var(--admin-border);
     border-radius: 1rem;
@@ -462,10 +496,14 @@
   }
 
   .student-document-detail-page__card-body {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    width: 100%;
     min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   .student-document-detail-page__hint {
@@ -751,11 +789,14 @@
   }
 
   .student-document-detail-page__feedback {
+    box-sizing: border-box;
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
     width: 100%;
+    max-width: 100%;
     min-width: 0;
+    align-self: stretch;
     padding: 0.875rem 1rem;
     border-radius: 0.875rem;
     border: 1px solid var(--admin-border);
@@ -765,6 +806,13 @@
   .student-document-detail-page__feedback--compact {
     padding: 0.75rem 0.875rem;
     border-radius: 0.75rem;
+  }
+
+  /* Banner nested in a detail card — never spill past the section padding */
+  .student-document-detail-page__card-body > .student-document-detail-page__feedback {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
   }
 
   .student-document-detail-page__feedback-icon {
@@ -1528,19 +1576,192 @@
     gap: 1.125rem;
   }
 
-  /* KPI stats — 2 cartes par ligne sur mobile uniquement */
+  /* KPI stats offres / documents — style glass admin, 2/ligne mobile, 4/ligne desktop */
+  #internship-offers-stats.admin-students-stats-grid,
+  #student-documents-stats.admin-students-stats-grid {
+    gap: 0.75rem;
+  }
+
   @media (max-width: 767.98px) {
-    #internship-offers-stats .admin-kpi-grid--4 {
+    #internship-offers-stats.admin-students-stats-grid,
+    #student-documents-stats.admin-students-stats-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+  }
 
-    #internship-offers-stats .admin-kpi-grid--4 > .admin-kpi-cell:nth-child(2n) {
-      border-right: none;
+  @media (min-width: 768px) {
+    #internship-offers-stats.admin-students-stats-grid.admin-offers-stats-grid,
+    #student-documents-stats.admin-students-stats-grid.admin-offers-stats-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.75rem;
     }
+  }
 
-    #internship-offers-stats .admin-kpi-grid--4 > .admin-kpi-cell:nth-last-child(-n + 2) {
-      border-bottom: none;
+  /* Encadrant — 4 cards sur 1 ligne (override grille admin 3 cols) */
+  #student-encadrant-stats.admin-students-stats-grid {
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 768px) {
+    #student-encadrant-stats.admin-students-stats-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 0.75rem;
     }
+  }
+
+  /* Encadrant — alertes prioritaires (glass cards, 4/ligne desktop) */
+  .student-encadrant-alerts__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.125rem;
+    border-bottom: 1px solid var(--admin-border);
+  }
+
+  @media (min-width: 640px) {
+    .student-encadrant-alerts__header {
+      padding: 1.15rem 1.25rem;
+    }
+  }
+
+  .student-encadrant-alerts__header-icon {
+    display: inline-flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--admin-brand-muted);
+    color: var(--admin-brand);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--admin-brand) 18%, transparent);
+  }
+
+  .student-encadrant-alerts__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.45rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--admin-brand) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--admin-brand) 22%, transparent);
+    color: var(--admin-brand);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .student-encadrant-alerts__grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding: 1rem 1.125rem;
+  }
+
+  @media (min-width: 520px) {
+    .student-encadrant-alerts__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 768px) {
+    .student-encadrant-alerts__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 0.75rem;
+      padding: 1.15rem 1.25rem;
+    }
+  }
+
+  .student-encadrant-alert-card {
+    --encadrant-alert-accent: var(--admin-brand);
+    --encadrant-alert-accent-bg: var(--admin-brand-muted);
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.45rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--encadrant-alert-accent) 22%, var(--admin-border));
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--admin-bg-elevated) 88%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.04);
+    padding: 0.85rem 0.95rem 0.95rem;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .student-encadrant-alert-card::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    background: var(--encadrant-alert-accent);
+    border-radius: 14px 0 0 14px;
+  }
+
+  .student-encadrant-alert-card:hover {
+    border-color: color-mix(in srgb, var(--encadrant-alert-accent) 38%, var(--admin-border));
+    box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06), 0 12px 28px rgba(16, 24, 40, 0.08);
+  }
+
+  .student-encadrant-alert-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .student-encadrant-alert-card__icon {
+    display: inline-flex;
+    height: 2rem;
+    width: 2rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.55rem;
+    background: var(--encadrant-alert-accent-bg);
+    color: var(--encadrant-alert-accent);
+  }
+
+  .student-encadrant-alert-card__badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.25rem;
+    max-width: 100%;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--encadrant-alert-accent) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--encadrant-alert-accent) 20%, transparent);
+    color: var(--encadrant-alert-accent);
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .student-encadrant-alert-card__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--admin-text);
+  }
+
+  .student-encadrant-alert-card__message {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--admin-text-muted);
   }
 
   /* Section offres recommandées — panneau unifié */
@@ -1549,6 +1770,22 @@
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
+  }
+
+  #student-internship-offers-root .student-recommended-section-header__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.75rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 22%, var(--admin-border));
+    background: color-mix(in srgb, var(--admin-brand) 8%, var(--admin-bg-elevated));
+    color: var(--admin-brand);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
   }
 
   #student-internship-offers-root .student-recommended-section-body {
@@ -1563,6 +1800,97 @@
     #student-internship-offers-root .student-recommended-section-body {
       padding-top: 1.25rem;
     }
+  }
+
+  #student-internship-offers-root .student-recommended-featured {
+    position: relative;
+    border-color: color-mix(in srgb, var(--admin-brand) 28%, var(--admin-border));
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--admin-brand) 7%, var(--admin-bg-elevated)) 0%,
+        var(--admin-bg-elevated) 48%,
+        color-mix(in srgb, var(--admin-brand) 4%, var(--admin-bg-elevated)) 100%
+      );
+    box-shadow: 0 10px 28px color-mix(in srgb, var(--admin-brand) 8%, transparent);
+  }
+
+  #student-internship-offers-root .student-recommended-featured::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--admin-brand) 85%, white),
+      color-mix(in srgb, var(--admin-brand) 35%, transparent)
+    );
+    border-radius: inherit 0 0 inherit;
+    pointer-events: none;
+  }
+
+  #student-internship-offers-root .student-recommended-featured__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 1.75rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 26%, var(--admin-border));
+    background: color-mix(in srgb, var(--admin-brand) 12%, var(--admin-bg-elevated));
+    color: var(--admin-brand);
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  #student-internship-offers-root .student-recommended-featured__why-label {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--admin-text-muted);
+  }
+
+  #student-internship-offers-root .student-recommended-featured__footer {
+    border-top: 1px solid color-mix(in srgb, var(--admin-border) 80%, transparent);
+  }
+
+  #student-internship-offers-root .student-recommended-feed__more {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  #student-internship-offers-root .student-recommended-feed__more-label {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--admin-text-secondary);
+  }
+
+  #student-internship-offers-root .student-internship-offer-card--recommended {
+    border-color: color-mix(in srgb, var(--admin-brand) 18%, var(--admin-border));
+  }
+
+  #student-internship-offers-root .student-internship-offer-card__for-you {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    width: fit-content;
+    min-height: 1.4rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--admin-brand) 22%, var(--admin-border));
+    background: color-mix(in srgb, var(--admin-brand) 8%, var(--admin-bg-elevated));
+    color: var(--admin-brand);
+    font-size: 0.6875rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
   }
 
   #student-internship-offers-root .student-recommended-empty {
@@ -2254,6 +2582,195 @@
     border-color: rgba(251, 191, 36, 0.2);
   }
 
+  /* AI match insight panels — encarts Strengths / Gaps / Recommendations */
+  .student-match-insights {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  @media (min-width: 640px) {
+    .student-match-insights {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+  }
+
+  .student-match-insight {
+    --match-insight-accent: var(--admin-brand);
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-self: stretch;
+    overflow: clip;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--match-insight-accent) 28%, var(--admin-border));
+    /* Fond opaque d’abord — évite l’effet « cartes qui se croisent » */
+    background-color: var(--admin-bg-elevated);
+    background-image: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--match-insight-accent) 14%, transparent) 0%,
+      color-mix(in srgb, var(--match-insight-accent) 5%, var(--admin-bg-elevated)) 55%,
+      var(--admin-bg-elevated) 100%
+    );
+    padding: 0.875rem 1rem 1rem;
+    box-shadow:
+      0 1px 2px color-mix(in srgb, #000 18%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--match-insight-accent) 12%, transparent);
+  }
+
+  .student-match-insight::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--match-insight-accent) 85%, white),
+      color-mix(in srgb, var(--match-insight-accent) 45%, transparent)
+    );
+  }
+
+  .student-match-insight__head,
+  .student-match-insight__body {
+    position: relative;
+    z-index: 1;
+  }
+
+  .student-match-insight--success {
+    --match-insight-accent: #22c55e;
+  }
+
+  .student-match-insight--warning {
+    --match-insight-accent: #f59e0b;
+  }
+
+  .student-match-insight--brand {
+    --match-insight-accent: var(--admin-brand);
+  }
+
+  .student-match-insight__head {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin: 0 0 0.75rem;
+    min-width: 0;
+  }
+
+  .student-match-insight__icon {
+    display: inline-flex;
+    height: 1.875rem;
+    width: 1.875rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    color: var(--match-insight-accent);
+    background: color-mix(in srgb, var(--match-insight-accent) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--match-insight-accent) 24%, transparent);
+  }
+
+  .student-match-insight__title {
+    margin: 0;
+    min-width: 0;
+    font-size: 0.875rem;
+    font-weight: 650;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--admin-text);
+  }
+
+  .student-match-insight__body {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .student-match-insight__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .student-match-insight__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--admin-text-secondary);
+  }
+
+  .student-match-insight__bullet {
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+    color: var(--match-insight-accent);
+  }
+
+  .student-match-insight__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .student-match-insight__tag {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--match-insight-accent) 28%, var(--admin-border));
+    background: color-mix(in srgb, var(--match-insight-accent) 12%, transparent);
+    color: var(--admin-text);
+    padding: 0.2rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 550;
+    line-height: 1.25;
+  }
+
+  [data-admin-theme='dark'] .student-match-insight {
+    background-color: var(--admin-bg-elevated);
+  }
+
+  [data-admin-theme='dark'] .student-match-insight--success {
+    background-image: linear-gradient(
+      145deg,
+      rgba(16, 185, 129, 0.18) 0%,
+      rgba(16, 185, 129, 0.06) 50%,
+      var(--admin-bg-elevated) 100%
+    );
+  }
+
+  [data-admin-theme='dark'] .student-match-insight--warning {
+    background-image: linear-gradient(
+      145deg,
+      rgba(245, 158, 11, 0.18) 0%,
+      rgba(245, 158, 11, 0.06) 50%,
+      var(--admin-bg-elevated) 100%
+    );
+  }
+
+  [data-admin-theme='dark'] .student-match-insight--brand {
+    background-image: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--admin-brand) 20%, transparent) 0%,
+      color-mix(in srgb, var(--admin-brand) 6%, transparent) 50%,
+      var(--admin-bg-elevated) 100%
+    );
+  }
+
   /* Icon chips */
   .student-icon-chip {
     display: inline-flex;
@@ -2303,333 +2820,163 @@
     color: #f87171;
   }
 
-  /* Match score pill */
+  /* Match score badge — donut + label chip (stats style) */
   .student-match-score {
+    --student-match-pie: 0;
+    --student-match-accent: #eab308;
     position: relative;
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.3125rem;
+    gap: 0.5rem;
     flex-shrink: 0;
-    min-width: 6.25rem;
-    padding: 0.625rem 0.875rem;
-    border-radius: 0.75rem;
-    border: 1px solid color-mix(in srgb, var(--admin-border) 88%, transparent);
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--admin-bg-elevated) 96%, #fff 4%) 0%,
-      var(--admin-bg-elevated) 100%
-    );
+    min-width: 0;
+    padding: 0.15rem;
+    border: none;
+    background: transparent;
+    box-shadow: none;
     text-align: center;
-    box-shadow:
-      0 1px 2px color-mix(in srgb, var(--admin-text) 6%, transparent),
-      inset 0 1px 0 color-mix(in srgb, #fff 14%, transparent);
-    overflow: hidden;
+    overflow: visible;
   }
 
   .student-match-score::before {
-    content: '';
-    position: absolute;
-    inset: 0 auto auto 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      var(--student-match-accent, #eab308) 50%,
-      transparent 100%
-    );
-    opacity: 0.85;
+    display: none;
   }
 
-  .student-match-score__value {
+  .student-match-score__pie {
+    position: relative;
     display: flex;
+    height: 4rem;
+    width: 4rem;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    gap: 0.375rem;
-    line-height: 1;
+    border-radius: 9999px;
+    background: conic-gradient(
+      from -90deg,
+      var(--student-match-accent) 0 calc(var(--student-match-pie) * 1%),
+      color-mix(in srgb, var(--admin-text-muted) 26%, var(--admin-surface-inset, var(--admin-bg-elevated))) 0
+    );
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--student-match-accent) 14%, transparent),
+      0 8px 16px color-mix(in srgb, var(--student-match-accent) 12%, transparent);
   }
 
-  .student-match-score__star {
-    fill: var(--student-match-accent, #eab308);
-    color: var(--student-match-accent, #eab308);
-    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--student-match-accent, #eab308) 45%, transparent));
-  }
-
-  .student-match-score__percent {
-    font-size: 1.375rem;
-    font-weight: 700;
+  .student-match-score__pie-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    height: 2.55rem;
+    width: 2.55rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: var(--admin-bg-elevated);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--admin-border) 75%, transparent);
+    color: var(--student-match-accent);
+    font-size: 0.875rem;
+    font-weight: 800;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.03em;
     line-height: 1;
-    color: var(--admin-text);
   }
 
+  /* Bigger pie — recommendation section + offer detail only (`size="detail"`) */
   .student-match-score--detail {
-    min-width: 6.75rem;
-    padding: 0.75rem 1rem;
+    gap: 0.625rem;
   }
 
-  .student-match-score--detail .student-match-score__percent {
-    font-size: 1.625rem;
+  .student-match-score--detail .student-match-score__pie {
+    height: 6.25rem;
+    width: 6.25rem;
+    box-shadow:
+      0 0 0 5px color-mix(in srgb, var(--student-match-accent) 16%, transparent),
+      0 10px 22px color-mix(in srgb, var(--student-match-accent) 14%, transparent);
+  }
+
+  .student-match-score--detail .student-match-score__pie-inner {
+    height: 3.7rem;
+    width: 3.7rem;
+    font-size: 1.125rem;
   }
 
   .student-match-score__label {
-    max-width: 7.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    min-height: 1.35rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--student-match-accent) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--student-match-accent) 22%, transparent);
+    color: var(--student-match-accent);
     font-size: 0.625rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    line-height: 1.25;
-    color: color-mix(in srgb, var(--admin-text-secondary) 88%, var(--admin-text-muted));
+    letter-spacing: 0.05em;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .student-match-score--detail .student-match-score__label {
+    min-height: 1.5rem;
+    padding: 0.22rem 0.7rem;
+    font-size: 0.6875rem;
   }
 
   .student-match-score[data-score-tier='high'] {
     --student-match-accent: var(--cva-score-high, #22c55e);
-    border-color: color-mix(in srgb, var(--student-match-accent) 28%, var(--admin-border));
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--student-match-accent) 9%, var(--admin-bg-elevated)) 0%,
-      var(--admin-bg-elevated) 100%
-    );
   }
 
   .student-match-score[data-score-tier='medium'] {
     --student-match-accent: var(--cva-score-medium, #f59e0b);
-    border-color: color-mix(in srgb, var(--student-match-accent) 28%, var(--admin-border));
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--student-match-accent) 9%, var(--admin-bg-elevated)) 0%,
-      var(--admin-bg-elevated) 100%
-    );
   }
 
   .student-match-score[data-score-tier='low'] {
     --student-match-accent: var(--cva-score-low, #f97316);
-    border-color: color-mix(in srgb, var(--student-match-accent) 24%, var(--admin-border));
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--student-match-accent) 7%, var(--admin-bg-elevated)) 0%,
-      var(--admin-bg-elevated) 100%
+  }
+
+  [data-admin-theme='dark'] .student-match-score__pie {
+    background: conic-gradient(
+      from -90deg,
+      var(--student-match-accent) 0 calc(var(--student-match-pie) * 1%),
+      color-mix(in srgb, var(--admin-text-muted) 20%, #0f172a) 0
     );
   }
 
-  [data-admin-theme='dark'] .student-match-score {
-    border-color: color-mix(in srgb, var(--student-match-accent, #fbbf24) 22%, var(--admin-border));
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--student-match-accent, #fbbf24) 10%, var(--admin-bg-elevated)) 0%,
-      color-mix(in srgb, var(--admin-bg-elevated) 92%, #000 8%) 100%
-    );
-    box-shadow:
-      0 1px 3px color-mix(in srgb, #000 28%, transparent),
-      inset 0 1px 0 color-mix(in srgb, #fff 6%, transparent);
+  [data-admin-theme='dark'] .student-match-score__pie-inner {
+    background: color-mix(in srgb, var(--admin-bg-elevated) 82%, #0b1220);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--admin-border) 65%, transparent);
   }
 
   [data-admin-theme='dark'] .student-match-score__label {
-    color: color-mix(in srgb, var(--admin-text-secondary) 92%, #fff);
+    background: color-mix(in srgb, var(--student-match-accent) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--student-match-accent) 28%, transparent);
+    color: color-mix(in srgb, var(--student-match-accent) 88%, #fff);
   }
 
-  /* Match analysis stat cards */
-  .student-match-stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.625rem;
+  /* Match analysis stats — reuse admin students KPI grid */
+  .student-match-stats.admin-students-stats-grid {
     width: 100%;
     min-width: 0;
   }
 
   @media (min-width: 640px) {
-    .student-match-stats {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 0.75rem;
+    .student-match-stats.admin-students-stats-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  .student-match-stat-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 0.625rem;
-    min-width: 0;
-    min-height: 6.5rem;
-    padding: 0.875rem 0.875rem 0.75rem;
-    border-radius: 0.75rem;
-    border: 1px solid color-mix(in srgb, var(--admin-border) 88%, transparent);
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--admin-bg-elevated) 96%, #fff 4%) 0%,
-      var(--admin-bg-elevated) 100%
-    );
-    box-shadow:
-      0 1px 2px color-mix(in srgb, var(--admin-text) 5%, transparent),
-      inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent);
-    overflow: hidden;
+  @media (min-width: 1100px) {
+    .student-match-stats.admin-students-stats-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 
-  .student-match-stat-card::before {
-    content: '';
-    position: absolute;
-    inset: 0 auto auto 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      var(--stat-accent, var(--admin-brand)) 50%,
-      transparent 100%
-    );
-    opacity: 0.9;
-  }
-
-  .student-match-stat-card[data-score-tier='high'] {
-    border-color: color-mix(in srgb, var(--stat-accent, #22c55e) 24%, var(--admin-border));
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--stat-accent, #22c55e) 7%, var(--admin-bg-elevated)) 0%,
-      var(--admin-bg-elevated) 100%
-    );
-  }
-
-  .student-match-stat-card[data-score-tier='medium'] {
-    border-color: color-mix(in srgb, var(--stat-accent, #f59e0b) 24%, var(--admin-border));
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--stat-accent, #f59e0b) 7%, var(--admin-bg-elevated)) 0%,
-      var(--admin-bg-elevated) 100%
-    );
-  }
-
-  .student-match-stat-card[data-score-tier='low'] {
-    border-color: color-mix(in srgb, var(--stat-accent, #f97316) 22%, var(--admin-border));
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--stat-accent, #f97316) 6%, var(--admin-bg-elevated)) 0%,
-      var(--admin-bg-elevated) 100%
-    );
-  }
-
-  .student-match-stat-card__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 0.5rem;
-    background: color-mix(in srgb, var(--stat-accent, var(--admin-brand)) 14%, transparent);
-    color: var(--stat-accent, var(--admin-brand));
-    flex-shrink: 0;
-  }
-
-  .student-match-stat-card__body {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 0;
-  }
-
-  .student-match-stat-card__label {
-    font-size: 0.625rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    line-height: 1.25;
-    color: color-mix(in srgb, var(--admin-text-secondary) 90%, var(--admin-text-muted));
-  }
-
-  .student-match-stat-card__value {
-    font-size: 1.25rem;
-    font-weight: 700;
+  .student-match-stats .admin-students-stat-card__value {
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    color: var(--admin-text);
-  }
-
-  .student-match-stat-card__value--status {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: var(--stat-accent, var(--admin-text));
-  }
-
-  .student-match-stat-card__track {
-    width: 100%;
-    height: 0.1875rem;
-    overflow: hidden;
-    border-radius: 9999px;
-    background: color-mix(in srgb, var(--admin-border) 70%, transparent);
-    margin-top: auto;
-  }
-
-  .student-match-stat-card__fill {
-    height: 100%;
-    border-radius: 9999px;
-    background: var(--stat-accent, var(--admin-brand));
-    transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .student-match-stat-card__status {
-    display: flex;
-    align-items: center;
-    margin-top: auto;
-    color: var(--stat-accent, var(--admin-brand));
-  }
-
-  .student-match-stat-card[data-stat-key='eligibility'][data-score-tier='high'] .student-match-stat-card__icon {
-    background: color-mix(in srgb, var(--cva-score-high, #22c55e) 16%, transparent);
-  }
-
-  [data-admin-theme='dark'] .student-match-stat-card {
-    border-color: color-mix(in srgb, var(--stat-accent, var(--admin-brand)) 18%, var(--admin-border));
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--stat-accent, var(--admin-brand)) 8%, var(--admin-bg-elevated)) 0%,
-      color-mix(in srgb, var(--admin-bg-elevated) 92%, #000 8%) 100%
-    );
-    box-shadow:
-      0 1px 3px color-mix(in srgb, #000 24%, transparent),
-      inset 0 1px 0 color-mix(in srgb, #fff 5%, transparent);
-  }
-
-  [data-admin-theme='dark'] .student-match-stat-card__label {
-    color: color-mix(in srgb, var(--admin-text-secondary) 94%, #fff);
-  }
-
-  .student-match-stat-card--skeleton {
-    pointer-events: none;
-    user-select: none;
-    border-color: color-mix(in srgb, var(--admin-border) 92%, transparent);
-    background: linear-gradient(
-      165deg,
-      color-mix(in srgb, var(--admin-bg-elevated) 98%, #fff 2%) 0%,
-      var(--admin-bg-elevated) 100%
-    );
-    box-shadow: none;
-  }
-
-  .student-match-stat-card--skeleton::before {
-    opacity: 0.35;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      color-mix(in srgb, var(--admin-brand) 55%, transparent) 50%,
-      transparent 100%
-    );
-    animation: student-match-stat-skeleton-accent 2.2s ease-in-out infinite;
-  }
-
-  .student-match-stat-card--skeleton .admin-shimmer {
-    opacity: 0.88;
-  }
-
-  .student-match-stat-card__track-skeleton {
-    width: 100%;
-    height: 0.1875rem;
-    border-radius: 9999px;
-    margin-top: auto;
   }
 
   .student-match-analysis-skeleton {
@@ -2659,16 +3006,6 @@
     animation: student-match-analysis-pulse 1.6s ease-in-out infinite;
   }
 
-  @keyframes student-match-stat-skeleton-accent {
-    0%,
-    100% {
-      opacity: 0.2;
-    }
-    50% {
-      opacity: 0.65;
-    }
-  }
-
   @keyframes student-match-analysis-pulse {
     0% {
       transform: scale(0.92);
@@ -2685,42 +3022,81 @@
   }
 
   /* Interview simulation — idle intro */
+  .student-interview-sim-section {
+    position: relative;
+  }
+
   .student-interview-sim-intro {
+    --interview-sim-accent: var(--admin-brand);
+    position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem 1.25rem;
-    border-radius: 0.75rem;
-    border: 1px dashed color-mix(in srgb, var(--admin-border) 92%, transparent);
-    background: color-mix(in srgb, var(--admin-bg-elevated) 96%, var(--admin-surface-inset));
-    text-align: center;
+    align-items: stretch;
+    gap: 0.875rem;
+    overflow: hidden;
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--interview-sim-accent) 26%, var(--admin-border));
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--interview-sim-accent) 14%, transparent) 0%,
+        color-mix(in srgb, var(--interview-sim-accent) 5%, var(--admin-surface-inset)) 48%,
+        var(--admin-surface-inset) 100%
+      );
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--interview-sim-accent) 12%, transparent);
+  }
+
+  .student-interview-sim-intro::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--interview-sim-accent) 85%, white),
+      color-mix(in srgb, var(--interview-sim-accent) 40%, transparent)
+    );
+  }
+
+  .student-interview-sim-intro__content {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 
   .student-interview-sim-intro__icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: 9999px;
-    border: 1px solid var(--admin-border);
-    background: var(--admin-surface-inset);
-    color: var(--admin-text-secondary);
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: 0.625rem;
+    border: 1px solid color-mix(in srgb, var(--interview-sim-accent) 28%, var(--admin-border));
+    background: color-mix(in srgb, var(--interview-sim-accent) 14%, transparent);
+    color: var(--interview-sim-accent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interview-sim-accent) 10%, transparent);
   }
 
   .student-interview-sim-intro__text {
     margin: 0;
-    max-width: 32rem;
-    font-size: 0.875rem;
-    line-height: 1.625;
+    min-width: 0;
+    flex: 1 1 auto;
+    font-size: 0.8125rem;
+    line-height: 1.5;
     color: var(--admin-text-secondary);
+    text-align: start;
   }
 
   .student-interview-sim-cta {
-    margin-top: 0.25rem;
-    min-height: 2.75rem;
-    min-width: 12.5rem;
+    align-self: stretch;
+    margin-top: 0;
+    min-height: 2.5rem;
+    min-width: 0;
+    width: 100%;
     color: #fff;
     background: linear-gradient(
       135deg,
@@ -2731,6 +3107,28 @@
     box-shadow:
       0 1px 2px color-mix(in srgb, var(--admin-brand) 24%, transparent),
       0 4px 14px color-mix(in srgb, var(--admin-brand) 22%, transparent);
+  }
+
+  @media (min-width: 640px) {
+    .student-interview-sim-intro {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.875rem 1rem 0.875rem 1.125rem;
+    }
+
+    .student-interview-sim-intro__content {
+      flex: 1 1 auto;
+      align-items: center;
+    }
+
+    .student-interview-sim-cta {
+      align-self: center;
+      width: auto;
+      min-width: 11.5rem;
+      flex-shrink: 0;
+    }
   }
 
   .student-interview-sim-cta:hover:not(:disabled) {
@@ -2756,8 +3154,14 @@
   }
 
   [data-admin-theme='dark'] .student-interview-sim-intro {
-    background: color-mix(in srgb, var(--admin-bg-elevated) 88%, #000 12%);
-    border-color: color-mix(in srgb, var(--admin-border) 80%, transparent);
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--admin-brand) 16%, transparent) 0%,
+        color-mix(in srgb, var(--admin-brand) 6%, transparent) 45%,
+        var(--admin-surface-inset) 100%
+      );
+    border-color: color-mix(in srgb, var(--admin-brand) 28%, var(--admin-border));
   }
 
   /* Progress bars */
@@ -3186,6 +3590,23 @@
     border-top: 1px solid var(--admin-border);
   }
 
+  /* Icon + label stay on one line (SafeText is display:block by default). */
+  .student-internship-offer-card__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+    max-width: 100%;
+    flex: 0 1 auto;
+  }
+
+  .student-internship-offer-card__meta-item .safe-tooltip,
+  .student-internship-offer-card__meta-item .safe-truncate-single-line {
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 auto;
+  }
+
   /* Internship offer cards — 2 colonnes sur mobile */
   @media (max-width: 767.98px) {
     #student-internship-offers-root .student-internship-offers-grid > .student-internship-offer-card,
@@ -3219,8 +3640,8 @@
       line-height: 1rem;
     }
 
-    #student-internship-offers-root .student-internship-offers-grid .student-internship-offer-card__meta > span:nth-child(n + 3),
-    #student-recent-offers .student-internship-offers-grid .student-internship-offer-card__meta > span:nth-child(n + 3) {
+    #student-internship-offers-root .student-internship-offers-grid .student-internship-offer-card__meta-item:nth-child(n + 3),
+    #student-recent-offers .student-internship-offers-grid .student-internship-offer-card__meta-item:nth-child(n + 3) {
       display: none;
     }
 
@@ -3230,27 +3651,45 @@
       font-size: 0.625rem;
     }
 
-    #student-internship-offers-root .student-internship-offers-grid .student-match-score,
-    #student-recent-offers .student-internship-offers-grid .student-match-score {
-      min-width: 0;
-      padding: 0.375rem 0.5rem;
+    #student-internship-offers-root .student-internship-offers-grid .student-match-score:not(.student-match-score--detail),
+    #student-recent-offers .student-internship-offers-grid .student-match-score:not(.student-match-score--detail) {
+      gap: 0.375rem;
     }
 
-    #student-internship-offers-root .student-internship-offers-grid .student-match-score__percent,
-    #student-recent-offers .student-internship-offers-grid .student-match-score__percent {
-      font-size: 0.8125rem;
+    #student-internship-offers-root .student-internship-offers-grid .student-match-score:not(.student-match-score--detail) .student-match-score__pie,
+    #student-recent-offers .student-internship-offers-grid .student-match-score:not(.student-match-score--detail) .student-match-score__pie {
+      height: 3.25rem;
+      width: 3.25rem;
+      box-shadow:
+        0 0 0 2.5px color-mix(in srgb, var(--student-match-accent) 14%, transparent),
+        0 5px 12px color-mix(in srgb, var(--student-match-accent) 12%, transparent);
     }
 
-    #student-internship-offers-root .student-internship-offers-grid .student-match-score__label,
-    #student-recent-offers .student-internship-offers-grid .student-match-score__label {
+    #student-internship-offers-root .student-internship-offers-grid .student-match-score:not(.student-match-score--detail) .student-match-score__pie-inner,
+    #student-recent-offers .student-internship-offers-grid .student-match-score:not(.student-match-score--detail) .student-match-score__pie-inner {
+      height: 2.05rem;
+      width: 2.05rem;
+      font-size: 0.75rem;
+    }
+
+    #student-internship-offers-root .student-internship-offers-grid .student-match-score:not(.student-match-score--detail) .student-match-score__label,
+    #student-recent-offers .student-internship-offers-grid .student-match-score:not(.student-match-score--detail) .student-match-score__label {
+      min-height: 1.2rem;
+      padding: 0.1rem 0.45rem;
       font-size: 0.5625rem;
       letter-spacing: 0.04em;
     }
 
-    #student-internship-offers-root .student-internship-offers-grid .student-match-score__star,
-    #student-recent-offers .student-internship-offers-grid .student-match-score__star {
-      width: 0.75rem;
-      height: 0.75rem;
+    /* Recommended / detail pies stay large on small screens */
+    #student-internship-offers-root .student-match-score--detail .student-match-score__pie {
+      height: 5.25rem;
+      width: 5.25rem;
+    }
+
+    #student-internship-offers-root .student-match-score--detail .student-match-score__pie-inner {
+      height: 3.15rem;
+      width: 3.15rem;
+      font-size: 1rem;
     }
 
     #student-internship-offers-root .student-internship-offers-grid .student-internship-offer-card__footer,

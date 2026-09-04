@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Briefcase, CreditCard, Image, Shield, FileSignature, X } from 'lucide-react';
 import type { ServiceAttachmentRule } from '../../types/documentServiceCatalog';
 import { ATTACHMENT_PRESETS } from './serviceCatalogStudioSteps';
+import { resolveCatalogLabel } from './catalogLabelUtils';
 
 interface Props {
   attachments: ServiceAttachmentRule[];
@@ -52,7 +53,7 @@ const ServiceCatalogAttachmentChips: FunctionComponent<Props> = ({ attachments, 
               aria-pressed={selected}
             >
               <Icon className="h-4 w-4 shrink-0" aria-hidden />
-              <span>{t(preset.labelKey)}</span>
+              <span>{resolveCatalogLabel(t, preset.labelKey)}</span>
             </button>
           );
         })}
@@ -64,13 +65,15 @@ const ServiceCatalogAttachmentChips: FunctionComponent<Props> = ({ attachments, 
           <ul className="admin-doc-studio-attachments__list">
             {attachments.map((att) => (
               <li key={att.code} className="admin-doc-studio-attachments__item">
-                <span>{t(att.labelKey)}</span>
+                <span>{resolveCatalogLabel(t, att.labelKey, att.code)}</span>
                 <span className="admin-doc-studio-attachments__badge">{t(`${P}.required`)}</span>
                 <button
                   type="button"
                   className="admin-doc-studio-attachments__remove"
                   onClick={() => remove(att.code)}
-                  aria-label={t(`${P}.remove`, { name: t(att.labelKey) })}
+                  aria-label={t(`${P}.remove`, {
+                    name: resolveCatalogLabel(t, att.labelKey, att.code),
+                  })}
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>

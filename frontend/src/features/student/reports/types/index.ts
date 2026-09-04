@@ -11,9 +11,7 @@ export type ReportSectionStatus = 'complete' | 'draft' | 'empty';
 
 export type ReportHubCategory = 'my' | 'drafts' | 'submitted' | 'templates' | 'archived';
 
-export type ReportRightPanelTab = 'comments' | 'suggestions' | 'supervisor' | 'ai';
-
-export type ReferenceStyle = 'apa' | 'ieee' | 'harvard';
+export type ReportRightPanelTab = 'comments' | 'ai';
 
 export type AutoSaveState = 'idle' | 'saving' | 'saved';
 
@@ -38,15 +36,6 @@ export interface ReportComment {
   replies: { id: string; author: string; text: string; createdAt: string }[];
 }
 
-export interface ReportReference {
-  id: string;
-  style: ReferenceStyle;
-  authors: string;
-  title: string;
-  year: string;
-  source: string;
-}
-
 export interface ReportVersion {
   id: string;
   label: string;
@@ -60,7 +49,7 @@ export interface ReportAnalytics {
   wordCount: number;
   completionPercent: number;
   readingTimeMinutes: number;
-  referenceCount: number;
+  structureProgressPercent: number;
   imageCount: number;
 }
 
@@ -93,10 +82,11 @@ export interface StudentReportDocument {
   content: string;
   sections: ReportSection[];
   comments: ReportComment[];
-  references: ReportReference[];
   versions: ReportVersion[];
   analytics: ReportAcademicProgress;
   lastModified: string;
+  /** Assigned pedagogical model guide id (resolved via model mock/storage). */
+  assignedModelId?: string | null;
 }
 
 export type ReportJourneyStepState = 'done' | 'current' | 'upcoming';
@@ -106,17 +96,6 @@ export interface ReportJourneyStep {
   labelKey: string;
   state: ReportJourneyStepState;
   date?: string;
-}
-
-export type ReportActivityType = 'edit' | 'comment' | 'submit' | 'version' | 'reference' | 'feedback';
-
-export interface ReportActivityItem {
-  id: string;
-  type: ReportActivityType;
-  title: string;
-  description: string;
-  time: string;
-  reportId?: string;
 }
 
 export interface HubSupervisorFeedbackItem {

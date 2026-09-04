@@ -12,7 +12,8 @@ import {
   AdminHeaderSearchMobile,
   AdminHeaderSearchProvider,
 } from '../../admin/search/components/AdminHeaderSearch';
-import { getStudentHeaderSubtitleKey, getStudentHeaderTitleKey } from '../utils/studentPageTitle';
+import PlatformHeaderBrand from '../../shared/platform-header/components/PlatformHeaderBrand';
+import { getStudentHeaderSubtitleKey, getStudentHeaderTitleKey, getStudentHeaderIcon } from '../utils/studentPageTitle';
 
 interface StudentHeaderProps {
   onMenuClick?: () => void;
@@ -23,6 +24,7 @@ const StudentHeader: FunctionComponent<StudentHeaderProps> = ({ onMenuClick }) =
   const { theme, toggleTheme } = useAdminTheme();
   const { t } = useTranslation();
   const pageTitle = t(getStudentHeaderTitleKey(pathname));
+  const PageIcon = getStudentHeaderIcon(pathname);
   const subtitleKey = getStudentHeaderSubtitleKey(pathname);
   const subtitle = subtitleKey ? t(subtitleKey) : t('student.header.defaultSubtitle');
 
@@ -48,14 +50,13 @@ const StudentHeader: FunctionComponent<StudentHeaderProps> = ({ onMenuClick }) =
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className="min-w-0"
           >
-            <h1 className="truncate text-base font-semibold tracking-tight text-[var(--admin-text)] sm:text-lg">
-              {pageTitle}
-            </h1>
-            <p className="hidden truncate text-xs font-medium text-[var(--admin-text-secondary)] sm:block">
-              {subtitle}
-            </p>
+            <PlatformHeaderBrand
+              title={pageTitle}
+              subtitle={subtitle}
+              icon={PageIcon}
+              subtitleClassName="hidden sm:block"
+            />
           </motion.div>
         </motion.div>
 

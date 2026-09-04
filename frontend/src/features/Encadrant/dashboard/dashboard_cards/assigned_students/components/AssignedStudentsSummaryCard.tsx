@@ -1,7 +1,7 @@
 import { FunctionComponent } from 'react';
 import { LucideIcon, UserCheck, UserX, Users } from 'lucide-react';
-import { ASSIGNED_STUDENTS_STAT_CARD } from '../constants/assignedStudentsLayout';
-import { ASSIGNED_STUDENTS_SUMMARY_STYLES } from '../constants/assignedStudentsStyles';
+import AdminKpiStatCard from '../../../../../admin/ui/AdminKpiStatCard';
+import { encadrantKpiTone } from '../../../../constants/encadrantKpiTones';
 import type { AssignedStudentsSummaryStat } from '../types';
 
 const iconMap: Record<AssignedStudentsSummaryStat['icon'], LucideIcon> = {
@@ -12,32 +12,28 @@ const iconMap: Record<AssignedStudentsSummaryStat['icon'], LucideIcon> = {
 
 interface AssignedStudentsSummaryCardProps {
   stat: AssignedStudentsSummaryStat;
+  onClick?: () => void;
+  index?: number;
 }
 
+/** Thin wrapper — same KPI cell as Admin/Student. Prefer `PlatformKpiStrip` for grids. */
 const AssignedStudentsSummaryCard: FunctionComponent<AssignedStudentsSummaryCardProps> = ({
   stat,
+  onClick,
+  index = 0,
 }) => {
-  const Icon = iconMap[stat.icon];
-  const tone = ASSIGNED_STUDENTS_SUMMARY_STYLES[stat.tone];
-
+  const tones = encadrantKpiTone(stat.tone);
   return (
-    <article className={ASSIGNED_STUDENTS_STAT_CARD}>
-      <div className="flex min-h-0 flex-1 items-center justify-between gap-4 p-5 sm:gap-5 sm:p-6">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <span className="text-sm font-medium leading-5 text-[#717182]">{stat.label}</span>
-          <span className="text-3xl font-bold leading-9 tracking-tight text-[#0a0a0a] tabular-nums">
-            {stat.value}
-          </span>
-        </div>
-        <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] ${tone.iconBg}`}
-        >
-          <Icon className={`h-6 w-6 ${tone.iconText}`} strokeWidth={1.75} />
-        </div>
-      </div>
-    </article>
+    <AdminKpiStatCard
+      label={stat.label}
+      value={String(stat.value)}
+      icon={iconMap[stat.icon]}
+      accent={tones.accent}
+      accentBg={tones.bg}
+      onClick={onClick}
+      index={index}
+    />
   );
 };
 
 export default AssignedStudentsSummaryCard;
-

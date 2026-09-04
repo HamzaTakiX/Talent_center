@@ -1,6 +1,15 @@
 import { FunctionComponent, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, CheckCircle2, Clock3, FileText, Loader2, Rocket } from 'lucide-react';
+import {
+  AlertCircle,
+  BriefcaseBusiness,
+  CheckCircle2,
+  Clock3,
+  FilePenLine,
+  FileText,
+  Loader2,
+  Rocket,
+} from 'lucide-react';
 import type { SaveStatus } from '../../hooks/useCreateOfferWorkflow';
 import { formatReviewDate } from './reviewOfferHelpers';
 import OfferStudioActionButton, { type OfferSubmitAction } from './OfferStudioActionButton';
@@ -37,6 +46,7 @@ const CreateOfferHeader: FunctionComponent<CreateOfferHeaderProps> = ({
   const draftLoading = submitAction === 'draft' || (isEditMode && saveStatus === 'saving');
   const publishLoading = submitAction === 'publish';
   const locale = i18n.language || 'fr';
+  const TitleIcon = isEditMode ? FilePenLine : BriefcaseBusiness;
 
   const saveStatusLabel = useMemo(() => {
     if (saveStatus === 'saving') return t(`${PREFIX}.saveStatus.saving`);
@@ -65,13 +75,20 @@ const CreateOfferHeader: FunctionComponent<CreateOfferHeaderProps> = ({
     <header className="offer-studio-hero">
       <div className="offer-studio-hero__glow" aria-hidden />
       <div className="offer-studio-hero__inner">
-        <div>
-          <h1 className="offer-studio-hero__title">
-            {t(isEditMode ? `${PREFIX}.editTitle` : `${PREFIX}.title`)}
-          </h1>
-          <p className="offer-studio-hero__subtitle">
-            {t(isEditMode ? `${PREFIX}.editSubtitle` : `${PREFIX}.subtitle`)}
-          </p>
+        <div className="offer-studio-hero__copy">
+          <div className="offer-studio-hero__title-row">
+            <span className="offer-studio-hero__title-icon" aria-hidden>
+              <TitleIcon className="h-5 w-5" strokeWidth={1.85} />
+            </span>
+            <div className="min-w-0">
+              <h1 className="offer-studio-hero__title">
+                {t(isEditMode ? `${PREFIX}.editTitle` : `${PREFIX}.title`)}
+              </h1>
+              <p className="offer-studio-hero__subtitle">
+                {t(isEditMode ? `${PREFIX}.editSubtitle` : `${PREFIX}.subtitle`)}
+              </p>
+            </div>
+          </div>
           {isEditMode && (
             <div
               className={`offer-studio-save-status offer-studio-save-status--${saveStatus}${hasUnsavedChanges ? ' offer-studio-save-status--unsaved' : ''}`}

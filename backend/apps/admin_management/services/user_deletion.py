@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Callable, Optional
 
 from django.contrib.auth import get_user_model
@@ -13,6 +14,7 @@ from apps.admin_management.models import AdminProfile
 from apps.admin_management.services.scopes import assert_student_in_scope
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 ROLE_LABELS = {
     User.RoleChoices.STUDENT: 'student',
@@ -60,7 +62,49 @@ def _assert_last_super_admin(user: User) -> None:
         )
 
 
-@transaction.atomic
+def _unassign_microsoft_enterprise_app_before_delete(user: User) -> None:
+    """
+    Remove Enterprise Application assignment via Graph before deleting the TC user.
+
+    Does NOT delete the Entra / Guest account — only the app role assignment.
+    If Graph is not configured, deletion proceeds (local-only).
+    If Graph is configured and unassign fails hard, block deletion so Azure is not left
+    out of sync silently.
+    """
+    from apps.integrations.microsoft_graph.exceptions import (
+        MicrosoftGraphError,
+        MicrosoftUserNotFound,
+    )
+    from apps.integrations.microsoft_graph.service import MicrosoftGraphService
+    from apps.integrations.microsoft_graph.sync import revoke_microsoft_enterprise_access
+
+    graph = MicrosoftGraphService()
+    if not graph.is_enabled():
+        return
+
+    email = (getattr(user, 'email', '') or '').strip()
+    try:
+        # update_local=False: the Talent Center row is about to be hard-deleted.
+        revoke_microsoft_enterprise_access(user, update_local=False, service=graph)
+    except MicrosoftUserNotFound:
+        logger.info(
+            'Delete user: Entra user already absent for email=%s (proceeding with TC delete)',
+            email,
+        )
+    except MicrosoftGraphError as exc:
+        logger.error(
+            'Delete user blocked: Microsoft Graph unassign failed user_id=%s email=%s error=%s',
+            getattr(user, 'pk', None),
+            email,
+            exc.message,
+        )
+        raise UserDeletionError(
+            'Account was not deleted because Azure Enterprise Application sync failed. '
+            f'{exc.message} Fix Graph permissions, then retry deletion.',
+            field='microsoft',
+        ) from exc
+
+
 def delete_platform_user(
     *,
     user: User,
@@ -77,13 +121,17 @@ def delete_platform_user(
             scope_check(user)
         except PermissionDenied as exc:
             raise UserDeletionError(str(exc.detail), field='scope') from exc
-    try:
-        user.delete()
-    except ProtectedError as exc:
-        raise UserDeletionError(
-            'This account is linked to protected records and cannot be deleted.',
-            field='protected',
-        ) from exc
+
+    with transaction.atomic():
+        # Unassign from Talent Center Auth0 Demo before hard delete.
+        _unassign_microsoft_enterprise_app_before_delete(user)
+        try:
+            user.delete()
+        except ProtectedError as exc:
+            raise UserDeletionError(
+                'This account is linked to protected records and cannot be deleted.',
+                field='protected',
+            ) from exc
 
 
 def bulk_delete_platform_users(

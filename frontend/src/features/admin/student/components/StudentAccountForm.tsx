@@ -12,11 +12,17 @@ import {
   KeyRound,
   Loader2,
   LogIn,
+  Mail,
   RefreshCw,
   Trash2,
+  User,
+  UserPlus,
+  GraduationCap,
   XCircle,
 } from 'lucide-react';
+import AdminBackButton from '../../ui/AdminBackButton';
 import { adminStudentsApi } from '../../api/students';
+import { adminMicrosoftAccessApi, type MicrosoftAccessStatus } from '../../api/microsoftAccess';
 import type { AcademicHierarchyValue, AdminStudentDetail, AdminStudentRow } from '../../api/types';
 import ProfileAvatarUploader from '../../account/components/ProfileAvatarUploader';
 import AdminSelect from '../../account/components/AdminSelect';
@@ -73,6 +79,8 @@ interface StudentAccountFormProps {
   hidePanelHeader?: boolean;
   /** Pied d’actions fixe en bas du viewport (désactivé sur la page édition). */
   stickyActions?: boolean;
+  /** Bouton retour dans l’en-tête du panneau formulaire. */
+  backLabel?: string;
 }
 
 const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
@@ -82,6 +90,7 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
   onSaved,
   hidePanelHeader = false,
   stickyActions = true,
+  backLabel,
 }) => {
   const { t, i18n } = useTranslation();
   const formId = useId();
@@ -105,6 +114,8 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [removeAvatar, setRemoveAvatar] = useState(false);
+  const [microsoftAccess, setMicrosoftAccess] = useState<MicrosoftAccessStatus | null>(null);
+  const [microsoftBusy, setMicrosoftBusy] = useState(false);
 
   useEffect(() => {
     setError('');
@@ -146,9 +157,68 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
       setPlatformAccess(student.platform_access_granted);
       setAccountStatus(student.account_status);
       setAvatarPreview(resolveAvatarUrl(detail.profile?.avatar));
+      setMicrosoftAccess(null);
+      void adminMicrosoftAccessApi
+        .get(student.id)
+        .then(setMicrosoftAccess)
+        .catch(() => setMicrosoftAccess(null));
     }
   }, [mode, student?.id]);
 
+  const refreshMicrosoftAccess = async () => {
+    if (!student) return;
+    try {
+      setMicrosoftBusy(true);
+      setMicrosoftAccess(await adminMicrosoftAccessApi.get(student.id));
+    } catch {
+      // status remains previous / null
+    } finally {
+      setMicrosoftBusy(false);
+    }
+  };
+
+  const grantMicrosoftAccess = async () => {
+    if (!student) return;
+    try {
+      setMicrosoftBusy(true);
+      setError('');
+      const status = await adminMicrosoftAccessApi.grant(student.id);
+      setMicrosoftAccess(status);
+      setPlatformAccess(true);
+      setSsoEnabled(true);
+      setSuccess(
+        t(`${FORM_PREFIX}.microsoftAccess.granted`, {
+          defaultValue: 'Microsoft Enterprise access granted.',
+        }),
+      );
+      onSaved?.();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to grant Microsoft access');
+    } finally {
+      setMicrosoftBusy(false);
+    }
+  };
+
+  const revokeMicrosoftAccess = async () => {
+    if (!student) return;
+    try {
+      setMicrosoftBusy(true);
+      setError('');
+      const status = await adminMicrosoftAccessApi.revoke(student.id);
+      setMicrosoftAccess(status);
+      setPlatformAccess(false);
+      setSuccess(
+        t(`${FORM_PREFIX}.microsoftAccess.revoked`, {
+          defaultValue: 'Microsoft Enterprise access revoked.',
+        }),
+      );
+      onSaved?.();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to revoke Microsoft access');
+    } finally {
+      setMicrosoftBusy(false);
+    }
+  };
   const pinnedAcademicSelections = useMemo((): AcademicHierarchyPinnedSelections | undefined => {
     if (mode !== 'edit' || !student) return undefined;
     const sp = (student as AdminStudentDetail).student_profile;
@@ -275,8 +345,8 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
     setLoading(true);
     setError('');
     try {
-      await adminStudentsApi.regeneratePassword(student.id);
-      setRevealedPassword(null);
+      const pwd = await adminStudentsApi.regeneratePassword(student.id);
+      setRevealedPassword(pwd);
       setSuccess(t(`${FORM_PREFIX}.messages.regenerateSuccess`));
     } catch {
       setError(t(`${FORM_PREFIX}.messages.regenerateError`));
@@ -336,21 +406,50 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
   const displayName =
     student?.full_name?.trim() || `${firstName} ${lastName}`.trim() || email || '—';
   const initials = getAdminUserInitials(displayName, email);
-  const actionsClass = stickyActions ? adminFormActionsFooterClass : adminFormActionsInlineClass;
-  const formClassName =
-    mode === 'edit'
+  const isCreateMode = mode === 'create';
+  const actionsClass = isCreateMode
+    ? adminFormActionsInlineClass
+    : stickyActions
+      ? adminFormActionsFooterClass
+      : adminFormActionsInlineClass;
+  const formClassName = isCreateMode
+    ? `${adminFormPanelFlexClass} admin-student-form`
+    : mode === 'edit'
       ? `${adminFormPanelFlexClass} admin-student-edit-form`
       : adminFormPanelFlexClass;
 
   return (
-    <form className={formClassName} onSubmit={handleSubmit} noValidate>
-      {!hidePanelHeader && <AdminFormPanelHeader title={title} subtitle={subtitle} />}
+    <form className={formClassName} onSubmit={handleSubmit} id={formId} noValidate>
+      {!hidePanelHeader && (
+        <AdminFormPanelHeader
+          title={title}
+          subtitle={mode === 'edit' ? subtitle : undefined}
+          icon={mode === 'edit' ? GraduationCap : UserPlus}
+          leading={
+            backLabel ? (
+              <AdminBackButton onClick={onCancel} label={backLabel} className="!w-auto" />
+            ) : null
+          }
+        />
+      )}
+
+      {isCreateMode && error ? (
+        <div className="px-4 sm:px-6 pt-4">
+          <AdminFormAlert variant="error">{error}</AdminFormAlert>
+        </div>
+      ) : null}
+
+      {isCreateMode && success ? (
+        <div className="px-4 sm:px-6 pt-4">
+          <AdminFormAlert variant="success">{success}</AdminFormAlert>
+        </div>
+      ) : null}
 
       <div className={adminFormBodyScrollClass}>
-        {error ? <AdminFormAlert variant="error">{error}</AdminFormAlert> : null}
-        {success ? <AdminFormAlert variant="success">{success}</AdminFormAlert> : null}
+        {!isCreateMode && error ? <AdminFormAlert variant="error">{error}</AdminFormAlert> : null}
+        {!isCreateMode && success ? <AdminFormAlert variant="success">{success}</AdminFormAlert> : null}
 
-        <div className={adminFormSectionsStackClass}>
+        <div className={`${adminFormSectionsStackClass}${isCreateMode ? ' admin-student-form__sections' : ''}`}>
         {mode === 'edit' && student ? (
           <AdminFormSection
             sectionKey="photo"
@@ -412,7 +511,14 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
           description={t(`${FORM_PREFIX}.sections.personalHint`)}
         >
           <div className={adminFormGridClass}>
-            <AdminFormField fieldKey="email" label={t(`${FORM_PREFIX}.fields.email`)} required>
+            <AdminFormField
+              fieldKey="email"
+              label={t(`${FORM_PREFIX}.fields.email`)}
+              htmlFor={`${formId}-email`}
+              icon={Mail}
+              required
+              hint={isCreateMode ? t(`${FORM_PREFIX}.fields.emailHint`) : undefined}
+            >
               <AdminFormInput
                 fieldKey="email"
                 id={`${formId}-email`}
@@ -425,7 +531,12 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
               />
             </AdminFormField>
 
-            <AdminFormField fieldKey="firstName" label={t(`${FORM_PREFIX}.fields.firstName`)}>
+            <AdminFormField
+              fieldKey="firstName"
+              label={t(`${FORM_PREFIX}.fields.firstName`)}
+              htmlFor={`${formId}-first`}
+              icon={User}
+            >
               <AdminFormInput
                 fieldKey="firstName"
                 id={`${formId}-first`}
@@ -436,7 +547,12 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
               />
             </AdminFormField>
 
-            <AdminFormField fieldKey="lastName" label={t(`${FORM_PREFIX}.fields.lastName`)}>
+            <AdminFormField
+              fieldKey="lastName"
+              label={t(`${FORM_PREFIX}.fields.lastName`)}
+              htmlFor={`${formId}-last`}
+              icon={User}
+            >
               <AdminFormInput
                 fieldKey="lastName"
                 id={`${formId}-last`}
@@ -447,7 +563,11 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
               />
             </AdminFormField>
 
-            <AdminFormField fieldKey="studentNumber" label={t(`${FORM_PREFIX}.fields.studentNumber`)}>
+            <AdminFormField
+              fieldKey="studentNumber"
+              label={t(`${FORM_PREFIX}.fields.studentNumber`)}
+              htmlFor={`${formId}-number`}
+            >
               <AdminFormInput
                 fieldKey="studentNumber"
                 id={`${formId}-number`}
@@ -465,16 +585,14 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
           title={t(`${FORM_PREFIX}.sections.academic`)}
           description={t(`${FORM_PREFIX}.sections.academicHint`)}
         >
-          <div className={adminFormGridClass}>
-            <AdminAcademicHierarchyFields
-              idPrefix={`${formId}-academic`}
-              value={academic}
-              onChange={setAcademic}
-              autoResolveInternship
-              autoSelectCurrentYear={mode === 'create'}
-              pinnedSelections={pinnedAcademicSelections}
-            />
-          </div>
+          <AdminAcademicHierarchyFields
+            idPrefix={`${formId}-academic`}
+            value={academic}
+            onChange={setAcademic}
+            autoResolveInternship
+            autoSelectCurrentYear={mode === 'create'}
+            pinnedSelections={pinnedAcademicSelections}
+          />
         </AdminFormSection>
 
         <AdminFormSection
@@ -482,6 +600,37 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
           title={t(`${FORM_PREFIX}.sections.access`)}
           description={t(`${FORM_PREFIX}.sections.accessHint`)}
         >
+          {isCreateMode ? (
+            <div className="admin-student-form__switches flex flex-col gap-3">
+              <AdminFormSwitch
+                id={`${formId}-sso`}
+                label={
+                  <span>
+                    {t(`${FORM_PREFIX}.fields.ssoAccess`)}
+                    <span className="mt-0.5 block text-xs font-normal text-[var(--admin-text-secondary)]">
+                      {t(`${FORM_PREFIX}.fields.ssoAccessHint`)}
+                    </span>
+                  </span>
+                }
+                checked={ssoEnabled}
+                onChange={setSsoEnabled}
+              />
+              <AdminFormSwitch
+                id={`${formId}-grant-access`}
+                label={
+                  <span>
+                    {t(`${FORM_PREFIX}.fields.grantPlatformAccess`)}
+                    <span className="mt-0.5 block text-xs font-normal text-[var(--admin-text-secondary)]">
+                      {t(`${FORM_PREFIX}.fields.grantPlatformAccessHint`)}
+                    </span>
+                  </span>
+                }
+                checked={grantAccess}
+                onChange={setGrantAccess}
+              />
+            </div>
+          ) : (
+            <>
           <div className="grid gap-2 sm:grid-cols-2 sm:gap-4">
             <AdminFormSwitch
               id={`${formId}-sso`}
@@ -489,22 +638,71 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
               checked={ssoEnabled}
               onChange={setSsoEnabled}
             />
-            {mode === 'create' ? (
-              <AdminFormSwitch
-                id={`${formId}-grant-access`}
-                label={t(`${FORM_PREFIX}.fields.grantPlatformAccess`)}
-                checked={grantAccess}
-                onChange={setGrantAccess}
-              />
-            ) : (
-              <AdminFormSwitch
-                id={`${formId}-platform-access`}
-                label={t(`${FORM_PREFIX}.fields.platformAccess`)}
-                checked={platformAccess}
-                onChange={setPlatformAccess}
-              />
-            )}
+            <AdminFormSwitch
+              id={`${formId}-platform-access`}
+              label={t(`${FORM_PREFIX}.fields.platformAccess`)}
+              checked={platformAccess}
+              onChange={setPlatformAccess}
+            />
           </div>
+
+          {mode === 'edit' && student && (
+            <div className="mt-4 rounded-xl border border-[var(--admin-border,rgba(0,0,0,0.08))] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold">
+                    {t(`${FORM_PREFIX}.microsoftAccess.title`, {
+                      defaultValue: 'Microsoft Enterprise access',
+                    })}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--admin-muted,#64748b)]">
+                    {microsoftAccess?.configured === false
+                      ? t(`${FORM_PREFIX}.microsoftAccess.notConfigured`, {
+                          defaultValue: 'Microsoft Graph is not configured on the server.',
+                        })
+                      : microsoftAccess?.microsoft_access
+                        ? t(`${FORM_PREFIX}.microsoftAccess.active`, {
+                            defaultValue: 'Assigned to the Talent Center Enterprise Application.',
+                          })
+                        : t(`${FORM_PREFIX}.microsoftAccess.inactive`, {
+                            defaultValue: 'Not assigned to the Talent Center Enterprise Application.',
+                          })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className={adminFormBtnSecondaryClass}
+                  disabled={microsoftBusy}
+                  onClick={() => void refreshMicrosoftAccess()}
+                >
+                  {microsoftBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  <span>{t('admin.common.refresh', { defaultValue: 'Refresh' })}</span>
+                </button>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className={adminFormBtnPrimaryClass}
+                  disabled={microsoftBusy || microsoftAccess?.microsoft_access === true}
+                  onClick={() => void grantMicrosoftAccess()}
+                >
+                  {t(`${FORM_PREFIX}.microsoftAccess.grant`, {
+                    defaultValue: 'Grant Microsoft access',
+                  })}
+                </button>
+                <button
+                  type="button"
+                  className={adminFormBtnSecondaryClass}
+                  disabled={microsoftBusy || microsoftAccess?.microsoft_access === false}
+                  onClick={() => void revokeMicrosoftAccess()}
+                >
+                  {t(`${FORM_PREFIX}.microsoftAccess.revoke`, {
+                    defaultValue: 'Revoke Microsoft access',
+                  })}
+                </button>
+              </div>
+            </div>
+          )}
 
           {mode === 'edit' && (
             <div className="mt-4">
@@ -516,6 +714,8 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
                 options={statusOptions}
               />
             </div>
+          )}
+            </>
           )}
         </AdminFormSection>
 
@@ -670,7 +870,7 @@ const StudentAccountForm: FunctionComponent<StudentAccountFormProps> = ({
         </div>
       </div>
 
-      <div className={actionsClass}>
+      <div className={`${actionsClass}${isCreateMode ? ' admin-student-form__actions' : ''}`}>
         <button
           type="button"
           onClick={onCancel}

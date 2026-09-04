@@ -28,6 +28,7 @@ import {
 import {
   STUDENT_ENCADRANT_AGENDA_PATH,
   STUDENT_ENCADRANT_CHAT_PATH,
+  STUDENT_ENCADRANT_MEETINGS_PATH,
   STUDENT_ENCADRANT_PATH,
   STUDENT_ENCADRANT_TASK_PATH,
   STUDENT_ENCADRANT_WORKSPACE_PATH,
@@ -59,6 +60,7 @@ export type StudentNavChildId =
   | 'agenda'
   | 'task'
   | 'workspace'
+  | 'meetings'
   | 'report';
 
 export interface StudentNavItem {
@@ -86,7 +88,7 @@ export const STUDENT_NAV_ITEMS: StudentNavItem[] = [
     id: 'encadrant',
     icon: UserCheck,
     expandable: true,
-    children: ['chat', 'agenda', 'task', 'workspace', 'report'],
+    children: ['chat', 'agenda', 'task', 'workspace', 'meetings', 'report'],
   },
   { id: 'support', icon: LifeBuoy, expandable: true, children: ['chat'] },
 ];
@@ -192,6 +194,7 @@ export const getChildPath = (
     if (child === 'agenda') return STUDENT_ENCADRANT_AGENDA_PATH;
     if (child === 'task') return STUDENT_ENCADRANT_TASK_PATH;
     if (child === 'workspace') return STUDENT_ENCADRANT_WORKSPACE_PATH;
+    if (child === 'meetings') return STUDENT_ENCADRANT_MEETINGS_PATH;
     if (child === 'report') return STUDENT_REPORTS_PATH;
   }
   if (section === 'support' && child === 'chat') return STUDENT_SUPPORT_CHAT_PATH;

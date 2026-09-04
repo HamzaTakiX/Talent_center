@@ -4,6 +4,7 @@ export function filterPlatformTasks(
   tasks: StudentPlatformTask[],
   filters: TaskFilters,
   search: string,
+  translate: (key: string) => string = (key) => key,
 ): StudentPlatformTask[] {
   const q = search.trim().toLowerCase();
 
@@ -19,13 +20,17 @@ export function filterPlatformTasks(
     if (filters.dueRange === 'overdue' && task.daysRemaining > 0) return false;
     if (filters.dueRange === 'week' && task.daysRemaining > 7) return false;
     if (filters.dueRange === 'month' && task.daysRemaining > 30) return false;
-    if (
-      q &&
-      !task.titleKey.toLowerCase().includes(q) &&
-      !task.descriptionKey.toLowerCase().includes(q) &&
-      !task.id.toLowerCase().includes(q)
-    ) {
-      return false;
+    if (q) {
+      const haystack = [
+        translate(task.titleKey),
+        translate(task.descriptionKey),
+        translate(`student.encadrant.task.platform.categories.${task.category}`),
+        translate(`student.encadrant.task.platform.status.${task.status}`),
+        task.id,
+      ]
+        .join(' ')
+        .toLowerCase();
+      if (!haystack.includes(q)) return false;
     }
     return true;
   });

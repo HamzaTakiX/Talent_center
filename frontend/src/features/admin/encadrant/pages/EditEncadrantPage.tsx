@@ -5,10 +5,9 @@ import { useAdminBackLabel } from '../../i18n/useAdminCopy';
 import AdminFormPageShell from '../../ui/AdminFormPageShell';
 import { AdminPanelListSkeleton } from '../../ui';
 import EncadrantAccountForm from '../components/EncadrantAccountForm';
+import EncadrantFormPageHero from '../components/EncadrantFormPageHero';
 import { adminEncadrantsApi } from '../../api/encadrants';
 import type { AdminEncadrantRow } from '../../api/types';
-
-const FORM_PREFIX = 'admin.forms.createEncadrant';
 
 const EditEncadrantPage: FunctionComponent = () => {
   const navigate = useNavigate();
@@ -36,7 +35,7 @@ const EditEncadrantPage: FunctionComponent = () => {
 
   if (loading) {
     return (
-      <AdminFormPageShell backLabel={backLabel} onBack={goBack}>
+      <AdminFormPageShell backLabel={backLabel} onBack={goBack} width="narrow">
         <AdminPanelListSkeleton rows={8} />
       </AdminFormPageShell>
     );
@@ -44,7 +43,7 @@ const EditEncadrantPage: FunctionComponent = () => {
 
   if (!encadrant) {
     return (
-      <AdminFormPageShell backLabel={backLabel} onBack={goBack}>
+      <AdminFormPageShell backLabel={backLabel} onBack={goBack} width="narrow">
         <p className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-muted)]/30 px-4 py-6 text-sm text-[var(--admin-text-secondary)]">
           {t('admin.common.notFound.encadrant')}
         </p>
@@ -56,8 +55,10 @@ const EditEncadrantPage: FunctionComponent = () => {
     <AdminFormPageShell
       backLabel={backLabel}
       onBack={goBack}
-      heroTitle={t(`${FORM_PREFIX}.editTitle`)}
-      heroSubtitle={t(`${FORM_PREFIX}.editSubtitle`)}
+      width="narrow"
+      heroContent={
+        <EncadrantFormPageHero mode="edit" displayName={encadrant.full_name} />
+      }
       breadcrumbs={[
         { label: t('admin.common.breadcrumbs.encadrants'), onClick: goBack },
         { label: encadrant.full_name },

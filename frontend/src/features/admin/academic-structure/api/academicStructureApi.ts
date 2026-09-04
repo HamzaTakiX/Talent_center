@@ -26,12 +26,15 @@ export const academicStructureApi = {
     return response.data.data;
   },
 
-  createTrack: async (payload: Partial<AcademicTrackRow>): Promise<AcademicTrackRow> => {
+  createTrack: async (payload: Partial<AcademicTrackRow> & { specialization_domain_ids?: number[] }): Promise<AcademicTrackRow> => {
     const response = await apiClient.post<ApiEnvelope<AcademicTrackRow>>(`${BASE}/tracks`, payload);
     return response.data.data;
   },
 
-  updateTrack: async (id: number, payload: Partial<AcademicTrackRow>): Promise<AcademicTrackRow> => {
+  updateTrack: async (
+    id: number,
+    payload: Partial<AcademicTrackRow> & { specialization_domain_ids?: number[] },
+  ): Promise<AcademicTrackRow> => {
     const response = await apiClient.patch<ApiEnvelope<AcademicTrackRow>>(`${BASE}/tracks/${id}`, payload);
     return response.data.data;
   },

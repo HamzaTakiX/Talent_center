@@ -1,31 +1,39 @@
+import {
+  ENC_BADGE_DANGER,
+  ENC_BADGE_INFO,
+  ENC_BADGE_NEUTRAL,
+  ENC_BADGE_SUCCESS,
+  ENC_BADGE_WARNING,
+  ENC_PANEL,
+} from '../../constants/encadrantTokens';
 import type { StudentTaskItemPriority, StudentTaskItemStatus } from '../types';
 
 export const STUDENT_TASK_STATUS_BADGE: Record<StudentTaskItemStatus, string> = {
-  done: 'bg-[#dcfce7] text-[#15803d]',
-  in_progress: 'bg-[#dbeafe] text-[#1d4ed8]',
-  upcoming: 'bg-[#f3f4f6] text-[#525252]',
+  done: ENC_BADGE_SUCCESS,
+  in_progress: ENC_BADGE_INFO,
+  upcoming: ENC_BADGE_NEUTRAL,
 };
 
-export const STUDENT_TASK_STATUS_LABEL: Record<StudentTaskItemStatus, string> = {
-  done: 'Done',
-  in_progress: 'In Progress',
-  upcoming: 'Upcoming',
+export const STUDENT_TASK_STATUS_LABEL_KEY: Record<StudentTaskItemStatus, string> = {
+  done: 'encadrant.status.done',
+  in_progress: 'encadrant.status.inProgress',
+  upcoming: 'encadrant.status.upcoming',
 };
 
 export const STUDENT_TASK_PRIORITY_BADGE: Record<StudentTaskItemPriority, string> = {
-  high: 'bg-[#fee2e2] text-[#b91c1c]',
-  medium: 'bg-[#ffedd5] text-[#c2410c]',
+  high: ENC_BADGE_DANGER,
+  medium: ENC_BADGE_WARNING,
 };
 
-export const STUDENT_TASK_PRIORITY_LABEL: Record<StudentTaskItemPriority, string> = {
-  high: 'High',
-  medium: 'Medium',
+export const STUDENT_TASK_PRIORITY_LABEL_KEY: Record<StudentTaskItemPriority, string> = {
+  high: 'encadrant.task.priority.high',
+  medium: 'encadrant.task.priority.medium',
 };
 
 export const STUDENT_TASK_ITEM_CARD_BG: Record<StudentTaskItemStatus, string> = {
-  done: 'border-[#bbf7d0] bg-[#f0fdf4]',
-  in_progress: 'border-[#bfdbfe] bg-[#eff6ff]',
-  upcoming: 'border-[rgba(0,0,0,0.08)] bg-white',
+  done: 'border-[color-mix(in_srgb,#059669_35%,var(--admin-border))] bg-[color-mix(in_srgb,#059669_8%,var(--admin-bg-elevated))]',
+  in_progress: 'border-[color-mix(in_srgb,var(--admin-brand)_35%,var(--admin-border))] bg-[var(--admin-brand-muted)]',
+  upcoming: `${ENC_PANEL} border-[var(--admin-border)]`,
 };
 
-export const STUDENT_TASK_ITEM_TITLE_DONE = 'line-through text-[#525252]';
+export const STUDENT_TASK_ITEM_TITLE_DONE = 'line-through text-[var(--admin-text-secondary)]';

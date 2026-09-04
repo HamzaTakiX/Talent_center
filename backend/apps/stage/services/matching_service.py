@@ -168,28 +168,32 @@ def _score_location(student: StudentProfile, offer: InternshipOffer) -> tuple[De
     return Decimal('3'), {'reason': 'Location mismatch', 'score': 3}
 
 
-def _passes_targeting(student: StudentProfile, offer: InternshipOffer) -> bool:
-    rules = offer.targeting_rules.filter(is_active=True)
-    if not rules.exists():
-        return True
-    for rule in rules:
-        payload = rule.value_json or {}
-        if rule.rule_type == OfferTargetingRule.RuleType.LEVEL:
-            codes = payload.get('level_codes', [])
-            level_code = getattr(getattr(student, 'academic_level', None), 'code', '')
-            match = level_code in codes
-            if rule.is_inclusive and not match:
-                return False
-            if not rule.is_inclusive and match:
-                return False
-    return True
+def _passes_targeting(
+    student: StudentProfile,
+    offer: InternshipOffer,
+    *,
+    targeting_rules: list[OfferTargetingRule] | None = None,
+) -> bool:
+    from apps.stage.services.targeting_service import student_passes_targeting
+
+    if targeting_rules is None:
+        prefetched = getattr(offer, '_prefetched_objects_cache', {}).get('targeting_rules')
+        if prefetched is not None:
+            targeting_rules = list(prefetched)
+        else:
+            targeting_rules = list(offer.targeting_rules.filter(is_active=True))
+    return student_passes_targeting(student, targeting_rules)
 
 
 def compute_match_score(
     student: StudentProfile,
     offer: InternshipOffer,
+    *,
+    targeting_rules: list[OfferTargetingRule] | None = None,
+    student_emb=None,
+    offer_emb=None,
 ) -> tuple[Decimal, list[dict[str, Any]], dict[str, Any]]:
-    if not _passes_targeting(student, offer):
+    if not _passes_targeting(student, offer, targeting_rules=targeting_rules):
         return Decimal('0'), [{'reason': 'Excluded by targeting rules', 'score': 0}], {}
 
     candidate_skills = _normalize_skills(getattr(student, 'skills', []) or [])
@@ -227,7 +231,12 @@ def compute_match_score(
 
     from apps.stage.services.ai_pipeline.semantic_matching import get_semantic_match_score
 
-    semantic_score, semantic_reason = get_semantic_match_score(student, offer)
+    semantic_score, semantic_reason = get_semantic_match_score(
+        student,
+        offer,
+        student_emb=student_emb,
+        offer_emb=offer_emb,
+    )
     if semantic_score is not None:
         breakdown['semantic'] = semantic_reason
         reasons.append({'dimension': 'semantic', **semantic_reason})
@@ -244,8 +253,17 @@ def persist_match_score(
     *,
     trigger: str = MatchingHistory.Trigger.MANUAL,
     previous: StudentOfferMatchScore | None = None,
+    targeting_rules: list[OfferTargetingRule] | None = None,
+    student_emb=None,
+    offer_emb=None,
 ) -> StudentOfferMatchScore:
-    score, reasons, breakdown = compute_match_score(student, offer)
+    score, reasons, breakdown = compute_match_score(
+        student,
+        offer,
+        targeting_rules=targeting_rules,
+        student_emb=student_emb,
+        offer_emb=offer_emb,
+    )
     obj, _ = StudentOfferMatchScore.objects.update_or_create(
         student_profile=student,
         offer=offer,
@@ -284,15 +302,65 @@ def recalculate_matches_for_offer(
     students: QuerySet[StudentProfile] | None = None,
 ) -> int:
     from apps.accounts_et_roles.models import User
+    from apps.stage.models_extended import SemanticEmbedding
+    from apps.stage.services.targeting_service import student_passes_targeting
+
+    if not getattr(offer, '_prefetched_objects_cache', {}).get('targeting_rules'):
+        offer = InternshipOffer.objects.prefetch_related('targeting_rules').get(pk=offer.pk)
+
+    targeting_rules = list(offer.targeting_rules.all())
 
     qs = students or StudentProfile.objects.filter(
         user__is_active=True,
         user__role=User.RoleChoices.STUDENT,
     )
+    candidates = list(
+        qs.select_related(
+            'internship_type',
+            'academic_level',
+            'filiere',
+            'class_group',
+            'academic_sector',
+        )[:5000]
+    )
+    targeted_students = [
+        student for student in candidates
+        if student_passes_targeting(student, targeting_rules)
+    ]
+    if not targeted_students:
+        return 0
+
+    student_ids = [student.pk for student in targeted_students]
+    previous_by_student = {
+        score.student_profile_id: score
+        for score in StudentOfferMatchScore.objects.filter(
+            offer=offer,
+            student_profile_id__in=student_ids,
+        )
+    }
+    offer_emb = SemanticEmbedding.objects.filter(
+        entity_type=SemanticEmbedding.EntityType.OFFER,
+        entity_id=offer.pk,
+    ).first()
+    student_embs = {
+        emb.entity_id: emb
+        for emb in SemanticEmbedding.objects.filter(
+            entity_type=SemanticEmbedding.EntityType.STUDENT,
+            entity_id__in=student_ids,
+        )
+    }
+
     count = 0
-    for student in qs.select_related('internship_type', 'academic_level')[:5000]:
-        previous = StudentOfferMatchScore.objects.filter(student_profile=student, offer=offer).first()
-        persist_match_score(student, offer, trigger=trigger, previous=previous)
+    for student in targeted_students:
+        persist_match_score(
+            student,
+            offer,
+            trigger=trigger,
+            previous=previous_by_student.get(student.pk),
+            targeting_rules=targeting_rules,
+            student_emb=student_embs.get(student.pk),
+            offer_emb=offer_emb,
+        )
         count += 1
     return count
 

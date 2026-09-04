@@ -35,6 +35,7 @@ export interface OfferStudioOptions {
   initialForm?: CreateOfferFormState;
   offerStatus?: string;
   lastUpdatedAt?: string | null;
+  companyLogoUrl?: string | null;
 }
 
 function hasTargetingSelection(targeting: TargetingRules): boolean {
@@ -130,6 +131,7 @@ function mapDuplicateFromJob(job: StageImportJob): DuplicateOffer | null {
     company: info.company_name,
     similarity: info.similarity_percent,
     publishedDaysAgo: info.published_days_ago,
+    publishedAt: info.published_at ?? null,
   };
 }
 
@@ -170,6 +172,7 @@ export function useCreateOfferWorkflow(
   const [importPhase, setImportPhase] = useState<ImportPhase>('idle');
   const [importMessageIndex, setImportMessageIndex] = useState(0);
   const [importError, setImportError] = useState<string | null>(null);
+  const [importErrorCode, setImportErrorCode] = useState<string | null>(null);
   const [importJobMeta, setImportJobMeta] = useState<ImportJobMeta | null>(null);
   const [duplicate, setDuplicate] = useState<DuplicateOffer | null>(null);
   const [duplicateDismissed, setDuplicateDismissed] = useState(false);
@@ -184,6 +187,7 @@ export function useCreateOfferWorkflow(
   const [textPhase, setTextPhase] = useState<TextPhase>('idle');
   const [textError, setTextError] = useState<string | null>(null);
   const [textExtractedFields, setTextExtractedFields] = useState<string[]>([]);
+  const [textMissingFields, setTextMissingFields] = useState<string[]>([]);
 
   const skipAutoSaveRef = useRef(true);
   const savedStatusTimerRef = useRef<number | null>(null);
@@ -320,6 +324,7 @@ export function useCreateOfferWorkflow(
     setImportPhase('analyzing');
     setImportMessageIndex(0);
     setImportError(null);
+    setImportErrorCode(null);
     setImportJobMeta(null);
     setDuplicate(null);
     setDuplicateDismissed(false);
@@ -341,7 +346,9 @@ export function useCreateOfferWorkflow(
       setDuplicateDismissed(!dup);
     } catch (err) {
       window.clearInterval(messageTimer);
-      setImportError(parseAdminApiError(err, 'import_failed').message);
+      const parsed = parseAdminApiError(err, 'import_failed');
+      setImportError(parsed.message);
+      setImportErrorCode(parsed.code ?? null);
       setImportPhase('failed');
     }
   }, [importUrl]);
@@ -351,6 +358,7 @@ export function useCreateOfferWorkflow(
     setImportUrl('');
     setImportPhase('idle');
     setImportError(null);
+    setImportErrorCode(null);
     setImportJobMeta(null);
     setDuplicate(null);
     setDuplicateDismissed(false);
@@ -382,6 +390,7 @@ export function useCreateOfferWorkflow(
     setImportUrl('');
     setImportPhase('idle');
     setImportError(null);
+    setImportErrorCode(null);
     setImportJobMeta(null);
     setDuplicate(null);
     setDuplicateDismissed(false);
@@ -394,6 +403,7 @@ export function useCreateOfferWorkflow(
     setTextPhase('idle');
     setTextError(null);
     setTextExtractedFields([]);
+    setTextMissingFields([]);
   }, [initialForm, initialMethod, isEditMode]);
 
   const rejectImport = useCallback(async (reason = '') => {
@@ -410,19 +420,21 @@ export function useCreateOfferWorkflow(
     setTextPhase('parsing');
     setTextError(null);
     setTextExtractedFields([]);
+    setTextMissingFields([]);
 
     // Simulate brief async so the UI can show the parsing state
     await new Promise<void>((resolve) => window.setTimeout(resolve, 600));
 
     try {
       const result = parseOfferText(textInput);
-      if (result.extracted.length === 0) {
-        setTextError('no_fields_extracted');
+      if (result.error) {
+        setTextError(result.error);
         setTextPhase('failed');
         return;
       }
       setForm(result.form);
       setTextExtractedFields(result.extracted);
+      setTextMissingFields(result.missing);
       setTextPhase('extracted');
     } catch {
       setTextError('parse_failed');
@@ -435,6 +447,7 @@ export function useCreateOfferWorkflow(
     setTextPhase('idle');
     setTextError(null);
     setTextExtractedFields([]);
+    setTextMissingFields([]);
     setForm(createEmptyOfferForm());
   }, []);
 
@@ -454,6 +467,7 @@ export function useCreateOfferWorkflow(
     importPhase,
     importMessageIndex,
     importError,
+    importErrorCode,
     importJobMeta,
     duplicate,
     duplicateDismissed,
@@ -487,6 +501,7 @@ export function useCreateOfferWorkflow(
     textPhase,
     textError,
     textExtractedFields,
+    textMissingFields,
     parseText,
     resetTextParse,
   };

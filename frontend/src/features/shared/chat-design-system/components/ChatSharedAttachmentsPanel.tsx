@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Download, FileArchive, FileSpreadsheet, FileText, Image, Presentation, Video, X } from 'lucide-react';
+import { Download, FileArchive, FileSpreadsheet, FileText, Image, Paperclip, Presentation, Video, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ChatAuthenticatedImage from '../../contextual-chat/components/ChatAuthenticatedImage';
 import { downloadChatAttachment } from '../../contextual-chat/api/chatAttachmentApi';
@@ -71,7 +71,17 @@ const ChatSharedAttachmentsPanel: FunctionComponent<Props> = ({ open, items, onC
             className="chat-conversation-panel chat-conversation-panel--attachments"
           >
             <header className="chat-conversation-panel__header">
-              <h3 className="chat-conversation-panel__title">{t('admin.chat.sharedAttachments')}</h3>
+              <div className="chat-conversation-panel__header-copy">
+                <h3 className="chat-conversation-panel__title">{t('admin.chat.sharedAttachments')}</h3>
+                <p className="chat-conversation-panel__subtitle">
+                  {items.length === 0
+                    ? t('admin.chat.noAttachmentsCount', { defaultValue: 'Aucun fichier pour le moment' })
+                    : t('admin.chat.attachmentsCount', {
+                        count: items.length,
+                        defaultValue: '{{count}} fichier(s) partagé(s)',
+                      })}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={onClose}
@@ -84,7 +94,12 @@ const ChatSharedAttachmentsPanel: FunctionComponent<Props> = ({ open, items, onC
 
             <div className="chat-conversation-panel__body">
               {items.length === 0 ? (
-                <p className="chat-conversation-panel__empty">{t('admin.chat.noAttachments')}</p>
+                <div className="chat-conversation-panel__empty">
+                  <span className="chat-conversation-panel__empty-icon" aria-hidden>
+                    <Paperclip className="size-5" strokeWidth={1.75} />
+                  </span>
+                  <p>{t('admin.chat.noAttachments')}</p>
+                </div>
               ) : (
                 <ul className="chat-shared-attachments-list">
                   {items.map((item) => {

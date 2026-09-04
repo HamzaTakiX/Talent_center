@@ -1,9 +1,22 @@
-import { FormEvent, FunctionComponent, useEffect, useId, useState } from 'react';
+import { ChangeEvent, FormEvent, FunctionComponent, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, Loader2, Mail, User } from 'lucide-react';
+import {
+  CheckCircle,
+  GraduationCap,
+  ImageIcon,
+  ImagePlus,
+  Loader2,
+  Mail,
+  Trash2,
+  User,
+  UserPlus,
+} from 'lucide-react';
+import AdminBackButton from '../../ui/AdminBackButton';
 import { adminEncadrantsApi } from '../../api/encadrants';
-import type { AdminEncadrantRow } from '../../api/types';
+import type { AdminEncadrantDetail, AdminEncadrantRow } from '../../api/types';
 import { useAdminToast } from '../../dashboard/context/AdminToastContext';
+import ProfileAvatarUploader from '../../account/components/ProfileAvatarUploader';
+import { getAdminUserInitials, resolveAvatarUrl } from '../../dashboard/utils/adminUserDisplay';
 import {
   AdminFormField,
   AdminFormInput,
@@ -13,7 +26,7 @@ import AdminFormSection from '../../shared/forms/AdminFormSection';
 import AdminFormSwitch from '../../shared/forms/AdminFormSwitch';
 import AdminFormAlert from '../../shared/forms/AdminFormAlert';
 import {
-  adminFormActionsFooterClass,
+  adminFormActionsInlineClass,
   adminFormBtnPrimaryClass,
   adminFormBtnSecondaryClass,
   adminFormGridClass,
@@ -22,7 +35,7 @@ import {
   adminFormSectionsStackClass,
 } from '../../shared/forms/adminFormClasses';
 import { parseAdminApiError } from '../../shared/utils/parseAdminApiError';
-import { ESCA_SSO_EMAIL_SUFFIX } from '../constants/supervisionDomains';
+import AdminCredentialReveal from '../../ui/AdminCredentialReveal';
 import EncadrantAcademicScopeFields, {
   type EncadrantAcademicScopeState,
   type EncadrantScopeFieldErrors,
@@ -38,10 +51,12 @@ export type EncadrantAccountFormMode = 'create' | 'edit';
 
 interface EncadrantAccountFormProps {
   mode: EncadrantAccountFormMode;
-  encadrant?: AdminEncadrantRow | null;
+  encadrant?: AdminEncadrantRow | AdminEncadrantDetail | null;
   onCancel: () => void;
   onSaved: () => void;
   hidePanelHeader?: boolean;
+  /** Bouton retour dans l’en-tête du panneau formulaire. */
+  backLabel?: string;
 }
 
 type IdentityFieldKey = 'fullName' | 'email' | 'maxStudents';
@@ -68,10 +83,12 @@ const EncadrantAccountForm: FunctionComponent<EncadrantAccountFormProps> = ({
   onCancel,
   onSaved,
   hidePanelHeader = false,
+  backLabel,
 }) => {
   const { t } = useTranslation();
   const { success: toastSuccess, error: toastError } = useAdminToast();
   const formId = useId();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors>({});
@@ -82,21 +99,31 @@ const EncadrantAccountForm: FunctionComponent<EncadrantAccountFormProps> = ({
   const [supervisedInternships, setSupervisedInternships] =
     useState<EncadrantSupervisedInternshipState>({ supervisedInternshipTypeIds: [] });
   const [maxStudents, setMaxStudents] = useState('15');
+  const [ssoEnabled, setSsoEnabled] = useState(true);
   const [grantAccess, setGrantAccess] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [sectorsAvailable, setSectorsAvailable] = useState(false);
+  const [createdUserId, setCreatedUserId] = useState<number | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
 
   useEffect(() => {
     setFormError('');
     setFieldErrors({});
+    setCreatedUserId(null);
+    setAvatarFile(null);
+    setRemoveAvatar(false);
     if (mode === 'create') {
       setFullName('');
       setEmail('');
       setAcademicScope(emptyAcademicScope());
       setSupervisedInternships({ supervisedInternshipTypeIds: [] });
       setMaxStudents('15');
+      setSsoEnabled(true);
       setGrantAccess(false);
       setIsActive(true);
+      setAvatarPreview(null);
       return;
     }
     if (encadrant) {
@@ -120,10 +147,32 @@ const EncadrantAccountForm: FunctionComponent<EncadrantAccountFormProps> = ({
         supervisedInternshipTypeIds: (encadrant.supervised_internship_types ?? []).map((item) => item.id),
       });
       setMaxStudents(String(encadrant.max_students || 15));
+      setSsoEnabled(encadrant.sso_enabled);
       setGrantAccess(encadrant.platform_access_granted);
       setIsActive(encadrant.is_encadrant_active);
+      setAvatarPreview(resolveAvatarUrl(encadrant.profile?.avatar));
     }
   }, [mode, encadrant?.id]);
+
+  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setRemoveAvatar(false);
+    const reader = new FileReader();
+    reader.onload = () => setAvatarPreview(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleRemovePhoto = () => {
+    setAvatarFile(null);
+    setRemoveAvatar(true);
+    setAvatarPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const openAvatarPicker = () => fileInputRef.current?.click();
 
   const clearFieldError = (key: keyof FormFieldErrors) => {
     setFieldErrors((prev) => {
@@ -144,8 +193,6 @@ const EncadrantAccountForm: FunctionComponent<EncadrantAccountFormProps> = ({
     }
     if (!trimmedEmail) {
       errors.email = t(`${FORM_PREFIX}.messages.requiredEmail`);
-    } else if (!trimmedEmail.endsWith(ESCA_SSO_EMAIL_SUFFIX)) {
-      errors.email = t(`${FORM_PREFIX}.messages.invalidEmailDomain`);
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       errors.email = t(`${FORM_PREFIX}.messages.invalidEmailFormat`);
     }
@@ -208,20 +255,34 @@ const EncadrantAccountForm: FunctionComponent<EncadrantAccountFormProps> = ({
       supervised_internship_type_ids: supervisedInternships.supervisedInternshipTypeIds,
       max_students: maxVal,
       ...(mode === 'create'
-        ? { grant_access: grantAccess, is_active: isActive }
-        : { platform_access_granted: grantAccess, is_active: isActive }),
+        ? { sso_enabled: ssoEnabled, grant_access: grantAccess, is_active: isActive }
+        : {
+            sso_enabled: ssoEnabled,
+            platform_access_granted: grantAccess,
+            is_active: isActive,
+          }),
     };
 
     setLoading(true);
     try {
       if (mode === 'create') {
-        await adminEncadrantsApi.create(payload);
+        const created = await adminEncadrantsApi.create(payload);
         toastSuccess(t(`${FORM_PREFIX}.messages.createSuccess`));
+        setCreatedUserId(created.id);
       } else if (encadrant) {
+        if (avatarFile || removeAvatar) {
+          const profilePayload = new FormData();
+          if (avatarFile) profilePayload.append('avatar', avatarFile);
+          if (removeAvatar) profilePayload.append('remove_avatar', 'true');
+          const updatedProfile = await adminEncadrantsApi.updateProfile(encadrant.id, profilePayload);
+          setAvatarPreview(resolveAvatarUrl(updatedProfile.profile?.avatar));
+          setAvatarFile(null);
+          setRemoveAvatar(false);
+        }
         await adminEncadrantsApi.update(encadrant.id, payload);
         toastSuccess(t(`${FORM_PREFIX}.messages.updateSuccess`));
+        onSaved();
       }
-      onSaved();
     } catch (err: unknown) {
       const { message, fieldErrors: apiFields } = parseAdminApiError(
         err,
@@ -256,25 +317,102 @@ const EncadrantAccountForm: FunctionComponent<EncadrantAccountFormProps> = ({
     academicYears: fieldErrors.academicYears,
   };
 
+  const credentialUserId = mode === 'edit' ? encadrant?.id ?? null : createdUserId;
+  const showCredentials = credentialUserId != null;
+  const displayName = encadrant?.full_name?.trim() || fullName.trim() || email || '—';
+  const initials = getAdminUserInitials(displayName, email);
+
   return (
-    <form className={adminFormPanelFlexClass} onSubmit={handleSubmit} id={formId} noValidate>
+    <form
+      className={`${adminFormPanelFlexClass} admin-encadrant-form`}
+      onSubmit={handleSubmit}
+      id={formId}
+      noValidate
+    >
       {!hidePanelHeader && (
         <AdminFormPanelHeader
           title={mode === 'edit' ? t(`${FORM_PREFIX}.editTitle`) : t(`${FORM_PREFIX}.title`)}
-          subtitle={
-            mode === 'edit' ? t(`${FORM_PREFIX}.editSubtitle`) : t(`${FORM_PREFIX}.subtitle`)
+          subtitle={mode === 'edit' ? t(`${FORM_PREFIX}.editSubtitle`) : undefined}
+          icon={mode === 'edit' ? GraduationCap : UserPlus}
+          leading={
+            backLabel ? (
+              <AdminBackButton onClick={onCancel} label={backLabel} className="!w-auto" />
+            ) : null
           }
         />
       )}
 
       {formError ? (
-        <div className="px-4 sm:px-6">
+        <div className="px-4 sm:px-6 pt-4">
           <AdminFormAlert variant="error">{formError}</AdminFormAlert>
         </div>
       ) : null}
 
+      {createdUserId != null ? (
+        <div className="px-4 sm:px-6 pt-4">
+          <AdminFormAlert variant="success">
+            {t(`${FORM_PREFIX}.messages.createSuccessWithPassword`)}
+          </AdminFormAlert>
+        </div>
+      ) : null}
+
       <div className={adminFormBodyScrollClass}>
-        <div className={adminFormSectionsStackClass}>
+        <div className={`${adminFormSectionsStackClass} admin-encadrant-form__sections`}>
+          {mode === 'edit' ? (
+            <AdminFormSection
+              sectionKey="photo"
+              className="admin-student-edit-photo-section"
+              title={t('admin.forms.createStudent.sections.photo')}
+              description={t('admin.forms.createStudent.sections.photoHint')}
+            >
+              <div className="admin-student-edit-photo-panel">
+                <div className="admin-student-edit-photo">
+                  <div className="admin-student-edit-photo__visual">
+                    <ProfileAvatarUploader
+                      initials={initials}
+                      avatarPreview={avatarPreview}
+                      fileInputRef={fileInputRef}
+                      onFileChange={handleAvatarChange}
+                      showChangeLink={false}
+                    />
+                  </div>
+                  <div className="admin-student-edit-photo__content">
+                    <div className="admin-student-edit-photo__meta">
+                      <p className="admin-student-edit-photo__name">{displayName}</p>
+                      <p className="admin-student-edit-photo__email">{email}</p>
+                      <p className="admin-student-edit-photo__formats">
+                        <ImageIcon className="h-3.5 w-3.5 shrink-0 opacity-70" strokeWidth={2} aria-hidden />
+                        JPEG, PNG, WebP
+                      </p>
+                    </div>
+                    <div className="admin-student-edit-photo__actions">
+                      <button
+                        type="button"
+                        className="admin-student-edit-photo__change-btn"
+                        onClick={openAvatarPicker}
+                        disabled={loading}
+                      >
+                        <ImagePlus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+                        {t('admin.account.changePhoto')}
+                      </button>
+                      {avatarPreview ? (
+                        <button
+                          type="button"
+                          className="admin-student-edit-photo__remove-btn"
+                          onClick={handleRemovePhoto}
+                          disabled={loading}
+                        >
+                          <Trash2 className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+                          {t('admin.forms.createStudent.actions.removePhoto')}
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </AdminFormSection>
+          ) : null}
+
           <AdminFormSection
             sectionKey="identity"
             title={t(`${FORM_PREFIX}.sections.identity`)}
@@ -299,6 +437,7 @@ const EncadrantAccountForm: FunctionComponent<EncadrantAccountFormProps> = ({
                   }}
                   placeholder={t(`${FORM_PREFIX}.placeholders.fullName`)}
                   required
+                  disabled={createdUserId != null}
                   aria-invalid={Boolean(fieldErrors.fullName)}
                 />
               </AdminFormField>
@@ -323,124 +462,170 @@ const EncadrantAccountForm: FunctionComponent<EncadrantAccountFormProps> = ({
                   }}
                   placeholder={t(`${FORM_PREFIX}.placeholders.email`)}
                   required
-                  disabled={mode === 'edit'}
+                  disabled={mode === 'edit' || createdUserId != null}
                   aria-invalid={Boolean(fieldErrors.email)}
                 />
               </AdminFormField>
             </div>
           </AdminFormSection>
 
-          <AdminFormSection
-            sectionKey="academic"
-            title={t(`${FORM_PREFIX}.sections.academicScope`)}
-            description={t(`${FORM_PREFIX}.sections.academicScopeHint`)}
-          >
-            <EncadrantAcademicScopeFields
-              value={academicScope}
-              onChange={(next) => {
-                setAcademicScope(next);
-                setFieldErrors((prev) => {
-                  const cleared = { ...prev };
-                  delete cleared.filiereIds;
-                  delete cleared.academicYears;
-                  delete cleared.levelIds;
-                  delete cleared.sectorIds;
-                  delete cleared.specializationDomainIds;
-                  return cleared;
-                });
-              }}
-              errors={scopeErrors}
-              onSectorsAvailabilityChange={setSectorsAvailable}
-            />
-          </AdminFormSection>
-
-          <AdminFormSection
-            sectionKey="overview"
-            title={t(`${FORM_PREFIX}.sections.supervision`)}
-            description={t(`${FORM_PREFIX}.sections.supervisionHint`)}
-          >
-            <div className={adminFormGridClass}>
-              <EncadrantSupervisedInternshipFields
-                value={supervisedInternships}
-                onChange={(next) => {
-                  setSupervisedInternships(next);
-                  clearFieldError('supervisedInternshipTypeIds');
-                }}
-                error={fieldErrors.supervisedInternshipTypeIds}
-              />
-              <AdminFormField
-                fieldKey="maxStudents"
-                label={t(`${FORM_PREFIX}.fields.maxStudents`)}
-                htmlFor="enc-max-students"
-                required
-                error={fieldErrors.maxStudents}
+          {createdUserId == null && (
+            <>
+              <AdminFormSection
+                sectionKey="academic"
+                title={t(`${FORM_PREFIX}.sections.academicScope`)}
+                description={t(`${FORM_PREFIX}.sections.academicScopeHint`)}
               >
-                <AdminFormInput
-                  fieldKey="maxStudents"
-                  id="enc-max-students"
-                  type="number"
-                  min={1}
-                  value={maxStudents}
-                  onChange={(e) => {
-                    setMaxStudents(e.target.value);
-                    clearFieldError('maxStudents');
+                <EncadrantAcademicScopeFields
+                  value={academicScope}
+                  onChange={(next) => {
+                    setAcademicScope(next);
+                    setFieldErrors((prev) => {
+                      const cleared = { ...prev };
+                      delete cleared.filiereIds;
+                      delete cleared.academicYears;
+                      delete cleared.levelIds;
+                      delete cleared.sectorIds;
+                      delete cleared.specializationDomainIds;
+                      return cleared;
+                    });
                   }}
-                  required
-                  aria-invalid={Boolean(fieldErrors.maxStudents)}
+                  errors={scopeErrors}
+                  onSectorsAvailabilityChange={setSectorsAvailable}
                 />
-              </AdminFormField>
-            </div>
-          </AdminFormSection>
+              </AdminFormSection>
 
-          <AdminFormSection
-            sectionKey="access"
-            title={t(`${FORM_PREFIX}.sections.access`)}
-            description={t(`${FORM_PREFIX}.sections.accessHint`)}
-          >
-            <div className="flex flex-col gap-4">
-              <AdminFormSwitch
-                id="enc-grant-access"
-                label={
-                  <span>
-                    {t(`${FORM_PREFIX}.fields.grantAccess`)}
-                    <span className="mt-0.5 block text-xs font-normal text-[var(--admin-text-secondary)]">
-                      {t(`${FORM_PREFIX}.fields.grantAccessHint`)}
-                    </span>
-                  </span>
-                }
-                checked={grantAccess}
-                onChange={setGrantAccess}
-              />
-              <AdminFormSwitch
-                id="enc-is-active"
-                label={
-                  <span>
-                    {t(`${FORM_PREFIX}.fields.isActive`)}
-                    <span className="mt-0.5 block text-xs font-normal text-[var(--admin-text-secondary)]">
-                      {t(`${FORM_PREFIX}.fields.isActiveHint`)}
-                    </span>
-                  </span>
-                }
-                checked={isActive}
-                onChange={setIsActive}
-              />
-            </div>
-          </AdminFormSection>
+              <AdminFormSection
+                sectionKey="overview"
+                title={t(`${FORM_PREFIX}.sections.supervision`)}
+                description={t(`${FORM_PREFIX}.sections.supervisionHint`)}
+              >
+                <div className="flex flex-col gap-6">
+                  <EncadrantSupervisedInternshipFields
+                    value={supervisedInternships}
+                    levelIds={academicScope.levelIds}
+                    onChange={(next) => {
+                      setSupervisedInternships(next);
+                      clearFieldError('supervisedInternshipTypeIds');
+                    }}
+                    error={fieldErrors.supervisedInternshipTypeIds}
+                  />
+                  <div className="max-w-md">
+                    <AdminFormField
+                      fieldKey="maxStudents"
+                      label={t(`${FORM_PREFIX}.fields.maxStudents`)}
+                      htmlFor="enc-max-students"
+                      required
+                      error={fieldErrors.maxStudents}
+                      className="min-w-0"
+                    >
+                      <AdminFormInput
+                        fieldKey="maxStudents"
+                        id="enc-max-students"
+                        type="number"
+                        min={1}
+                        value={maxStudents}
+                        onChange={(e) => {
+                          setMaxStudents(e.target.value);
+                          clearFieldError('maxStudents');
+                        }}
+                        required
+                        aria-invalid={Boolean(fieldErrors.maxStudents)}
+                      />
+                    </AdminFormField>
+                  </div>
+                </div>
+              </AdminFormSection>
+
+              <AdminFormSection
+                sectionKey="access"
+                title={t(`${FORM_PREFIX}.sections.access`)}
+                description={t(`${FORM_PREFIX}.sections.accessHint`)}
+              >
+                <div className="admin-encadrant-form__switches flex flex-col gap-3">
+                  <AdminFormSwitch
+                    id="enc-sso-enabled"
+                    label={
+                      <span>
+                        {t(`${FORM_PREFIX}.fields.ssoEnabled`)}
+                        <span className="mt-0.5 block text-xs font-normal text-[var(--admin-text-secondary)]">
+                          {t(`${FORM_PREFIX}.fields.ssoEnabledHint`)}
+                        </span>
+                      </span>
+                    }
+                    checked={ssoEnabled}
+                    onChange={setSsoEnabled}
+                  />
+                  <AdminFormSwitch
+                    id="enc-grant-access"
+                    label={
+                      <span>
+                        {t(`${FORM_PREFIX}.fields.grantAccess`)}
+                        <span className="mt-0.5 block text-xs font-normal text-[var(--admin-text-secondary)]">
+                          {t(`${FORM_PREFIX}.fields.grantAccessHint`)}
+                        </span>
+                      </span>
+                    }
+                    checked={grantAccess}
+                    onChange={setGrantAccess}
+                  />
+                  <AdminFormSwitch
+                    id="enc-is-active"
+                    label={
+                      <span>
+                        {t(`${FORM_PREFIX}.fields.isActive`)}
+                        <span className="mt-0.5 block text-xs font-normal text-[var(--admin-text-secondary)]">
+                          {t(`${FORM_PREFIX}.fields.isActiveHint`)}
+                        </span>
+                      </span>
+                    }
+                    checked={isActive}
+                    onChange={setIsActive}
+                  />
+                </div>
+              </AdminFormSection>
+            </>
+          )}
+
+          {showCredentials && (
+            <AdminFormSection
+              sectionKey="credentials"
+              title={t(`${FORM_PREFIX}.sections.credentials`)}
+              description={t(`${FORM_PREFIX}.sections.credentialsHint`)}
+            >
+              <AdminCredentialReveal kind="encadrant" userId={credentialUserId} enabled />
+            </AdminFormSection>
+          )}
         </div>
       </div>
 
-      <div className={adminFormActionsFooterClass}>
-        <button type="button" onClick={onCancel} className={adminFormBtnSecondaryClass} disabled={loading}>
-          {t(`${FORM_PREFIX}.actions.cancel`)}
-        </button>
-        <button type="submit" className={adminFormBtnPrimaryClass} disabled={loading}>
-          {loading ? (
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin" strokeWidth={1.75} aria-hidden />
-          ) : (
+      <div
+        className={
+          createdUserId != null
+            ? 'admin-form-actions admin-encadrant-form__actions flex min-w-0 shrink-0 justify-center px-4 py-6 sm:px-8'
+            : `${adminFormActionsInlineClass} admin-encadrant-form__actions`
+        }
+      >
+        {createdUserId != null ? (
+          <button type="button" onClick={onSaved} className={adminFormBtnPrimaryClass}>
             <CheckCircle className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-          )}
-          {mode === 'edit' ? t(`${FORM_PREFIX}.actions.save`) : t(`${FORM_PREFIX}.actions.submit`)}
-        </button>
+            {t(`${FORM_PREFIX}.actions.done`)}
+          </button>
+        ) : (
+          <>
+            <button type="button" onClick={onCancel} className={adminFormBtnSecondaryClass} disabled={loading}>
+              {t(`${FORM_PREFIX}.actions.cancel`)}
+            </button>
+            <button type="submit" className={adminFormBtnPrimaryClass} disabled={loading}>
+              {loading ? (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin" strokeWidth={1.75} aria-hidden />
+              ) : (
+                <CheckCircle className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+              )}
+              {mode === 'edit' ? t(`${FORM_PREFIX}.actions.save`) : t(`${FORM_PREFIX}.actions.submit`)}
+            </button>
+          </>
+        )}
       </div>
     </form>
   );

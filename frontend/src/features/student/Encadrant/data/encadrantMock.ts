@@ -14,6 +14,8 @@ import {
 import { STUDENT_REPORTS_PATH } from '../../reports/constants/routes';
 import type {
   EncadrantMeetingItem,
+  EncadrantMilestone,
+  EncadrantPriorityAlert,
   EncadrantQuickAction,
   EncadrantReportChapter,
   EncadrantStatIconKey,
@@ -28,6 +30,7 @@ export const encadrantSupervisor: EncadrantSupervisor = {
   department: 'Computer Science',
   specialty: 'AI & Machine Learning',
   email: 'ahmed.bennani@university.ma',
+  avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
 };
 
 export const encadrantStatIconMap: Record<EncadrantStatIconKey, typeof CheckSquare> = {
@@ -44,6 +47,16 @@ export const encadrantStatColorMap: Record<EncadrantStatIconKey, string> = {
   deadline: 'bg-[#ef4444]',
 };
 
+export const encadrantStatAccentMap: Record<
+  EncadrantStatIconKey,
+  { accent: string; accentBg: string }
+> = {
+  tasks: { accent: '#f97316', accentBg: 'rgba(249, 115, 22, 0.16)' },
+  meetings: { accent: '#3b82f6', accentBg: 'rgba(59, 130, 246, 0.16)' },
+  report: { accent: '#22c55e', accentBg: 'rgba(34, 197, 94, 0.16)' },
+  deadline: { accent: '#ef4444', accentBg: 'rgba(239, 68, 68, 0.16)' },
+};
+
 export const encadrantStats: EncadrantStatItem[] = [
   { label: 'Tasks Pending', value: '3', iconKey: 'tasks' },
   { label: 'Upcoming Meetings', value: '2', iconKey: 'meetings' },
@@ -52,22 +65,48 @@ export const encadrantStats: EncadrantStatItem[] = [
 ];
 
 export const encadrantReminder = {
-  title: 'Rappel: Réunion hebdomadaire demain',
-  message:
-    "Votre réunion de suivi hebdomadaire avec Dr. Ahmed Bennani est prévue demain à 14:00. N'oubliez pas de préparer votre rapport d'avancement.",
-  actionLabel: 'Préparer',
+  meetingTime: '14:00',
 };
+
+export const encadrantPriorityAlerts: EncadrantPriorityAlert[] = [
+  {
+    id: 'alert-1',
+    titleKey: 'student.encadrant.alerts.deadlineTomorrow',
+    messageKey: 'student.encadrant.alerts.deadlineTomorrowMsg',
+    severity: 'danger',
+  },
+  {
+    id: 'alert-2',
+    titleKey: 'student.encadrant.alerts.missingDoc',
+    messageKey: 'student.encadrant.alerts.missingDocMsg',
+    severity: 'warning',
+  },
+  {
+    id: 'alert-3',
+    titleKey: 'student.encadrant.alerts.feedback',
+    messageKey: 'student.encadrant.alerts.feedbackMsg',
+    severity: 'success',
+  },
+  {
+    id: 'alert-4',
+    titleKey: 'student.encadrant.alerts.revision',
+    messageKey: 'student.encadrant.alerts.revisionMsg',
+    severity: 'info',
+  },
+];
 
 export const encadrantMeetings: EncadrantMeetingItem[] = [
   {
     id: 'meet-1',
     title: 'Weekly Progress Review',
     dateTime: '18/04/2026 à 14:00',
+    startAt: '2026-04-18T14:00:00',
   },
   {
     id: 'meet-2',
     title: 'Report Discussion',
     dateTime: '22/04/2026 à 10:00',
+    startAt: '2026-04-22T10:00:00',
   },
 ];
 
@@ -105,6 +144,39 @@ export const encadrantReportChapters: EncadrantReportChapter[] = [
 ];
 
 export const encadrantGlobalReportProgress = 65;
+
+export const encadrantMilestones: EncadrantMilestone[] = [
+  {
+    id: 'm1',
+    labelKey: 'student.encadrant.milestones.validated',
+    status: 'completed',
+    dateKey: 'student.encadrant.milestones.dates.validated',
+  },
+  {
+    id: 'm2',
+    labelKey: 'student.encadrant.milestones.supervisor',
+    status: 'completed',
+    dateKey: 'student.encadrant.milestones.dates.supervisor',
+  },
+  {
+    id: 'm3',
+    labelKey: 'student.encadrant.milestones.midterm',
+    status: 'current',
+    dateKey: 'student.encadrant.milestones.dates.midterm',
+  },
+  {
+    id: 'm4',
+    labelKey: 'student.encadrant.milestones.final',
+    status: 'upcoming',
+    dateKey: 'student.encadrant.milestones.dates.final',
+  },
+  {
+    id: 'm5',
+    labelKey: 'student.encadrant.milestones.defense',
+    status: 'upcoming',
+    dateKey: 'student.encadrant.milestones.dates.defense',
+  },
+];
 
 export const encadrantQuickActions: EncadrantQuickAction[] = [
   {

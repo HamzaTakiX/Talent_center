@@ -5,6 +5,7 @@ from __future__ import annotations
 from django.db.models import Prefetch, Q
 from django.utils import timezone
 
+from apps.accounts_et_roles.search import profile_name_search_q
 from apps.encadrant.models import Report, ReportComment, ReportWorkflowEvent
 from apps.admin_management.services.report_scopes import filter_reports_by_admin_scope
 
@@ -96,6 +97,16 @@ def apply_report_filters(qs, params: dict):
             | Q(company_name__icontains=search)
             | Q(student_profile__user__email__icontains=search)
             | Q(encadrant_profile__supervisor_profile__user__email__icontains=search)
+            | profile_name_search_q(
+                search,
+                first_name_field='student_profile__user__profile__first_name',
+                last_name_field='student_profile__user__profile__last_name',
+            )
+            | profile_name_search_q(
+                search,
+                first_name_field='encadrant_profile__supervisor_profile__user__profile__first_name',
+                last_name_field='encadrant_profile__supervisor_profile__user__profile__last_name',
+            )
         )
 
     ordering = params.get('ordering', '-priority_score')

@@ -1,4 +1,4 @@
-"""Index student knowledge into ChromaDB for RAG retrieval."""
+"""Index student knowledge into PostgreSQL for RAG retrieval."""
 
 from __future__ import annotations
 

@@ -4,7 +4,7 @@ import { TasksInProgressStudentsSection, TasksInProgressSummaryGrid } from '../c
 import { TASKS_IN_PROGRESS_PAGE_ROOT } from '../constants/tasksInProgressLayout';
 
 const TasksInProgressPage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Tasks In Progress" headerSubtitle="Encadrant Portal">
+  <EncadrantLayout>
     <div id="encadrant-tasks-in-progress-root" className={TASKS_IN_PROGRESS_PAGE_ROOT}>
       <TasksInProgressSummaryGrid />
       <TasksInProgressStudentsSection />

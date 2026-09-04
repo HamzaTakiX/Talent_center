@@ -72,6 +72,9 @@ export interface User {
   student_profile?: StudentProfile;
   admin_level?: string;
   is_super_admin?: boolean;
+  /** Backend RBAC codes from `GET /api/auth/me` (e.g. `internship.manage`). */
+  role_codes?: string[];
+  permission_codes?: string[];
 }
 
 export interface LoginSession {

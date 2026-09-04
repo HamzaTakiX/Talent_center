@@ -1,3 +1,5 @@
+import type { ChatAttachmentView } from '../../../shared/contextual-chat/utils/chatAttachmentUtils';
+
 export type ChatContextKind =
   | 'workflow_thread'
   | 'channel'
@@ -13,9 +15,17 @@ export interface AdminChatMessage {
   text: string;
   time: string;
   separatorBefore?: string;
-  messageType?: 'TEXT' | 'FILE' | 'IMAGE' | 'SYSTEM' | 'EVENT';
+  messageType?: 'TEXT' | 'FILE' | 'IMAGE' | 'VIDEO' | 'SYSTEM' | 'EVENT' | 'MEETING_REQUEST';
   tags?: string[];
   senderName?: string;
+  attachmentName?: string;
+  attachments?: ChatAttachmentView[];
+  meetingRequest?: {
+    requestId: string;
+    mode: 'video' | 'voice';
+    status: 'pending' | 'accepted' | 'declined';
+    title?: string;
+  };
 }
 
 export interface AdminChatParticipant {

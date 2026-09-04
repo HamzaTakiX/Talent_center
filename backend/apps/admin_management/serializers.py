@@ -468,6 +468,7 @@ class AdminEncadrantListSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
     first_name = serializers.CharField(source='profile.first_name', read_only=True, default='')
     last_name = serializers.CharField(source='profile.last_name', read_only=True, default='')
+    avatar_url = serializers.SerializerMethodField()
     max_students = serializers.IntegerField(
         source='supervisor_profile.encadrant_profile.max_concurrent_students',
         read_only=True,
@@ -492,6 +493,7 @@ class AdminEncadrantListSerializer(serializers.ModelSerializer):
             'sso_enabled', 'first_login_completed', 'is_active',
             'max_students', 'current_students', 'specialization_domains',
             'supervised_internship_types', 'scopes', 'is_encadrant_active', 'last_login_at', 'created_at',
+            'avatar_url',
         ]
 
     def get_current_students(self, obj) -> int:
@@ -548,6 +550,16 @@ class AdminEncadrantListSerializer(serializers.ModelSerializer):
                 'scope_gaps': ['PROGRAMS', 'LEVELS', 'ACADEMIC_YEARS', 'SUPERVISED_INTERNSHIP_TYPES'],
             }
 
+    def get_avatar_url(self, obj) -> str | None:
+        profile = getattr(obj, 'profile', None)
+        if not profile or not getattr(profile, 'avatar', None):
+            return None
+        url = profile.avatar.url
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(url)
+        return url
+
 
 class AdminEncadrantDetailSerializer(AdminEncadrantListSerializer):
     profile = UserProfileSerializer(read_only=True)
@@ -600,6 +612,7 @@ class CreateEncadrantSerializer(serializers.Serializer):
         default=list,
     )
     max_students = serializers.IntegerField(required=False, default=15, min_value=0)
+    sso_enabled = serializers.BooleanField(required=False, default=True)
     grant_access = serializers.BooleanField(required=False, default=False)
     is_active = serializers.BooleanField(required=False, default=True)
 
@@ -636,6 +649,7 @@ class UpdateEncadrantSerializer(serializers.Serializer):
     )
     max_students = serializers.IntegerField(required=False, min_value=0)
     platform_access_granted = serializers.BooleanField(required=False)
+    sso_enabled = serializers.BooleanField(required=False)
     is_active = serializers.BooleanField(required=False)
     account_status = serializers.ChoiceField(choices=User.AccountStatus.choices, required=False)
     reason = serializers.CharField(required=False, allow_blank=True, max_length=500)
@@ -657,6 +671,11 @@ class UpdateEncadrantSerializer(serializers.Serializer):
         except ValueError as exc:
             raise serializers.ValidationError(str(exc)) from exc
         return value
+
+
+class UpdateEncadrantProfileSerializer(serializers.Serializer):
+    avatar = serializers.ImageField(required=False, allow_null=True)
+    remove_avatar = serializers.BooleanField(required=False, default=False)
 
 
 class SmartAssignmentRunSerializer(serializers.Serializer):

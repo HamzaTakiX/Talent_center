@@ -1,17 +1,18 @@
+import { ENC_BADGE_SUCCESS, ENC_BADGE_WARNING } from '../../constants/encadrantTokens';
 import type { StudentReportStatus } from '../types';
 
-export const STUDENT_DETAIL_PROGRESS_FILL = 'bg-[#2b7fff]';
+export const STUDENT_DETAIL_PROGRESS_FILL = 'bg-[var(--admin-brand)]';
 
 export const STUDENT_REPORT_STATUS_STYLES: Record<
   StudentReportStatus,
-  { badgeBg: string; badgeText: string }
+  { badge: string; labelKey: string }
 > = {
   validated: {
-    badgeBg: 'bg-[#dcfce7]',
-    badgeText: 'text-[#15803d]',
+    badge: ENC_BADGE_SUCCESS,
+    labelKey: 'encadrant.common.validated',
   },
   pending_review: {
-    badgeBg: 'bg-[#fef3c7]',
-    badgeText: 'text-[#b45309]',
+    badge: ENC_BADGE_WARNING,
+    labelKey: 'encadrant.common.pendingReview',
   },
 };

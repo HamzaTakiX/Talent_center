@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'apps.cv_intelligence.apps.CvIntelligenceConfig',
     'apps.career_coach.apps.CareerCoachConfig',
     'apps.profile_intelligence.apps.ProfileIntelligenceConfig',
+    'apps.report_reviewer.apps.ReportReviewerConfig',
 
     # Tier 1
     'apps.settings_app.apps.SettingsAppConfig',
@@ -88,6 +89,7 @@ INSTALLED_APPS = [
     'apps.announcements.apps.AnnouncementsConfig',
     'apps.encadrant.apps.EncadrantConfig',
     'apps.documents.apps.DocumentsConfig',
+    'apps.agenda.apps.AgendaConfig',
 
     # Tier 4
     'apps.chat.apps.ChatConfig',
@@ -222,16 +224,18 @@ PUBLIC_BACKEND_URL = os.getenv('PUBLIC_BACKEND_URL', '').strip().rstrip('/')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ---------- CORS (django-cors-headers) ----------
-FRONTEND_ORIGIN = os.getenv('FRONTEND_ORIGIN')
-if FRONTEND_ORIGIN:
-    FRONTEND_ORIGIN = FRONTEND_ORIGIN.strip().rstrip('/')
+# FRONTEND_ORIGIN may be a single origin or a comma-separated list (local transition).
+# The first entry is the primary app origin (emails, absolute links).
+_raw_frontend_origin = os.getenv('FRONTEND_ORIGIN', '')
+_frontend_origins = [
+    o.strip().rstrip('/')
+    for o in _raw_frontend_origin.split(',')
+    if o.strip()
+]
+FRONTEND_ORIGIN = _frontend_origins[0] if _frontend_origins else ''
 
-CORS_ALLOWED_ORIGINS = []
-CSRF_TRUSTED_ORIGINS = []
-
-if FRONTEND_ORIGIN:
-    CORS_ALLOWED_ORIGINS.append(FRONTEND_ORIGIN)
-    CSRF_TRUSTED_ORIGINS.append(FRONTEND_ORIGIN)
+CORS_ALLOWED_ORIGINS = list(_frontend_origins)
+CSRF_TRUSTED_ORIGINS = list(_frontend_origins)
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -308,7 +312,7 @@ INTERVIEW_STALE_SESSION_SECONDS = env_int('INTERVIEW_STALE_SESSION_SECONDS', 360
 CV_INTELLIGENCE_LIGHT_AI = env_bool('CV_INTELLIGENCE_LIGHT_AI', True)
 CV_INTELLIGENCE_OFFER_AI_ENABLED = env_bool('CV_INTELLIGENCE_OFFER_AI_ENABLED', False)
 
-# ---------- AI Career Coach (Ollama + ChromaDB RAG — budget 0 DH) ----------
+# ---------- AI Career Coach (Ollama + PostgreSQL RAG — budget 0 DH) ----------
 CAREER_COACH_PROVIDER = env('CAREER_COACH_PROVIDER', 'ollama')
 CAREER_COACH_EMBEDDING_MODEL = env('CAREER_COACH_EMBEDDING_MODEL', 'bge-m3')
 CAREER_COACH_RAG_ENABLED = env_bool('CAREER_COACH_RAG_ENABLED', True)
@@ -316,7 +320,6 @@ CAREER_COACH_RAG_TOP_K = env_int('CAREER_COACH_RAG_TOP_K', 4)
 CAREER_COACH_MAX_HISTORY = env_int('CAREER_COACH_MAX_HISTORY', 12)
 CAREER_COACH_NUM_PREDICT = env_int('CAREER_COACH_NUM_PREDICT', 220)
 CAREER_COACH_CHAT_TIMEOUT = env_int('CAREER_COACH_CHAT_TIMEOUT', 45)
-CAREER_COACH_CHROMA_DIR = env('CAREER_COACH_CHROMA_DIR', '')
 
 # ---------- AI Matching (PyMuPDF + GPT-4o Mini + Embeddings) ----------
 OPENAI_API_KEY = env('OPENAI_API_KEY', '')
@@ -333,11 +336,17 @@ AUTH_FAILED_WINDOW_SECONDS = env_int('AUTH_FAILED_WINDOW_SECONDS', 900)
 AUTH_LOCKOUT_SECONDS = env_int('AUTH_LOCKOUT_SECONDS', 900 if not DEBUG else 0)
 PASSWORD_RESET_TOKEN_TTL_SECONDS = env_int('PASSWORD_RESET_TOKEN_TTL_SECONDS', 1800)
 FRONTEND_RESET_PASSWORD_URL = env('FRONTEND_RESET_PASSWORD_URL', 'http://localhost:5173/reset-password')
-FRONTEND_BASE_URL = env('FRONTEND_BASE_URL', env('FRONTEND_ORIGIN', 'http://localhost:5173'))
+# Prefer explicit FRONTEND_BASE_URL; else primary FRONTEND_ORIGIN (first of CSV list).
+FRONTEND_BASE_URL = (
+    env('FRONTEND_BASE_URL', '').strip().rstrip('/')
+    or FRONTEND_ORIGIN
+    or 'http://localhost:5173'
+)
 
 # ---------- Notifications ----------
 NOTIFICATION_EMAIL_PROVIDER = env('NOTIFICATION_EMAIL_PROVIDER', 'mock')
 SENDGRID_API_KEY = env('SENDGRID_API_KEY', '')
+BREVO_API_KEY = env('BREVO_API_KEY', '')
 SENDGRID_FROM_EMAIL = env('SENDGRID_FROM_EMAIL', DEFAULT_FROM_EMAIL)
 SENDGRID_FROM_NAME = env('SENDGRID_FROM_NAME', 'Digital Talent Center')
 NOTIFICATIONS_EMAIL_ENABLED = env_bool('NOTIFICATIONS_EMAIL_ENABLED', True)
@@ -396,6 +405,11 @@ else:
 
 
 # ---------- Auth providers ----------
+# ---------- Jitsi (embedded meeting rooms — demo/public instance) ----------
+# Talent Center authorizes who may join; Jitsi provides real-time media.
+# Public meet.jit.si does not offer enterprise room privacy — see meeting room docs.
+JITSI_DOMAIN = env('JITSI_DOMAIN', 'meet.jit.si')
+
 # Local is always enabled. Remote providers default OFF and ship as stubs
 # in apps.authentication.providers.*. To activate a provider you only need
 # to (1) implement its authenticate/begin/callback and (2) flip its ENABLED
@@ -426,4 +440,18 @@ AUTH_PROVIDERS = {
         'METADATA_URL': env('SSO_METADATA_URL', ''),
         'JIT_PROVISION': env_bool('SSO_JIT', False),
     },
+}
+
+# ---------- Microsoft Graph (Enterprise App assignment; not Auth0 login) ----------
+# App registration "Talent Center Backend Graph" uses client credentials.
+# ENTERPRISE_APP_OBJECT_ID = Entra Enterprise Application / service principal Object ID
+# (not the App Registration client ID used by Auth0).
+# APP_ROLE_ID optional: leave empty to resolve from Graph appRoles, or Default Access.
+MICROSOFT_GRAPH = {
+    'ENABLED': env_bool('MICROSOFT_GRAPH_ENABLED', False),
+    'TENANT_ID': env('MICROSOFT_GRAPH_TENANT_ID', ''),
+    'CLIENT_ID': env('MICROSOFT_GRAPH_CLIENT_ID', ''),
+    'CLIENT_SECRET': env('MICROSOFT_GRAPH_CLIENT_SECRET', ''),
+    'ENTERPRISE_APP_OBJECT_ID': env('MICROSOFT_TALENT_CENTER_ENTERPRISE_APP_OBJECT_ID', ''),
+    'APP_ROLE_ID': env('MICROSOFT_TALENT_CENTER_APP_ROLE_ID', ''),
 }

@@ -5,11 +5,9 @@ import {
   fetchConversation,
   fetchConversations,
   fetchMessages,
-  fetchModuleChatMetrics,
   markConversationRead,
   sendChatMessage,
 } from '../../../../shared/contextual-chat/api/chatApi';
-import type { ChatMetricsDto } from '../../../../shared/contextual-chat/api/chatApi';
 import { useChatUnread } from '../../../../shared/contextual-chat/context/ChatUnreadContext';
 import { useChatWebSocket } from '../../../../shared/contextual-chat/hooks/useChatWebSocket';
 import type { ConversationDto, MessageDto } from '../../../../shared/contextual-chat/types';
@@ -33,6 +31,7 @@ import {
   mergeServerMessages,
   withClientNonce,
 } from '../../../offres-stage/chat/utils/internshipChatMessageUtils';
+import type { ChatModule } from '../../../../shared/contextual-chat/types';
 import type {
   PlatformDeskConversation,
   PlatformDeskEntityType,
@@ -51,6 +50,15 @@ import {
 import type { SupportMobileView } from '../../admin-support-inbox/types/supportInboxTypes';
 
 type ModuleFilters = Pick<PlatformDeskInboxFilters, 'primary' | 'unread' | 'urgent'>;
+
+function resolveChatModule(
+  entityType: PlatformDeskEntityType,
+  chatModule?: ChatModule,
+): ChatModule {
+  if (chatModule) return chatModule;
+  if (entityType === 'supervision_dm') return 'encadrant';
+  return 'platform';
+}
 
 function applyPrimaryFilter(conv: PlatformDeskConversation, primary: PrimaryDeskFilter): boolean {
   if (primary === 'archived') return conv.archived;
@@ -77,23 +85,35 @@ function computeStats(conversations: PlatformDeskConversation[]): PlatformDeskIn
     unread: active.reduce((sum, c) => sum + c.unreadCount, 0),
     pending: active.filter((c) => {
       const last = c.messages[c.messages.length - 1];
-      return !c.resolved && last?.direction === 'in';
+      if (!last) return false;
+      return !c.resolved && last.direction === 'in';
     }).length,
     resolved: active.filter((c) => c.resolved).length,
   };
 }
 
+function isStudentDeskDm(
+  entityType: PlatformDeskEntityType,
+  viewerRole: PlatformDeskViewerRole,
+): boolean {
+  return (
+    viewerRole === 'student' &&
+    (entityType === 'student_admin_dm' || entityType === 'student_desk')
+  );
+}
+
 export function usePlatformDeskSupportChat(
   entityType: PlatformDeskEntityType,
   viewerRole: PlatformDeskViewerRole = 'admin',
+  options?: { chatModule?: ChatModule },
 ) {
+  const chatModule = resolveChatModule(entityType, options?.chatModule);
   const { t } = useTranslation();
   const { user } = useAuth();
   const { refresh: refreshChatUnread } = useChatUnread();
   const currentUserId = user?.id ?? null;
   const [rawConversations, setRawConversations] = useState<ConversationDto[]>([]);
   const [messagesByConv, setMessagesByConv] = useState<Record<number, MessageDto[]>>({});
-  const [inboxMetrics, setInboxMetrics] = useState<ChatMetricsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [conversationLoading, setConversationLoading] = useState(false);
   const [messagesLoadingId, setMessagesLoadingId] = useState<number | null>(null);
@@ -153,22 +173,23 @@ export function usePlatformDeskSupportChat(
       setLoadError(null);
       try {
         const { unread, urgent } = moduleFiltersRef.current;
-        const [items, metrics] = await Promise.all([
-          fetchConversations('platform', {
-            entityType: normalizePlatformEntityType(entityType),
-            unreadOnly: unread ? true : undefined,
-            includeArchived: true,
-            urgency: urgent ? 'HIGH' : undefined,
-          }),
-          fetchModuleChatMetrics('platform'),
-        ]);
-        setRawConversations((prev) =>
-          mergeFetchedConversations(items, prev, {
+        const items = await fetchConversations(chatModule, {
+          entityType: normalizePlatformEntityType(entityType),
+          unreadOnly: unread ? true : undefined,
+          includeArchived: true,
+          urgency: urgent ? 'HIGH' : undefined,
+        });
+        setRawConversations((prev) => {
+          const merged = mergeFetchedConversations(items, prev, {
             activeListOnly: false,
             archiveOverrides: archiveOverridesRef.current,
-          }),
-        );
-        setInboxMetrics(metrics);
+          });
+          const activeId = Number(selectedIdRef.current);
+          if (!Number.isFinite(activeId) || activeId <= 0) return merged;
+          if (merged.some((conversation) => conversation.id === activeId)) return merged;
+          const pinned = prev.find((conversation) => conversation.id === activeId);
+          return pinned ? [pinned, ...merged] : merged;
+        });
         seenWsMessageIdsRef.current.clear();
       } catch (err) {
         if (!options?.silent) {
@@ -187,7 +208,7 @@ export function usePlatformDeskSupportChat(
         }
       }
     },
-    [entityType, t, viewerRole],
+    [chatModule, entityType, t],
   );
 
   useEffect(() => {
@@ -319,7 +340,7 @@ export function usePlatformDeskSupportChat(
         dto,
         entityType,
         viewerRole,
-        mapPlatformDeskMessages(msgs, studentUserId, viewerRole),
+        mapPlatformDeskMessages(msgs, studentUserId, viewerRole, entityType),
       );
       const override = archiveOverridesRef.current.get(Number(dto.id));
       if (override === undefined) return conv;
@@ -363,13 +384,25 @@ export function usePlatformDeskSupportChat(
   );
 
   const stats = useMemo(() => {
+    const active = conversations.filter((c) => !c.archived);
     const client = computeStats(conversations);
+    const studentDesk = isStudentDeskDm(entityType, viewerRole);
+
+    if (studentDesk) {
+      return {
+        unread: client.unread,
+        pending: client.pending,
+        resolved: client.resolved,
+        availableAdmins: active.length,
+      };
+    }
+
     return {
-      unread: inboxMetrics?.unread_messages ?? client.unread,
-      pending: inboxMetrics?.waiting_admin ?? client.pending,
+      unread: client.unread,
+      pending: client.pending,
       resolved: client.resolved,
     };
-  }, [conversations, inboxMetrics]);
+  }, [conversations, entityType, viewerRole]);
 
   const filters = useMemo(
     (): PlatformDeskInboxFilters => ({
@@ -405,10 +438,23 @@ export function usePlatformDeskSupportChat(
     });
   }, [conversations, entityType, matchesStudentAcademic, moduleFilters, search, viewerRole]);
 
-  const selected = useMemo(
-    () => (selectedId ? conversations.find((c) => c.id === selectedId) ?? null : null),
-    [conversations, selectedId],
-  );
+  const selected = useMemo(() => {
+    if (!selectedId) return null;
+    const fromList = conversations.find((c) => c.id === selectedId);
+    if (fromList) return fromList;
+
+    const dto = rawConversations.find((c) => String(c.id) === selectedId);
+    if (!dto) return null;
+
+    const msgs = messagesByConv[dto.id] ?? [];
+    const studentUserId = dto.context?.student_user_id ?? null;
+    return mapPlatformDeskConversationDto(
+      dto,
+      entityType,
+      viewerRole,
+      mapPlatformDeskMessages(msgs, studentUserId, viewerRole, entityType),
+    );
+  }, [conversations, entityType, messagesByConv, rawConversations, selectedId, viewerRole]);
 
   const messagesLoading = useMemo(() => {
     if (messagesLoadingId == null || !selectedId) return false;
@@ -505,7 +551,7 @@ export function usePlatformDeskSupportChat(
   }, [clearStudentAcademicFilters]);
 
   const sendMessage = useCallback(
-    async (text: string, files?: File[]) => {
+    async (text: string, files?: File[], tagCodes?: string[], entityRefs?: import('../../../../shared/contextual-chat/types/chatEntityTypes').ChatEntityReference[]) => {
       const conversationId = Number(selectedId);
       if (!Number.isFinite(conversationId) || (!text.trim() && !files?.length)) return;
 
@@ -520,7 +566,7 @@ export function usePlatformDeskSupportChat(
           body: trimmed || (files?.[0] ? `📎 ${files[0].name}` : ''),
           message_type: resolveOptimisticMessageType(files ?? [], trimmed),
           created_at: new Date().toISOString(),
-          tags: [],
+          tags: tagCodes ?? [],
           is_own: true,
           metadata_json: {},
           attachments: files?.length ? buildOptimisticMessageAttachments(files) : undefined,
@@ -539,7 +585,7 @@ export function usePlatformDeskSupportChat(
       sendWsTyping(false);
 
       try {
-        const saved = await sendChatMessage(conversationId, trimmed, undefined, files);
+        const saved = await sendChatMessage(conversationId, trimmed, tagCodes, files, entityRefs);
         if (!saved) return;
         setMessagesByConv((prev) => {
           const existing = prev[conversationId] ?? [];

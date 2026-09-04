@@ -109,6 +109,13 @@ def main():
     print(f'  Profil     : identity_confirmed=True, profile_completed=True')
     print(f'  Statut     : {user.account_status}')
     print('=' * 60)
+    try:
+        from seed_test_recommendation_offer import main as seed_recommendation_offer
+
+        print('Seed offre recommandée…')
+        seed_recommendation_offer()
+    except Exception as exc:  # noqa: BLE001
+        print(f'  (offre recommandée non seedée: {exc})')
     print('Connexion : http://localhost:5173/login (ou votre URL frontend)')
     print('=' * 60)
 

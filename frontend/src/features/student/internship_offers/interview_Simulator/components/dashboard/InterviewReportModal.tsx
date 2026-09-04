@@ -11,7 +11,6 @@ import {
   Code2,
   FileText,
   Gauge,
-  Globe,
   Heart,
   MessageCircleOff,
   MessageSquare,
@@ -189,13 +188,9 @@ const InterviewReportModal: FunctionComponent<InterviewReportModalProps> = ({
           </div>
           <div className="sr-is-report-modal__header-actions">
             <div
-              className="sr-is-report-modal__translate"
+              className="sr-is-report-modal__langs"
               aria-label={t('student.internshipOffers.interviewSim.report.translateAria')}
             >
-              <Globe className="sr-is-report-modal__translate-icon h-3.5 w-3.5" aria-hidden />
-              <span className="sr-is-report-modal__translate-label">
-                {t('student.internshipOffers.interviewSim.report.translate')}
-              </span>
               <AdminLanguageSwitcher />
             </div>
             <button

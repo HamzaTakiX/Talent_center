@@ -51,6 +51,7 @@
       "darkMode": "Activer le mode sombre",
       "lightMode": "Activer le mode clair",
       "defaultTitle": "Digital Talent Center",
+      "defaultSubtitle": "Portail administration",
       "titles": {
         "dashboard": "Tableau de bord",
         "students": "Étudiants",
@@ -228,7 +229,7 @@
     "account": {
       "badge": "Compte",
       "title": "Mon compte",
-      "subtitle": "Profil, sécurité et paramètres — tout au même endroit.",
+      "subtitle": "Profil, sécurité et paramètres, tout au même endroit.",
       "sectionsNav": "Sections du compte",
       "tabs": {
         "profile": "Profil",
@@ -386,7 +387,66 @@
       "backToList": "Retour aux conversations",
       "clearSearch": "Effacer la recherche",
       "attachFile": "Joindre un fichier",
-      "tagTemplate": "Étiquette ou modèle",
+      "tagTemplate": "Étiquette ou contexte",
+      "tagPickerTitle": "Contexte / tags",
+      "tagPickerHint": "Sélectionnez le contexte métier pour ce message.",
+      "tagPickerHints": {
+        "documents": "Tags documents : correction, validation, feedback…",
+        "srf": "Tags SRF : validation financière, alertes, suivi dossier…",
+        "offers": "Tags stage : suivi offre, réunion, tâches, validation…",
+        "announcements": "Tags annonces : feedback, urgence, tâches…",
+        "encadrant": "Tags supervision : rapport, tâche, réunion, correction…",
+        "platform": "Tags support plateforme : tâche, réunion, urgence…"
+      },
+      "tagPickerSearch": "Rechercher…",
+      "tagPickerLoading": "Chargement des tags…",
+      "tagPickerError": "Impossible de charger les tags.",
+      "tagPickerEmpty": "Aucun tag disponible.",
+      "tagPickerNoResults": "Aucun tag ne correspond à votre recherche.",
+      "tagPickerRetry": "Réessayer",
+      "entityPickerAction": "Référencer un élément",
+      "entityPickerTitle": "Référencer un élément",
+      "entityPickerHint": "Indiquez de quel document, offre ou élément il s’agit.",
+      "entityPickerHints": {
+        "documents": "Documents disponibles et vos demandes en cours.",
+        "srf": "Échéances et compte financier SRF.",
+        "offers": "Offres de stage et candidatures.",
+        "announcements": "Annonces visibles pour vous.",
+        "encadrant": "Réunions, tâches, rapports et stages de cet étudiant.",
+        "platform": "Documents, offres, annonces et SRF."
+      },
+      "entityPickerGroups": {
+        "meeting": "Réunions",
+        "task": "Tâches",
+        "report": "Rapports",
+        "internship_offer": "Stages",
+        "offer_application": "Candidatures"
+      },
+      "entityPickerSearch": "Rechercher un élément…",
+      "entityPickerLoading": "Chargement…",
+      "entityPickerError": "Impossible de charger les éléments.",
+      "entityPickerEmpty": "Aucun élément disponible.",
+      "entityPickerNoResults": "Aucun élément ne correspond.",
+      "entityPickerRetry": "Réessayer",
+      "selectedEntities": "Éléments référencés",
+      "removeEntity": "Retirer {{name}}",
+      "tagPickerSelectedHint": "Sélection appliquée au prochain message",
+      "selectedTags": "Contexte sélectionné",
+      "removeTag": "Retirer {{name}}",
+      "tags": {
+        "report": "Rapport",
+        "task": "Tâche",
+        "meeting": "Réunion",
+        "correction": "Correction",
+        "validation": "Validation",
+        "feedback": "Feedback",
+        "urgency": "Urgence",
+        "blockage": "Blocage",
+        "internship_followup": "Suivi de stage",
+        "internal_note": "Note interne",
+        "escalation": "Escalade",
+        "financial_warning": "Alerte financière"
+      },
       "sendMessage": "Envoyer le message",
       "voiceNote": "Note vocale",
       "composerHint": "Entrée pour envoyer · Maj+Entrée pour nouvelle ligne",
@@ -564,7 +624,7 @@
       "submit": "Se connecter",
       "submitting": "Connexion…",
       "submitButton": "Se connecter à votre compte",
-      "microsoft": "Se connecter avec Microsoft (ESCA SSO)",
+      "microsoft": "Continuer avec Microsoft",
       "or": "Ou connectez-vous par email",
       "forgotPassword": "Mot de passe oublié ?",
       "showPassword": "Afficher le mot de passe",
@@ -605,7 +665,15 @@
         "serverTitle": "Erreur serveur",
         "serverMessage": "Une erreur est survenue. Réessayez plus tard.",
         "failedTitle": "Échec de connexion",
-        "failedMessage": "Une erreur inattendue est survenue. Réessayez."
+        "failedMessage": "Une erreur inattendue est survenue. Réessayez.",
+        "microsoftAccessDeniedTitle": "Accès refusé",
+        "microsoftAccessDeniedMessage": "Ce compte Microsoft n'est pas autorisé à accéder à Talent Center. Utilisez un compte ESCA autorisé ou connectez-vous avec votre email et mot de passe.",
+        "microsoftAccessDeniedHint": "Si vous pensez avoir accès, contactez support@esca.ma ou votre administrateur.",
+        "microsoftCancelledMessage": "La connexion Microsoft a été annulée. Veuillez réessayer.",
+        "microsoftFailedMessage": "Échec de la connexion Microsoft. Réessayez ou connectez-vous par email.",
+        "microsoftConnectionMissingMessage": "La connexion Microsoft n'est pas configurée. Définissez VITE_AUTH0_CONNECTION dans l'environnement.",
+        "noMatchingAccountMessage": "Aucun compte ne correspond à cette identité Microsoft. Contactez votre administrateur.",
+        "ssoNotAuthorizedMessage": "La connexion SSO n'est pas activée pour ce compte. Contactez un super administrateur."
       }
     },
     "student": {
@@ -781,7 +849,12 @@
     "accessDenied": {
       "title": "Accès non autorisé",
       "body": "Votre rôle ne permet pas d'accéder à cette section.",
-      "back": "Retour à mon espace"
+      "back": "Retour à mon espace",
+      "ssoTitle": "Accès refusé",
+      "ssoBody": "Ce compte Microsoft n'est pas autorisé à accéder à Talent Center. Utilisez un compte ESCA autorisé ou connectez-vous avec votre email et mot de passe.",
+      "ssoHint": "Si vous pensez avoir accès, contactez support@esca.ma ou votre administrateur.",
+      "backToLogin": "Retour à la connexion",
+      "tryAnotherMicrosoft": "Essayer un autre compte Microsoft"
     },
     "callback": {
       "title": "Authentification…",
@@ -1154,6 +1227,7 @@
     },
     "preferences": {
       "save": "Enregistrer les préférences",
+      "saved": "Préférences enregistrées",
       "channels": {
         "in_app": "In-app",
         "email": "Email",

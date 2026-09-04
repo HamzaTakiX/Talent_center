@@ -268,6 +268,7 @@ export const adminCopyFr = {
     "createAdministrator": {
       "title": "Créer un administrateur",
       "subtitle": "Ajouter un administrateur avec des permissions spécifiques",
+      "heroBadge": "Nouveau compte",
       "fields": {
         "fullName": "Nom complet",
         "email": "E-mail SSO école",
@@ -393,20 +394,23 @@ export const adminCopyFr = {
       "internshipAmbiguous": "Plusieurs types possibles — précisez la spécialisation"
     },
     "createEncadrant": {
-      "title": "Ajouter un encadrant",
-      "subtitle": "Enregistrer un encadrant avec SSO ESCA et périmètre académique",
+      "title": "Nouvel encadrant",
+      "subtitle": "Créez le compte et définissez son périmètre à ESCA.",
+      "heroBadge": "Nouveau compte",
       "editTitle": "Modifier l'encadrant",
-      "editSubtitle": "Mettre à jour l'identité, le périmètre, la capacité et l'accès.",
+      "editSubtitle": "Mettez à jour l'identité, le périmètre, la capacité et l'accès.",
       "fields": {
         "fullName": "Nom complet",
-        "email": "E-mail SSO ESCA",
-        "emailHint": "Adresse @groupe-esca.ma obligatoire pour la connexion SSO.",
+        "email": "E-mail ESCA",
+        "emailHint": "Adresse @groupe-esca.ma utilisée pour se connecter.",
         "maxStudents": "Nombre max. d'étudiants",
         "specializationDomains": "Domaines de spécialisation",
-        "grantAccess": "Accès plateforme",
-        "grantAccessHint": "Autorise la connexion via SSO ESCA lorsque activé par le super admin.",
+        "ssoEnabled": "Préparer la connexion SSO",
+        "ssoEnabledHint": "Cet e-mail pourra utiliser le SSO de l'école dès qu'il sera disponible. La connexion e-mail / mot de passe reste possible.",
+        "grantAccess": "Accès à la plateforme",
+        "grantAccessHint": "Autorise la connexion. Sans ça, l'encadrant ne peut pas se connecter.",
         "isActive": "Encadrant actif",
-        "isActiveHint": "Les encadrants inactifs sont exclus des workflows d'affectation."
+        "isActiveHint": "Les comptes inactifs n'apparaissent pas dans les affectations."
       },
       "placeholders": {
         "fullName": "ex. Ahmed Bennani",
@@ -415,13 +419,15 @@ export const adminCopyFr = {
       },
       "sections": {
         "identity": "Informations de base",
-        "identityHint": "Nom légal et e-mail SSO ESCA officiel. Aucun mot de passe requis.",
+        "identityHint": "Nom et e-mail ESCA. Un mot de passe est généré automatiquement.",
         "academicScope": "Périmètre académique",
-        "academicScopeHint": "Filière, niveaux, années académiques, domaines d'expertise et secteurs ESCA — chaque étape débloque la suivante.",
+        "academicScopeHint": "Choisissez la filière, puis les niveaux, les années et les domaines.",
         "supervision": "Capacité d'encadrement",
-        "supervisionHint": "Nombre maximal d'étudiants que cet encadrant peut superviser.",
-        "access": "Contrôle d'accès",
-        "accessHint": "Connexion SSO uniquement. L'accès est géré par le super admin."
+        "supervisionHint": "Combien d'étudiants cet encadrant peut suivre au maximum.",
+        "access": "Accès",
+        "accessHint": "Connexion e-mail / mot de passe maintenant, SSO plus tard avec le même e-mail.",
+        "credentials": "Identifiants",
+        "credentialsHint": "Mot de passe généré pour la première connexion. À copier et transmettre en sécurité."
       },
       "domains": {
         "webDevelopment": "Développement web",
@@ -441,28 +447,28 @@ export const adminCopyFr = {
         "filiereHint": "Sélectionnez au moins une filière ESCA.",
         "selectFiliere": "Choisir une filière",
         "academicYears": "Années académiques",
-        "academicYearsHint": "Années couvertes par ce périmètre (après les niveaux).",
+        "academicYearsHint": "Années couvertes par ce périmètre.",
         "selectAcademicYears": "Choisir les années académiques",
         "levels": "Niveaux",
-        "levelsHint": "Niveaux d'études ESCA (après la filière).",
+        "levelsHint": "Niveaux d'études pour les filières choisies.",
         "selectLevels": "Choisir les niveaux",
         "specializationDomains": "Domaines de spécialisation",
-        "specializationDomainsHint": "Expertises métier liées aux programmes sélectionnés (Finance, Marketing, Audit…).",
+        "specializationDomainsHint": "Expertises métier liées aux programmes (Finance, Marketing, Audit…).",
         "selectSpecializationDomains": "Choisir les domaines de spécialisation",
         "technicalSpecializationDomains": "Domaines techniques (optionnel)",
-        "technicalSpecializationDomainsHint": "Stages ou compétences IT (développement, data, cybersécurité…). Affichés séparément du métier.",
+        "technicalSpecializationDomainsHint": "Compétences IT (développement, data, cybersécurité…). Affichées à part du métier.",
         "selectTechnicalSpecializationDomains": "Choisir les domaines techniques",
         "sectors": "Secteur ESCA",
-        "sectorsHint": "Secteur ESCA du niveau sélectionné.",
+        "sectorsHint": "Secteur du niveau sélectionné.",
         "selectSectors": "Choisir la spécialisation",
         "needsFiliere": "Sélectionnez d'abord une filière.",
         "needsLevel": "Sélectionnez d'abord au moins un niveau."
       },
       "messages": {
-        "requiredIdentity": "Le nom complet et l'e-mail SSO ESCA sont obligatoires.",
+        "requiredIdentity": "Le nom complet et l'e-mail ESCA sont obligatoires.",
         "requiredFullName": "Le nom complet est obligatoire.",
-        "requiredEmail": "L'e-mail SSO est obligatoire.",
-        "invalidEmailDomain": "L'e-mail doit utiliser le domaine @groupe-esca.ma.",
+        "requiredEmail": "L'e-mail est obligatoire.",
+        "invalidEmailDomain": "L'e-mail doit être en @groupe-esca.ma.",
         "invalidEmailFormat": "Format d'e-mail invalide.",
         "requiredFiliere": "Sélectionnez au moins une filière.",
         "requiredAcademicYear": "Sélectionnez au moins une année académique.",
@@ -471,16 +477,19 @@ export const adminCopyFr = {
         "requiredSupervisedInternships": "Sélectionnez au moins un type de stage supervisé.",
         "requiredMaxStudents": "Le nombre maximal d'étudiants est obligatoire.",
         "invalidMaxStudents": "Le nombre maximal d'étudiants doit être un entier positif.",
-        "maxStudentsMin": "La capacité doit être au moins de 1 étudiant.",
+        "maxStudentsMin": "La capacité doit être d'au moins 1 étudiant.",
         "validationSummary": "Corrigez les champs en surbrillance avant d'enregistrer.",
         "createSuccess": "Encadrant créé avec succès.",
+        "createSuccessWithPassword": "Compte créé. Copiez le mot de passe ci-dessous pour que l'encadrant puisse se connecter.",
         "updateSuccess": "Encadrant mis à jour avec succès.",
         "saveError": "Impossible d'enregistrer l'encadrant. Réessayez."
       },
       "supervisedInternships": {
         "label": "Types de stage supervisés",
-        "hint": "L'affectation n'assignera que des étudiants dont le type de stage correspond.",
-        "placeholder": "Choisir les types de stage…"
+        "hint": "Types issus du cadre de stage des niveaux sélectionnés (Structure académique).",
+        "autoHint": "Déterminé automatiquement selon les niveaux sélectionnés.",
+        "placeholder": "Choisir les types de stage…",
+        "emptyForLevels": "Aucun type de stage configuré pour ces niveaux."
       },
       "detail": {
         "filieres": "Programmes / filières",
@@ -500,7 +509,8 @@ export const adminCopyFr = {
       "actions": {
         "cancel": "Annuler",
         "submit": "Créer l'encadrant",
-        "save": "Enregistrer les modifications"
+        "save": "Enregistrer les modifications",
+        "done": "Terminé"
       }
     },
     "createAnnouncement": {
@@ -1111,7 +1121,19 @@ export const adminCopyFr = {
         },
         "errors": {
           "title": "Impossible d'analyser cette URL",
-          "retry": "Réessayer"
+          "retry": "Réessayer",
+          "invalid_url": "Cette URL n'est pas valide. Collez le lien complet vers la page de l'offre, en commençant par https://",
+          "unreachable": "Ce site est inaccessible. Vérifiez le lien ou réessayez plus tard.",
+          "not_found": "La page de l'offre n'existe plus à cette adresse (erreur 404).",
+          "timeout": "Le site a mis trop de temps à répondre. Réessayez dans un instant.",
+          "blocked": "Ce site bloque la lecture automatique. Copiez le texte de l'offre et utilisez « Coller le texte ».",
+          "not_html": "Ce lien ne pointe pas vers une page web (il s'agit peut-être d'un PDF ou d'un fichier).",
+          "empty_page": "La page a été atteinte mais ne contient aucun contenu lisible.",
+          "unsupported_website": "Ce site n'est pas encore pris en charge. Copiez le texte de l'offre et utilisez « Coller le texte ».",
+          "no_content_extracted": "La page a été lue mais aucune information d'offre n'a pu être identifiée. Copiez le texte de l'offre et utilisez « Coller le texte ».",
+          "extraction_failed": "Les informations de l'offre n'ont pas pu être extraites de cette page. Copiez le texte de l'offre et utilisez « Coller le texte ».",
+          "import_failed": "L'import a échoué. Vérifiez le lien puis réessayez.",
+          "unexpected_error": "Une erreur inattendue est survenue. Réessayez ou saisissez l'offre manuellement."
         },
         "loading": {
           "analyzingPage": "Analyse de la page…",
@@ -1135,12 +1157,14 @@ export const adminCopyFr = {
         "reset": "Coller un nouveau texte",
         "extractedSummary": "{{count}} champs extraits avec succès",
         "extractedHint": "Vérifiez les champs extraits ci-dessous, modifiez si nécessaire, puis enregistrez en brouillon ou publiez.",
+        "missingHint": "À compléter manuellement : {{fields}}.",
         "viewOriginalText": "Voir le texte original",
         "formatHintTitle": "Format attendu (cliquer pour afficher)",
         "formatHint": "Titre : [Titre de l'offre]\nEntreprise : [Nom de l'entreprise]\nVille : [Ville, Pays]\nType : [PFE / Stage / Alternance…]\n\nDescription :\n[Description générale du poste]\n\nMissions / Responsabilités :\n[Liste des tâches]\n\nProfil requis :\n[Qualifications requises]\n\nCompétences / Technologies :\n[Liste séparée par virgules ou lignes]\n\nLangues : Français, Anglais\n\nAvantages :\n[Ce que le stagiaire va apprendre]\n\nDate limite : JJ/MM/AAAA",
         "errors": {
           "title": "Impossible d'extraire les informations de l'offre",
-          "no_fields_extracted": "Aucune section reconnue. Assurez-vous que le texte contient des sections étiquetées (ex. « Titre : », « Description : », « Compétences : »).",
+          "no_fields_extracted": "Impossible d'identifier le titre de l'offre. Ajoutez une ligne « Titre : … » en haut du texte, ou saisissez l'offre manuellement.",
+          "text_too_short": "Le texte collé est trop court pour être exploité. Collez l'annonce complète (titre, entreprise, description).",
           "parse_failed": "Une erreur est survenue lors de la lecture du texte. Veuillez réessayer."
         }
       }
@@ -1148,10 +1172,12 @@ export const adminCopyFr = {
     "createStudent": {
       "title": "Ajouter un étudiant",
       "subtitle": "Créez un compte et assignez filière, classe et accès plateforme.",
+      "heroBadge": "Nouveau compte",
       "editTitle": "Gérer le compte étudiant",
       "editSubtitle": "Modifiez l'accès, l'affectation académique et les identifiants.",
       "fields": {
         "email": "Email",
+        "emailHint": "Adresse utilisée pour la connexion e-mail / mot de passe et le SSO.",
         "firstName": "Prénom",
         "lastName": "Nom",
         "studentNumber": "N° étudiant",
@@ -1160,7 +1186,9 @@ export const adminCopyFr = {
         "class": "Classe",
         "accountStatus": "Statut du compte",
         "ssoAccess": "Accès SSO (école)",
+        "ssoAccessHint": "Permet la connexion Microsoft / SSO dès que le compte est autorisé.",
         "grantPlatformAccess": "Autoriser l'accès plateforme immédiatement",
+        "grantPlatformAccessHint": "Sans ça, l'étudiant ne pourra pas se connecter à Talent Center.",
         "platformAccess": "Accès plateforme autorisé"
       },
       "placeholders": {
@@ -1352,7 +1380,13 @@ export const adminCopyFr = {
         "level": "Niveau académique",
         "year": "Année académique",
         "duration": "Durée indicative",
-        "order": "Ordre d'affichage"
+        "order": "Ordre d'affichage",
+        "businessDomains": "Domaines de spécialisation",
+        "businessDomainsHint": "Expertises métier proposées aux encadrants pour ce programme.",
+        "techDomains": "Domaines techniques",
+        "techDomainsHint": "Compétences IT liées à ce programme (stages tech, data, cybersécurité…).",
+        "selectBusinessDomains": "Choisir les domaines de spécialisation",
+        "selectTechDomains": "Choisir les domaines techniques"
       },
       "status": {
         "active": "Actif",
@@ -1502,17 +1536,28 @@ export const adminCopyFr = {
       "repairScopes": "Compléter les niveaux",
       "repairScopesSuccess": "{{count}} encadrant(s) mis à jour avec niveaux, année et types de stage.",
       "repairScopesError": "Impossible de compléter les périmètres académiques.",
-      "incompleteScopeBanner": "{{count}} encadrant(s) ont un périmètre académique incomplet (niveaux, année ou types de stage). Cliquez pour compléter automatiquement.",
+      "scopeAlert": {
+        "title": "Périmètre académique incomplet",
+        "badge": "{{count}} à compléter",
+        "description": "Ces encadrants n'ont pas de niveaux, d'année académique ou de types de stage. Complétez-les automatiquement à partir de leurs filières pour affiner l'affectation.",
+        "dismiss": "Masquer cet avertissement"
+      },
+      "actions": {
+        "menuAria": "Actions pour {{name}}"
+      },
       "import": {
         "title": "Importer des encadrants",
         "description": "Créer plusieurs comptes encadrants à partir d'un fichier CSV ou Excel.",
         "hint": "Colonnes : email (@groupe-esca.ma), nom complet, codes filière (pge), codes niveau (y4,y5 — optionnel, inférés si vide), années académiques (2025-2026), codes types de stage (optionnel, inférés), max étudiants, accès plateforme, actif, domaines (optionnel).",
         "downloadTemplate": "Télécharger le modèle CSV",
-        "fileLabel": "Fichier à importer",
+        "fileLabel": "Cliquez pour parcourir, ou glissez-déposez un fichier .csv / .xlsx",
+        "dropzoneTitle": "Déposez votre fichier CSV ou Excel ici",
+        "dropzoneChange": "Cliquez ou déposez un autre fichier pour remplacer",
         "actions": {
           "cancel": "Annuler",
           "close": "Fermer",
-          "import": "Lancer l'import"
+          "import": "Lancer l'import",
+          "importing": "Import en cours…"
         },
         "errors": {
           "noFile": "Sélectionnez un fichier CSV ou Excel (.xlsx).",
@@ -1521,7 +1566,10 @@ export const adminCopyFr = {
         "result": {
           "summary": "{{success}} / {{total}} encadrant(s) créé(s), {{errors}} erreur(s).",
           "rowError": "Ligne {{row}} ({{email}}) : {{message}}",
-          "moreErrors": "… et {{count}} autre(s) erreur(s)."
+          "moreErrors": "… et {{count}} autre(s) erreur(s).",
+          "successLabel": "Créés",
+          "totalLabel": "Lignes",
+          "errorsLabel": "Erreurs"
         }
       }
     },
@@ -1922,7 +1970,13 @@ export const adminCopyFr = {
           "paid": "Payés",
           "overdue": "En retard",
           "outstandingAmount": "Montant restant dû",
-          "averagePaymentRate": "Taux de paiement moyen"
+          "averagePaymentRate": "Taux de paiement moyen",
+          "badges": {
+            "allAccounts": "Tous les comptes",
+            "percentOfTotal": "{{percent}}% du total",
+            "outstanding": "Reste à encaisser",
+            "avgRate": "Niveau moyen"
+          }
         },
         "empty": {
           "importData": "Importer des données financières"
@@ -2387,6 +2441,20 @@ export const adminCopyFr = {
         "title": "Détail du rapport",
         "general": "Informations générales",
         "dates": "Dates"
+      },
+      "analytics": {
+        "validationRate": "Taux de validation",
+        "successRate": "Réussite stage",
+        "riskDist": "Distribution risques",
+        "totalCaption": "total",
+        "riskEmptyTitle": "Aucun risque signalé",
+        "riskEmptyDesc": "La répartition apparaîtra dès qu'un rapport signalera un niveau de risque.",
+        "riskLevel": {
+          "CRITICAL": "Critique",
+          "HIGH": "Élevé",
+          "MEDIUM": "Moyen",
+          "LOW": "Faible"
+        }
       }
     },
     "meetings": {
@@ -2423,7 +2491,9 @@ export const adminCopyFr = {
         "title": "Analytique de supervision",
         "completedVsDelayed": "Terminées vs retardées",
         "distribution": "Répartition des réunions",
-        "totalCaption": "total"
+        "totalCaption": "total",
+        "distributionEmptyTitle": "Aucune réunion enregistrée",
+        "distributionEmptyDesc": "La répartition par statut apparaîtra dès la première réunion planifiée."
       },
       "insights": {
         "title": "Observations clés",
@@ -2538,6 +2608,7 @@ export const adminCopyFr = {
   },
   "common": {
     "loading": "Chargement…",
+    "auto": "Auto",
     "yes": "Oui",
     "no": "Non",
     "breadcrumbs": {
@@ -2546,6 +2617,7 @@ export const adminCopyFr = {
       "offers": "Offres de stage",
       "announcements": "Annonces",
       "encadrants": "Encadrants",
+      "newEncadrant": "Nouvel encadrant",
       "administrators": "Administrateurs",
       "newAdministrator": "Nouvel administrateur",
       "documents": "Documents",
@@ -2584,6 +2656,8 @@ export const adminCopyFr = {
     "delete": {
       "confirm": "Supprimer définitivement",
       "confirmWithCount": "Supprimer ({{count}})",
+      "deleting": "Suppression…",
+      "irreversible": "Cette action est irréversible.",
       "startSelection": "Sélectionner pour supprimer",
       "cancelSelection": "Annuler",
       "selectedCount": "{{count}} sélectionné(s)",
@@ -2607,6 +2681,8 @@ export const adminCopyFr = {
     "detailModal": {
       "close": "Fermer",
       "readOnlyHint": "Consultation seule. Utilisez Modifier pour changer les données.",
+      "copyValue": "Copier {{label}}",
+      "copiedValue": "{{label}} copié",
       "sections": {
         "identity": "Identité",
         "roles": "Rôles et permissions",
@@ -2703,8 +2779,21 @@ export const adminCopyFr = {
         "chatUnavailable": "Disponible uniquement pour les comptes étudiants actifs.",
         "chatOpenError": "Impossible d'ouvrir la conversation. Réessayez."
       },
+      "credentials": {
+        "title": "Mot de passe du compte",
+        "hint": "Généré automatiquement à la création. Copiez-le pour le transmettre à l'utilisateur.",
+        "loading": "Chargement du mot de passe…",
+        "error": "Impossible de charger ce mot de passe.",
+        "copy": "Copier le mot de passe",
+        "copied": "Copié",
+        "show": "Afficher le mot de passe",
+        "hide": "Masquer le mot de passe",
+        "regenerate": "Régénérer",
+        "regenerateError": "Impossible de régénérer ce mot de passe."
+      },
       "encadrant": {
-        "title": "Détails encadrant"
+        "title": "Détails encadrant",
+        "sendMessage": "Envoyer un message"
       },
       "announcement": {
         "title": "Détails de l'annonce"
@@ -4060,6 +4149,10 @@ export const adminCopyFr = {
       "acceptanceRate": "Taux d'acceptation",
       "mostPopular": "Plus populaire",
       "notDetectedYet": "Non détecté pour le moment",
+      "shareOfTotal": "{{percent}}% du total",
+      "activeCountBadge": "{{count}} actives",
+      "applicationsBadge": "Candidatures",
+      "acceptanceBadge": "Taux moyen",
       "popularOffer": {
         "views": "vues"
       },
@@ -4164,6 +4257,13 @@ export const adminCopyFr = {
     "title": "Affectation des encadrants",
     "open": "Ouvrir",
     "subtitle": "Analyse ESCA et distribution automatique des étudiants vers les encadrants",
+    "heroBadge": "Moteur intelligent",
+    "heroChips": {
+      "internship": "Type de stage",
+      "program": "Filière",
+      "sector": "Secteur",
+      "workload": "Charge"
+    },
     "academicYear": "Année académique",
     "currentYear": "en cours",
     "respectLocks": "Respecter les affectations verrouillées",
@@ -4201,6 +4301,8 @@ export const adminCopyFr = {
       "filterExcluded": "Exclus du moteur",
       "paginationLabel": "encadrants",
       "emptyFilters": "Aucun encadrant ne correspond à vos critères.",
+      "emptyNone": "Aucun encadrant à afficher pour le moment.",
+      "emptyNoneHint": "Les encadrants apparaîtront ici après une affectation, ou lorsqu'ils seront disponibles pour cette année.",
       "studentsCount": "{{count}} étudiant(s)",
       "expandStudents": "Afficher la liste des étudiants ({{count}})",
       "collapseStudents": "Masquer la liste des étudiants"
@@ -4213,6 +4315,30 @@ export const adminCopyFr = {
       "workloadPaginationLabel": "encadrants",
       "workloadAria": "Graphique de charge des encadrants",
       "noData": "Aucune donnée"
+    },
+    "manualAssign": {
+      "openFor": "Gérer les affectations de {{name}}",
+      "title": "Affecter des étudiants pour {{name}}",
+      "titleFallback": "Affectation manuelle",
+      "description": "Choisissez des étudiants compatibles avec le programme, les niveaux et les spécialités de cet encadrant.",
+      "searchStudents": "Rechercher un étudiant…",
+      "filterAria": "Filtrer les étudiants",
+      "filterCompatible": "Compatibles",
+      "filterAssignedHere": "Assignés ici",
+      "filterUnassigned": "Non assignés",
+      "filterAll": "Tous les étudiants",
+      "studentsShown": "{{count}} étudiant(s) affiché(s)",
+      "empty": "Aucun étudiant ne correspond à la recherche ou aux filtres.",
+      "assign": "Affecter",
+      "assigning": "Affectation…",
+      "unassign": "Retirer",
+      "removing": "Retrait…",
+      "assignedHere": "Affecté",
+      "assignedTo": "Actuellement avec {{name}}",
+      "notCompatible": "Hors périmètre",
+      "capacityFull": "Cet encadrant a atteint sa capacité maximale.",
+      "capacityFullShort": "Complet",
+      "capacityOpen": "Disponible"
     },
     "success": {
       "applied": "Affectations enregistrées avec succès.",
@@ -4233,6 +4359,9 @@ export const adminCopyFr = {
       "count": "{{count}} concerné(s)",
       "expandDetails": "Afficher les enregistrements",
       "collapseDetails": "Masquer les enregistrements",
+      "recommendationsLabel": "Actions recommandées",
+      "issuesSectionTitle": "Problèmes détectés",
+      "recordsUnavailable": "Les enregistrements détaillés ne sont pas disponibles pour ce problème.",
       "noIssues": "Aucun problème à afficher.",
       "blockedToast": "Affectation bloquée. Corrigez les problèmes critiques avant de lancer.",
       "confirmTitle": "Continuer malgré les avertissements ?",
@@ -4244,7 +4373,9 @@ export const adminCopyFr = {
       "banner": {
         "blockedTitle": "L'affectation ne peut pas être lancée",
         "warningTitle": "Avertissements détectés",
-        "subtitle": "{{blocking}} critique(s) · {{warnings}} avertissement(s)"
+        "subtitle": "{{blocking}} critique(s) · {{warnings}} avertissement(s)",
+        "criticalCount": "{{count}} critique(s)",
+        "warningCount": "{{count}} avertissement(s)"
       },
       "phase": {
         "validating": "Validation des prérequis…",
@@ -4370,6 +4501,12 @@ export const adminCopyFr = {
       "coverageRatio": "Taux de couverture",
       "supervisedTypes": "Types supervisés",
       "missingCoverage": "Lacunes d'encadrement",
+      "statGapCenterLabel": "Lacunes",
+      "statCoverageCenterLabel": "Couverture",
+      "statGapTypesLegend": "Types non couverts",
+      "statCoveredTypesLegend": "Types couverts",
+      "statCoveredStudentsLegend": "Couverts",
+      "statUncoveredStudentsLegend": "Non couverts",
       "studentsLabel": "étudiants",
       "encadrantsLabel": "encadrants",
       "shareOfTotal": "{{percent}} % du total",
@@ -4390,6 +4527,11 @@ export const adminCopyFr = {
       "insightDominant": "{{type}} est la plus grande cohorte ({{count}} %)",
       "insightDiversified": "Les types de stage sont répartis de façon équilibrée",
       "uncoveredTitle": "Types de stage sans encadrant disponible",
+      "uncoveredHint": "Ces types de stage ont des étudiants en attente, sans encadrant correspondant.",
+      "uncoveredTypesBadge": "{{count}} types",
+      "uncoveredStudentsBadge": "{{count}} étudiant(s)",
+      "uncoveredExpandTypes": "Afficher les types de stage ({{count}})",
+      "uncoveredCollapseTypes": "Masquer les types de stage",
       "uncoveredRow": "{{type}} — {{count}} étudiant(s)"
     }
   },

@@ -1,7 +1,11 @@
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BarChart3 } from 'lucide-react';
 import type { SmartAssignmentEncadrantCard } from '../../../api/types';
 import { useAdminSearchPlaceholder } from '../../../i18n/useAdminCopy';
+import { getAdminUserInitials } from '../../../dashboard/utils/adminUserDisplay';
+import InternshipStudentAvatar from '../../../offres-stage/chat/components/InternshipStudentAvatar';
+import { resolveMediaUrl } from '../../../../../shared/api/mediaUrl';
 import AdminSearchInput from '../../../ui/AdminSearchInput';
 import AdminSelectField from '../../../ui/AdminSelectField';
 import AdminPagination from '../../../ui/AdminPagination';
@@ -12,7 +16,10 @@ import {
   type EncadrantCardsFilter,
 } from './encadrantFilterUtils';
 import AdminSectionEmptyState from '../../../ui/AdminSectionEmptyState';
+import SmartAssignmentSectionHeader from './SmartAssignmentSectionHeader';
 import { SmartAssignmentWorkloadSkeleton } from './SmartAssignmentSectionSkeleton';
+import { getEncadrantLoadBarColor } from '../utils/workloadBarUtils';
+import '../styles/admin-smart-assignment-manual-assign.css';
 
 const WORKLOAD_PER_PAGE = 10;
 
@@ -20,12 +27,14 @@ interface SmartAssignmentWorkloadChartProps {
   encadrants: SmartAssignmentEncadrantCard[];
   excludedIds: Set<number>;
   loading?: boolean;
+  onSelectEncadrant?: (encadrant: SmartAssignmentEncadrantCard) => void;
 }
 
 const SmartAssignmentWorkloadChart: FunctionComponent<SmartAssignmentWorkloadChartProps> = ({
   encadrants,
   excludedIds,
   loading = false,
+  onSelectEncadrant,
 }) => {
   const { t } = useTranslation();
   const searchPh = useAdminSearchPlaceholder('encadrants');
@@ -58,49 +67,53 @@ const SmartAssignmentWorkloadChart: FunctionComponent<SmartAssignmentWorkloadCha
     return filteredEncadrants.slice(start, start + WORKLOAD_PER_PAGE);
   }, [filteredEncadrants, page]);
 
+  const hasSourceData = encadrants.length > 0;
+  const showFilters = hasSourceData;
+
   return (
     <section
       className={`admin-module-panel sa-section-panel admin-section-panel rounded-xl p-5 shadow-sm${loading ? ' sa-section-panel--loading admin-section-panel--loading' : ''}`}
       aria-busy={loading}
     >
       <div className="flex flex-col gap-4">
-        <div>
-          <h2 className="text-sm font-semibold text-[var(--admin-text)]">
-            {t('admin.smartAssignment.charts.workloadTitle')}
-          </h2>
-          <p className="mt-0.5 text-xs text-[var(--admin-text-muted)]">
-            {t('admin.smartAssignment.charts.workloadSubtitle')} ·{' '}
-            {t('admin.smartAssignment.charts.workloadCount', {
+        <SmartAssignmentSectionHeader
+          icon={BarChart3}
+          title={t('admin.smartAssignment.charts.workloadTitle')}
+          subtitle={`${t('admin.smartAssignment.charts.workloadSubtitle')} · ${t(
+            'admin.smartAssignment.charts.workloadCount',
+            {
               count: filteredEncadrants.length,
               total: encadrants.length,
-            })}
-          </p>
-        </div>
+            },
+          )}`}
+        />
 
-        <div
-          className="flex flex-col gap-3 sm:flex-row sm:items-center"
-          role="toolbar"
-          aria-label={t('admin.smartAssignment.charts.workloadFiltersAria')}
-        >
-          <AdminSearchInput
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onClear={() => setQuery('')}
-            placeholder={searchPh}
-            containerClassName="min-w-0 flex-1 sm:max-w-md"
-          />
-          <AdminSelectField
-            value={statusFilter}
-            options={filterOptions}
-            onChange={(v) => setStatusFilter(v as EncadrantCardsFilter)}
-            aria-label={t('admin.smartAssignment.encadrants.filterAria')}
-            wrapperClassName="w-full sm:w-[220px]"
-          />
-        </div>
+        {showFilters ? (
+          <div
+            className="flex flex-col gap-3 sm:flex-row sm:items-center"
+            role="toolbar"
+            aria-label={t('admin.smartAssignment.charts.workloadFiltersAria')}
+          >
+            <AdminSearchInput
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onClear={() => setQuery('')}
+              placeholder={searchPh}
+              containerClassName="min-w-0 flex-1 sm:max-w-md"
+            />
+            <AdminSelectField
+              value={statusFilter}
+              options={filterOptions}
+              onChange={(v) => setStatusFilter(v as EncadrantCardsFilter)}
+              aria-label={t('admin.smartAssignment.encadrants.filterAria')}
+              wrapperClassName="w-full sm:w-[220px]"
+            />
+          </div>
+        ) : null}
       </div>
 
       <div
-        className="sa-section-panel__content mt-4 space-y-3"
+        className="sa-section-panel__content mt-4"
         role="img"
         aria-label={t('admin.smartAssignment.charts.workloadAria')}
       >
@@ -109,34 +122,86 @@ const SmartAssignmentWorkloadChart: FunctionComponent<SmartAssignmentWorkloadCha
         ) : pageItems.length === 0 ? (
           <AdminSectionEmptyState
             variant="inline"
-            iconPreset="chart"
-            title={t('admin.smartAssignment.encadrants.emptyFilters')}
-            description={t('admin.empty.tryAdjusting')}
+            iconPreset={hasSourceData ? 'search' : 'chart'}
+            title={
+              hasSourceData
+                ? t('admin.smartAssignment.encadrants.emptyFilters')
+                : t('admin.smartAssignment.encadrants.emptyNone')
+            }
+            description={
+              hasSourceData
+                ? t('admin.empty.tryAdjusting')
+                : t('admin.smartAssignment.encadrants.emptyNoneHint')
+            }
           />
         ) : (
           pageItems.map((enc) => {
             const pct = enc.max_capacity
               ? Math.min(100, (enc.current_load / enc.max_capacity) * 100)
               : enc.current_load * 10;
-            const color = enc.is_overloaded
-              ? '#ef4444'
-              : pct > 85
-                ? '#f59e0b'
-                : 'var(--admin-brand)';
+            const color = getEncadrantLoadBarColor({
+              loadPct: pct,
+              isOverloaded: enc.is_overloaded,
+              currentLoad: enc.current_load,
+              maxCapacity: enc.max_capacity,
+            });
+
+            const rowClassName = `sa-workload-row${onSelectEncadrant ? ' sa-workload-row--interactive' : ''}`;
+
+            if (onSelectEncadrant) {
+              return (
+                <button
+                  key={enc.encadrant_profile_id}
+                  type="button"
+                  className={`${rowClassName} w-full text-start`}
+                  onClick={() => onSelectEncadrant(enc)}
+                  aria-label={t('admin.smartAssignment.manualAssign.openFor', { name: enc.full_name })}
+                >
+                  <div className="sa-workload-row__meta">
+                    <div className="sa-workload-row__identity">
+                      <InternshipStudentAvatar
+                        url={resolveMediaUrl(enc.avatar_url)}
+                        name={enc.full_name}
+                        email={enc.email}
+                        initials={getAdminUserInitials(enc.full_name, enc.email)}
+                        size="list"
+                      />
+                      <span className="sa-workload-row__name">{enc.full_name}</span>
+                    </div>
+                    <span className="sa-workload-row__count">
+                      {enc.current_load}/{enc.max_capacity || '∞'}
+                    </span>
+                  </div>
+                  <div className="sa-workload-row__track">
+                    <div
+                      className="sa-workload-row__fill"
+                      style={{ width: `${Math.min(100, pct)}%`, background: color }}
+                    />
+                  </div>
+                </button>
+              );
+            }
 
             return (
-              <div key={enc.encadrant_profile_id}>
-                <div className="mb-1 flex justify-between gap-2 text-xs">
-                  <span className="truncate font-medium text-[var(--admin-text)]">
-                    {enc.full_name}
-                  </span>
-                  <span className="shrink-0 tabular-nums text-[var(--admin-text-muted)]">
+              <div key={enc.encadrant_profile_id} className={rowClassName}>
+                <div className="sa-workload-row__meta">
+                  <div className="sa-workload-row__identity">
+                    <InternshipStudentAvatar
+                      url={resolveMediaUrl(enc.avatar_url)}
+                      name={enc.full_name}
+                      email={enc.email}
+                      initials={getAdminUserInitials(enc.full_name, enc.email)}
+                      size="list"
+                    />
+                    <span className="sa-workload-row__name">{enc.full_name}</span>
+                  </div>
+                  <span className="sa-workload-row__count">
                     {enc.current_load}/{enc.max_capacity || '∞'}
                   </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[var(--admin-border)]">
+                <div className="sa-workload-row__track">
                   <div
-                    className="h-full rounded-full transition-all duration-500"
+                    className="sa-workload-row__fill"
                     style={{ width: `${Math.min(100, pct)}%`, background: color }}
                   />
                 </div>

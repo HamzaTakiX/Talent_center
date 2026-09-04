@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { LIVE_FEEDBACK_CATEGORIES } from '../data/interviewSimulatorDashboardMock';
+import { interviewerAvatarUrl } from '../utils/interviewerAvatars';
 import { QUESTIONS_BY_LENGTH } from '../data/interviewConfigMock';
 import type { InternshipOfferDetails } from '../../types';
 import { buildSimulatorConfigFromOffer } from '../utils/buildSimulatorConfigFromOffer';
@@ -152,12 +153,16 @@ function buildQuestions(config: SimulatorConfig, totalQuestions: number): Interv
   const names = INTERVIEWER_NAMES[gender];
   const role = interviewerRoleForConfig(config);
 
-  return Array.from({ length: totalQuestions }, (_, index) => ({
-    id: `q-${index + 1}`,
-    text: templates[index % templates.length],
-    interviewerRole: role,
-    interviewerName: names[index % names.length] ?? names[0],
-  }));
+  return Array.from({ length: totalQuestions }, (_, index) => {
+    const interviewerName = names[index % names.length] ?? names[0];
+    return {
+      id: `q-${index + 1}`,
+      text: templates[index % templates.length],
+      interviewerRole: role,
+      interviewerName,
+      interviewerAvatarUrl: interviewerAvatarUrl(interviewerName, gender),
+    };
+  });
 }
 
 export function useInterviewSimulator(hasHistory = true) {
@@ -205,6 +210,8 @@ export function useInterviewSimulator(hasHistory = true) {
         text: turn.question,
         interviewerRole: fallback?.interviewerRole ?? 'Hiring Manager',
         interviewerName: fallback?.interviewerName ?? 'Nadia',
+        interviewerAvatarUrl:
+          fallback?.interviewerAvatarUrl ?? interviewerAvatarUrl(fallback?.interviewerName ?? 'Nadia'),
       };
     }
     return generatedQuestions[questionIndex] ?? generatedQuestions[0];

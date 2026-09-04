@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   STUDENT_TASK_DETAIL_ACTION_BTN,
   STUDENT_TASK_DETAIL_BADGE,
@@ -14,9 +15,9 @@ import {
   STUDENT_TASK_ITEM_CARD_BG,
   STUDENT_TASK_ITEM_TITLE_DONE,
   STUDENT_TASK_PRIORITY_BADGE,
-  STUDENT_TASK_PRIORITY_LABEL,
+  STUDENT_TASK_PRIORITY_LABEL_KEY,
   STUDENT_TASK_STATUS_BADGE,
-  STUDENT_TASK_STATUS_LABEL,
+  STUDENT_TASK_STATUS_LABEL_KEY,
 } from '../constants/studentTaskDetailStyles';
 import type { StudentTaskItem } from '../types';
 
@@ -25,6 +26,7 @@ interface StudentTaskDetailItemCardProps {
 }
 
 const StudentTaskDetailItemCard: FunctionComponent<StudentTaskDetailItemCardProps> = ({ task }) => {
+  const { t } = useTranslation();
   const isDone = task.status === 'done';
 
   return (
@@ -37,23 +39,25 @@ const StudentTaskDetailItemCard: FunctionComponent<StudentTaskDetailItemCardProp
             {task.title}
           </h2>
           <span className={`${STUDENT_TASK_DETAIL_BADGE} ${STUDENT_TASK_STATUS_BADGE[task.status]}`}>
-            {STUDENT_TASK_STATUS_LABEL[task.status]}
+            {t(STUDENT_TASK_STATUS_LABEL_KEY[task.status])}
           </span>
           <span className={`${STUDENT_TASK_DETAIL_BADGE} ${STUDENT_TASK_PRIORITY_BADGE[task.priority]}`}>
-            {STUDENT_TASK_PRIORITY_LABEL[task.priority]}
+            {t(STUDENT_TASK_PRIORITY_LABEL_KEY[task.priority])}
           </span>
         </div>
-        <p className={STUDENT_TASK_DETAIL_ITEM_DEADLINE}>Deadline: {task.deadline}</p>
+        <p className={STUDENT_TASK_DETAIL_ITEM_DEADLINE}>
+          {t('encadrant.task.detail.deadline', { date: task.deadline })}
+        </p>
       </div>
 
       <div className={STUDENT_TASK_DETAIL_ITEM_ACTIONS}>
         <button type="button" className={STUDENT_TASK_DETAIL_ACTION_BTN}>
           <Pencil className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
-          Edit
+          {t('encadrant.common.edit')}
         </button>
         <button type="button" className={STUDENT_TASK_DETAIL_ACTION_BTN}>
           <Trash2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
-          Delete
+          {t('encadrant.common.delete')}
         </button>
       </div>
     </article>

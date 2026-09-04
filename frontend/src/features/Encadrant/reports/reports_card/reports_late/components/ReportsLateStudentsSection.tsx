@@ -1,10 +1,10 @@
-import { FunctionComponent, useMemo, useState } from 'react';
-import { Filter, Search } from 'lucide-react';
+import { ChangeEvent, FunctionComponent, useState, useMemo } from 'react';
+import { Filter } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { AdminSearchInput } from '../../../../../admin/ui';
 import {
   REPORTS_LATE_FILTER_BTN,
-  REPORTS_LATE_SEARCH_INPUT,
   REPORTS_LATE_SEARCH_ROW,
-  REPORTS_LATE_SEARCH_WRAP,
   REPORTS_LATE_SECTION_CARD,
   REPORTS_LATE_STUDENT_GRID,
 } from '../constants/reportsLateLayout';
@@ -12,6 +12,7 @@ import { reportsLateStudentsMock } from '../data/reportsLateMock';
 import ReportsLateStudentCard from './ReportsLateStudentCard';
 
 const ReportsLateStudentsSection: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredStudents = useMemo(() => {
@@ -27,24 +28,17 @@ const ReportsLateStudentsSection: FunctionComponent = () => {
   }, [searchQuery]);
 
   return (
-    <section className={REPORTS_LATE_SECTION_CARD} aria-label="Late student reports">
+    <section className={REPORTS_LATE_SECTION_CARD} aria-label={t('encadrant.header.titles.reportsLate')}>
       <div className={REPORTS_LATE_SEARCH_ROW}>
-        <div className={REPORTS_LATE_SEARCH_WRAP}>
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9ca3af]"
-            strokeWidth={1.75}
-            aria-hidden
-          />
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search student..."
-            className={REPORTS_LATE_SEARCH_INPUT}
-            aria-label="Search student"
-          />
-        </div>
-        <button type="button" className={REPORTS_LATE_FILTER_BTN} aria-label="Filter students">
+        <AdminSearchInput
+          value={searchQuery}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+          onClear={() => setSearchQuery('')}
+          placeholder={t('encadrant.common.searchStudent')}
+          aria-label={t('encadrant.common.searchStudent')}
+          containerClassName="min-w-0 flex-1"
+        />
+        <button type="button" className={REPORTS_LATE_FILTER_BTN} aria-label={t('encadrant.common.filter')}>
           <Filter className="h-4 w-4" strokeWidth={1.75} aria-hidden />
         </button>
       </div>

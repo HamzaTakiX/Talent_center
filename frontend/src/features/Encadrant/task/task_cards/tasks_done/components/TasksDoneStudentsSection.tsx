@@ -1,10 +1,10 @@
-import { FunctionComponent, useMemo, useState } from 'react';
-import { Filter, Search } from 'lucide-react';
+import { ChangeEvent, FunctionComponent, useState, useMemo } from 'react';
+import { Filter } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { AdminSearchInput } from '../../../../../admin/ui';
 import {
   TASKS_DONE_FILTER_BTN,
-  TASKS_DONE_SEARCH_INPUT,
   TASKS_DONE_SEARCH_ROW,
-  TASKS_DONE_SEARCH_WRAP,
   TASKS_DONE_SECTION_CARD,
   TASKS_DONE_STUDENT_GRID,
 } from '../constants/tasksDoneLayout';
@@ -12,6 +12,7 @@ import { tasksDoneStudentsMock } from '../data';
 import TasksDoneStudentCard from './TasksDoneStudentCard';
 
 const TasksDoneStudentsSection: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredStudents = useMemo(() => {
@@ -26,23 +27,17 @@ const TasksDoneStudentsSection: FunctionComponent = () => {
   }, [searchQuery]);
 
   return (
-    <section className={TASKS_DONE_SECTION_CARD} aria-label="Students with done tasks">
+    <section className={TASKS_DONE_SECTION_CARD} aria-label={t('encadrant.header.titles.tasksDone')}>
       <div className={TASKS_DONE_SEARCH_ROW}>
-        <div className={TASKS_DONE_SEARCH_WRAP}>
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9ca3af]"
-            strokeWidth={1.75}
-            aria-hidden
-          />
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search student..."
-            className={TASKS_DONE_SEARCH_INPUT}
-          />
-        </div>
-        <button type="button" className={TASKS_DONE_FILTER_BTN} aria-label="Filter students">
+        <AdminSearchInput
+          value={searchQuery}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+          onClear={() => setSearchQuery('')}
+          placeholder={t('encadrant.common.searchStudent')}
+          aria-label={t('encadrant.common.searchStudent')}
+          containerClassName="min-w-0 flex-1"
+        />
+        <button type="button" className={TASKS_DONE_FILTER_BTN} aria-label={t('encadrant.common.filter')}>
           <Filter className="h-4 w-4" strokeWidth={1.75} aria-hidden />
         </button>
       </div>

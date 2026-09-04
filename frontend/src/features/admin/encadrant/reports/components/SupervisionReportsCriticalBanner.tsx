@@ -5,14 +5,37 @@ import { useTranslation } from 'react-i18next';
 import type { SupervisionReportDashboardSummary } from '../types/supervisionReport';
 
 interface SupervisionReportsCriticalBannerProps {
-  summary: SupervisionReportDashboardSummary;
+  summary: SupervisionReportDashboardSummary | null;
+  loading?: boolean;
 }
 
 const SupervisionReportsCriticalBanner: FunctionComponent<SupervisionReportsCriticalBannerProps> = ({
   summary,
+  loading = false,
 }) => {
   const { t } = useTranslation();
-  if (!summary.critical && !summary.overdue) return null;
+
+  if (loading) {
+    return (
+      <div
+        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-inset)] px-4 py-3"
+        role="status"
+        aria-busy="true"
+      >
+        <span className="sr-only">{t('admin.common.loading')}</span>
+        <div className="flex min-w-0 flex-1 items-center gap-3" aria-hidden>
+          <span className="admin-shimmer h-5 w-5 shrink-0 rounded-md" />
+          <span className="admin-shimmer h-4 w-56 max-w-[70%] rounded-md" />
+        </div>
+        <div className="flex gap-2" aria-hidden>
+          <span className="admin-shimmer h-8 w-24 rounded-lg" />
+          <span className="admin-shimmer h-8 w-24 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!summary || (!summary.critical && !summary.overdue)) return null;
 
   return (
     <div

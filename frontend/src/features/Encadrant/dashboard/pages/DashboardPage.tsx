@@ -4,7 +4,7 @@ import { DashboardStatsGrid, DashboardStudentsSection } from '../components';
 import { DASHBOARD_PAGE_ROOT } from '../constants/dashboardLayout';
 
 const DashboardPage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Dashboard">
+  <EncadrantLayout>
     <div id="encadrant-dashboard-root" className={DASHBOARD_PAGE_ROOT}>
       <DashboardStatsGrid />
       <DashboardStudentsSection />

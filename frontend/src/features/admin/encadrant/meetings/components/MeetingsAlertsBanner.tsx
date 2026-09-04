@@ -25,11 +25,11 @@ const MeetingsAlertsBanner: FunctionComponent<MeetingsAlertsBannerProps> = ({ al
             className={`admin-meetings-alert admin-meetings-alert--${alert.severity}`}
             role="alert"
           >
-            <Icon className="h-4 w-4 shrink-0 text-[var(--admin-brand)]" />
-            <span className="text-sm">{alert.message}</span>
-            <span className="ms-auto rounded-full bg-[var(--admin-brand)]/10 px-2 py-0.5 text-xs font-semibold text-[var(--admin-brand)]">
-              {alert.count}
+            <span className="admin-meetings-alert__icon" aria-hidden>
+              <Icon className="h-4 w-4" strokeWidth={2} />
             </span>
+            <span className="admin-meetings-alert__text">{alert.message}</span>
+            <span className="admin-meetings-alert__count">{alert.count}</span>
           </div>
         );
       })}

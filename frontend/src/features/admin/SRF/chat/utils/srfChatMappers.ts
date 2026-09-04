@@ -1,4 +1,5 @@
 import type { ConversationContextDto, ConversationDto, MessageDto } from '../../../../shared/contextual-chat/types';
+import { resolveMediaUrl } from '../../../../../shared/api/mediaUrl';
 import { mapAnnouncementMessages } from '../../../announcements-stage/chat/utils/announcementChatMappers';
 import type {
   AdminSrfChatMessage,
@@ -11,6 +12,30 @@ type Snapshot = Record<string, unknown>;
 
 function str(v: unknown): string {
   return typeof v === 'string' ? v : v != null ? String(v) : '';
+}
+
+function firstNonEmpty(...values: unknown[]): string {
+  for (const value of values) {
+    const text = str(value).trim();
+    if (text) return text;
+  }
+  return '';
+}
+
+function normalizeSrfStudentLabel(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  const withoutPrefix = trimmed.replace(/^SRF\s*[—–-]\s*/i, '').trim();
+  return withoutPrefix || trimmed;
+}
+
+function resolveStudentParticipantName(
+  dto: ConversationDto,
+  studentUserId: number | null,
+): string {
+  if (studentUserId == null) return '';
+  const match = dto.participants?.find((participant) => participant.user_id === studentUserId);
+  return firstNonEmpty(match?.full_name, match?.email);
 }
 
 function num(v: unknown): number {
@@ -82,7 +107,16 @@ export function mapSrfConversationDto(
 ): AdminSrfConversation {
   const snap = (dto.context?.context_snapshot_json ?? {}) as Snapshot;
   const ctx = dto.context;
-  const studentName = str(snap.student_name ?? ctx?.student_display_name ?? dto.title);
+  const studentUserId = ctx?.student_user_id ?? (num(snap.student_user_id) || null);
+  const studentName = normalizeSrfStudentLabel(
+    firstNonEmpty(
+      snap.student_name,
+      ctx?.student_display_name,
+      resolveStudentParticipantName(dto, studentUserId),
+      ctx?.entity_label,
+      dto.title,
+    ),
+  );
   const resolved = isConversationResolved(dto, ctx);
   const archived = isConversationArchived(dto);
   const obligations = mapObligations(snap.obligations);
@@ -95,14 +129,16 @@ export function mapSrfConversationDto(
   return {
     id: String(dto.id),
     conversationId: Number(dto.id),
-    studentUserId: ctx?.student_user_id ?? (num(snap.student_user_id) || null),
+    studentUserId,
     studentName,
     studentInitials: initials(studentName),
     studentEmail: str(snap.student_email) || undefined,
     studentAvatarUrl:
-      (typeof ctx?.student_avatar_url === 'string' && ctx.student_avatar_url) ||
-      str(snap.student_avatar_url) ||
-      undefined,
+      resolveMediaUrl(
+        (typeof ctx?.student_avatar_url === 'string' && ctx.student_avatar_url) ||
+          str(snap.student_avatar_url) ||
+          null,
+      ) ?? undefined,
     program: str(snap.program) || '—',
     academicLevel: str(snap.academic_level) || '—',
     className: str(snap.class_group) || '—',

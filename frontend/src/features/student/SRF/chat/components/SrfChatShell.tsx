@@ -60,7 +60,7 @@ const SrfChatShell: FunctionComponent = () => {
       loadError={chat.loadError}
       archived={chat.archived}
       initialDraft={initialDraft}
-      onSend={(text) => void chat.sendMessage(text)}
+      onSend={(text, tagCodes, entityRefs) => void chat.sendMessage(text, tagCodes, entityRefs)}
       onArchive={() => void chat.archiveConversation()}
       onUnarchive={() => void chat.unarchiveConversation()}
       onBack={() => chat.setMobileView('list')}

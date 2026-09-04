@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import EncadrantLayout from '../../components/EncadrantLayout';
 import StudentTaskDetailHeader from '../components/StudentTaskDetailHeader';
 import StudentTaskDetailList from '../components/StudentTaskDetailList';
@@ -11,6 +12,7 @@ import { ENCADRANT_TASK_PATH } from '../constants/routes';
 import { getStudentTaskDetail } from '../data/studentTaskDetailMock';
 
 const StudentTaskDetailPage: FunctionComponent = () => {
+  const { t } = useTranslation();
   const { studentId } = useParams<{ studentId: string }>();
   const detail = studentId ? getStudentTaskDetail(studentId) : undefined;
 
@@ -19,9 +21,12 @@ const StudentTaskDetailPage: FunctionComponent = () => {
   }
 
   return (
-    <EncadrantLayout headerTitle="Task" headerSubtitle="Encadrant Portal">
+    <EncadrantLayout>
       <div id="encadrant-student-task-detail-root" className={STUDENT_TASK_DETAIL_PAGE_ROOT}>
-        <section className={STUDENT_TASK_DETAIL_CARD} aria-label={`Tasks for ${detail.name}`}>
+        <section
+          className={STUDENT_TASK_DETAIL_CARD}
+          aria-label={t('encadrant.task.detail.title', { name: detail.name })}
+        >
           <StudentTaskDetailHeader detail={detail} />
           <StudentTaskDetailList tasks={detail.tasks} />
         </section>

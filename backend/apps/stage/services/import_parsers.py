@@ -242,32 +242,29 @@ class LinkedInParser(OfferParserInterface):
         return 'linkedin.com' in host
 
     def extract(self, url: str) -> ExtractedOfferDTO:
-        try:
-            html, final_url = fetch_html(url)
-            soup = parse_soup(html)
-            dto = _parse_linkedin_page(soup, html, final_url)
-            dto.source_url = final_url
-            dto.source_platform = self.platform_key
-            dto.parser_used = self.parser_name
-            dto.raw_content = html[:12000]
-            if dto.title or dto.description:
-                dto.metadata['parser_mode'] = 'linkedin_dom'
-                return self.normalize(dto)
-        except HtmlFetchError:
-            pass
-        return self.normalize(ExtractedOfferDTO(
-            title='Imported LinkedIn offer',
-            company_name='',
-            description='Content could not be fully extracted from LinkedIn. Please complete manually.',
-            source_url=url,
-            source_platform=self.platform_key,
-            parser_used=self.parser_name,
-            metadata={'parser_mode': 'placeholder', 'requires_manual_review': True},
-        ))
+        html, final_url = fetch_html(url)
+        soup = parse_soup(html)
+        dto = _parse_linkedin_page(soup, html, final_url)
+        dto.source_url = final_url
+        dto.source_platform = self.platform_key
+        dto.parser_used = self.parser_name
+        dto.raw_content = html[:12000]
+        if not (dto.title or dto.description):
+            raise HtmlFetchError(
+                'LinkedIn returned a page without readable offer content.',
+                code='no_content_extracted',
+            )
+        dto.metadata['parser_mode'] = 'linkedin_dom'
+        return self.normalize(dto)
 
 
 class IndeedParser(OfferParserInterface):
-    """Placeholder parser — tries generic HTML extraction, minimal structured fallback."""
+    """Indeed parser — generic HTML extraction.
+
+    Reports failure rather than returning a stand-in offer: fabricating a title
+    made a blocked fetch look like a successful import, and the operator only
+    discovered it when publishing refused the empty draft.
+    """
 
     platform_key = 'INDEED'
     parser_name = 'IndeedParser'
@@ -277,24 +274,16 @@ class IndeedParser(OfferParserInterface):
         return 'indeed.' in host
 
     def extract(self, url: str) -> ExtractedOfferDTO:
-        try:
-            dto = GenericWebsiteParser().extract(url)
-            dto.source_platform = self.platform_key
-            dto.parser_used = self.parser_name
-            dto.metadata['parser_mode'] = 'html_fallback'
-            if dto.title:
-                return self.normalize(dto)
-        except HtmlFetchError:
-            pass
-        return self.normalize(ExtractedOfferDTO(
-            title='Imported Indeed offer',
-            company_name='',
-            description='Content could not be fully extracted from Indeed. Please complete manually.',
-            source_url=url,
-            source_platform=self.platform_key,
-            parser_used=self.parser_name,
-            metadata={'parser_mode': 'placeholder', 'requires_manual_review': True},
-        ))
+        dto = GenericWebsiteParser().extract(url)
+        dto.source_platform = self.platform_key
+        dto.parser_used = self.parser_name
+        dto.metadata['parser_mode'] = 'html_fallback'
+        if not dto.title:
+            raise HtmlFetchError(
+                'Indeed returned a page without a readable offer title.',
+                code='no_content_extracted',
+            )
+        return self.normalize(dto)
 
 
 PARSERS: list[OfferParserInterface] = [

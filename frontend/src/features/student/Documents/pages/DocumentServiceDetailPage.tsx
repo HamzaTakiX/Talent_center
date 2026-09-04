@@ -153,54 +153,39 @@ const DocumentServiceDetailPage: FunctionComponent = () => {
 
 
 
+  const backButton = (
+    <BackButtonRow className="student-document-detail-page__back">
+      <button
+        type="button"
+        onClick={goBack}
+        className={`${STUDENT_DOCUMENTS_BACK_NAV_BUTTON} ${controlClassName} group`}
+      >
+        <span className="student-back-nav-icon" aria-hidden>
+          <BackIcon className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" strokeWidth={2} />
+        </span>
+        <span>{t('student.documents.backToCatalog')}</span>
+      </button>
+    </BackButtonRow>
+  );
+
   return (
-
     <StudentLayout>
-
       <div id="student-document-detail-root" className={DOCUMENT_DETAIL_PAGE_ROOT}>
-
-        <BackButtonRow>
-
-          <button
-
-            type="button"
-
-            onClick={goBack}
-
-            className={`${STUDENT_DOCUMENTS_BACK_NAV_BUTTON} ${controlClassName} group`}
-
-          >
-
-            <span className="student-back-nav-icon" aria-hidden>
-
-              <BackIcon className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" strokeWidth={2} />
-
-            </span>
-
-            <span>{t('student.documents.backToCatalog')}</span>
-
-          </button>
-
-        </BackButtonRow>
-
-
-
         {loading ? (
-
           <div className="student-document-detail-page__panel student-document-detail-page__panel--loading" aria-busy="true">
-
+            {backButton}
             <div className="admin-doc-svc-card admin-doc-svc-card--skeleton min-h-[32rem]" />
-
           </div>
-
         ) : error || !item ? (
-
-          <StudentSearchEmptyState title={error ?? t('student.documents.detail.notFound')} />
-
+          <div className="student-document-detail-page__panel">
+            {backButton}
+            <div className="student-document-detail-page__empty">
+              <StudentSearchEmptyState title={error ?? t('student.documents.detail.notFound')} />
+            </div>
+          </div>
         ) : (
-
           <article className="student-document-detail-page__panel">
-
+            {backButton}
             <DocumentServiceDetailView item={item} />
 
 

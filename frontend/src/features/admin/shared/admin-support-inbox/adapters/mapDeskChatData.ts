@@ -27,6 +27,13 @@ export interface DeskConversationRecord extends SupportChatThread {
   avatarUrl?: string;
   roleLabel?: string;
   userId?: number;
+  encadrantProfileId?: number;
+  specializationDomains?: string[];
+  supervisedInternshipTypes?: string[];
+  currentStudents?: number;
+  maxStudents?: number;
+  acceptingStudents?: boolean;
+  isEncadrantActive?: boolean;
 }
 
 export function mapAdminMessages(messages: AdminChatMessage[]): SupportMessage[] {
@@ -77,6 +84,7 @@ export function toListItems(records: DeskConversationRecord[]): SupportConversat
   return records.map((r) => ({
     id: r.id,
     avatarInitials: r.avatarInitials,
+    avatarUrl: r.avatarUrl,
     name: r.title,
     contextLine: r.contextLine ?? r.subtitle,
     preview: r.preview,

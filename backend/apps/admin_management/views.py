@@ -7,13 +7,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts_et_roles.models import Permission, Role
-from apps.authentication.services.credentials import reveal_current_credential
+from apps.authentication.services.credentials import regenerate_user_password, reveal_or_provision_credential
 from apps.authentication.utils import envelope
 from apps.encadrant.permissions import HasReportPermission
 
 from .models import AcademicLevel, AcademicYear, ClassGroup, Filiere, SpecializationDomain
 from .permissions import (
     CanManageAdministrators,
+    EffectiveHasPermission,
     IsPlatformAdmin,
     IsPlatformAdminOrStudentCatalogRead,
 )
@@ -34,6 +35,7 @@ from .serializers import (
     RoleOptionSerializer,
     UpdateAdministratorSerializer,
     UpdateEncadrantSerializer,
+    UpdateEncadrantProfileSerializer,
     UpdateStudentAccessSerializer,
     UpdateStudentAssignmentSerializer,
     UpdateStudentProfileSerializer,
@@ -70,10 +72,11 @@ from .services.admins import create_platform_admin, list_administrators_queryset
 from .services.encadrants import (
     create_platform_encadrant,
     list_encadrants_queryset,
+    update_encadrant_profile,
     update_platform_encadrant,
 )
 from .services.rbac_seed import seed_admin_rbac
-from .services.scopes import assert_student_in_scope
+from .services.scopes import assert_student_in_scope, is_super_admin
 from .services.administrator_import import import_administrators_from_file
 from .services.encadrant_import import import_encadrants_from_file
 from .services.encadrant_reports import list_encadrant_reports_for_admin
@@ -117,7 +120,11 @@ class SpecializationDomainListView(APIView):
         search = request.query_params.get('search', '').strip()
         category = request.query_params.get('category', '').strip()
         include_tech = request.query_params.get('include_tech', '').lower() in ('1', 'true', 'yes')
+        # category=TECH implies include tech slice for legacy clients
+        if category.upper() == 'TECH':
+            include_tech = True
         domains = list_specialization_domains(
+            filiere_ids=filiere_ids or None,
             program_families=families,
             master_tracks=master_tracks,
             category=category,
@@ -275,7 +282,8 @@ class InternshipTypeListView(APIView):
 
 
 class AcademicStructureSeedView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'platform.settings'
 
     def post(self, request):
         result = seed_esca_academic()
@@ -283,7 +291,8 @@ class AcademicStructureSeedView(APIView):
 
 
 class AdminStudentStatsView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def get(self, request):
         return Response(
@@ -293,7 +302,8 @@ class AdminStudentStatsView(APIView):
 
 
 class AdminStudentListCreateView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def get(self, request):
         search = request.query_params.get('search', '')
@@ -337,7 +347,8 @@ class AdminStudentListCreateView(APIView):
 
 
 class AdminStudentImportView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def post(self, request):
         upload = request.FILES.get('file')
@@ -370,7 +381,8 @@ class AdminStudentImportView(APIView):
 
 
 class AdminEncadrantImportView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
 
     def post(self, request):
         upload = request.FILES.get('file')
@@ -405,7 +417,8 @@ class AdminEncadrantImportView(APIView):
 class AdminEncadrantRepairScopesView(APIView):
     """Infer missing academic levels, years, and supervised internship types for encadrants."""
 
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
 
     def post(self, request):
         dry_run = str(request.data.get('dry_run', 'false')).lower() in ('1', 'true', 'yes')
@@ -452,7 +465,8 @@ class AdminAdministratorImportView(APIView):
 
 
 class AdminStudentDetailView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def get(self, request, student_id: int):
         user = list_students_queryset(acting_user=request.user).filter(pk=student_id).first()
@@ -492,7 +506,8 @@ class AdminStudentDetailView(APIView):
 class AdminStudentChatOpenView(APIView):
     """Open or create the admin ↔ student platform desk conversation."""
 
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def post(self, request, student_id: int):
         user = list_students_queryset(acting_user=request.user).filter(pk=student_id).first()
@@ -551,8 +566,54 @@ class AdminStudentChatOpenView(APIView):
         )
 
 
+class AdminEncadrantChatOpenView(APIView):
+    """Open or create the admin ↔ encadrant platform desk conversation."""
+
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
+
+    def post(self, request, encadrant_id: int):
+        user = list_encadrants_queryset().filter(pk=encadrant_id).first()
+        if user is None:
+            return Response(
+                envelope(False, 'Supervisor not found'),
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        from apps.chat.services.message_service import send_message
+        from apps.chat.services.platform_chat_service import (
+            ensure_encadrant_desk_dm,
+            is_platform_desk_archived,
+            unarchive_platform_desk_conversation,
+        )
+
+        conv = ensure_encadrant_desk_dm(admin=request.user, encadrant=user)
+        if conv is None:
+            return Response(
+                envelope(False, 'Cannot open conversation with this supervisor'),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if is_platform_desk_archived(conv):
+            unarchive_platform_desk_conversation(conv, request.user)
+
+        message_body = (request.data.get('message') or '').strip()
+        if message_body:
+            send_message(
+                user=request.user,
+                conversation_id=conv.pk,
+                body=message_body,
+            )
+
+        return Response(
+            envelope(True, 'Conversation ready', data={'conversation_id': conv.pk}),
+            status=status.HTTP_200_OK,
+        )
+
+
 class AdminStudentBulkDeleteView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def post(self, request):
         serializer = BulkDeleteUsersSerializer(data=request.data)
@@ -571,7 +632,8 @@ class AdminStudentBulkDeleteView(APIView):
 
 
 class AdminStudentAccessView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def patch(self, request, student_id: int):
         user = list_students_queryset(acting_user=request.user).filter(pk=student_id).first()
@@ -585,7 +647,13 @@ class AdminStudentAccessView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         reason = data.pop('reason', '')
-        user = update_student_access(user=user, changed_by=request.user, reason=reason, **data)
+        try:
+            user = update_student_access(user=user, changed_by=request.user, reason=reason, **data)
+        except ValueError as exc:
+            return Response(
+                envelope(False, str(exc), errors={'detail': [str(exc)]}),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(
             envelope(True, 'Access updated', data=AdminStudentDetailSerializer(user).data),
             status=status.HTTP_200_OK,
@@ -593,7 +661,8 @@ class AdminStudentAccessView(APIView):
 
 
 class AdminStudentAssignmentView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def patch(self, request, student_id: int):
         user = list_students_queryset(acting_user=request.user).filter(pk=student_id).first()
@@ -620,7 +689,8 @@ class AdminStudentAssignmentView(APIView):
 
 
 class AdminStudentProfileView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def patch(self, request, student_id: int):
@@ -646,28 +716,30 @@ class AdminStudentProfileView(APIView):
 
 
 class AdminStudentRegeneratePasswordView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def post(self, request, student_id: int):
         user = User.objects.filter(pk=student_id, role=User.RoleChoices.STUDENT).first()
         if user is None:
             return Response(envelope(False, 'Student not found'), status=status.HTTP_404_NOT_FOUND)
-        regenerate_student_password(user=user, generated_by=request.user)
+        password = regenerate_student_password(user=user, generated_by=request.user)
         return Response(
-            envelope(True, 'Password regenerated. Use reveal to view once.', data={'regenerated': True}),
+            envelope(True, 'Password regenerated', data={'password': password, 'regenerated': True}),
             status=status.HTTP_200_OK,
         )
 
 
 class AdminStudentRevealCredentialView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'students.manage'
 
     def post(self, request, student_id: int):
         user = User.objects.filter(pk=student_id, role=User.RoleChoices.STUDENT).first()
         if user is None:
             return Response(envelope(False, 'Student not found'), status=status.HTTP_404_NOT_FOUND)
         try:
-            password = reveal_current_credential(user=user, revealed_by=request.user)
+            password = reveal_or_provision_credential(user=user, revealed_by=request.user)
         except ValueError as exc:
             return Response(
                 envelope(False, str(exc)),
@@ -675,6 +747,74 @@ class AdminStudentRevealCredentialView(APIView):
             )
         return Response(
             envelope(True, 'Credential revealed', data={'password': password}),
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminEncadrantRevealCredentialView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
+
+    def post(self, request, encadrant_id: int):
+        user = User.objects.filter(pk=encadrant_id, role=User.RoleChoices.SUPERVISOR).first()
+        if user is None:
+            return Response(envelope(False, 'Supervisor not found'), status=status.HTTP_404_NOT_FOUND)
+        password = reveal_or_provision_credential(user=user, revealed_by=request.user)
+        return Response(
+            envelope(True, 'Credential revealed', data={'password': password}),
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminAdministratorRevealCredentialView(APIView):
+    permission_classes = [IsAuthenticated, CanManageAdministrators]
+
+    def post(self, request, admin_id: int):
+        user = User.objects.filter(pk=admin_id, role=User.RoleChoices.ADMIN).first()
+        if user is None:
+            return Response(envelope(False, 'Administrator not found'), status=status.HTTP_404_NOT_FOUND)
+        if is_super_admin(user):
+            return Response(
+                envelope(False, 'Cannot reveal this credential'),
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        password = reveal_or_provision_credential(user=user, revealed_by=request.user)
+        return Response(
+            envelope(True, 'Credential revealed', data={'password': password}),
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminEncadrantRegeneratePasswordView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
+
+    def post(self, request, encadrant_id: int):
+        user = User.objects.filter(pk=encadrant_id, role=User.RoleChoices.SUPERVISOR).first()
+        if user is None:
+            return Response(envelope(False, 'Supervisor not found'), status=status.HTTP_404_NOT_FOUND)
+        password = regenerate_user_password(user=user, generated_by=request.user)
+        return Response(
+            envelope(True, 'Password regenerated', data={'password': password, 'regenerated': True}),
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminAdministratorRegeneratePasswordView(APIView):
+    permission_classes = [IsAuthenticated, CanManageAdministrators]
+
+    def post(self, request, admin_id: int):
+        user = User.objects.filter(pk=admin_id, role=User.RoleChoices.ADMIN).first()
+        if user is None:
+            return Response(envelope(False, 'Administrator not found'), status=status.HTTP_404_NOT_FOUND)
+        if is_super_admin(user):
+            return Response(
+                envelope(False, 'Cannot regenerate this credential'),
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        password = regenerate_user_password(user=user, generated_by=request.user)
+        return Response(
+            envelope(True, 'Password regenerated', data={'password': password, 'regenerated': True}),
             status=status.HTTP_200_OK,
         )
 
@@ -688,7 +828,8 @@ class AdminRbacSeedView(APIView):
 
 
 class RoleListView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'admins.manage'
 
     def get(self, request):
         seed_admin_rbac()
@@ -700,7 +841,8 @@ class RoleListView(APIView):
 
 
 class PermissionListView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'admins.manage'
 
     def get(self, request):
         seed_admin_rbac()
@@ -820,7 +962,8 @@ class AdminAdministratorBulkDeleteView(APIView):
 
 
 class AdminEncadrantListCreateView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
 
     def get(self, request):
         search = request.query_params.get('search', '')
@@ -866,7 +1009,8 @@ class AdminEncadrantListCreateView(APIView):
 
 
 class AdminEncadrantDetailView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
 
     def get(self, request, encadrant_id: int):
         user = list_encadrants_queryset().filter(pk=encadrant_id).first()
@@ -927,8 +1071,37 @@ class AdminEncadrantDetailView(APIView):
         return Response(envelope(True, 'Supervisor deleted'), status=status.HTTP_200_OK)
 
 
+class AdminEncadrantProfileView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def patch(self, request, encadrant_id: int):
+        user = list_encadrants_queryset().filter(pk=encadrant_id).first()
+        if user is None:
+            return Response(envelope(False, 'Supervisor not found'), status=status.HTTP_404_NOT_FOUND)
+        serializer = UpdateEncadrantProfileSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        user = update_encadrant_profile(
+            user=user,
+            avatar=data.get('avatar'),
+            remove_avatar=bool(data.get('remove_avatar')),
+        )
+        user = list_encadrants_queryset().get(pk=user.pk)
+        return Response(
+            envelope(
+                True,
+                'Profile updated',
+                data=AdminEncadrantDetailSerializer(user, context={'request': request}).data,
+            ),
+            status=status.HTTP_200_OK,
+        )
+
+
 class AdminEncadrantBulkDeleteView(APIView):
-    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
 
     def post(self, request):
         serializer = BulkDeleteUsersSerializer(data=request.data)
@@ -956,5 +1129,108 @@ class AdminEncadrantReportsListView(APIView):
         serializer = AdminEncadrantReportListSerializer(rows, many=True)
         return Response(
             envelope(True, 'OK', data={'items': serializer.data}),
+            status=status.HTTP_200_OK,
+        )
+
+class AdminUserMicrosoftAccessView(APIView):
+    """
+    Manage Entra Enterprise Application assignment for a Talent Center user.
+
+    GET/POST/DELETE /api/admin/users/<user_id>/microsoft-access
+    """
+
+    permission_classes = [IsAuthenticated, IsPlatformAdmin, EffectiveHasPermission]
+    required_permission = 'users.manage'
+
+    def _get_user(self, user_id: int):
+        return User.objects.filter(pk=user_id).first()
+
+    def get(self, request, user_id: int):
+        from apps.integrations.microsoft_graph.sync import get_microsoft_access_status
+
+        user = self._get_user(user_id)
+        if user is None:
+            return Response(envelope(False, 'User not found'), status=status.HTTP_404_NOT_FOUND)
+        data = get_microsoft_access_status(user)
+        success = not data.get('error')
+        message = data.get('message') or ('OK' if success else 'Microsoft Graph error')
+        return Response(
+            envelope(success, message, data={
+                'microsoft_access': bool(data.get('microsoft_access')),
+                'configured': bool(data.get('configured')),
+                'entra_user_id': data.get('entra_user_id'),
+                'entra_user_principal_name': data.get('entra_user_principal_name'),
+                'assignment_id': data.get('assignment_id'),
+                'platform_access_granted': bool(user.platform_access_granted),
+                'sso_enabled': bool(user.sso_enabled),
+            }),
+            status=status.HTTP_200_OK if success else status.HTTP_502_BAD_GATEWAY,
+        )
+
+    def post(self, request, user_id: int):
+        from apps.admin_management.services.microsoft_access_sync import (
+            MicrosoftAccessSyncError,
+            apply_platform_access_with_microsoft_sync,
+        )
+
+        user = self._get_user(user_id)
+        if user is None:
+            return Response(envelope(False, 'User not found'), status=status.HTTP_404_NOT_FOUND)
+        try:
+            apply_platform_access_with_microsoft_sync(
+                user, grant=True, granted_by=request.user,
+            )
+        except MicrosoftAccessSyncError as exc:
+            return Response(
+                envelope(False, str(exc), errors={'detail': [str(exc)]}),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user.refresh_from_db()
+        return Response(
+            envelope(True, 'Microsoft access granted', data={
+                'microsoft_access': True,
+                'platform_access_granted': bool(user.platform_access_granted),
+                'sso_enabled': bool(user.sso_enabled),
+            }),
+            status=status.HTTP_200_OK,
+        )
+
+    def delete(self, request, user_id: int):
+        from apps.admin_management.services.microsoft_access_sync import (
+            MicrosoftAccessSyncError,
+            apply_platform_access_with_microsoft_sync,
+        )
+
+        user = self._get_user(user_id)
+        if user is None:
+            return Response(envelope(False, 'User not found'), status=status.HTTP_404_NOT_FOUND)
+        try:
+            apply_platform_access_with_microsoft_sync(
+                user, grant=False, granted_by=request.user,
+            )
+        except MicrosoftAccessSyncError as exc:
+            user.refresh_from_db()
+            return Response(
+                envelope(
+                    False,
+                    str(exc),
+                    data={
+                        'microsoft_access': None,
+                        'platform_access_granted': bool(user.platform_access_granted),
+                        'local_revoked': bool(getattr(exc, 'local_revoked', False)),
+                        'graph_synced': False,
+                    },
+                    errors={'detail': [str(exc)]},
+                ),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user.refresh_from_db()
+        return Response(
+            envelope(True, 'Microsoft access revoked', data={
+                'microsoft_access': False,
+                'platform_access_granted': bool(user.platform_access_granted),
+                'sso_enabled': bool(user.sso_enabled),
+                'graph_synced': True,
+            }),
             status=status.HTTP_200_OK,
         )

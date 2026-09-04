@@ -8,8 +8,15 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.accounts_et_roles.models import SupervisorProfile, UserProfile
-from apps.accounts_et_roles.services import change_account_status
+from apps.accounts_et_roles.search import profile_name_search_q
+from apps.accounts_et_roles.services import change_account_status, ensure_user_profile
+from apps.authentication.services.credentials import provision_user_password
 from apps.authentication.services.platform_access import grant_platform_access, revoke_platform_access
+from .microsoft_access_sync import (
+    MicrosoftAccessSyncError,
+    apply_platform_access_with_microsoft_sync,
+    ensure_microsoft_assignment_for_new_user,
+)
 
 from ..models import (
     AcademicLevel,
@@ -74,11 +81,10 @@ def _validate_supervision_domains(domains: list[str]) -> list[str]:
 
 
 def _validate_esca_email(email: str) -> None:
+    """Accept any email domain for now (demo / Microsoft Graph testing)."""
     normalized = (email or '').strip().lower()
-    if not normalized.endswith(ESCA_SSO_EMAIL_SUFFIX):
-        raise ValueError(
-            f'Supervisor email must use the ESCA SSO domain ({ESCA_SSO_EMAIL_SUFFIX}).',
-        )
+    if '@' not in normalized or normalized.startswith('@') or normalized.endswith('@'):
+        raise ValueError('A valid email address is required.')
 
 
 def _sync_encadrant_scopes(
@@ -184,10 +190,21 @@ def create_platform_encadrant(
     specialization_domains: Optional[list[str]] = None,
     supervised_internship_type_ids: Optional[list[int]] = None,
     max_students: int = 15,
+    sso_enabled: bool = True,
     grant_access: bool = False,
     is_active: bool = True,
     created_by=None,
 ) -> User:
+    """
+    Create a supervisor account.
+
+    Password is always auto-generated (same as students/admins) so email/password
+    login works immediately. The ESCA email is stored for future SSO; sso_enabled
+    marks the account as SSO-eligible without requiring SSO to be fully wired yet.
+
+    auth_provider stays LOCAL while password is the primary path so reset/change
+    password APIs work. First successful SSO later may link Auth0 identity.
+    """
     email = email.strip().lower()
     _validate_esca_email(email)
     if User.objects.filter(email__iexact=email).exists():
@@ -201,16 +218,15 @@ def create_platform_encadrant(
     user = User.objects.create(
         email=email,
         role=User.RoleChoices.SUPERVISOR,
-        auth_provider=User.AuthProvider.AUTH0,
+        auth_provider=User.AuthProvider.LOCAL,
         account_status=status,
         platform_access_granted=grant_access,
         platform_access_granted_at=timezone.now() if grant_access else None,
         platform_access_granted_by=created_by if grant_access else None,
-        sso_enabled=True,
+        sso_enabled=bool(sso_enabled),
         is_active=True,
     )
-    user.set_unusable_password()
-    user.save(update_fields=['password'])
+    provision_user_password(user=user, generated_by=created_by)
 
     UserProfile.objects.create(user=user, first_name=first_name, last_name=last_name)
     supervisor = SupervisorProfile.objects.create(
@@ -259,6 +275,10 @@ def create_platform_encadrant(
 
     if grant_access:
         grant_platform_access(user, granted_by=created_by)
+        try:
+            ensure_microsoft_assignment_for_new_user(user, granted_by=created_by)
+        except MicrosoftAccessSyncError:
+            raise
 
     return user
 
@@ -279,6 +299,7 @@ def update_platform_encadrant(
     supervised_internship_type_ids: Optional[list[int]] = None,
     max_students: Optional[int] = None,
     platform_access_granted: Optional[bool] = None,
+    sso_enabled: Optional[bool] = None,
     is_active: Optional[bool] = None,
     account_status: Optional[str] = None,
     changed_by=None,
@@ -389,14 +410,43 @@ def update_platform_encadrant(
         change_account_status(user, account_status, changed_by=changed_by, reason=reason)
 
     if platform_access_granted is True:
-        grant_platform_access(user, granted_by=changed_by)
+        apply_platform_access_with_microsoft_sync(
+            user, grant=True, granted_by=changed_by,
+        )
     elif platform_access_granted is False:
-        revoke_platform_access(user)
+        apply_platform_access_with_microsoft_sync(
+            user, grant=False, granted_by=changed_by,
+        )
+
+    if sso_enabled is not None:
+        user.sso_enabled = bool(sso_enabled)
+        user.save(update_fields=['sso_enabled', 'updated_at'])
 
     encadrant.current_workload = _assigned_student_count(encadrant)
     encadrant.save(update_fields=['current_workload', 'updated_at'])
 
     user.refresh_from_db()
+    return user
+
+
+@transaction.atomic
+def update_encadrant_profile(
+    *,
+    user: User,
+    avatar=None,
+    remove_avatar: bool = False,
+) -> User:
+    profile = ensure_user_profile(user)
+    if remove_avatar:
+        if profile.avatar:
+            profile.avatar.delete(save=False)
+        profile.avatar = None
+    elif avatar is not None:
+        profile.avatar = avatar
+    profile.save()
+    user.refresh_from_db()
+    if hasattr(user, 'profile'):
+        user.profile.refresh_from_db()
     return user
 
 
@@ -423,10 +473,14 @@ def list_encadrants_queryset(*, search: str = '', status: str = ''):
     )
 
     if search:
+        q = search.strip()
         qs = qs.filter(
-            Q(email__icontains=search)
-            | Q(profile__first_name__icontains=search)
-            | Q(profile__last_name__icontains=search)
+            Q(email__icontains=q)
+            | profile_name_search_q(
+                q,
+                first_name_field='profile__first_name',
+                last_name_field='profile__last_name',
+            )
         )
 
     if status:

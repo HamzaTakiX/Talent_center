@@ -16,6 +16,7 @@ from apps.stage.services.offer_import_service import (
     compute_duplicate_similarity,
     duplicate_offer_days_ago,
 )
+from apps.stage.services.offer_types import is_canonical_offer_type, resolve_offer_type
 
 
 class InternshipOfferListSerializer(serializers.ModelSerializer):
@@ -39,15 +40,22 @@ class InternshipOfferListSerializer(serializers.ModelSerializer):
             return annotated
         return obj.application_count
 
+    def _publish_readiness(self, obj) -> dict:
+        cached = getattr(obj, '_publish_readiness_cache', None)
+        if cached is None:
+            from apps.stage.services.offer_service import evaluate_publish_readiness
+
+            cached = evaluate_publish_readiness(obj)
+            obj._publish_readiness_cache = cached
+        return cached
+
     def get_publish_readiness_score(self, obj) -> int | None:
         if obj.status not in (
             InternshipOffer.Status.DRAFT,
             InternshipOffer.Status.PENDING_REVIEW,
         ):
             return None
-        from apps.stage.services.offer_service import evaluate_publish_readiness
-
-        return evaluate_publish_readiness(obj)['score']
+        return self._publish_readiness(obj)['score']
 
     def get_publish_ready(self, obj) -> bool | None:
         if obj.status not in (
@@ -55,9 +63,7 @@ class InternshipOfferListSerializer(serializers.ModelSerializer):
             InternshipOffer.Status.PENDING_REVIEW,
         ):
             return None
-        from apps.stage.services.offer_service import evaluate_publish_readiness
-
-        return evaluate_publish_readiness(obj)['ready']
+        return self._publish_readiness(obj)['ready']
 
     def get_company_logo_url(self, obj) -> str | None:
         if obj.company_logo:
@@ -111,13 +117,27 @@ class InternshipOfferDetailSerializer(InternshipOfferListSerializer):
         ]
 
 
+class OfferTypeField(serializers.CharField):
+    """Accepts any academic/legacy type token and stores a canonical OfferType.
+
+    The create studio lists the school's academic internship types (slug codes
+    such as ``mission-pro``), while ``InternshipOffer.offer_type`` only accepts
+    ``OfferType.choices`` in a ``varchar(16)``. Normalizing here keeps the
+    column valid instead of raising a database error at insert time.
+    """
+
+    def to_internal_value(self, data):
+        raw = super().to_internal_value(data)
+        return resolve_offer_type(raw)
+
+
 class InternshipOfferWriteSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=255)
     company_name = serializers.CharField(max_length=255)
     description = serializers.CharField(required=False, allow_blank=True, default='')
     location_city = serializers.CharField(required=False, allow_blank=True, default='')
     location_country = serializers.CharField(required=False, allow_blank=True, default='')
-    offer_type = serializers.CharField(required=False, default='INTERNSHIP')
+    offer_type = OfferTypeField(required=False, allow_blank=True, default='INTERNSHIP')
     is_remote = serializers.BooleanField(required=False, default=False)
     is_hybrid = serializers.BooleanField(required=False, default=False)
     application_deadline = serializers.DateTimeField(required=False, allow_null=True)
@@ -142,6 +162,18 @@ class InternshipOfferWriteSerializer(serializers.Serializer):
     departments = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     categories = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     internship_types = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+
+    def validate(self, attrs):
+        """Keep the admin's exact academic type choice alongside the canonical one."""
+        raw_type = ''
+        if isinstance(self.initial_data, dict):
+            raw_type = str(self.initial_data.get('offer_type') or '').strip()
+        if raw_type and not is_canonical_offer_type(raw_type):
+            metadata = attrs.get('metadata_json')
+            metadata = dict(metadata) if isinstance(metadata, dict) else {}
+            metadata.setdefault('academic_internship_type', raw_type)
+            attrs['metadata_json'] = metadata
+        return attrs
 
 
 class OfferTargetingSelectionSerializer(serializers.Serializer):
@@ -289,6 +321,9 @@ class OfferImportJobSerializer(serializers.ModelSerializer):
             'company_name': dup.company_name,
             'similarity_percent': similarity,
             'published_days_ago': duplicate_offer_days_ago(dup),
+            'published_at': (dup.published_at or dup.created_at).isoformat()
+            if (dup.published_at or dup.created_at)
+            else None,
             'status': dup.status,
         }
 

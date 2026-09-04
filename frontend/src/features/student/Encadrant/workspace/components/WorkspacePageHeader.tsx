@@ -1,11 +1,17 @@
 import { FunctionComponent } from 'react';
 import { motion } from 'framer-motion';
-import { LayoutGrid, Plus, Share2, Sparkles, Video } from 'lucide-react';
+import { LayoutGrid, Plus, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { easePremium } from '../../../../admin/dashboard/ui/animations';
-import { WORKSPACE_GHOST_BTN, WORKSPACE_PRIMARY_BTN } from '../constants/workspaceLayout';
+import { WORKSPACE_PRIMARY_BTN } from '../constants/workspaceLayout';
 
-const WorkspacePageHeader: FunctionComponent = () => {
+interface WorkspacePageHeaderProps {
+  onCreateWorkspace: () => void;
+}
+
+const WorkspacePageHeader: FunctionComponent<WorkspacePageHeaderProps> = ({
+  onCreateWorkspace,
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -38,18 +44,10 @@ const WorkspacePageHeader: FunctionComponent = () => {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 shrink-0">
-          <button type="button" className={WORKSPACE_PRIMARY_BTN}>
+        <div className="student-workspace-hero__actions">
+          <button type="button" className={WORKSPACE_PRIMARY_BTN} onClick={onCreateWorkspace}>
             <Plus className="h-4 w-4" aria-hidden />
-            <span className="hidden sm:inline">{t('student.encadrant.workspace.platform.actions.createNote')}</span>
-          </button>
-          <button type="button" className={WORKSPACE_GHOST_BTN}>
-            <Video className="h-3.5 w-3.5" aria-hidden />
-            {t('student.encadrant.workspace.platform.actions.meeting')}
-          </button>
-          <button type="button" className={WORKSPACE_GHOST_BTN}>
-            <Share2 className="h-3.5 w-3.5" aria-hidden />
-            {t('student.encadrant.workspace.platform.actions.share')}
+            <span className="hidden sm:inline">{t('student.encadrant.workspace.platform.actions.newWorkspace')}</span>
           </button>
         </div>
       </div>

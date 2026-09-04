@@ -153,6 +153,8 @@ export function mapAnnouncementMessages(
         createdAt: m.created_at,
         attachmentName: m.attachments?.[0]?.original_filename,
         attachments: mapMessageAttachments(m),
+        tags: m.tags?.length ? m.tags : undefined,
+        entityRefs: m.entity_refs?.length ? m.entity_refs : undefined,
         ...readState,
       };
     });

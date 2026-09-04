@@ -96,6 +96,7 @@ export interface InterviewQuestion {
   text: string;
   interviewerRole: string;
   interviewerName: string;
+  interviewerAvatarUrl?: string;
 }
 
 export interface LiveFeedbackCategory {

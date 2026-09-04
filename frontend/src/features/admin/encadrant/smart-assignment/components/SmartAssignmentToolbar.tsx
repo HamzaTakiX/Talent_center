@@ -1,9 +1,10 @@
 import { FunctionComponent, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, Play, RefreshCw, Sparkles } from 'lucide-react';
+import { CalendarDays, Eye, Play, RefreshCw } from 'lucide-react';
 import type { AcademicYearOption } from '../../../api/types';
 import AdminFormSwitch from '../../../shared/forms/AdminFormSwitch';
 import AdminCustomSelect from '../../../ui/AdminCustomSelect';
+import '../styles/admin-smart-assignment-toolbar.css';
 
 interface SmartAssignmentToolbarProps {
   academicYear: string;
@@ -40,20 +41,15 @@ const SmartAssignmentToolbar: FunctionComponent<SmartAssignmentToolbarProps> = (
     [academicYears, t],
   );
 
-  const Panel = 'div';
-
   return (
-    <Panel className="admin-module-panel rounded-xl p-4 shadow-sm">
-      <Panel
-        className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"
-        role="toolbar"
-        aria-label={t('admin.smartAssignment.title')}
-      >
-        <Panel className="flex min-w-[min(100%,280px)] shrink-0 flex-col gap-1.5">
-          <span className="text-xs font-medium text-[var(--admin-text-muted)]">
+    <section className="sa-toolbar" aria-label={t('admin.smartAssignment.title')}>
+      <div className="sa-toolbar__inner" role="toolbar">
+        <div className="sa-toolbar__year">
+          <span className="sa-toolbar__year-label">
+            <CalendarDays className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
             {t('admin.smartAssignment.academicYear')}
           </span>
-          <Panel className="admin-select-wrap w-full min-w-[220px]">
+          <div className="sa-toolbar__year-select">
             <AdminCustomSelect
               variant="default"
               value={academicYear}
@@ -63,57 +59,53 @@ const SmartAssignmentToolbar: FunctionComponent<SmartAssignmentToolbarProps> = (
               aria-label={t('admin.smartAssignment.academicYear')}
               className="w-full"
             />
-          </Panel>
-        </Panel>
+          </div>
+        </div>
 
-        <Panel className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-x-3 gap-y-2">
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            className="admin-module-toolbar__btn inline-flex h-[2.75rem] items-center gap-2 disabled:opacity-50"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden />
-            {t('admin.smartAssignment.refresh')}
-          </button>
-          <button
-            type="button"
-            onClick={onPreview}
-            disabled={loading}
-            className="inline-flex h-[2.75rem] items-center gap-2 rounded-lg border border-[var(--admin-brand)] px-3 text-sm font-medium text-[var(--admin-brand)] hover:bg-[var(--admin-brand-muted)] disabled:opacity-50"
-          >
-            <Eye className="h-4 w-4" aria-hidden />
-            {t('admin.smartAssignment.preview')}
-          </button>
-          <button
-            type="button"
-            onClick={onRun}
-            disabled={loading}
-            className="inline-flex h-[2.75rem] items-center gap-2 rounded-lg bg-[var(--admin-brand)] px-4 text-sm font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-50"
-          >
-            <Play className="h-4 w-4" aria-hidden />
-            {t('admin.smartAssignment.runEngine')}
-          </button>
-          <AdminFormSwitch
-            id="smart-assignment-respect-locks"
-            layout="inline"
-            label={t('admin.smartAssignment.respectLocks')}
-            checked={respectLocks}
-            onChange={onRespectLocksChange}
-            disabled={loading}
-            className="h-[2.75rem] shrink-0"
-          />
-          <Panel
-            className="hidden h-8 w-px shrink-0 bg-[var(--admin-border)] sm:block"
-            aria-hidden
-          />
-          <Panel className="flex min-w-0 max-w-sm items-center gap-2 text-xs text-[var(--admin-text-muted)]">
-            <Sparkles className="h-4 w-4 shrink-0 text-[var(--admin-brand)]" aria-hidden />
-            <span className="leading-snug">{t('admin.smartAssignment.engineHint')}</span>
-          </Panel>
-        </Panel>
-      </Panel>
-    </Panel>
+        <div className="sa-toolbar__actions">
+          <div className="sa-toolbar__btn-group">
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              className="sa-toolbar__btn sa-toolbar__btn--ghost"
+            >
+              <RefreshCw className={`h-4 w-4 shrink-0 ${loading ? 'animate-spin' : ''}`} aria-hidden />
+              {t('admin.smartAssignment.refresh')}
+            </button>
+            <button
+              type="button"
+              onClick={onPreview}
+              disabled={loading}
+              className="sa-toolbar__btn sa-toolbar__btn--outline"
+            >
+              <Eye className="h-4 w-4 shrink-0" aria-hidden />
+              {t('admin.smartAssignment.preview')}
+            </button>
+            <button
+              type="button"
+              onClick={onRun}
+              disabled={loading}
+              className="sa-toolbar__btn sa-toolbar__btn--primary"
+            >
+              <Play className="h-4 w-4 shrink-0" aria-hidden />
+              {t('admin.smartAssignment.runEngine')}
+            </button>
+          </div>
+
+          <div className="sa-toolbar__toggle">
+            <AdminFormSwitch
+              id="smart-assignment-respect-locks"
+              layout="inline"
+              label={t('admin.smartAssignment.respectLocks')}
+              checked={respectLocks}
+              onChange={onRespectLocksChange}
+              disabled={loading}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 

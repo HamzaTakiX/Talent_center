@@ -60,6 +60,82 @@ SYSTEM_TAG_SEEDS = [
     {'code': 'financial_warning', 'name': 'Financial warning', 'color': '#ea580c'},
 ]
 
+# Tags reserved for staff (admin / supervisor) — hidden from students in every module.
+STAFF_ONLY_TAG_CODES = frozenset({
+    'internal_note',
+    'escalation',
+})
+
+# Admin-only tags within specific modules (e.g. SRF financial alerts).
+ADMIN_ONLY_TAG_CODES = frozenset({
+    'financial_warning',
+})
+
+# Per-app chat tag catalogs — each module only exposes tags relevant to that workflow.
+MODULE_TAG_CATALOG: dict[str, frozenset[str]] = {
+    'encadrant': frozenset({
+        'report',
+        'task',
+        'meeting',
+        'correction',
+        'feedback',
+        'blockage',
+        'validation',
+        'urgency',
+        'internal_note',
+        'escalation',
+    }),
+    'documents': frozenset({
+        'correction',
+        'validation',
+        'feedback',
+        'blockage',
+        'urgency',
+        'internal_note',
+        'escalation',
+    }),
+    'srf': frozenset({
+        'correction',
+        'validation',
+        'feedback',
+        'blockage',
+        'urgency',
+        'financial_warning',
+        'internal_note',
+        'escalation',
+    }),
+    'offers': frozenset({
+        'internship_followup',
+        'meeting',
+        'task',
+        'feedback',
+        'correction',
+        'blockage',
+        'validation',
+        'urgency',
+        'internal_note',
+        'escalation',
+    }),
+    'announcements': frozenset({
+        'feedback',
+        'urgency',
+        'task',
+        'correction',
+        'internal_note',
+        'escalation',
+    }),
+    'platform': frozenset({
+        'feedback',
+        'urgency',
+        'task',
+        'correction',
+        'blockage',
+        'meeting',
+        'internal_note',
+        'escalation',
+    }),
+}
+
 SMART_ACTION_CODES = frozenset({
     'create_task',
     'create_meeting',

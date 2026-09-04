@@ -7,7 +7,7 @@ import microsoftIcon from '../assets/icons/login/microsoft.svg';
 import loginCover from '../assets/images/login/DSCF1339 (1).webp';
 import { useAuth } from '../hooks/useAuth';
 import { authApi } from '../api';
-import { getLoginErrorMessage } from '../utils/loginErrors';
+import { getLoginErrorMessage, isMicrosoftAccessDeniedMessage } from '../utils/loginErrors';
 import { validateEmail } from '../utils/validation';
 import { AuthHeader } from '../components/AuthHeader';
 import { AuthFooter } from '../components/AuthFooter';
@@ -39,6 +39,9 @@ const LoginPage: FunctionComponent = () => {
   const returnTo =
     (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ??
     '/';
+  const stateAuthError =
+    (location.state as { authError?: string } | null)?.authError ?? null;
+  const displayAuthError = authError || stateAuthError;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -87,7 +90,7 @@ const LoginPage: FunctionComponent = () => {
           </motion.div>
 
           <AnimatePresence>
-            {authError && (
+            {displayAuthError && (
               <motion.div
                 initial={{ opacity: 0, height: 0, scale: 0.95 }}
                 animate={{ opacity: 1, height: 'auto', scale: 1 }}
@@ -95,9 +98,21 @@ const LoginPage: FunctionComponent = () => {
                 transition={{ duration: 0.2 }}
                 className="w-full mb-4 overflow-hidden"
               >
-                <div className="auth-alert-error flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-sm">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>{authError}</span>
+                <div className="auth-alert-error flex items-start gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-sm">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  {isMicrosoftAccessDeniedMessage(displayAuthError, t) ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold">
+                        {t('auth.login.errors.microsoftAccessDeniedTitle')}
+                      </span>
+                      <span className="font-normal leading-snug">{displayAuthError}</span>
+                      <span className="font-normal text-xs leading-snug opacity-90">
+                        {t('auth.login.errors.microsoftAccessDeniedHint')}
+                      </span>
+                    </div>
+                  ) : (
+                    <span>{displayAuthError}</span>
+                  )}
                 </div>
               </motion.div>
             )}

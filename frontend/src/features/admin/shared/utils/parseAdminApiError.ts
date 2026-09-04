@@ -1,6 +1,11 @@
 export interface ParsedAdminApiError {
   message: string;
   fieldErrors: Record<string, string>;
+  /**
+   * Machine-readable code from `errors.code` (see `apps/stage/views.py`).
+   * Lets the caller localize instead of printing the server's English wording.
+   */
+  code?: string;
 }
 
 const firstMessage = (value: unknown): string | undefined => {
@@ -14,10 +19,15 @@ export function parseAdminApiError(err: unknown, fallback: string): ParsedAdminA
   const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data;
   const fieldErrors: Record<string, string> = {};
 
+  let code: string | undefined;
+
   if (data?.errors && typeof data.errors === 'object' && !Array.isArray(data.errors)) {
     for (const [key, val] of Object.entries(data.errors as Record<string, unknown>)) {
       const msg = firstMessage(val);
-      if (msg) fieldErrors[key] = msg;
+      if (!msg) continue;
+      // `code` is the error identifier, not a form field.
+      if (key === 'code') code = msg;
+      else fieldErrors[key] = msg;
     }
   }
 
@@ -27,5 +37,5 @@ export function parseAdminApiError(err: unknown, fallback: string): ParsedAdminA
     Object.values(fieldErrors)[0] ||
     fallback;
 
-  return { message, fieldErrors };
+  return { message, fieldErrors, code };
 }

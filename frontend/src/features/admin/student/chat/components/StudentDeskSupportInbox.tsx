@@ -82,7 +82,9 @@ const StudentDeskSupportInbox: FunctionComponent = () => {
         openingStudentChat || (isOpeningFromStudent && !effectiveConversationId)
       }
       onInitialConversationHandled={() => {
-        if (!searchParams.has('conversation')) return;
+        const convId = searchParams.get('conversation');
+        if (!convId) return;
+        setPendingConversationId(convId);
         const next = new URLSearchParams(searchParams);
         next.delete('conversation');
         setSearchParams(next, { replace: true });

@@ -141,6 +141,7 @@ def _admin_can_access(user: User, conversation: Conversation) -> bool:
     if ctx and ctx.module == ConversationContext.Module.PLATFORM:
         from apps.chat.services.platform_chat_service import (
             ADMIN_DESK_ENTITY,
+            ENCADRANT_DESK_ENTITY,
             STUDENT_ADMIN_DM,
             STUDENT_DESK_ENTITY,
             user_can_manage_platform_desk,
@@ -150,6 +151,7 @@ def _admin_can_access(user: User, conversation: Conversation) -> bool:
             STUDENT_ADMIN_DM,
             STUDENT_DESK_ENTITY,
             ADMIN_DESK_ENTITY,
+            ENCADRANT_DESK_ENTITY,
         ):
             ensure_conversation_participant(
                 conversation,
@@ -219,22 +221,20 @@ def user_can_apply_smart_action(user: User, conversation: Conversation, action_c
         return False
     if user.is_superuser:
         return True
+    # Students may not archive/unarchive staff conversations (admin / encadrant).
+    # Archive remains an admin & encadrant inbox action only.
     if user.role == User.RoleChoices.STUDENT:
-        ctx = getattr(conversation, 'context', None)
-        if (
-            action_code in ('archive_conversation', 'unarchive_conversation')
-            and ctx
-            and ctx.module
-            in (
-                ConversationContext.Module.ANNOUNCEMENTS,
-                ConversationContext.Module.OFFERS,
-                ConversationContext.Module.PLATFORM,
-                ConversationContext.Module.DOCUMENTS,
-                ConversationContext.Module.SRF,
-            )
-        ):
-            return True
         return False
+
+    if (
+        action_code in ('archive_conversation', 'unarchive_conversation')
+        and user.role == User.RoleChoices.SUPERVISOR
+    ):
+        return ConversationParticipant.objects.filter(
+            conversation=conversation,
+            user=user,
+            left_at__isnull=True,
+        ).exists()
 
     ctx = getattr(conversation, 'context', None)
 

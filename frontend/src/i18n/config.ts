@@ -45,8 +45,12 @@ void i18n.use(initReactI18next).init({
 // Load extended admin translations after i18n init (avoids circular import with config).
 import { registerAdminTranslations } from '../features/admin/i18n/registerAdminTranslations';
 import { registerStudentTranslations } from '../features/student/i18n/registerStudentTranslations';
+import { registerEncadrantTranslations } from '../features/Encadrant/i18n/registerEncadrantTranslations';
+import { registerMeetingRoomTranslations } from '../features/shared/meeting-room/i18n/registerMeetingRoomTranslations';
 registerAdminTranslations();
 registerStudentTranslations();
+registerEncadrantTranslations();
+registerMeetingRoomTranslations();
 
 export const changeAppLanguage = async (lang: AppLanguage) => {
   applyDocumentLanguage(lang);

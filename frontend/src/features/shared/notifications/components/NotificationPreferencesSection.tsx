@@ -1,4 +1,5 @@
-import { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Bell, Check, Loader2, Mail, Smartphone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   fetchNotificationCategories,
@@ -12,13 +13,22 @@ interface NotificationPreferencesSectionProps {
 }
 
 const CHANNELS = ['IN_APP', 'EMAIL', 'PUSH'] as const;
+const CHANNEL_ICONS = {
+  IN_APP: Bell,
+  EMAIL: Mail,
+  PUSH: Smartphone,
+} as const;
 
-const NotificationPreferencesSection: FunctionComponent<NotificationPreferencesSectionProps> = ({ onSaved }) => {
+const NotificationPreferencesSection: FunctionComponent<NotificationPreferencesSectionProps> = ({
+  onSaved,
+}) => {
   const { t } = useTranslation();
   const [prefs, setPrefs] = useState<NotificationPreference[]>([]);
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     void Promise.all([fetchNotificationPreferences(), fetchNotificationCategories()])
@@ -27,6 +37,12 @@ const NotificationPreferencesSection: FunctionComponent<NotificationPreferencesS
         setCategories(meta.categories);
       })
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
   }, []);
 
   const grouped = useMemo(() => {
@@ -39,66 +55,114 @@ const NotificationPreferencesSection: FunctionComponent<NotificationPreferencesS
     return map;
   }, [prefs]);
 
-  const togglePref = (category: NotificationCategory, channel: NotificationPreference['channel'], enabled: boolean) => {
-    setPrefs((prev) =>
-      prev.map((item) =>
-        item.category === category && item.channel === channel ? { ...item, is_enabled: enabled } : item,
-      ),
-    );
-  };
+  const persist = useCallback(
+    async (next: NotificationPreference[]) => {
+      setSaving(true);
+      setSaved(false);
+      try {
+        await updateNotificationPreferences(next);
+        setSaved(true);
+        onSaved?.();
+      } finally {
+        setSaving(false);
+      }
+    },
+    [onSaved],
+  );
 
-  const save = async () => {
-    setSaving(true);
-    try {
-      await updateNotificationPreferences(prefs);
-      onSaved?.();
-    } finally {
-      setSaving(false);
-    }
+  const togglePref = (
+    category: NotificationCategory,
+    channel: NotificationPreference['channel'],
+    enabled: boolean,
+  ) => {
+    setPrefs((prev) => {
+      const exists = prev.some((item) => item.category === category && item.channel === channel);
+      const next = exists
+        ? prev.map((item) =>
+            item.category === category && item.channel === channel
+              ? { ...item, is_enabled: enabled }
+              : item,
+          )
+        : [
+            ...prev,
+            {
+              category,
+              channel,
+              is_enabled: enabled,
+              frequency: 'REALTIME' as const,
+            },
+          ];
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        void persist(next);
+      }, 350);
+      return next;
+    });
   };
 
   if (loading) {
-    return <p className="text-sm text-[var(--admin-text-secondary,#6a7282)]">{t('notifications.center.loading')}</p>;
+    return (
+      <div className="admin-notif-prefs" aria-busy="true">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="admin-notif-prefs__row">
+            <span className="admin-shimmer h-4 w-28 rounded" aria-hidden />
+            <span className="flex gap-1.5">
+              <span className="admin-shimmer h-8 w-16 rounded-full" aria-hidden />
+              <span className="admin-shimmer h-8 w-16 rounded-full" aria-hidden />
+              <span className="admin-shimmer h-8 w-16 rounded-full" aria-hidden />
+            </span>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      {categories.map((category) => {
-        const categoryPrefs = grouped.get(category.value as NotificationCategory) ?? [];
-        const inApp = categoryPrefs.find((p) => p.channel === 'IN_APP');
-        const email = categoryPrefs.find((p) => p.channel === 'EMAIL');
-        const push = categoryPrefs.find((p) => p.channel === 'PUSH');
-        return (
-          <div key={category.value} className="rounded-xl border border-[var(--admin-border,#e5e7eb)] p-4">
-            <h3 className="m-0 text-sm font-semibold text-[var(--admin-text,#101828)]">{category.label}</h3>
-            <div className="mt-3 flex flex-wrap gap-4 text-sm">
-              {CHANNELS.map((channel) => {
-                const pref =
-                  channel === 'IN_APP' ? inApp : channel === 'EMAIL' ? email : push;
-                if (!pref) return null;
-                return (
-                  <label key={channel} className="inline-flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={pref.is_enabled}
-                      onChange={(e) => togglePref(category.value as NotificationCategory, channel, e.target.checked)}
-                    />
-                    <span>{t(`notifications.preferences.channels.${channel.toLowerCase()}`)}</span>
-                  </label>
-                );
-              })}
+    <div className="admin-notif-prefs-wrap">
+      <div className="admin-notif-prefs" role="list">
+        {categories.map((category) => {
+          const categoryPrefs = grouped.get(category.value as NotificationCategory) ?? [];
+          return (
+            <div key={category.value} className="admin-notif-prefs__row" role="listitem">
+              <p className="admin-notif-prefs__label">{category.label}</p>
+              <div className="admin-notif-prefs__channels">
+                {CHANNELS.map((channel) => {
+                  const pref = categoryPrefs.find((item) => item.channel === channel);
+                  const on = pref?.is_enabled ?? true;
+                  const Icon = CHANNEL_ICONS[channel];
+                  return (
+                    <button
+                      key={channel}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() =>
+                        togglePref(category.value as NotificationCategory, channel, !on)
+                      }
+                      className={`admin-notif-chip${on ? ' admin-notif-chip--on' : ''}`}
+                    >
+                      <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
+                      {t(`notifications.preferences.channels.${channel.toLowerCase()}`)}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        );
-      })}
-      <button
-        type="button"
-        disabled={saving}
-        onClick={() => void save()}
-        className="rounded-xl bg-[var(--admin-brand,#7c3aed)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-      >
-        {saving ? t('notifications.center.loading') : t('notifications.preferences.save')}
-      </button>
+          );
+        })}
+      </div>
+      <p className="admin-notif-prefs__status" aria-live="polite">
+        {saving ? (
+          <>
+            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+            {t('notifications.center.loading')}
+          </>
+        ) : saved ? (
+          <>
+            <Check className="h-3.5 w-3.5" aria-hidden />
+            {t('notifications.preferences.saved')}
+          </>
+        ) : null}
+      </p>
     </div>
   );
 };

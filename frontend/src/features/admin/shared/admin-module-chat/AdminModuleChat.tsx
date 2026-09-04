@@ -17,7 +17,6 @@ import {
   Filter,
   MessageSquare,
   Search,
-  Tag,
   X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +33,17 @@ import {
 import type { AdminChatMessage, AdminChatParticipant } from './adminChatTypes';
 import ChatEmptyState from './components/ChatEmptyState';
 import type { ChatEmptyStateProps, ChatEmptyStateStats } from './types/chatEmptyStateTypes';
+import type { SupervisionMeetingChatConfig } from '../../../shared/meeting-room/types/chatMeetingRequest';
+import { ChatMeetingRequestBubble } from '../../../shared/meeting-room/components/chat/ChatMeetingRequestBubble';
+import { ChatMeetingRequestComposerButton } from '../../../shared/meeting-room/components/chat/ChatMeetingRequestComposerButton';
+import ChatComposerTagPicker from '../../../shared/contextual-chat/components/ChatComposerTagPicker';
+import type { ChatModule } from '../../../shared/contextual-chat/types';
+import type { ChatComposerPendingTag } from '../../../shared/contextual-chat/types/chatTagTypes';
+import {
+  buildOptimisticMessageAttachments,
+  mapAttachmentDto,
+  resolveOptimisticMessageType,
+} from '../../../shared/contextual-chat/utils/mapMessageAttachments';
 
 const DEFAULT_RINGS = [
   'bg-[#5ba3ff] text-white',
@@ -175,6 +185,8 @@ export interface AdminModuleChatProps {
   rightPanel?: ReactNode;
   /** Workflow actions above composer */
   smartActionsBar?: ReactNode;
+  /** Supervision chat — inline meeting request composer + message cards */
+  supervisionMeeting?: SupervisionMeetingChatConfig;
   selectedConversationId?: string;
   onSelectConversation?: (id: string) => void;
   onSendMessage?: (text: string, conversationId: string) => boolean | Promise<boolean>;
@@ -182,6 +194,8 @@ export interface AdminModuleChatProps {
   renderListMeta?: (participant: AdminChatParticipant) => ReactNode;
   /** Max characters allowed in composer (default: no limit) */
   composerMaxLength?: number;
+  /** Module-scoped tag catalog for the composer picker */
+  chatModule?: ChatModule;
 }
 
 const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
@@ -198,12 +212,14 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
   contextHeader,
   rightPanel,
   smartActionsBar,
+  supervisionMeeting,
   selectedConversationId,
   onSelectConversation,
   onSendMessage,
   renderConversationBadge,
   renderListMeta,
   composerMaxLength,
+  chatModule = 'platform',
 }) => {
   const { t, i18n } = useTranslation();
   const toast = useAdminToast();
@@ -227,6 +243,9 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
   const [mutedIds, setMutedIds] = useState<Set<string>>(() => new Set());
   const [mobileView, setMobileView] = useState<MobileView>('list');
   const [sidebarMenuOpen, setSidebarMenuOpen] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingTags, setPendingTags] = useState<ChatComposerPendingTag[]>([]);
+  const [attachError, setAttachError] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const sidebarSearchRef = useRef<HTMLInputElement>(null);
@@ -249,6 +268,28 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
 
   const thread = messagesByConv[selectedId] ?? [];
 
+  const hasPendingOutgoingMeetingRequest = useMemo(
+    () =>
+      thread.some(
+        (message) =>
+          message.messageType === 'MEETING_REQUEST' &&
+          message.direction === 'out' &&
+          message.meetingRequest?.status === 'pending',
+      ),
+    [thread],
+  );
+
+  const outgoingMeetingRequestNotice = useMemo(() => {
+    if (!hasPendingOutgoingMeetingRequest || !selectedConv || !supervisionMeeting) {
+      return null;
+    }
+    const noticeKey =
+      supervisionMeeting.portal === 'student'
+        ? 'meetingRoom.chat.alreadyPendingStudent'
+        : 'meetingRoom.chat.alreadyPendingEncadrant';
+    return t(noticeKey, { name: selectedConv.title });
+  }, [hasPendingOutgoingMeetingRequest, selectedConv, supervisionMeeting, t]);
+
   const chatTools = useChatConversationTools({
     messages: toChatToolMessages(thread),
     conversationKey: selectedId,
@@ -270,6 +311,12 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
 
   useEffect(() => {
     setUnreadByConv((prev) => ({ ...prev, [selectedId]: 0 }));
+  }, [selectedId]);
+
+  useEffect(() => {
+    setPendingFiles([]);
+    setPendingTags([]);
+    setAttachError(null);
   }, [selectedId]);
 
   useEffect(() => {
@@ -302,7 +349,15 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
 
   const handleSend = async () => {
     const text = draft.trim();
-    if (!text || !selectedId) return;
+    if ((!text && !pendingFiles.length) || !selectedId) return;
+
+    const filesToSend = [...pendingFiles];
+    const tagCodes = pendingTags.map((tag) => tag.code);
+    const optimisticAttachments = filesToSend.length
+      ? buildOptimisticMessageAttachments(filesToSend).map(mapAttachmentDto)
+      : undefined;
+    const messageType = resolveOptimisticMessageType(filesToSend, text);
+
     if (onSendMessage) {
       const ok = await onSendMessage(text, selectedId);
       if (!ok) return;
@@ -312,6 +367,9 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
         direction: 'out',
         text,
         time: formatNowTime(i18n.language),
+        messageType: messageType as AdminChatMessage['messageType'],
+        attachments: optimisticAttachments,
+        tags: tagCodes.length ? tagCodes : undefined,
       };
       setMessagesByConv((prev) => ({
         ...prev,
@@ -319,11 +377,78 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
       }));
     }
     setDraft('');
+    setPendingFiles([]);
+    setPendingTags([]);
+    setAttachError(null);
+    const preview =
+      text ||
+      (optimisticAttachments?.length === 1
+        ? optimisticAttachments[0].filename
+        : optimisticAttachments?.length
+          ? t('shared.chat.attachments.pending', { defaultValue: 'Attachments' })
+          : '');
     const nowLbl = formatNowTime(i18n.language);
     setConversationRows((rows) =>
-      rows.map((r) => (r.id === selectedId ? { ...r, lastPreview: text, timeLabel: nowLbl } : r))
+      rows.map((r) => (r.id === selectedId ? { ...r, lastPreview: preview, timeLabel: nowLbl } : r))
     );
   };
+
+  const handleSendMeetingRequest = useCallback(() => {
+    if (!selectedId || !supervisionMeeting || !selectedConv) return;
+    if (hasPendingOutgoingMeetingRequest) return;
+
+    const requestId = `mr-${Date.now()}`;
+    const msg: AdminChatMessage = {
+      id: `local-${requestId}`,
+      direction: 'out',
+      text: t('meetingRoom.chat.requestPreview'),
+      time: formatNowTime(i18n.language),
+      messageType: 'MEETING_REQUEST',
+      meetingRequest: {
+        requestId,
+        mode: 'video',
+        status: 'pending',
+        title: t('meetingRoom.withParticipant', { name: selectedConv.title }),
+      },
+    };
+    setMessagesByConv((prev) => ({
+      ...prev,
+      [selectedId]: [...(prev[selectedId] ?? []), msg],
+    }));
+    const preview = t('meetingRoom.chat.requestPreview');
+    const nowLbl = formatNowTime(i18n.language);
+    setConversationRows((rows) =>
+      rows.map((r) => (r.id === selectedId ? { ...r, lastPreview: preview, timeLabel: nowLbl } : r))
+    );
+  }, [
+    hasPendingOutgoingMeetingRequest,
+    i18n.language,
+    selectedConv,
+    selectedId,
+    supervisionMeeting,
+    t,
+  ]);
+
+  const handleMeetingRequestAccepted = useCallback(
+    (requestId: string) => {
+      if (!selectedId) return;
+      setMessagesByConv((prev) => ({
+        ...prev,
+        [selectedId]: (prev[selectedId] ?? []).map((message) =>
+          message.meetingRequest?.requestId === requestId
+            ? {
+                ...message,
+                meetingRequest: {
+                  ...message.meetingRequest,
+                  status: 'accepted' as const,
+                },
+              }
+            : message,
+        ),
+      }));
+    },
+    [selectedId],
+  );
 
   const selectConversation = (c: AdminChatParticipant) => {
     setSelectedId(c.id);
@@ -518,12 +643,36 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
                     emptyLabel={t('admin.chat.noMessages')}
                     getMessageBlockProps={chatTools.getMessageBlockProps}
                     renderHighlightedText={chatTools.renderHighlightedText}
+                    renderMeetingRequest={
+                      supervisionMeeting
+                        ? (message) =>
+                            message.meetingRequest ? (
+                              <ChatMeetingRequestBubble
+                                direction={message.direction ?? 'in'}
+                                partnerName={selectedConv?.title ?? ''}
+                                meetingRequest={message.meetingRequest}
+                                portal={supervisionMeeting.portal}
+                                studentProfileId={supervisionMeeting.studentProfileId}
+                                onAccepted={handleMeetingRequestAccepted}
+                              />
+                            ) : null
+                        : undefined
+                    }
                   />
                 </div>
 
                 {chatTools.panels}
 
                 {smartActionsBar}
+
+                {outgoingMeetingRequestNotice ? (
+                  <div
+                    role="status"
+                    className="mx-3 mb-2 rounded-[10px] border border-[color-mix(in_srgb,var(--admin-brand)_24%,var(--admin-border))] bg-[color-mix(in_srgb,var(--admin-brand)_8%,var(--admin-bg-elevated))] px-3 py-2 text-sm leading-5 text-[var(--admin-text-secondary)]"
+                  >
+                    {outgoingMeetingRequestNotice}
+                  </div>
+                ) : null}
 
                 <SupportMessageComposer
                   value={draft}
@@ -535,14 +684,35 @@ const AdminModuleChat: FunctionComponent<AdminModuleChatProps> = ({
                   sendAriaLabel={t('admin.chat.sendMessage')}
                   maxLength={composerMaxLength}
                   showVoice={false}
+                  pendingFiles={pendingFiles}
+                  onPendingFilesChange={setPendingFiles}
+                  pendingTags={pendingTags}
+                  onRemovePendingTag={(code) =>
+                    setPendingTags((prev) => prev.filter((tag) => tag.code !== code))
+                  }
+                  attachError={attachError}
+                  onAttachError={setAttachError}
                   extraActions={
-                    <button
-                      type="button"
-                      aria-label={t('admin.chat.tagTemplate')}
-                      className="isi-composer-action"
-                    >
-                      <Tag className="size-[1.05rem]" strokeWidth={1.85} aria-hidden />
-                    </button>
+                    <>
+                      {supervisionMeeting ? (
+                        <ChatMeetingRequestComposerButton
+                          disabled={!selectedId || hasPendingOutgoingMeetingRequest}
+                          onClick={handleSendMeetingRequest}
+                          tooltipLabel={
+                            hasPendingOutgoingMeetingRequest
+                              ? t('meetingRoom.chat.alreadyPendingTooltip')
+                              : undefined
+                          }
+                        />
+                      ) : null}
+                      <ChatComposerTagPicker
+                        chatModule={chatModule}
+                        enabled
+                        disabled={!selectedId}
+                        selectedCodes={pendingTags.map((tag) => tag.code)}
+                        onChange={setPendingTags}
+                      />
+                    </>
                   }
                 />
               </>

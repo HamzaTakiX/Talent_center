@@ -1,6 +1,7 @@
 import { FunctionComponent, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AdminAdministratorRow } from '../../api/types';
+import AdminCredentialReveal from '../../ui/AdminCredentialReveal';
 import AdminEntityDetailModal from '../../ui/AdminEntityDetailModal';
 import type { AdminDetailSection } from '../../ui/AdminDetailGrid';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
@@ -154,6 +155,11 @@ const AdministratorDetailModal: FunctionComponent<AdministratorDetailModalProps>
       description={administrator.full_name}
       sections={sections}
       onEdit={onEdit && !isSuperAdminAdministrator(administrator) ? () => onEdit(administrator.id) : undefined}
+      afterSections={
+        isSuperAdminAdministrator(administrator) ? null : (
+          <AdminCredentialReveal kind="administrator" userId={administrator.id} enabled={open} />
+        )
+      }
     />
   );
 };

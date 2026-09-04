@@ -4,7 +4,7 @@ import { UpcomingMeetingsScheduleSection, UpcomingMeetingsSummaryGrid } from '..
 import { UPCOMING_MEETINGS_PAGE_ROOT } from '../constants/upcomingMeetingsLayout';
 
 const UpcomingMeetingsPage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Upcoming Meetings" headerSubtitle="Encadrant Portal">
+  <EncadrantLayout>
     <div id="encadrant-upcoming-meetings-root" className={UPCOMING_MEETINGS_PAGE_ROOT}>
       <UpcomingMeetingsSummaryGrid />
       <UpcomingMeetingsScheduleSection />

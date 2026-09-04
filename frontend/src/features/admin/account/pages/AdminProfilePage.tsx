@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Shield } from 'lucide-react';
+import { Settings, Shield, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../dashboard/components/AdminLayout';
 import StudentLayout from '../../../student/components/StudentLayout';
@@ -331,10 +331,7 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
         animate="animate"
         className={pageRootClass}
       >
-        <AccountSectionNav active={activeSection} onSelect={scrollToSection} />
-
         <section id="profile" className="scroll-mt-28 space-y-6">
-        {/* Profile header card */}
         <motion.div
           variants={staggerContainer}
           className="admin-profile-header relative overflow-hidden rounded-admin-xl border border-[var(--admin-border)] shadow-admin-md"
@@ -347,42 +344,59 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
             }}
             aria-hidden
           />
-          <motion.div className="relative flex flex-col items-center gap-6 px-6 py-8 sm:flex-row sm:items-center sm:gap-8 sm:px-8 sm:py-10">
-            <ProfileAvatarUploader
-              initials={initials}
-              avatarPreview={avatarPreview}
-              fileInputRef={fileInputRef}
-              onFileChange={handleAvatarChange}
-            />
-            <div className="min-w-0 flex-1 text-center sm:text-left">
-              <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 sm:justify-start sm:gap-2.5">
-                <h2 className="text-xl font-bold tracking-tight text-[var(--admin-text)] sm:text-2xl">
-                  {form.fullName}
-                </h2>
-                <span className="admin-role-badge inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold">
-                  <Shield className="h-3.5 w-3.5" strokeWidth={2} />
-                  {roleLabel}
+          <div className="relative flex flex-col gap-5 px-5 pt-5 sm:px-8 sm:pt-6">
+            <div className="flex flex-col gap-4">
+              <header className="flex min-w-0 items-start justify-center gap-3 text-center sm:justify-start sm:text-left">
+                <span className="admin-form-section__icon-wrap mt-0.5 shrink-0" aria-hidden>
+                  <User className="admin-form-section__icon" strokeWidth={1.75} />
                 </span>
+                <div className="min-w-0">
+                  <h1 className="m-0 text-xl font-bold tracking-tight text-[var(--admin-text)] sm:text-2xl">
+                    {t('admin.account.title')}
+                  </h1>
+                  <p className="m-0 mt-1 text-sm text-[var(--admin-text-secondary)]">
+                    {t('admin.account.subtitle')}
+                  </p>
+                </div>
+              </header>
+              <div className="flex justify-center">
+                <AccountSectionNav active={activeSection} onSelect={scrollToSection} />
               </div>
-              <p className="mt-1 text-sm text-[var(--admin-text-secondary)]">{form.email}</p>
             </div>
-          </motion.div>
+
+            <motion.div className="flex flex-col items-center gap-5 pb-5 sm:flex-row sm:items-center sm:gap-6 sm:pb-6">
+              <ProfileAvatarUploader
+                initials={initials}
+                avatarPreview={avatarPreview}
+                fileInputRef={fileInputRef}
+                onFileChange={handleAvatarChange}
+              />
+              <div className="flex min-w-0 flex-1 flex-col gap-4">
+                <div className="min-w-0 text-center sm:text-left">
+                  <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 sm:justify-start sm:gap-2.5">
+                    <h2 className="text-xl font-bold tracking-tight text-[var(--admin-text)] sm:text-2xl">
+                      {form.fullName}
+                    </h2>
+                    <span className="admin-role-badge inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold">
+                      <Shield className="h-3.5 w-3.5" strokeWidth={2} />
+                      {roleLabel}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-[var(--admin-text-secondary)]">{form.email}</p>
+                </div>
+                <AccountActivityGrid />
+              </div>
+            </motion.div>
+          </div>
         </motion.div>
 
         {isStudentPortal ? <StudentProfileMainWidgets /> : null}
-
-        <AccountSection
-          sectionKey="activity"
-          title={t('admin.account.activity.title')}
-          description={t('admin.account.activity.description')}
-        >
-          <AccountActivityGrid />
-        </AccountSection>
 
         {isStudentPortal ? <StudentOnboardingInfoSection /> : null}
 
         <form id="admin-profile-form" onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-6">
+            {!isStudentPortal ? (
             <AccountSection
               sectionKey="personal"
               sectionId="profile-personal-info"
@@ -398,11 +412,10 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
                     id="fullName"
                     type="text"
                     value={form.fullName}
-                    onChange={(e) => !isStudentPortal && setForm((f) => ({ ...f, fullName: e.target.value }))}
-                    readOnly={isStudentPortal}
+                    onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
                     className={`admin-input rounded-xl px-4 py-2.5 text-sm ${
                       errors.fullName ? 'border-red-500/50' : ''
-                    } ${isStudentPortal ? 'cursor-default opacity-70 select-none' : ''}`}
+                    }`}
                   />
                   {errors.fullName && (
                     <p className="text-xs font-medium text-red-500">{errors.fullName}</p>
@@ -416,11 +429,10 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
                     id="profileEmail"
                     type="email"
                     value={form.email}
-                    onChange={(e) => !isStudentPortal && setForm((f) => ({ ...f, email: e.target.value }))}
-                    readOnly={isStudentPortal}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                     className={`admin-input rounded-xl px-4 py-2.5 text-sm ${
                       errors.email ? 'border-red-500/50' : ''
-                    } ${isStudentPortal ? 'cursor-default opacity-70 select-none' : ''}`}
+                    }`}
                   />
                   {errors.email && (
                     <p className="text-xs font-medium text-red-500">{errors.email}</p>
@@ -428,6 +440,7 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
                 </div>
               </div>
             </AccountSection>
+            ) : null}
 
             <AccountSection
               sectionKey="security"
@@ -470,21 +483,14 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
         </form>
         </section>
 
-        <section id="settings" className="scroll-mt-28 space-y-6 pt-4">
-          <div className="flex items-center gap-2 border-b border-[var(--admin-border)] pb-4">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--admin-brand-muted)] text-[var(--admin-brand)]">
-              <Settings className="h-[18px] w-[18px]" strokeWidth={1.75} />
-            </span>
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight text-[var(--admin-text)]">
-                {t('admin.account.settingsHeader')}
-              </h2>
-              <p className="text-sm text-[var(--admin-text-secondary)]">
-                {t('admin.account.settingsSubtitle')}
-              </p>
-            </div>
-          </div>
-          {prefsHydrated && (
+        {prefsHydrated ? (
+          <AccountSection
+            sectionId="settings"
+            icon={Settings}
+            title={t('admin.account.settingsHeader')}
+            description={t('admin.account.settingsSubtitle')}
+            className="scroll-mt-28"
+          >
             <ProfileSettingsPanel
               draft={settingsDraft}
               onDraftChange={setSettingsDraft}
@@ -494,8 +500,8 @@ const AdminProfilePage: FunctionComponent<{ variant?: 'admin' | 'student' }> = (
               onDashboardOrderChange={setDashboardOrderDraft}
               variant={variant}
             />
-          )}
-        </section>
+          </AccountSection>
+        ) : null}
 
         {prefsHydrated && (
           <AccountPageActionsBar

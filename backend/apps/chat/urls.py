@@ -15,12 +15,14 @@ from .views import (
     ChatReactionView,
     ChatSmartActionView,
     ChatTagListView,
+    ChatEntityReferenceListView,
     ChatTypingView,
 )
 
 urlpatterns = [
     path('channels', ChatChannelListView.as_view()),
     path('tags', ChatTagListView.as_view()),
+    path('entity-references', ChatEntityReferenceListView.as_view()),
     path('inbox/summary', ChatInboxSummaryView.as_view()),
     path('modules/<str:module>/metrics', ChatModuleMetricsView.as_view()),
     path('presence/<int:user_id>', ChatPresenceView.as_view()),

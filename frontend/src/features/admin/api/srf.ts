@@ -24,6 +24,10 @@ export interface StudentFinancialTableRow {
 
   studentName: string;
 
+  studentEmail?: string;
+
+  studentAvatarUrl?: string | null;
+
   className: string;
 
   amountDue: number;
@@ -133,6 +137,8 @@ export interface SrfStudentSummary {
   last_name: string;
 
   full_name: string;
+
+  avatar_url?: string | null;
 
   program: string;
 

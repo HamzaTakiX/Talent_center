@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare, Sparkles } from 'lucide-react';
 import { buildInterviewSimulatorOfferPath } from '../../interview_Simulator/constants/routes';
-import { DETAILS_SECTION_SUBTITLE, DETAILS_SECTION_TITLE, DETAILS_SIMULATION_CTA } from '../../constants/internshipOfferDetailsStyles';
+import {
+  DETAILS_SECTION_SUBTITLE,
+  DETAILS_SECTION_TITLE,
+  DETAILS_SIMULATION_CTA,
+} from '../../constants/internshipOfferDetailsStyles';
 import type { InternshipOfferDetails } from '../../types';
 import DetailsSectionCard from './DetailsSectionCard';
 
@@ -24,8 +28,8 @@ const OfferInterviewSimulationSection: FunctionComponent<OfferInterviewSimulatio
   }, [navigate, offer]);
 
   return (
-    <DetailsSectionCard>
-      <div className="mb-5 flex min-w-0 items-start gap-2.5">
+    <DetailsSectionCard className="student-interview-sim-section">
+      <div className="mb-3 flex min-w-0 items-start gap-2.5">
         <div className="student-icon-chip student-icon-chip--brand flex h-9 w-9 shrink-0 items-center justify-center">
           <MessageSquare className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
         </div>
@@ -40,20 +44,19 @@ const OfferInterviewSimulationSection: FunctionComponent<OfferInterviewSimulatio
       </div>
 
       <div className="student-interview-sim-intro">
-        <div className="student-interview-sim-intro__icon" aria-hidden>
-          <MessageSquare className="h-5 w-5" strokeWidth={1.75} />
+        <div className="student-interview-sim-intro__content">
+          <div className="student-interview-sim-intro__icon" aria-hidden>
+            <MessageSquare className="h-5 w-5" strokeWidth={1.75} />
+          </div>
+          <p className="student-interview-sim-intro__text">
+            {t('student.internshipOffers.details.interviewSim.intro', {
+              title: offer.title,
+              company: offer.company,
+            })}
+          </p>
         </div>
-        <p className="student-interview-sim-intro__text">
-          {t('student.internshipOffers.details.interviewSim.intro', {
-            title: offer.title,
-            company: offer.company,
-          })}
-        </p>
-        <button
-          type="button"
-          className={DETAILS_SIMULATION_CTA}
-          onClick={handleStart}
-        >
+
+        <button type="button" className={DETAILS_SIMULATION_CTA} onClick={handleStart}>
           <span className="student-interview-sim-cta__icon" aria-hidden>
             <Sparkles className="h-3.5 w-3.5" />
           </span>

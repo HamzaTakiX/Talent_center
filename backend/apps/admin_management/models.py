@@ -53,6 +53,15 @@ class Filiere(TimestampedModel):
     sort_order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True, db_index=True)
     is_archived = models.BooleanField(default=False, db_index=True)
+    specialization_domains = models.ManyToManyField(
+        'SpecializationDomain',
+        blank=True,
+        related_name='filieres',
+        help_text=_(
+            'Business and technical domains configured for this program '
+            '(Structure académique → Filière). Source of truth for encadrant forms.'
+        ),
+    )
 
     class Meta(TimestampedModel.Meta):
         ordering = ['sort_order', 'code']

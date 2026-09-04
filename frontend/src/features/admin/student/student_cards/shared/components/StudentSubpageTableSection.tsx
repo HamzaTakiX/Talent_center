@@ -126,7 +126,10 @@ const StudentSubpageTableSection: FunctionComponent<StudentSubpageTableSectionPr
                   return (
                     <tr
                       key={student.id}
-                      className="min-h-[49px] border-b border-solid border-[var(--admin-border)] last:border-b-0"
+                      className="admin-table-row--interactive min-h-[49px] border-b border-solid border-[var(--admin-border)] last:border-b-0"
+                      onClick={() =>
+                        onView ? onView(student) : navigate(`/admin/students/${student.id}/edit`)
+                      }
                     >
                       <td className="box-border min-h-[49px] py-[13.5px] pl-2 pr-4 align-middle leading-num-20">
                         <StudentTableIdentityCell student={student} />
@@ -154,7 +157,10 @@ const StudentSubpageTableSection: FunctionComponent<StudentSubpageTableSectionPr
                           {accountStatus(student.account_status)}
                         </span>
                       </td>
-                      <td className="box-border min-h-[49px] py-[8.5px] pl-4 pr-2 text-right align-middle admin-students-table__actions">
+                      <td
+                        className="box-border min-h-[49px] py-[8.5px] pl-4 pr-2 text-right align-middle admin-students-table__actions"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <StudentActions
                           student={student}
                           onView={() =>

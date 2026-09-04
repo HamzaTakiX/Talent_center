@@ -33,14 +33,27 @@
     flex-shrink: 0;
     align-items: center;
     padding: 0.2rem 0.35rem;
+    border: none;
     border-radius: 0.5rem;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    cursor: pointer;
     text-decoration: none;
+    appearance: none;
+    -webkit-appearance: none;
     transition: opacity 0.15s ease, transform 0.15s ease;
   }
 
   .student-whiteboard-logo-link:hover {
     opacity: 0.9;
     transform: scale(1.02);
+    background: transparent;
+  }
+
+  .student-whiteboard-logo-link:focus-visible {
+    outline: 2px solid var(--admin-brand);
+    outline-offset: 2px;
   }
 
   .student-whiteboard-logo {
@@ -1038,6 +1051,85 @@
   }
 
   .student-whiteboard-icon-btn:hover {
+    background: var(--admin-surface-muted);
+    color: var(--admin-text);
+  }
+
+  .student-whiteboard-action--exit {
+    border-color: color-mix(in srgb, var(--admin-danger, #dc2626) 40%, var(--admin-border));
+    color: var(--admin-danger, #dc2626);
+  }
+
+  .student-whiteboard-exit-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .student-whiteboard-exit-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 0.75rem;
+    background: var(--admin-surface-muted);
+    text-align: start;
+    color: var(--admin-text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .student-whiteboard-exit-choice:hover {
+    border-color: var(--admin-brand);
+    background: var(--admin-brand-muted);
+  }
+
+  .student-whiteboard-exit-choice strong {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .student-whiteboard-exit-choice small {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    color: var(--admin-text-muted);
+  }
+
+  .student-whiteboard-exit-choice--primary {
+    border-color: var(--admin-brand);
+    background: var(--admin-brand-muted);
+    color: var(--admin-brand);
+  }
+
+  .student-whiteboard-exit-choice--danger {
+    color: var(--admin-danger, #dc2626);
+  }
+
+  .student-whiteboard-exit-choice--danger:hover {
+    border-color: var(--admin-danger, #dc2626);
+    background: color-mix(in srgb, var(--admin-danger, #dc2626) 10%, transparent);
+  }
+
+  .student-whiteboard-exit-cancel {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--admin-text-muted);
+    cursor: pointer;
+  }
+
+  .student-whiteboard-exit-cancel:hover {
     background: var(--admin-surface-muted);
     color: var(--admin-text);
   }

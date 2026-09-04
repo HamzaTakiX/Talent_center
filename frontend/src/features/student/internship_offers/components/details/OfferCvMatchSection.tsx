@@ -17,17 +17,15 @@ import StudentMatchStatCard from '../../../components/StudentMatchStatCard';
 import StudentMatchStatCardsSkeleton from '../../../components/StudentMatchStatCardsSkeleton';
 import type { InternshipOfferDetails } from '../../types';
 import {
+  DETAILS_OUTLINE_BUTTON,
+  DETAILS_PRIMARY_BUTTON,
   DETAILS_SECTION_SUBTITLE,
   DETAILS_SECTION_TITLE,
-  DETAILS_TAG_NEUTRAL,
   DETAILS_TAG_PRIMARY,
 } from '../../constants/internshipOfferDetailsStyles';
-import {
-  STUDENT_CALLOUT_INSET_BRAND,
-  STUDENT_CALLOUT_INSET_SUCCESS,
-  STUDENT_CALLOUT_INSET_WARNING,
-} from '../../../design-system/studentSemanticStyles';
+import { STUDENT_CALLOUT_INSET_WARNING } from '../../../design-system/studentSemanticStyles';
 import DetailsSectionCard from './DetailsSectionCard';
+import OfferMatchInsightPanel from './OfferMatchInsightPanel';
 import { SafeBadge } from '../../../../../design-system/safeContent';
 
 interface OfferCvMatchSectionProps {
@@ -103,9 +101,15 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
     gaps.length ||
     recommendations.length;
 
+  const hasInsightPanels =
+    strengths.length > 0 ||
+    missingSkills.length > 0 ||
+    gaps.length > 0 ||
+    recommendations.length > 0;
+
   return (
     <DetailsSectionCard>
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2.5">
           <div className="student-icon-chip student-icon-chip--brand flex h-9 w-9 shrink-0 items-center justify-center">
             <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
@@ -122,10 +126,10 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="flex w-full min-w-0 shrink-0 flex-col gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
           <button
             type="button"
-            className="group inline-flex h-10 items-center gap-2 rounded-xl border border-[#5d8bff] bg-[linear-gradient(135deg,#3b82f6,#2563eb)] px-3.5 text-sm font-semibold text-white shadow-[0_12px_26px_-14px_rgba(37,99,235,0.95)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#93c5fd] hover:bg-[linear-gradient(135deg,#2563eb,#1d4ed8)] hover:shadow-[0_18px_30px_-14px_rgba(29,78,216,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa] focus-visible:ring-offset-2"
+            className={`${DETAILS_PRIMARY_BUTTON} inline-flex items-center justify-center gap-2`}
             onClick={() =>
               navigate(STUDENT_AI_CAREER_COACH_PATH, {
                 state: {
@@ -145,21 +149,23 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
               })
             }
           >
-            <span className="grid h-6 w-6 place-items-center rounded-md bg-[rgba(255,255,255,0.2)] transition-colors duration-200 group-hover:bg-[rgba(255,255,255,0.28)]">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden />
+            <Sparkles className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+            <span className="safe-button-label">
+              {t('student.internshipOffers.details.chatWithAiCoach', {
+                defaultValue: 'Chat with AI Coach',
+              })}
             </span>
-            {t('student.internshipOffers.details.chatWithAiCoach', {
-              defaultValue: 'Chat with AI Coach',
-            })}
           </button>
           <button
             type="button"
-            className="admin-btn-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm"
+            className={`${DETAILS_OUTLINE_BUTTON} inline-flex items-center justify-center gap-2`}
             onClick={() => void refresh()}
             disabled={loading}
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden />
-            {t('common.refresh', { defaultValue: 'Actualiser' })}
+            <RefreshCw className={`h-4 w-4 shrink-0 ${loading ? 'animate-spin' : ''}`} strokeWidth={1.75} aria-hidden />
+            <span className="safe-button-label">
+              {t('common.refresh', { defaultValue: 'Actualiser' })}
+            </span>
           </button>
         </div>
       </div>
@@ -173,11 +179,14 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
       ) : null}
 
       {showScores ? (
-        <div className="student-match-stats mb-5">
+        <div className="admin-students-stats-grid student-match-stats mb-4">
           <StudentMatchStatCard
             statKey="overall"
             label={t('student.internshipOffers.details.matchScore')}
             value={data!.overall_match_percent}
+            badge={t('student.internshipOffers.details.aiCvMatch.badges.overall', {
+              defaultValue: 'Score global',
+            })}
           />
           <StudentMatchStatCard
             statKey="profile"
@@ -185,6 +194,9 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
               defaultValue: 'Profil',
             })}
             value={data!.profile_match_percent}
+            badge={t('student.internshipOffers.details.aiCvMatch.badges.profile', {
+              defaultValue: 'Alignement profil',
+            })}
           />
           <StudentMatchStatCard
             statKey="cv"
@@ -192,6 +204,9 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
               defaultValue: 'CV',
             })}
             value={data!.cv_match_percent}
+            badge={t('student.internshipOffers.details.aiCvMatch.badges.cv', {
+              defaultValue: 'Score CV',
+            })}
           />
           <StudentMatchStatCard
             statKey="eligibility"
@@ -211,7 +226,7 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
 
       {data && !data.has_cv_analysis ? (
         <div
-          className={`${STUDENT_CALLOUT_INSET_WARNING} mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
+          className={`${STUDENT_CALLOUT_INSET_WARNING} mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
         >
           <p className="m-0 text-sm leading-relaxed text-[var(--admin-text-secondary)]">
             {t('student.internshipOffers.details.aiCvMatch.noCv', {
@@ -232,11 +247,11 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
       ) : null}
 
       {summary ? (
-        <p className="m-0 mb-5 text-sm leading-relaxed text-[var(--admin-text-secondary)]">{summary}</p>
+        <p className="m-0 mb-4 text-sm leading-relaxed text-[var(--admin-text-secondary)]">{summary}</p>
       ) : null}
 
       {matchedSkills.length ? (
-        <div className="mb-5">
+        <div className="mb-4">
           <p className="m-0 mb-2 flex items-center gap-1.5 text-sm font-semibold text-[var(--admin-text)]">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-hidden />
             {t('student.internshipOffers.details.aiCvMatch.matchedSkills', {
@@ -253,88 +268,89 @@ const OfferCvMatchSection: FunctionComponent<OfferCvMatchSectionProps> = ({ offe
         </div>
       ) : null}
 
-      {strengths.length ? (
-        <div className={`mb-5 ${STUDENT_CALLOUT_INSET_SUCCESS}`}>
-          <p className="m-0 mb-2.5 flex items-center gap-1.5 text-sm font-semibold text-[var(--admin-text)]">
-            <Target className="h-4 w-4 text-emerald-500" aria-hidden />
-            {t('student.internshipOffers.details.strengths')}
-          </p>
-          <ul className="m-0 flex list-none flex-col gap-2 p-0">
-            {strengths.map((item) => (
-              <li
-                key={item}
-                className="flex items-start gap-2 text-sm leading-relaxed text-[var(--admin-text-secondary)]"
-              >
-                <CheckCircle2
-                  className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500"
-                  strokeWidth={2}
-                  aria-hidden
-                />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      {hasInsightPanels ? (
+        <div className="student-match-insights mt-1">
+          {strengths.length ? (
+            <OfferMatchInsightPanel
+              tone="success"
+              icon={Target}
+              title={t('student.internshipOffers.details.strengths')}
+            >
+              <ul className="student-match-insight__list">
+                {strengths.map((item) => (
+                  <li key={item} className="student-match-insight__item">
+                    <CheckCircle2
+                      className="student-match-insight__bullet h-3.5 w-3.5"
+                      strokeWidth={2.25}
+                      aria-hidden
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </OfferMatchInsightPanel>
+          ) : null}
 
-      {missingSkills.length ? (
-        <div className={`mb-5 ${STUDENT_CALLOUT_INSET_WARNING}`}>
-          <p className="m-0 mb-2 flex items-center gap-1.5 text-sm font-semibold text-[var(--admin-text)]">
-            <AlertCircle className="h-4 w-4 text-amber-500" aria-hidden />
-            {t('student.internshipOffers.details.skillsToDevelop')}
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {missingSkills.map((skill) => (
-              <SafeBadge key={skill} className={DETAILS_TAG_NEUTRAL}>
-                {skill}
-              </SafeBadge>
-            ))}
-          </div>
-        </div>
-      ) : null}
+          {missingSkills.length ? (
+            <OfferMatchInsightPanel
+              tone="warning"
+              icon={AlertCircle}
+              title={t('student.internshipOffers.details.skillsToDevelop')}
+            >
+              <div className="student-match-insight__tags">
+                {missingSkills.map((skill) => (
+                  <span key={skill} className="student-match-insight__tag">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </OfferMatchInsightPanel>
+          ) : null}
 
-      {gaps.length ? (
-        <div className={`mb-5 ${STUDENT_CALLOUT_INSET_WARNING}`}>
-          <p className="m-0 mb-2.5 flex items-center gap-1.5 text-sm font-semibold text-[var(--admin-text)]">
-            <AlertCircle className="h-4 w-4 text-amber-500" aria-hidden />
-            {data?.gaps?.length
-              ? t('student.internshipOffers.details.growth')
-              : t('student.internshipOffers.details.skillsToDevelop')}
-          </p>
-          <ul className="m-0 flex list-none flex-col gap-2 p-0">
-            {gaps.map((item) => (
-              <li
-                key={item}
-                className="text-sm leading-relaxed text-[var(--admin-text-secondary)] before:mr-2 before:font-bold before:text-amber-500 before:content-['•']"
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+          {gaps.length ? (
+            <OfferMatchInsightPanel
+              tone="warning"
+              icon={AlertCircle}
+              title={
+                data?.gaps?.length
+                  ? t('student.internshipOffers.details.growth')
+                  : t('student.internshipOffers.details.skillsToDevelop')
+              }
+            >
+              <ul className="student-match-insight__list">
+                {gaps.map((item) => (
+                  <li key={item} className="student-match-insight__item">
+                    <span
+                      className="student-match-insight__bullet mt-1.5 h-1.5 w-1.5 rounded-full bg-current"
+                      aria-hidden
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </OfferMatchInsightPanel>
+          ) : null}
 
-      {recommendations.length ? (
-        <div className={STUDENT_CALLOUT_INSET_BRAND}>
-          <p className="m-0 mb-2.5 flex items-center gap-1.5 text-sm font-semibold text-[var(--admin-text)]">
-            <TrendingUp className="h-4 w-4 text-[var(--admin-brand)]" aria-hidden />
-            {t('student.internshipOffers.details.aiRecommendations')}
-          </p>
-          <ul className="m-0 flex list-none flex-col gap-2 p-0">
-            {recommendations.map((item) => (
-              <li
-                key={item}
-                className="flex items-start gap-2 text-sm leading-relaxed text-[var(--admin-text-secondary)]"
-              >
-                <Sparkles
-                  className="mt-0.5 h-4 w-4 shrink-0 text-[var(--admin-brand)]"
-                  strokeWidth={2}
-                  aria-hidden
-                />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {recommendations.length ? (
+            <OfferMatchInsightPanel
+              tone="brand"
+              icon={TrendingUp}
+              title={t('student.internshipOffers.details.aiRecommendations')}
+            >
+              <ul className="student-match-insight__list">
+                {recommendations.map((item) => (
+                  <li key={item} className="student-match-insight__item">
+                    <Sparkles
+                      className="student-match-insight__bullet h-3.5 w-3.5"
+                      strokeWidth={2}
+                      aria-hidden
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </OfferMatchInsightPanel>
+          ) : null}
         </div>
       ) : null}
 

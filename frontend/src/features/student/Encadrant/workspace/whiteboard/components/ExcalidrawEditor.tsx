@@ -1,9 +1,12 @@
-import { FunctionComponent, useCallback, useEffect, useRef } from 'react';
-import { Excalidraw, restore } from '@excalidraw/excalidraw';
+import { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
+import { CaptureUpdateAction, Excalidraw } from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css';
-import type { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types';
+import type {
+  BinaryFiles,
+  ExcalidrawImperativeAPI,
+  ExcalidrawInitialDataState,
+} from '@excalidraw/excalidraw/types';
 
-import { WHITEBOARD_STORAGE_KEY } from '../data/whiteboardMock';
 import type { WhiteboardBackgroundType } from '../types/whiteboardPreferences';
 import { resolveCanvasBackgroundColor } from '../utils/whiteboardColorUtils';
 import {
@@ -11,9 +14,19 @@ import {
   mergeSceneBackgroundColor,
   usesPatternBackgroundLayer,
 } from '../utils/whiteboardCanvasBackground';
+import {
+  countLiveWhiteboardElements,
+  readWhiteboardScene,
+} from '../utils/whiteboardSceneStorage';
 
 interface ExcalidrawEditorProps {
   onApiReady: (api: ExcalidrawImperativeAPI) => void;
+  onSceneChange: (
+    elements: readonly { isDeleted?: boolean }[],
+    appState: Record<string, unknown>,
+    files: BinaryFiles,
+  ) => void;
+  storageKey: string;
   theme: 'light' | 'dark';
   backgroundColor: string;
   backgroundOpacity: number;
@@ -21,43 +34,51 @@ interface ExcalidrawEditorProps {
 }
 
 function loadInitialScene(
+  storageKey: string,
   backgroundColor: string,
   backgroundOpacity: number,
   backgroundType: WhiteboardBackgroundType,
 ): ExcalidrawInitialDataState | null {
-  try {
-    const raw = localStorage.getItem(WHITEBOARD_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Parameters<typeof restore>[0];
-    const restored = restore(parsed, null, null) as ExcalidrawInitialDataState;
-    return mergeSceneBackgroundColor(restored, backgroundColor, backgroundOpacity, backgroundType);
-  } catch {
-    return null;
-  }
+  const stored = readWhiteboardScene(storageKey);
+  if (!stored) return null;
+  return {
+    ...mergeSceneBackgroundColor(stored, backgroundColor, backgroundOpacity, backgroundType),
+    scrollToContent: true,
+  };
 }
 
 /** Loaded once per page session — avoids Excalidraw reset on parent re-renders. */
 const initialSceneRef: {
   current: ExcalidrawInitialDataState | null | undefined;
+  storageKey: string | undefined;
   color: string | undefined;
   type: WhiteboardBackgroundType | undefined;
 } = {
   current: undefined,
+  storageKey: undefined,
   color: undefined,
   type: undefined,
 };
 
 function getInitialSceneOnce(
+  storageKey: string,
   backgroundColor: string,
   backgroundOpacity: number,
   backgroundType: WhiteboardBackgroundType,
 ): ExcalidrawInitialDataState | null {
   if (
     initialSceneRef.current === undefined ||
+    initialSceneRef.storageKey !== storageKey ||
     initialSceneRef.color !== backgroundColor ||
     initialSceneRef.type !== backgroundType
   ) {
-    initialSceneRef.current = loadInitialScene(backgroundColor, backgroundOpacity, backgroundType);
+    initialSceneRef.current = loadInitialScene(
+      storageKey,
+      backgroundColor,
+      backgroundOpacity,
+      backgroundType,
+    );
+    initialSceneRef.storageKey = storageKey;
     initialSceneRef.color = backgroundColor;
     initialSceneRef.type = backgroundType;
   }
@@ -66,8 +87,33 @@ function getInitialSceneOnce(
 
 export function resetWhiteboardInitialSceneCache(): void {
   initialSceneRef.current = undefined;
+  initialSceneRef.storageKey = undefined;
   initialSceneRef.color = undefined;
   initialSceneRef.type = undefined;
+}
+
+function restoreStoredScene(
+  api: ExcalidrawImperativeAPI,
+  storageKey: string,
+  backgroundColor: string,
+  backgroundOpacity: number,
+  backgroundType: WhiteboardBackgroundType,
+): void {
+  const stored = loadInitialScene(storageKey, backgroundColor, backgroundOpacity, backgroundType);
+  const storedCount = countLiveWhiteboardElements(stored?.elements);
+  if (!stored || storedCount === 0) return;
+
+  const liveCount = countLiveWhiteboardElements(api.getSceneElements());
+  if (liveCount > 0) return;
+
+  api.updateScene({
+    elements: stored.elements ?? [],
+    appState: stored.appState,
+    captureUpdate: CaptureUpdateAction.NEVER,
+  });
+  if (stored.files) {
+    api.addFiles(Object.values(stored.files));
+  }
 }
 
 const uiOptions = {
@@ -81,17 +127,21 @@ const uiOptions = {
 
 const ExcalidrawEditor: FunctionComponent<ExcalidrawEditorProps> = ({
   onApiReady,
+  onSceneChange,
+  storageKey,
   theme,
   backgroundColor,
   backgroundOpacity,
   backgroundType,
 }) => {
-  const apiBoundRef = useRef(false);
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
+  const recoveredRef = useRef(false);
+  const [apiReady, setApiReady] = useState(false);
   const initialDataRef = useRef<ExcalidrawInitialDataState | null | undefined>(undefined);
 
   if (initialDataRef.current === undefined) {
     initialDataRef.current = getInitialSceneOnce(
+      storageKey,
       backgroundColor,
       backgroundOpacity,
       backgroundType,
@@ -108,22 +158,37 @@ const ExcalidrawEditor: FunctionComponent<ExcalidrawEditorProps> = ({
   const handleApi = useCallback(
     (api: ExcalidrawImperativeAPI) => {
       apiRef.current = api;
-      applyBackground(api);
-      if (apiBoundRef.current) return;
-      apiBoundRef.current = true;
       onApiReady(api);
+      setApiReady(true);
     },
-    [applyBackground, onApiReady],
+    [onApiReady],
   );
+
+  /**
+   * Excalidraw can apply an empty scene after handing over the API.
+   * Restore from storage if the live canvas has no drawings.
+   */
+  useEffect(() => {
+    if (!apiReady || recoveredRef.current) return;
+    const api = apiRef.current;
+    if (!api) return;
+
+    const frame = requestAnimationFrame(() => {
+      restoreStoredScene(api, storageKey, backgroundColor, backgroundOpacity, backgroundType);
+      applyBackground(api);
+      recoveredRef.current = true;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [apiReady, applyBackground, backgroundColor, backgroundOpacity, backgroundType, storageKey]);
 
   useEffect(() => {
     applyBackground(apiRef.current);
-  }, [applyBackground]);
+  }, [applyBackground, apiReady]);
 
   useEffect(
     () => () => {
-      apiBoundRef.current = false;
       apiRef.current = null;
+      recoveredRef.current = false;
     },
     [],
   );
@@ -149,6 +214,9 @@ const ExcalidrawEditor: FunctionComponent<ExcalidrawEditorProps> = ({
         name="ESCA PFE Workspace"
         isCollaborating={false}
         UIOptions={uiOptions}
+        onChange={(elements, appState, files) => {
+          onSceneChange(elements, appState, files);
+        }}
       />
     </div>
   );

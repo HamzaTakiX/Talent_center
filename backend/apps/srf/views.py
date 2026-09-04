@@ -98,6 +98,7 @@ class SrfStudentFinancialListView(APIView):
 
         qs = FinancialAccount.objects.select_related(
             'student_profile__user',
+            'student_profile__user__profile',
             'student_profile__class_group',
             'student_profile__academic_access',
         ).prefetch_related('installments')
@@ -132,7 +133,7 @@ class SrfStudentFinancialListView(APIView):
         elif queue == 'exempted':
             qs = qs.filter(adjustments__is_active=True).distinct()
 
-        rows = [account_to_table_row(a) for a in qs[:500]]
+        rows = [account_to_table_row(a, request) for a in qs[:500]]
         return Response(envelope(True, 'OK', data={'rows': rows, 'count': len(rows)}))
 
 

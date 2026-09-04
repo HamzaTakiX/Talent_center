@@ -12,6 +12,8 @@ export interface MeetingInsight {
   messageKey: string;
   defaultMessage: string;
   count?: number;
+  /** Backend-localised sentence interpolated into the `insights.alert` key. */
+  message?: string;
 }
 
 export function buildMeetingsInsights(
@@ -86,6 +88,7 @@ export function buildMeetingsInsights(
       tone: alert.severity === 'high' ? 'critical' : 'warning',
       messageKey: 'admin.modules.meetings.insights.alert',
       defaultMessage: alert.message,
+      message: alert.message,
       count: alert.count,
     });
   }

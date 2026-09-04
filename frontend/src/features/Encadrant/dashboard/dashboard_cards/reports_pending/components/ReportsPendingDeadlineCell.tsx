@@ -11,9 +11,9 @@ const ReportsPendingDeadlineCell: FunctionComponent<ReportsPendingDeadlineCellPr
   lateNote,
 }) => (
   <div className="flex min-w-0 flex-col gap-0.5">
-    <span className="text-sm font-normal leading-5 text-[#171717] tabular-nums">{deadline}</span>
+    <span className="text-sm font-normal leading-5 text-[var(--admin-text)] tabular-nums">{deadline}</span>
     {lateNote && (
-      <span className="text-xs font-normal leading-4 text-[#dc2626]">{lateNote}</span>
+      <span className="text-xs font-normal leading-4 text-[var(--admin-danger)]">{lateNote}</span>
     )}
   </div>
 );

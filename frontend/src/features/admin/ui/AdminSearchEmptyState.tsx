@@ -58,12 +58,14 @@ const AdminSearchEmptyState: FunctionComponent<AdminSearchEmptyStateProps> = ({
       role="status"
       aria-live="polite"
     >
-      <motion.div className="admin-search-empty-state__glow" aria-hidden />
-      <motion.div className="admin-search-empty-state__icon">
-        {icon ?? <SearchX className="h-6 w-6" strokeWidth={1.75} aria-hidden />}
-      </motion.div>
-      <h3 className="admin-search-empty-state__title">{resolvedTitle}</h3>
-      <p className="admin-search-empty-state__desc">{resolvedDescription}</p>
+      <div className="admin-search-empty-state__content">
+        <motion.div className="admin-search-empty-state__glow" aria-hidden />
+        <motion.div className="admin-search-empty-state__icon">
+          {icon ?? <SearchX className="h-6 w-6" strokeWidth={1.75} aria-hidden />}
+        </motion.div>
+        <h3 className="admin-search-empty-state__title">{resolvedTitle}</h3>
+        <p className="admin-search-empty-state__desc">{resolvedDescription}</p>
+      </div>
     </motion.div>
   );
 };

@@ -1,0 +1,38 @@
+Title: Full Stack Developer Internship
+Company: TechCorp Morocco
+Location: Casablanca, Morocco
+Type: PFE - Projet de Fin d'Études
+Work mode: Hybrid
+
+Description:
+TechCorp Morocco is a fast-growing software company specializing in digital solutions for banking and fintech. We are looking for a motivated final-year student to join our engineering team for a 6-month PFE internship.
+
+Missions / Responsibilities:
+- Develop and maintain React front-end features
+- Build REST APIs with Node.js and Express
+- Collaborate with designers and product managers in agile sprints
+- Write unit tests and participate in code reviews
+- Document technical decisions and deployment steps
+
+Required Profile / Requirements:
+- Final-year student in Computer Science, Software Engineering, or equivalent
+- Solid understanding of JavaScript/TypeScript and web fundamentals
+- Comfortable working in a team with Git and agile practices
+- Good communication skills in French and English
+
+Skills / Technologies:
+React, TypeScript, Node.js, Express, PostgreSQL, Git, Docker
+
+Preferred skills:
+GraphQL, AWS, CI/CD, Figma
+
+Languages:
+French, English, Arabic
+
+Benefits:
+- Monthly stipend
+- Mentor assigned from day one
+- Flexible hybrid schedule
+- Opportunity for a full-time offer after graduation
+
+Deadline: 2025-12-31

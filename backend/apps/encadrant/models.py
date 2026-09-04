@@ -12,6 +12,8 @@ Identity contract:
   reference by FK; do not recreate"), we collapse it.
 """
 
+import uuid
+
 from django.conf import settings
 from django.db import models
 from django.db.models import Q, UniqueConstraint
@@ -249,6 +251,19 @@ class Meeting(TimestampedModel):
     duration_minutes = models.PositiveSmallIntegerField(default=30)
     location = models.CharField(max_length=255, blank=True, default='')
     meeting_url = models.URLField(max_length=512, blank=True, default='')
+    session_uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True,
+    )
+    jitsi_room_name = models.CharField(
+        max_length=128,
+        unique=True,
+        blank=True,
+        null=True,
+        db_index=True,
+    )
     notes = models.TextField(blank=True, default='')
     follow_up_actions = models.TextField(blank=True, default='')
     reminder_sent_at = models.DateTimeField(null=True, blank=True)
@@ -493,7 +508,7 @@ class AgendaEvent(TimestampedModel):
 # ============================================================================
 
 class Task(TimestampedModel):
-    """Action item assigned within a workspace."""
+    """Supervision action item assigned by an encadrant to a supervised student."""
 
     class Status(models.TextChoices):
         TODO = 'TODO', _('To do')
@@ -1000,3 +1015,96 @@ class ReportObligation(TimestampedModel):
 
     def __str__(self) -> str:
         return f'ReportObligation<{self.student_profile_id}:{self.report_type}>'
+
+
+# ============================================================================
+# 12. WORKSPACE DOCUMENT — fichiers partagés étudiant ↔ encadrant
+# ============================================================================
+
+class WorkspaceDocument(TimestampedModel):
+    """Fichier importé dans le centre documentaire d'un workspace de supervision."""
+
+    class Category(models.TextChoices):
+        REPORT = 'report', _('Report')
+        RESEARCH = 'research', _('Research')
+        INTERNSHIP = 'internship', _('Internship')
+        MEETING = 'meeting', _('Meeting')
+        SHARED = 'shared', _('Shared')
+
+    student_profile = models.ForeignKey(
+        StudentProfile,
+        on_delete=models.CASCADE,
+        related_name='workspace_documents',
+    )
+    encadrant_profile = models.ForeignKey(
+        'admin_management.EncadrantProfile',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='workspace_documents',
+    )
+    file = models.FileField(upload_to='workspace_documents/%Y/%m/')
+    original_name = models.CharField(max_length=255)
+    category = models.CharField(
+        max_length=16,
+        choices=Category.choices,
+        default=Category.SHARED,
+        db_index=True,
+    )
+    mime_type = models.CharField(max_length=128, blank=True, default='')
+    size_bytes = models.PositiveIntegerField(default=0)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+    version = models.PositiveIntegerField(default=1)
+    viewed_by_encadrant_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['student_profile', '-created_at']),
+            models.Index(fields=['encadrant_profile', '-created_at']),
+        ]
+
+    def __str__(self) -> str:
+        return f'WorkspaceDocument<{self.student_profile_id}:{self.original_name}>'
+
+
+class WorkspaceDocumentReview(TimestampedModel):
+    """Feedback / note de l'encadrant sur un document du workspace."""
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', _('Pending')
+        IN_REVIEW = 'in_review', _('In review')
+        RESOLVED = 'resolved', _('Resolved')
+
+    document = models.OneToOneField(
+        WorkspaceDocument,
+        on_delete=models.CASCADE,
+        related_name='review',
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+    comment = models.TextField(blank=True, default='')
+    grade = models.CharField(max_length=32, blank=True, default='')
+    status = models.CharField(
+        max_length=16,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+
+    class Meta(TimestampedModel.Meta):
+        ordering = ['-updated_at']
+
+    def __str__(self) -> str:
+        return f'WorkspaceDocumentReview<{self.document_id}>'

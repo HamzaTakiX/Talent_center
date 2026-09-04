@@ -92,9 +92,16 @@ def get_active_provider_name() -> str:
 
 def get_provider_credentials() -> dict[str, Any]:
     cfg = get_provider_config()
-    env_api_key = getattr(settings, 'SENDGRID_API_KEY', '')
+    provider_name = get_active_provider_name()
+    env_api_key = ''
+    if provider_name == 'brevo':
+        env_api_key = getattr(settings, 'BREVO_API_KEY', '') or getattr(settings, 'SENDGRID_API_KEY', '')
+    elif provider_name == 'sendgrid':
+        env_api_key = getattr(settings, 'SENDGRID_API_KEY', '')
+    else:
+        env_api_key = getattr(settings, 'BREVO_API_KEY', '') or getattr(settings, 'SENDGRID_API_KEY', '')
     return {
-        'provider': get_active_provider_name(),
+        'provider': provider_name,
         'api_key': cfg.api_key or env_api_key,
         'domain': cfg.domain,
         'region': cfg.region,

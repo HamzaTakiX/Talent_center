@@ -46,6 +46,7 @@ def _upsert_filiere(
             'department': 'ESCA',
             'sort_order': sort_order,
             'is_active': True,
+            'is_archived': False,
         },
     )
     return obj
@@ -73,6 +74,7 @@ def _upsert_level(
             'has_sectors': has_sectors,
             'sort_order': sort_order,
             'is_active': True,
+            'is_archived': False,
         },
     )
     return obj
@@ -126,6 +128,7 @@ def _upsert_internship(
             'competencies': competency_payload,
             'sort_order': sort_order,
             'is_active': True,
+            'is_archived': False,
         },
     )
     return obj
@@ -523,38 +526,60 @@ def _seed_iba(filiere: Filiere) -> None:
 
 
 def _seed_master(filiere: Filiere) -> None:
-    levels = [
-        (
-            'm1',
-            1,
-            '1ère année Master',
-            _t('1st year Master', '1ère année Master', 'السنة الأولى ماستر'),
+    """Single Master (Formation en temps aménagé) level with shared internship types."""
+    level = _upsert_level(
+        filiere,
+        code='fta',
+        name='Master (Formation en temps aménagé)',
+        name_i18n=_t(
+            'Master (Part-time program)',
+            'Master (Formation en temps aménagé)',
+            'ماستر (تكوين في وقت مخفف)',
         ),
-        (
-            'm2',
-            2,
-            '2ème année Master',
-            _t('2nd year Master', '2ème année Master', 'السنة الثانية ماستر'),
-        ),
-    ]
-    for code, year_num, name, i18n in levels:
-        level = _upsert_level(
-            filiere,
-            code=code,
-            name=name,
-            name_i18n=i18n,
-            year_number=year_num,
-            sort_order=year_num,
+        year_number=1,
+        sort_order=1,
+    )
+    for idx, (i_code, i_name, i_i18n, duration) in enumerate(MASTER_INTERNSHIPS):
+        _upsert_internship(
+            level,
+            code=i_code,
+            name=i_name,
+            name_i18n=i_i18n,
+            duration_hint=duration,
+            sort_order=idx,
         )
-        for idx, (i_code, i_name, i_i18n, duration) in enumerate(MASTER_INTERNSHIPS):
-            _upsert_internship(
-                level,
-                code=i_code,
-                name=i_name,
-                name_i18n=i_i18n,
-                duration_hint=duration,
-                sort_order=idx,
-            )
+
+
+LEGACY_MASTER_FILIERE_CODES = (
+    'master-ascm',
+    'master-md',
+    'master-mrh',
+    'master-acg-sicg',
+    'master-mf-fif',
+    'master-miiss',
+)
+
+
+def _archive_legacy_master_filieres() -> int:
+    """Archive superseded per-track Master filières and their dependent rows."""
+    legacy_ids = list(
+        Filiere.objects.filter(code__in=LEGACY_MASTER_FILIERE_CODES).values_list('id', flat=True),
+    )
+    if not legacy_ids:
+        return 0
+
+    Filiere.objects.filter(id__in=legacy_ids).update(is_active=False, is_archived=True)
+
+    level_ids = list(
+        AcademicLevel.objects.filter(filiere_id__in=legacy_ids).values_list('id', flat=True),
+    )
+    AcademicLevel.objects.filter(id__in=level_ids).update(is_active=False, is_archived=True)
+    InternshipType.objects.filter(academic_level_id__in=level_ids).update(
+        is_active=False,
+        is_archived=True,
+    )
+    ClassGroup.objects.filter(filiere_id__in=legacy_ids).update(is_active=False, is_archived=True)
+    return len(legacy_ids)
 
 
 def _class_group_code(
@@ -715,66 +740,21 @@ def seed_esca_academic() -> dict:
     )
     _seed_iba(iba)
 
-    masters = [
-        (
-            'master-ascm',
-            'Achats et Supply Chain Management (ASCM)',
-            _t(
-                'Purchasing and Supply Chain Management (ASCM)',
-                'Achats et Supply Chain Management (ASCM)',
-                'المشتريات وإدارة سلسلة التوريد',
-            ),
-        ),
-        (
-            'master-md',
-            'Marketing Digital (MD)',
-            _t('Digital Marketing (MD)', 'Marketing Digital (MD)', 'التسويق الرقمي'),
-        ),
-        (
-            'master-mrh',
-            'Management des Ressources Humaines (MRH)',
-            _t(
-                'Human Resources Management (MRH)',
-                'Management des Ressources Humaines (MRH)',
-                'إدارة الموارد البشرية',
-            ),
-        ),
-        (
-            'master-acg-sicg',
-            'Audit et Contrôle de Gestion (ACG-SICG)',
-            _t(
-                'Audit and Management Control (ACG-SICG)',
-                'Audit et Contrôle de Gestion (ACG-SICG)',
-                'التدقيق والرقابة الإدارية',
-            ),
-        ),
-        (
-            'master-mf-fif',
-            'Management Financier (MF-FIF)',
-            _t('Financial Management (MF-FIF)', 'Management Financier (MF-FIF)', 'الإدارة المالية'),
-        ),
-        (
-            'master-miiss',
-            'Marketing International et Stratégie Commerciale à l\'International (MIISS)',
-            _t(
-                'International Marketing and Commercial Strategy (MIISS)',
-                'Marketing International et Stratégie Commerciale à l\'International (MIISS)',
-                'التسويق الدولي والاستراتيجية التجارية',
-            ),
-        ),
-    ]
+    _archive_legacy_master_filieres()
 
-    master_count = 0
-    for idx, (code, name, i18n) in enumerate(masters, start=4):
-        filiere = _upsert_filiere(
-            code=code,
-            name=name,
-            family=Filiere.ProgramFamily.MASTER,
-            name_i18n=i18n,
-            sort_order=idx,
-        )
-        _seed_master(filiere)
-        master_count += 1
+    master = _upsert_filiere(
+        code='master-fta',
+        name='Master (Formation en temps aménagé)',
+        family=Filiere.ProgramFamily.MASTER,
+        name_i18n=_t(
+            'Master (Part-time program)',
+            'Master (Formation en temps aménagé)',
+            'ماستر (تكوين في وقت مخفف)',
+        ),
+        sort_order=4,
+    )
+    _seed_master(master)
+    master_count = 1
 
     class_group_stats = seed_class_groups()
 

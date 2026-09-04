@@ -4,7 +4,7 @@ import { TasksUpcomingStudentsSection, TasksUpcomingSummaryGrid } from '../compo
 import { TASKS_UPCOMING_PAGE_ROOT } from '../constants/tasksUpcomingLayout';
 
 const TasksUpcomingPage: FunctionComponent = () => (
-  <EncadrantLayout headerTitle="Tasks Upcoming" headerSubtitle="Encadrant Portal">
+  <EncadrantLayout>
     <div id="encadrant-tasks-upcoming-root" className={TASKS_UPCOMING_PAGE_ROOT}>
       <TasksUpcomingSummaryGrid />
       <TasksUpcomingStudentsSection />

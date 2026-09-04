@@ -6,12 +6,15 @@ import {
   type AdminDetailFieldKey,
   type AdminDetailSectionKey,
 } from '../shared/forms/adminFormIcons';
+import AdminDetailCopyButton from './AdminDetailCopyButton';
 
 export interface AdminDetailField {
   label: string;
   value: ReactNode;
   fieldKey?: AdminDetailFieldKey;
   icon?: LucideIcon;
+  /** Plain-text value exposed for clipboard copy (shows a small copy button). */
+  copyValue?: string;
 }
 
 export interface AdminDetailSection {
@@ -64,7 +67,16 @@ const AdminDetailGrid: FunctionComponent<AdminDetailGridProps> = ({
                     ) : null}
                     <span>{field.label}</span>
                   </dt>
-                  <dd className="admin-detail-grid__value">{field.value ?? '—'}</dd>
+                  <dd className="admin-detail-grid__value">
+                    {field.copyValue ? (
+                      <div className="admin-detail-grid__value-row">
+                        <span className="admin-detail-grid__value-text">{field.value ?? '—'}</span>
+                        <AdminDetailCopyButton value={field.copyValue} label={field.label} />
+                      </div>
+                    ) : (
+                      field.value ?? '—'
+                    )}
+                  </dd>
                 </div>
               );
             })}

@@ -4,8 +4,10 @@ import { AlertTriangle, Lightbulb, TrendingDown, TrendingUp, UserCheck, Users } 
 import { useTranslation } from 'react-i18next';
 import { easePremium } from '../../../dashboard/ui/animations';
 import AnimatedStatValue from './AnimatedStatValue';
+import AnalyticsDonutPanel from './AnalyticsDonutPanel';
 import {
   buildDonutSegments,
+  buildPairDonutSegments,
   type AnalyticsInsight,
   type DistributionRow,
   type DistributionSnapshot,
@@ -95,6 +97,73 @@ const InternshipTypeAnalyticsCard: FunctionComponent<InternshipTypeAnalyticsCard
     [snapshot.rows]
   );
 
+  const typesWithStudents = useMemo(
+    () => snapshot.rows.filter((row) => (row.studentCount ?? 0) > 0).length,
+    [snapshot.rows]
+  );
+
+  const gapDonut = useMemo(() => {
+    const gaps = missingCoverageCount ?? 0;
+    const covered = Math.max(typesWithStudents - gaps, 0);
+    const segments = buildPairDonutSegments(
+      [
+        {
+          key: 'gaps',
+          label: t(`${prefix}.statGapTypesLegend`),
+          count: gaps,
+          color: '#f59e0b',
+        },
+        {
+          key: 'covered-types',
+          label: t(`${prefix}.statCoveredTypesLegend`),
+          count: covered,
+          color: '#3b82f6',
+        },
+      ],
+      Math.max(typesWithStudents, gaps, 1),
+    );
+    return {
+      segments,
+      legend: segments.map((seg) => ({
+        key: seg.key,
+        label: seg.label,
+        color: seg.color,
+        percent: seg.percent,
+      })),
+    };
+  }, [missingCoverageCount, prefix, t, typesWithStudents]);
+
+  const coverageDonut = useMemo(() => {
+    const covered = Math.max(Math.min(coverageRatio ?? 0, 100), 0);
+    const uncovered = Math.max(100 - covered, 0);
+    const segments = buildPairDonutSegments(
+      [
+        {
+          key: 'covered-students',
+          label: t(`${prefix}.statCoveredStudentsLegend`),
+          count: covered,
+          color: '#3b82f6',
+        },
+        {
+          key: 'uncovered-students',
+          label: t(`${prefix}.statUncoveredStudentsLegend`),
+          count: uncovered,
+          color: '#ef4444',
+        },
+      ],
+      100,
+    );
+    return {
+      segments,
+      legend: segments.map((seg) => ({
+        key: seg.key,
+        label: seg.label,
+        color: seg.color,
+        percent: seg.percent,
+      })),
+    };
+  }, [coverageRatio, prefix, t]);
+
   const Icon = isStudents ? Users : UserCheck;
   const title = t(isStudents ? `${prefix}.studentsByType` : `${prefix}.encadrantsByType`);
   const subtitle = t(isStudents ? `${prefix}.studentsCardSubtitle` : `${prefix}.encadrantsCardSubtitle`);
@@ -112,7 +181,7 @@ const InternshipTypeAnalyticsCard: FunctionComponent<InternshipTypeAnalyticsCard
           <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
         </span>
         <motion.div
-          className="min-w-0 flex-1"
+          className="sa-type-analytics-card__copy"
           initial={{ opacity: 0, x: -6 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.35, ease: easePremium }}
@@ -134,58 +203,14 @@ const InternshipTypeAnalyticsCard: FunctionComponent<InternshipTypeAnalyticsCard
       </header>
 
       <motion.div
-        className="sa-type-analytics-card__kpis"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.05, ease: easePremium }}
-      >
-        <div className="sa-type-analytics-kpi">
-          <span className="sa-type-analytics-kpi__label">
-            {t(isStudents ? `${prefix}.largestCategory` : `${prefix}.supervisedTypes`)}
-          </span>
-          <span className="sa-type-analytics-kpi__value" title={snapshot.largest?.label}>
-            {snapshot.largest?.label ?? '—'}
-          </span>
-          {snapshot.largest ? (
-            <span className="sa-type-analytics-kpi__meta tabular-nums">{snapshot.largest.count}</span>
-          ) : null}
-        </div>
-        <div className="sa-type-analytics-kpi">
-          <span className="sa-type-analytics-kpi__label">
-            {t(isStudents ? `${prefix}.smallestCategory` : `${prefix}.missingCoverage`)}
-          </span>
-          <span
-            className="sa-type-analytics-kpi__value"
-            title={isStudents ? snapshot.smallest?.label : undefined}
-          >
-            {isStudents
-              ? (snapshot.smallest?.label ?? '—')
-              : String(missingCoverageCount ?? 0)}
-          </span>
-          {isStudents && snapshot.smallest ? (
-            <span className="sa-type-analytics-kpi__meta tabular-nums">{snapshot.smallest.count}</span>
-          ) : null}
-        </div>
-        {!isStudents && coverageRatio !== undefined ? (
-          <div className="sa-type-analytics-kpi">
-            <span className="sa-type-analytics-kpi__label">{t(`${prefix}.coverageRatio`)}</span>
-            <AnimatedStatValue
-              value={coverageRatio}
-              suffix="%"
-              className="sa-type-analytics-kpi__value sa-type-analytics-kpi__value--accent"
-            />
-          </div>
-        ) : null}
-      </motion.div>
-
-      <motion.div
         className="sa-type-analytics-card__body"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.45, delay: 0.08, ease: easePremium }}
       >
-        <motion.div className="sa-type-analytics-visual">
-          <motion.div className="sa-type-analytics-visual__inner">
+        <div className="sa-type-analytics-card__visual-col">
+          <motion.div className="sa-type-analytics-visual">
+            <motion.div className="sa-type-analytics-visual__inner">
             {snapshot.rows.length === 0 ? (
               <p className="sa-type-analytics-empty">{t(`${prefix}.noData`)}</p>
             ) : (
@@ -273,6 +298,41 @@ const InternshipTypeAnalyticsCard: FunctionComponent<InternshipTypeAnalyticsCard
             )}
           </motion.div>
         </motion.div>
+
+          {!isStudents ? (
+            <motion.div
+              className="sa-type-analytics-stat-cards"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.12, ease: easePremium }}
+            >
+              <AnalyticsDonutPanel
+                title={t(`${prefix}.missingCoverage`)}
+                ariaLabel={t(`${prefix}.missingCoverage`)}
+                centerValue={<AnimatedStatValue value={missingCoverageCount ?? 0} />}
+                centerLabel={t(`${prefix}.statGapCenterLabel`)}
+                segments={gapDonut.segments}
+                legend={gapDonut.legend}
+              />
+              {coverageRatio !== undefined ? (
+                <AnalyticsDonutPanel
+                  title={t(`${prefix}.coverageRatio`)}
+                  ariaLabel={t(`${prefix}.coverageRatio`)}
+                  centerValue={
+                    <AnimatedStatValue
+                      value={coverageRatio}
+                      suffix="%"
+                      className="sa-type-analytics-donut-center__value sa-type-analytics-donut-center__value--accent"
+                    />
+                  }
+                  centerLabel={t(`${prefix}.statCoverageCenterLabel`)}
+                  segments={coverageDonut.segments}
+                  legend={coverageDonut.legend}
+                />
+              ) : null}
+            </motion.div>
+          ) : null}
+        </div>
 
         <ul className="sa-type-analytics-bars" role="list">
           {snapshot.rows.length === 0 ? null : (

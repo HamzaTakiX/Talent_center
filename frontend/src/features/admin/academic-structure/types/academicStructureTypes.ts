@@ -33,6 +33,8 @@ export interface AcademicTrackRow {
   sort_order: number;
   is_active: boolean;
   is_archived: boolean;
+  /** Domains (métier + techniques) configured for this program in settings. */
+  specialization_domain_ids?: number[];
 }
 
 export interface AcademicLevelRow {

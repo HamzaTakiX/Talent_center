@@ -20,7 +20,11 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import AdminBadge from '../../../ui/AdminBadge';
+import AdminBackButton from '../../../ui/AdminBackButton';
 import { srfRoutes, type SrfStudentFinancialDetail } from '../../../api/srf';
+import InternshipStudentAvatar from '../../../offres-stage/chat/components/InternshipStudentAvatar';
+import { getAdminUserInitials } from '../../../dashboard/utils/adminUserDisplay';
+import { resolveMediaUrl } from '../../../../../shared/api/mediaUrl';
 import { financialStatusVariant, formatMad, formatProgramShort } from '../../utils/srfFormat';
 import {
   buildSrfInsights,
@@ -43,12 +47,12 @@ const PANEL =
 
 interface SrfStudentDetailViewProps {
   detail: SrfStudentFinancialDetail;
+  backLabel: string;
+  onBack: () => void;
 }
 
-function studentInitials(first: string, last: string): string {
-  const a = (first?.trim()[0] ?? '').toUpperCase();
-  const b = (last?.trim()[0] ?? '').toUpperCase();
-  return (a + b) || '?';
+function studentInitials(first: string, last: string, email?: string): string {
+  return getAdminUserInitials(`${first} ${last}`.trim(), email);
 }
 
 function riskLevelKey(score: number): 'low' | 'medium' | 'high' {
@@ -73,7 +77,11 @@ const insightToneClass: Record<InsightTone, string> = {
   success: 'border-emerald-500/30 bg-emerald-500/10',
 };
 
-const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({ detail }) => {
+const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({
+  detail,
+  backLabel,
+  onBack,
+}) => {
   const { t } = useTranslation();
   const { student, account, academic_access: access, installment_progress: prog } = detail;
 
@@ -159,18 +167,28 @@ const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({ de
           aria-hidden
         />
 
+        <div className="relative z-10 mb-4">
+          <AdminBackButton onClick={onBack} label={backLabel} className="w-fit shrink-0" />
+        </div>
+
         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <motion.div
-            className="flex min-w-0 flex-1 items-start gap-4"
+            className="flex min-w-0 flex-1 items-start gap-4 lg:max-w-md xl:max-w-lg"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
           >
             <motion.div
-              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--admin-brand)] to-[#0ea5e9] text-xl font-bold text-white shadow-[0_0_32px_var(--admin-brand-glow)] ring-2 ring-white/10"
+              className="admin-srf-detail-hero__avatar shrink-0 overflow-hidden rounded-2xl shadow-[0_0_32px_var(--admin-brand-glow)] ring-2 ring-white/10"
               aria-hidden
             >
-              {studentInitials(student.first_name, student.last_name)}
+              <InternshipStudentAvatar
+                url={resolveMediaUrl(student.avatar_url ?? detail.table_row.studentAvatarUrl)}
+                name={student.full_name}
+                email={student.email}
+                initials={studentInitials(student.first_name, student.last_name, student.email)}
+                size="header"
+              />
             </motion.div>
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-widest text-[var(--admin-brand)]">
@@ -194,7 +212,7 @@ const SrfStudentDetailView: FunctionComponent<SrfStudentDetailViewProps> = ({ de
             </div>
           </motion.div>
 
-          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-2xl">
+          <div className="admin-srf-detail-hero__stats grid w-full grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[36rem] lg:max-w-none lg:flex-1">
             <HeroStat
               icon={PieChart}
               label={t('admin.modules.srf.detail.heroCompletion')}
@@ -555,16 +573,18 @@ function HeroStat({
   small?: boolean;
 }) {
   return (
-    <div className="group flex min-w-0 items-start gap-2.5 rounded-xl border border-[var(--admin-brand)]/40 bg-[color-mix(in_srgb,var(--admin-brand)_7%,var(--admin-bg-elevated))] px-3 py-2.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-[var(--admin-brand)]/70 hover:shadow-[0_0_18px_color-mix(in_srgb,var(--admin-brand)_18%,transparent)]">
+    <div className="group flex min-w-0 items-start gap-2.5 rounded-xl border border-[var(--admin-brand)]/40 bg-[color-mix(in_srgb,var(--admin-brand)_7%,var(--admin-bg-elevated))] px-3.5 py-2.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-[var(--admin-brand)]/70 hover:shadow-[0_0_18px_color-mix(in_srgb,var(--admin-brand)_18%,transparent)]">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--admin-brand-muted)] text-[var(--admin-brand)] ring-1 ring-[var(--admin-brand)]/25 transition-colors group-hover:bg-[color-mix(in_srgb,var(--admin-brand)_18%,var(--admin-bg-elevated))]">
         <Icon className="h-4 w-4" strokeWidth={2} />
       </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase leading-tight tracking-wide text-[var(--admin-text-secondary)]">
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <p className="truncate text-[10px] font-semibold uppercase leading-tight tracking-wide text-[var(--admin-text-secondary)]">
           {label}
         </p>
         <p
-          className={`mt-0.5 font-bold tabular-nums leading-tight text-[var(--admin-text)] ${small ? 'truncate text-sm' : 'text-lg'}`}
+          className={`mt-0.5 whitespace-nowrap font-bold tabular-nums leading-tight text-[var(--admin-text)] ${
+            small ? 'truncate text-sm' : 'text-base sm:text-lg'
+          }`}
         >
           {value}
         </p>

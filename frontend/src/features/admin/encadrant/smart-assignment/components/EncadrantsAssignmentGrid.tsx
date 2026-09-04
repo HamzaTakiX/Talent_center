@@ -1,5 +1,6 @@
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Users } from 'lucide-react';
 import type { SmartAssignmentEncadrantCard } from '../../../api/types';
 import { useAdminSearchPlaceholder } from '../../../i18n/useAdminCopy';
 import AdminSearchInput from '../../../ui/AdminSearchInput';
@@ -7,6 +8,7 @@ import AdminSelectField from '../../../ui/AdminSelectField';
 import AdminPagination from '../../../ui/AdminPagination';
 import EncadrantAssignmentCard from './EncadrantAssignmentCard';
 import AdminSectionEmptyState from '../../../ui/AdminSectionEmptyState';
+import SmartAssignmentSectionHeader from './SmartAssignmentSectionHeader';
 import { SmartAssignmentEncadrantsGridSkeleton } from './SmartAssignmentSectionSkeleton';
 import {
   encadrantFilterOptions,
@@ -59,43 +61,45 @@ const EncadrantsAssignmentGrid: FunctionComponent<EncadrantsAssignmentGridProps>
     return filteredEncadrants.slice(start, start + CARDS_PER_PAGE);
   }, [filteredEncadrants, page]);
 
+  const hasSourceData = encadrants.length > 0;
+  const showFilters = hasSourceData;
+
   return (
     <section
       className={`admin-module-panel sa-section-panel admin-section-panel rounded-xl shadow-sm${loading ? ' sa-section-panel--loading admin-section-panel--loading' : ''}`}
       aria-busy={loading}
     >
       <div className="flex flex-col gap-4 p-4 sm:p-6">
-        <div>
-          <h2 className="text-base font-semibold text-[var(--admin-text)]">
-            {t('admin.smartAssignment.encadrants.sectionTitle')}
-          </h2>
-          <p className="mt-0.5 text-xs text-[var(--admin-text-muted)]">
-            {t('admin.smartAssignment.encadrants.sectionSubtitle', {
-              count: filteredEncadrants.length,
-              total: encadrants.length,
-            })}
-          </p>
-        </div>
-        <div
-          className="flex flex-col gap-3 lg:flex-row lg:items-center"
-          role="toolbar"
-          aria-label={t('admin.smartAssignment.encadrants.filtersAria')}
-        >
-          <AdminSearchInput
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onClear={() => setQuery('')}
-            placeholder={searchPh}
-            containerClassName="min-w-0 flex-1 lg:max-w-md"
-          />
-          <AdminSelectField
-            value={statusFilter}
-            options={filterOptions}
-            onChange={(v) => setStatusFilter(v as EncadrantCardsFilter)}
-            aria-label={t('admin.smartAssignment.encadrants.filterAria')}
-            wrapperClassName="w-full sm:w-[220px]"
-          />
-        </div>
+        <SmartAssignmentSectionHeader
+          icon={Users}
+          title={t('admin.smartAssignment.encadrants.sectionTitle')}
+          subtitle={t('admin.smartAssignment.encadrants.sectionSubtitle', {
+            count: filteredEncadrants.length,
+            total: encadrants.length,
+          })}
+        />
+        {showFilters ? (
+          <div
+            className="flex flex-col gap-3 lg:flex-row lg:items-center"
+            role="toolbar"
+            aria-label={t('admin.smartAssignment.encadrants.filtersAria')}
+          >
+            <AdminSearchInput
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onClear={() => setQuery('')}
+              placeholder={searchPh}
+              containerClassName="min-w-0 flex-1 lg:max-w-md"
+            />
+            <AdminSelectField
+              value={statusFilter}
+              options={filterOptions}
+              onChange={(v) => setStatusFilter(v as EncadrantCardsFilter)}
+              aria-label={t('admin.smartAssignment.encadrants.filterAria')}
+              wrapperClassName="w-full sm:w-[220px]"
+            />
+          </div>
+        ) : null}
       </div>
 
       <div className="sa-section-panel__content border-t border-[var(--admin-border)] px-4 py-5 sm:px-6">
@@ -104,9 +108,17 @@ const EncadrantsAssignmentGrid: FunctionComponent<EncadrantsAssignmentGridProps>
         ) : pageItems.length === 0 ? (
           <AdminSectionEmptyState
             variant="inline"
-            iconPreset="search"
-            title={t('admin.smartAssignment.encadrants.emptyFilters')}
-            description={t('admin.empty.tryAdjusting')}
+            iconPreset={hasSourceData ? 'search' : 'users'}
+            title={
+              hasSourceData
+                ? t('admin.smartAssignment.encadrants.emptyFilters')
+                : t('admin.smartAssignment.encadrants.emptyNone')
+            }
+            description={
+              hasSourceData
+                ? t('admin.empty.tryAdjusting')
+                : t('admin.smartAssignment.encadrants.emptyNoneHint')
+            }
           />
         ) : (
           <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">

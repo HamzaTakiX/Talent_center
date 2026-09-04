@@ -15,6 +15,14 @@ class IsSupervisor(permissions.BasePermission):
         return bool(user and user.is_authenticated and user.role == User.RoleChoices.SUPERVISOR)
 
 
+class IsStudentOrSupervisor(permissions.BasePermission):
+    def has_permission(self, request, view) -> bool:
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        return user.role in {User.RoleChoices.STUDENT, User.RoleChoices.SUPERVISOR}
+
+
 class HasReportPermission(EffectiveHasPermission):
     """Admin must hold required_permission on the view."""
 

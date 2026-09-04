@@ -3,11 +3,18 @@
  * Sources (in order): import.meta.env (Vite build) → window.__TC_AUTH0_ENV__ (tc-auth-env.js).
  */
 
+import { getAppCallbackUrl, getAppOrigin } from './appEnv';
+
 declare global {
   interface Window {
     __TC_AUTH0_ENV__?: Partial<
       Record<
-        'VITE_AUTH0_DOMAIN' | 'VITE_AUTH0_CLIENT_ID' | 'VITE_AUTH0_AUDIENCE' | 'VITE_API_URL',
+        | 'VITE_AUTH0_DOMAIN'
+        | 'VITE_AUTH0_CLIENT_ID'
+        | 'VITE_AUTH0_AUDIENCE'
+        | 'VITE_AUTH0_CONNECTION'
+        | 'VITE_API_URL'
+        | 'VITE_APP_URL',
         string
       >
     >;
@@ -17,7 +24,8 @@ declare global {
 type Auth0EnvKey =
   | 'VITE_AUTH0_DOMAIN'
   | 'VITE_AUTH0_CLIENT_ID'
-  | 'VITE_AUTH0_AUDIENCE';
+  | 'VITE_AUTH0_AUDIENCE'
+  | 'VITE_AUTH0_CONNECTION';
 
 function readEnv(value: string | undefined): string {
   if (!value) return '';
@@ -51,6 +59,9 @@ export type Auth0EnvConfig = {
   domain: string;
   clientId: string;
   audience?: string;
+  connection?: string;
+  /** Public app origin used for Auth0 redirect_uri / logout. */
+  appOrigin: string;
   redirectUri: string;
   isConfigured: boolean;
   /** Diagnostic snapshot for error UI / console (values masked). */
@@ -79,6 +90,7 @@ export function logAuth0EnvDiagnostics(config: Auth0EnvConfig): void {
     import_meta: {
       VITE_AUTH0_DOMAIN: mask(readEnv(import.meta.env.VITE_AUTH0_DOMAIN)),
       VITE_AUTH0_CLIENT_ID: mask(readEnv(import.meta.env.VITE_AUTH0_CLIENT_ID)),
+      VITE_APP_URL: mask(readEnv(import.meta.env.VITE_APP_URL)),
       MODE: import.meta.env.MODE,
       PROD: import.meta.env.PROD,
     },
@@ -90,6 +102,8 @@ export function logAuth0EnvDiagnostics(config: Auth0EnvConfig): void {
     resolved: {
       domain: mask(config.domain),
       clientId: mask(config.clientId),
+      appOrigin: config.appOrigin,
+      redirectUri: config.redirectUri,
     },
     sources: config.diagnostics,
   };
@@ -123,14 +137,16 @@ export function getAuth0EnvConfig(): Auth0EnvConfig {
   const domain = readViteEnv('VITE_AUTH0_DOMAIN');
   const clientId = readViteEnv('VITE_AUTH0_CLIENT_ID');
   const audience = readViteEnv('VITE_AUTH0_AUDIENCE') || undefined;
-  const origin =
-    typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+  const connection = readViteEnv('VITE_AUTH0_CONNECTION') || undefined;
+  const appOrigin = getAppOrigin();
 
   const config: Auth0EnvConfig = {
     domain,
     clientId,
     audience,
-    redirectUri: `${origin}/callback`,
+    connection,
+    appOrigin,
+    redirectUri: getAppCallbackUrl(),
     isConfigured: Boolean(domain && clientId),
     diagnostics: {
       domainFromMeta: Boolean(domainMeta),
@@ -147,4 +163,9 @@ export function getAuth0EnvConfig(): Auth0EnvConfig {
   }
 
   return config;
+}
+
+/** Auth0 Microsoft/social connection name for loginWithRedirect (from env only). */
+export function getAuth0Connection(): string {
+  return getAuth0EnvConfig().connection ?? '';
 }

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { fadeInUp } from '../../../../admin/dashboard/ui/animations';
 import { agendaSupervisorMeetings } from '../data/agendaPlatformMock';
 import { AGENDA_GLASS_CARD, AGENDA_GHOST_BTN } from '../constants/agendaLayout';
+import { AgendaMeetingJoinButton } from '../../../../shared/meeting-room';
 
 const AgendaSupervisorMeetingsTable: FunctionComponent = () => {
   const { t } = useTranslation();
@@ -45,9 +46,16 @@ const AgendaSupervisorMeetingsTable: FunctionComponent = () => {
                     <button type="button" className={AGENDA_GHOST_BTN} title={t('student.encadrant.agenda.platform.actions.view')}>
                       <Eye className="h-3.5 w-3.5" aria-hidden />
                     </button>
-                    <button type="button" className={AGENDA_GHOST_BTN} title={t('student.encadrant.agenda.joinMeeting')}>
+                    <AgendaMeetingJoinButton
+                      portal="student"
+                      mode="video"
+                      meetingId={row.meetingId}
+                      startAt={`${row.date}T${row.time}:00`}
+                      title={t(row.subjectKey)}
+                      className={AGENDA_GHOST_BTN}
+                    >
                       <Video className="h-3.5 w-3.5" aria-hidden />
-                    </button>
+                    </AgendaMeetingJoinButton>
                     <button type="button" className={AGENDA_GHOST_BTN} title={t('student.encadrant.agenda.platform.actions.reschedule')}>
                       <CalendarClock className="h-3.5 w-3.5" aria-hidden />
                     </button>

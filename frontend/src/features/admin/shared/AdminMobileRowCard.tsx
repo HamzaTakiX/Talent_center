@@ -13,6 +13,7 @@ export interface AdminMobileRowCardProps {
   fields?: readonly AdminMobileRowCardField[];
   actions?: ReactNode;
   className?: string;
+  onClick?: () => void;
 }
 
 const AdminMobileRowCard: FunctionComponent<AdminMobileRowCardProps> = ({
@@ -22,8 +23,24 @@ const AdminMobileRowCard: FunctionComponent<AdminMobileRowCardProps> = ({
   fields,
   actions,
   className = '',
+  onClick,
 }) => (
-  <div className={`admin-mobile-card ${className}`}>
+  <div
+    className={`admin-mobile-card${onClick ? ' admin-mobile-card--interactive' : ''} ${className}`}
+    onClick={onClick}
+    role={onClick ? 'button' : undefined}
+    tabIndex={onClick ? 0 : undefined}
+    onKeyDown={
+      onClick
+        ? (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClick();
+            }
+          }
+        : undefined
+    }
+  >
     {(badges || title || meta) && (
       <div className="min-w-0 space-y-2">
         {badges && <div className="flex flex-wrap items-center gap-2">{badges}</div>}
@@ -57,7 +74,11 @@ const AdminMobileRowCard: FunctionComponent<AdminMobileRowCardProps> = ({
     )}
 
     {actions != null && (
-      <div className="admin-mobile-card__actions flex w-full min-w-0 flex-col gap-2 border-t border-[var(--admin-border)] pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 sm:border-t-0 sm:pt-0">
+      <div
+        className="admin-mobile-card__actions flex w-full min-w-0 flex-col gap-2 border-t border-[var(--admin-border)] pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 sm:border-t-0 sm:pt-0"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         {actions}
       </div>
     )}

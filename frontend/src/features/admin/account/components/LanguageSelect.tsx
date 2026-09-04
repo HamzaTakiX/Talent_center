@@ -52,7 +52,7 @@ const LanguageSelect: FunctionComponent<LanguageSelectProps> = ({
     <div
       role="radiogroup"
       aria-label="Language"
-      className="admin-language-picker mr-auto flex w-full max-w-sm flex-col gap-2"
+      className="admin-language-picker mr-auto flex w-full flex-col gap-2"
     >
       {options.map((opt) => {
         const isSelected = opt.value === value;

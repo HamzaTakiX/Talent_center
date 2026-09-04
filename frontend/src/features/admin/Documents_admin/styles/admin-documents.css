@@ -187,7 +187,7 @@
   padding: 1rem;
   border-radius: var(--admin-radius-md);
   border: 1px solid var(--admin-border);
-  background: var(--admin-surface-inset, var(--admin-bg-elevated));
+  background: var(--admin-bg-elevated);
 }
 
 .admin-doc-chart-card--wide {
@@ -909,11 +909,6 @@
   overflow: hidden;
 }
 
-.admin-doc-detail-panel--sticky {
-  position: sticky;
-  top: 1rem;
-}
-
 .admin-doc-detail-panel__header {
   display: flex;
   align-items: center;
@@ -1001,17 +996,17 @@
   background: linear-gradient(180deg, var(--admin-brand), color-mix(in srgb, var(--admin-brand) 40%, #0ea5e9));
 }
 
-.admin-doc-detail-hero__inner {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
-  gap: 1.25rem;
-  padding: 1.25rem 1.375rem 1.375rem 1.5rem;
+.admin-doc-detail-hero__back {
+  position: relative;
+  z-index: 1;
+  padding: 1rem 1.375rem 0 1.5rem;
 }
 
-@media (max-width: 900px) {
-  .admin-doc-detail-hero__inner {
-    grid-template-columns: 1fr;
-  }
+.admin-doc-detail-hero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  padding: 0.75rem 1.375rem 1.375rem 1.5rem;
 }
 
 .admin-doc-detail-hero__eyebrow {
@@ -1285,13 +1280,20 @@
 
 .admin-doc-detail-empty {
   display: flex;
-  align-items: center;
-  gap: 0.65rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
   padding: 1rem 1.125rem;
   border-radius: 0.875rem;
   color: var(--admin-danger);
   background: color-mix(in srgb, var(--admin-danger) 8%, var(--admin-bg-elevated));
   border: 1px solid color-mix(in srgb, var(--admin-danger) 22%, var(--admin-border));
+}
+
+.admin-doc-detail-empty__body {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
 }
 
 .admin-doc-detail-empty p {
@@ -1540,8 +1542,17 @@
 [dir='rtl'] .admin-doc-insight { border-inline-start: none; border-inline-end: 3px solid var(--admin-brand); }
 
 /* ── Service catalog ── */
-.admin-doc-catalog-page .admin-doc-hero { align-items: center; }
-.admin-doc-catalog-hero__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.admin-doc-catalog-page .admin-doc-catalog-hero {
+  margin-bottom: 0;
+}
+
+.admin-doc-catalog-hero-actions,
+.admin-doc-catalog-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
 
 .admin-doc-catalog-filters {
   padding: 1rem;

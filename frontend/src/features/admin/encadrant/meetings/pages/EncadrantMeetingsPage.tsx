@@ -154,29 +154,19 @@ const EncadrantMeetingsPage: FunctionComponent = () => {
 
 
 
-        <MeetingsFiltersBar filters={filters} onChange={setFilters} />
-
-
-
-        <MeetingsTableSection
-
-          items={items}
-
-          loading={listLoading}
-
-          page={pagination.page}
-
-          totalPages={pagination.total_pages}
-
-          totalItems={pagination.total}
-
-          pageSize={pagination.page_size}
-
-          onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))}
-
-          hasSearch={hasSearch}
-
-        />
+        <section className="admin-meetings-desk admin-module-panel" aria-label="Meeting list">
+          <MeetingsFiltersBar filters={filters} onChange={setFilters} />
+          <MeetingsTableSection
+            items={items}
+            loading={listLoading}
+            page={pagination.page}
+            totalPages={pagination.total_pages}
+            totalItems={pagination.total}
+            pageSize={pagination.page_size}
+            onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))}
+            hasSearch={hasSearch}
+          />
+        </section>
 
 
 

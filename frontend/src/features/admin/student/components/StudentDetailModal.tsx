@@ -1,12 +1,17 @@
 import { FunctionComponent, ReactNode, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, GraduationCap, Hash, Loader2, Mail, MessageSquare, UserCog, AlertCircle } from 'lucide-react';
+import { Eye, GraduationCap, Hash, Loader2, Mail, UserCog, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { easePremium } from '../../dashboard/ui/animations';
 import type { TFunction } from 'i18next';
 import { adminStudentsApi } from '../../api/students';
+import {
+  adminStudentDeskChatPath,
+  openAdminStudentDeskChat,
+} from '../../shared/platform-desk-chat/utils/openAdminPlatformDeskChat';
 import type { AdminStudentDetail, AdminStudentRow, StudentIntelligenceScores } from '../../api/types';
+import AdminCredentialReveal from '../../ui/AdminCredentialReveal';
 import AdminEntityDetailModal from '../../ui/AdminEntityDetailModal';
 import type { AdminDetailSection } from '../../ui/AdminDetailGrid';
 import AdminBadge from '../../ui/AdminBadge';
@@ -15,9 +20,6 @@ import { engagementBandTableBadge, tableBadge } from '../../ui/adminStatusBadges
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
 import { resolveMediaUrl } from '../../../../shared/api/mediaUrl';
 import { engagementBand } from '../student_cards/shared/utils/studentListFilters';
-import {
-  adminFormBtnSecondaryClass,
-} from '../../shared/forms/adminFormClasses';
 
 const FORM_PREFIX = 'admin.forms.createStudent';
 const DETAIL_PREFIX = 'admin.common.detailModal';
@@ -390,6 +392,7 @@ const StudentDetailModal: FunctionComponent<StudentDetailModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [chatError, setChatError] = useState('');
+  const [openingChat, setOpeningChat] = useState(false);
 
   const resolvedId = student?.id ?? studentId ?? null;
 
@@ -398,6 +401,7 @@ const StudentDetailModal: FunctionComponent<StudentDetailModalProps> = ({
       setDetail(null);
       setLoadError(false);
       setChatError('');
+      setOpeningChat(false);
       return;
     }
 
@@ -668,13 +672,26 @@ const StudentDetailModal: FunctionComponent<StudentDetailModalProps> = ({
     display?.program_major || nestedLabel(studentProfile?.filiere) || display?.filiere_code;
   const classLabel = display?.current_class || nestedLabel(studentProfile?.class_group);
 
-  const showChatButton = Boolean(display?.is_active && !loading);
+  const showChatButton = Boolean(
+    (student?.is_active ?? display?.is_active) &&
+      (student?.platform_access_granted ?? display?.platform_access_granted),
+  );
 
   const handleOpenChat = () => {
-    if (!resolvedId || !showChatButton) return;
+    if (!resolvedId || !showChatButton || openingChat) return;
     setChatError('');
-    onClose();
-    navigate(`/admin/student/chat?student=${resolvedId}&opening=1`);
+    setOpeningChat(true);
+    void openAdminStudentDeskChat(resolvedId)
+      .then((conversationId) => {
+        onClose();
+        navigate(adminStudentDeskChatPath(conversationId));
+      })
+      .catch(() => {
+        setChatError(t(`${DETAIL_PREFIX}.student.chatOpenError`));
+      })
+      .finally(() => {
+        setOpeningChat(false);
+      });
   };
 
   return (
@@ -688,17 +705,10 @@ const StudentDetailModal: FunctionComponent<StudentDetailModalProps> = ({
       maxWidthClass="max-w-[780px]"
       showReadOnlyBanner={false}
       headerIcon={UserCog}
-      footerExtra={
-        showChatButton ? (
-          <button
-            type="button"
-            className={adminFormBtnSecondaryClass}
-            onClick={handleOpenChat}
-          >
-            <MessageSquare className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-            {t(`${DETAIL_PREFIX}.student.sendMessage`)}
-          </button>
-        ) : undefined
+      onSendMessage={showChatButton ? handleOpenChat : undefined}
+      sendMessageLoading={openingChat}
+      afterSections={
+        <AdminCredentialReveal kind="student" userId={resolvedId} enabled={open} />
       }
       headerContent={
         <div className="admin-student-detail-hero-wrap">

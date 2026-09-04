@@ -1,0 +1,287 @@
+/* Smart assignment — organic page hero */
+.sa-page-hero {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  border-radius: calc(var(--admin-radius-xl, 1rem) + 2px);
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 18%, var(--admin-border));
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 0% 0%,
+      color-mix(in srgb, var(--admin-brand) 10%, transparent) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 100% 100%,
+      color-mix(in srgb, var(--admin-mesh-2, #6366f1) 8%, transparent) 0%,
+      transparent 50%
+    ),
+    var(--admin-bg-elevated);
+  box-shadow:
+    var(--admin-shadow-sm),
+    inset 0 1px 0 color-mix(in srgb, #fff 6%, transparent);
+}
+
+[data-admin-theme='dark'] .sa-page-hero {
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 0% 0%,
+      color-mix(in srgb, var(--admin-brand) 14%, transparent) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 100% 100%,
+      color-mix(in srgb, var(--admin-mesh-2, #6366f1) 12%, transparent) 0%,
+      transparent 50%
+    ),
+    var(--admin-bg-elevated);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 color-mix(in srgb, #fff 4%, transparent);
+}
+
+.sa-page-hero__blob {
+  pointer-events: none;
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(56px);
+  opacity: 0.55;
+}
+
+.sa-page-hero__blob--primary {
+  width: 14rem;
+  height: 14rem;
+  top: -4.5rem;
+  right: -2rem;
+  background: color-mix(in srgb, var(--admin-brand) 35%, transparent);
+}
+
+.sa-page-hero__blob--secondary {
+  width: 10rem;
+  height: 10rem;
+  bottom: -3.5rem;
+  left: 18%;
+  background: color-mix(in srgb, var(--admin-mesh-2, #6366f1) 28%, transparent);
+  opacity: 0.4;
+}
+
+.sa-page-hero__blob--accent {
+  width: 6rem;
+  height: 6rem;
+  top: 50%;
+  right: 28%;
+  transform: translateY(-50%);
+  background: color-mix(in srgb, var(--admin-brand) 22%, #22d3ee);
+  opacity: 0.25;
+  filter: blur(40px);
+}
+
+.sa-page-hero__mesh {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in srgb, var(--admin-brand) 18%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+  mask-image: linear-gradient(135deg, black 0%, transparent 72%);
+}
+
+.sa-page-hero__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .sa-page-hero__content {
+    padding: 1.375rem 1.5rem 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sa-page-hero__content {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+}
+
+.sa-page-hero__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.sa-page-hero__icon-shell {
+  position: relative;
+  flex-shrink: 0;
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.sa-page-hero__icon-ring {
+  position: absolute;
+  inset: -0.25rem;
+  border-radius: 1rem;
+  background: conic-gradient(
+    from 210deg,
+    color-mix(in srgb, var(--admin-brand) 45%, transparent),
+    color-mix(in srgb, var(--admin-mesh-2, #6366f1) 30%, transparent),
+    color-mix(in srgb, var(--admin-brand) 45%, transparent)
+  );
+  opacity: 0.55;
+  animation: sa-page-hero-spin 14s linear infinite;
+}
+
+@keyframes sa-page-hero-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sa-page-hero__icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.875rem;
+  color: var(--admin-brand);
+  background: color-mix(in srgb, var(--admin-brand) 14%, var(--admin-surface));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--admin-brand) 28%, transparent),
+    0 8px 24px color-mix(in srgb, var(--admin-brand) 14%, transparent);
+}
+
+.sa-page-hero__copy {
+  min-width: 0;
+  padding-top: 0.125rem;
+}
+
+.sa-page-hero__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.sa-page-hero__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  color: var(--admin-text);
+}
+
+@media (min-width: 640px) {
+  .sa-page-hero__title {
+    font-size: 1.375rem;
+  }
+}
+
+.sa-page-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  height: 1.375rem;
+  padding: 0 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--admin-brand) 30%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--admin-brand) 16%, transparent) 0%,
+    color-mix(in srgb, var(--admin-brand) 8%, transparent) 100%
+  );
+  color: var(--admin-brand);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sa-page-hero__subtitle {
+  margin: 0.4rem 0 0;
+  max-width: 38rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--admin-text-secondary);
+}
+
+@media (min-width: 640px) {
+  .sa-page-hero__subtitle {
+    font-size: 0.875rem;
+  }
+}
+
+.sa-page-hero__chips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 1024px) {
+  .sa-page-hero__chips {
+    flex-shrink: 0;
+    width: min(100%, 28rem);
+  }
+}
+
+.sa-page-hero__chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 0;
+  height: 2rem;
+  padding: 0 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--admin-border) 88%, var(--admin-brand) 12%);
+  background: color-mix(in srgb, var(--admin-surface) 72%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--admin-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.sa-page-hero__chip span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sa-page-hero__chip svg {
+  color: var(--admin-brand);
+  opacity: 0.9;
+}
+
+.sa-page-hero__chip:hover {
+  border-color: color-mix(in srgb, var(--admin-brand) 28%, var(--admin-border));
+  background: color-mix(in srgb, var(--admin-brand) 8%, var(--admin-surface));
+  color: var(--admin-text);
+}
+
+[data-admin-theme='dark'] .sa-page-hero__chip {
+  background: color-mix(in srgb, var(--admin-bg-elevated) 80%, transparent);
+}

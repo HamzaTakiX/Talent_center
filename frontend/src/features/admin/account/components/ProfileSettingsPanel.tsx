@@ -1,26 +1,45 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, ReactNode } from 'react';
 import {
-  BarChart3,
   Check,
   ChevronRight,
   GraduationCap,
   Mail,
   Moon,
   Palette,
-  Settings,
   SlidersHorizontal,
   Sun,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../auth/hooks/useAuth';
-import AccountSection from './AccountSection';
 import AdminToggle from './AdminToggle';
 import DashboardSectionOrderControls from './DashboardSectionOrderControls';
 import LanguageSelect from './LanguageSelect';
 import NotificationPreferencesSection from '../../../shared/notifications/components/NotificationPreferencesSection';
 import type { AdminPreferences } from '../types';
 import type { DashboardSectionId } from '../hooks/useDashboardLayout';
+
+function SettingsGroup({
+  id,
+  title,
+  description,
+  children,
+}: {
+  id?: string;
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div id={id} className="min-w-0">
+      <h3 className="text-sm font-semibold text-[var(--admin-text)]">{title}</h3>
+      {description ? (
+        <p className="mt-1 text-xs text-[var(--admin-text-secondary)]">{description}</p>
+      ) : null}
+      <div className="mt-4">{children}</div>
+    </div>
+  );
+}
 
 type AdminTheme = 'light' | 'dark';
 
@@ -50,32 +69,31 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
     (user as { admin_level?: string })?.admin_level === 'SUPER';
 
   return (
-    <div className="space-y-6">
-      <AccountSection
-        sectionKey="personal"
-        sectionId="settings-language"
-        title={t('admin.settings.language.title')}
-        description={t('admin.settings.language.description')}
-      >
-        <LanguageSelect
-          id="language"
-          value={draft.language}
-          onChange={(language) => onDraftChange({ ...draft, language })}
-        />
-      </AccountSection>
+    <div className="flex flex-col gap-8">
+      <div className="admin-settings-split">
+        <SettingsGroup
+          id="settings-language"
+          title={t('admin.settings.language.title')}
+          description={t('admin.settings.language.description')}
+        >
+          <LanguageSelect
+            id="language"
+            value={draft.language}
+            onChange={(language) => onDraftChange({ ...draft, language })}
+          />
+        </SettingsGroup>
 
-      <AccountSection
-        sectionKey="activity"
-        sectionId="settings-notifications"
-        title={t('admin.settings.notifications.title')}
-        description={t('admin.settings.notifications.description')}
-      >
-        <NotificationPreferencesSection />
-      </AccountSection>
+        <SettingsGroup
+          id="settings-notifications"
+          title={t('admin.settings.notifications.title')}
+          description={t('admin.settings.notifications.description')}
+        >
+          <NotificationPreferencesSection />
+        </SettingsGroup>
+      </div>
 
-      <AccountSection
-        sectionId="settings-appearance"
-        icon={Palette}
+      <SettingsGroup
+        id="settings-appearance"
         title={t('admin.settings.appearance.title')}
         description={t('admin.settings.appearance.description')}
       >
@@ -129,12 +147,11 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
             </p>
           </button>
         </div>
-      </AccountSection>
+      </SettingsGroup>
 
       {isSuperAdmin ? (
-        <AccountSection
-          sectionId="settings-email-system"
-          icon={Mail}
+        <SettingsGroup
+          id="settings-email-system"
           title={t('admin.settings.emailSystem.title')}
           description={t('admin.settings.emailSystem.description')}
         >
@@ -157,13 +174,12 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
             </span>
             <ChevronRight className="h-5 w-5 text-[var(--admin-text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--admin-brand)]" />
           </Link>
-        </AccountSection>
+        </SettingsGroup>
       ) : null}
 
       {isSuperAdmin ? (
-        <AccountSection
-          sectionId="settings-notification-analytics"
-          icon={BarChart3}
+        <SettingsGroup
+          id="settings-notification-analytics"
           title={t('notifications.analytics.title')}
           description={t('notifications.analytics.subtitle')}
         >
@@ -181,13 +197,12 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
             </span>
             <ChevronRight className="h-5 w-5 text-[var(--admin-text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--admin-brand)]" />
           </Link>
-        </AccountSection>
+        </SettingsGroup>
       ) : null}
 
       {isSuperAdmin ? (
-        <AccountSection
-          sectionId="settings-academic-structure"
-          icon={GraduationCap}
+        <SettingsGroup
+          id="settings-academic-structure"
           title={t('admin.settings.academicStructure.title')}
           description={t('admin.settings.academicStructure.description')}
         >
@@ -210,12 +225,11 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
             </span>
             <ChevronRight className="h-5 w-5 text-[var(--admin-text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--admin-brand)]" />
           </Link>
-        </AccountSection>
+        </SettingsGroup>
       ) : null}
 
-      <AccountSection
-        sectionId="settings-preferences"
-        icon={Settings}
+      <SettingsGroup
+        id="settings-preferences"
         title={t('admin.settings.preferences.title')}
         description={t('admin.settings.preferences.description')}
       >
@@ -262,7 +276,7 @@ const ProfileSettingsPanel: FunctionComponent<ProfileSettingsPanelProps> = ({
             }}
           />
         ) : null}
-      </AccountSection>
+      </SettingsGroup>
 
       <div className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--admin-border)] py-4 text-xs text-[var(--admin-text-muted)]">
         <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={2} />

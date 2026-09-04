@@ -1,13 +1,18 @@
 import { FunctionComponent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil, RefreshCw, Upload } from 'lucide-react';
+import { Eye, MessageSquare, Pencil, Upload, UserCheck } from 'lucide-react';
 import { adminEncadrantsApi } from '../../api/encadrants';
 import { useAdminTableDeleteFlow } from '../../shared/hooks/useAdminTableDeleteFlow';
 import { useAdminCopy, useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
 import { useAdminToast } from '../../dashboard/context/AdminToastContext';
 import { useAdminTableValues } from '../../i18n/useAdminTableValues';
 import type { AdminEncadrantRow } from '../../api/types';
+import InternshipStudentAvatar from '../../offres-stage/chat/components/InternshipStudentAvatar';
+import {
+  adminEncadrantDeskChatPath,
+  openAdminEncadrantDeskChat,
+} from '../../shared/platform-desk-chat/utils/openAdminPlatformDeskChat';
 import { adminCrudRoutes } from '../../shared/navigation/adminCrudRoutes';
 import AdminMobileRowCard from '../../shared/AdminMobileRowCard';
 import {
@@ -18,15 +23,21 @@ import {
   AdminTableEmptyState,
   AdminTableScroll,
   AdminMobileTableSkeleton,
+  AdminTableSelectCheckbox,
   AdminTableSkeletonRows,
+  AdminTableFillerRows,
+  adminTableFillerCount,
 } from '../../ui';
-import { adminTableBtn, adminTableBtnMobile } from '../../ui/adminTableButtons';
+import { adminTableBtnMobile } from '../../ui/adminTableButtons';
+import EncadrantActions from './EncadrantActions';
 import EncadrantDetailModal from './EncadrantDetailModal';
 import EncadrantsImportModal from './EncadrantsImportModal';
+import EncadrantScopeAlert from './EncadrantScopeAlert';
 import { scopeProgramsPreview } from '../../shared/utils/programDisplay';
 import { specializationDomainLabel } from '../utils/specializationDomainDisplay';
 import AdminDeleteConfirmModal from '../../ui/AdminDeleteConfirmModal';
 import AdminToolbarDeleteControl from '../../ui/AdminToolbarDeleteControl';
+import { resolveMediaUrl } from '../../../../shared/api/mediaUrl';
 
 function initialsFromName(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -119,6 +130,16 @@ const EncadrantsTablePanel: FunctionComponent<EncadrantsTablePanelProps> = ({
     () => rows.filter((r) => r.scopes?.scope_is_complete === false).length,
     [rows],
   );
+
+  const handleOpenEncadrantChat = async (row: AdminEncadrantRow) => {
+    if (!row.is_active) return;
+    try {
+      const conversationId = await openAdminEncadrantDeskChat(row.id);
+      navigate(adminEncadrantDeskChatPath(conversationId));
+    } catch {
+      toastError(t('admin.common.detailModal.student.chatOpenError'));
+    }
+  };
 
   const handleRepairScopes = async () => {
     setRepairingScopes(true);
@@ -215,34 +236,21 @@ const EncadrantsTablePanel: FunctionComponent<EncadrantsTablePanelProps> = ({
         }}
       />
 
-      <div className="box-border flex w-full min-w-0 flex-col admin-module-panel text-start font-inter shadow-sm">
-        {incompleteCount > 0 ? (
-          <div
-            className="mx-4 mb-0 mt-4 flex flex-col gap-2 rounded-lg border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200 sm:mx-6"
-            role="status"
-          >
-            <p>{t('admin.modules.encadrants.incompleteScopeBanner', { count: incompleteCount })}</p>
-            <button
-              type="button"
-              disabled={repairingScopes}
-              onClick={() => void handleRepairScopes()}
-              className="inline-flex w-fit items-center gap-2 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
-            >
-              <RefreshCw
-                className={`h-3.5 w-3.5 ${repairingScopes ? 'animate-spin' : ''}`}
-                aria-hidden
-              />
-              {t('admin.modules.encadrants.repairScopes')}
-            </button>
-          </div>
-        ) : null}
+        <div className="box-border flex w-full min-w-0 max-w-full flex-col admin-module-panel text-start font-inter shadow-sm">
+        <EncadrantScopeAlert
+          count={incompleteCount}
+          repairing={repairingScopes}
+          onRepair={() => void handleRepairScopes()}
+        />
 
         <AdminModuleHeader
           layout="toolbar"
+          icon={UserCheck}
           title={t('admin.modules.encadrants.title')}
           subtitle={t('admin.modules.encadrants.subtitle')}
           actions={
             <AdminListToolbar
+              controlsLayout="grouped"
               searchValue={query}
               onSearchChange={onQueryChange}
               searchPlaceholder={searchPh}
@@ -254,33 +262,19 @@ const EncadrantsTablePanel: FunctionComponent<EncadrantsTablePanelProps> = ({
                 ariaLabel: t('admin.tables.encadrants.filterByStatus'),
               }}
               createLabel={createLabel('encadrant')}
+              createVariant="primary"
               onCreate={() => navigate(adminCrudRoutes.encadrantCreate)}
               actionExtra={
-                <>
-                  <button
-                    type="button"
-                    className="admin-module-toolbar__btn"
-                    disabled={repairingScopes || loading}
-                    onClick={() => void handleRepairScopes()}
-                  >
-                    <RefreshCw
-                      className={`h-4 w-4 shrink-0 ${repairingScopes ? 'animate-spin' : ''}`}
-                      strokeWidth={1.75}
-                      aria-hidden
-                    />
-                    <span>{t('admin.modules.encadrants.repairScopes')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-module-toolbar__btn"
-                    onClick={() => setImportOpen(true)}
-                  >
-                    <Upload className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                    <span>{t('admin.common.actions.importExcel')}</span>
-                  </button>
-                </>
+                <button
+                  type="button"
+                  className="admin-module-toolbar__btn"
+                  onClick={() => setImportOpen(true)}
+                >
+                  <Upload className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                  <span>{t('admin.common.actions.importExcel')}</span>
+                </button>
               }
-              beforeCreate={
+              afterCreate={
                 <AdminToolbarDeleteControl
                   selectionMode={selectionMode}
                   selectedCount={selection.selectedCount}
@@ -293,7 +287,7 @@ const EncadrantsTablePanel: FunctionComponent<EncadrantsTablePanelProps> = ({
           }
         />
 
-        <div className="space-y-3 px-4 pb-6 pt-0 sm:px-6 lg:hidden">
+        <div className="min-w-0 max-w-full space-y-3 px-4 pb-6 pt-0 sm:px-6 lg:hidden">
           {loading ? (
             <AdminMobileTableSkeleton />
           ) : rows.length === 0 ? (
@@ -304,6 +298,7 @@ const EncadrantsTablePanel: FunctionComponent<EncadrantsTablePanelProps> = ({
                 key={row.id}
                 title={row.full_name}
                 meta={row.email}
+                onClick={() => setViewRow(row)}
                 badges={
                   <>
                     <span className={statusBadgeClass(row)}>
@@ -343,6 +338,16 @@ const EncadrantsTablePanel: FunctionComponent<EncadrantsTablePanelProps> = ({
                       <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
                       {action('edit')}
                     </button>
+                    {row.is_active ? (
+                      <button
+                        type="button"
+                        className={adminTableBtnMobile}
+                        onClick={() => void handleOpenEncadrantChat(row)}
+                      >
+                        <MessageSquare className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                        {t('admin.common.detailModal.encadrant.sendMessage')}
+                      </button>
+                    ) : null}
                   </>
                 }
               />
@@ -352,22 +357,18 @@ const EncadrantsTablePanel: FunctionComponent<EncadrantsTablePanelProps> = ({
 
         <div className="admin-module-table-wrap hidden px-4 pb-6 pt-0 min-w-0 sm:px-6 lg:block">
           <AdminTableScroll
-            minWidth={selectionMode ? '1320px' : '1280px'}
+            minWidth={rows.length === 0 ? '0' : selectionMode ? '1180px' : '1140px'}
             className="admin-table-scroll--panel"
           >
             <thead>
               <tr className="box-border h-10 border-b border-solid border-[var(--admin-border)]">
                 {selectionMode ? (
-                  <th className="box-border w-10 py-2 pl-2 pr-2">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-[var(--admin-border)] accent-[var(--admin-accent)]"
+                  <th className="box-border w-12 py-2 pl-2 pr-2 text-start">
+                    <AdminTableSelectCheckbox
                       checked={selection.allOnPageSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = selection.someOnPageSelected;
-                      }}
+                      indeterminate={selection.someOnPageSelected}
                       onChange={selection.toggleAllOnPage}
-                      aria-label={t('admin.common.delete.clearSelection')}
+                      ariaLabel={t('admin.common.delete.clearSelection')}
                     />
                   </th>
                 ) : null}
@@ -392,30 +393,34 @@ const EncadrantsTablePanel: FunctionComponent<EncadrantsTablePanelProps> = ({
                   title={emptyState('encadrantsFilters')}
                 />
               ) : (
-                rows.map((row) => (
+                <>
+                {rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="box-border h-[52px] border-b border-solid border-[var(--admin-border)] last:border-b-0 transition-colors hover:bg-[var(--admin-brand-muted)]/20"
+                    className="admin-table-row--interactive box-border h-[52px] border-b border-solid border-[var(--admin-border)] last:border-b-0 transition-colors hover:bg-[var(--admin-brand-muted)]/20"
+                    onClick={() => setViewRow(row)}
                   >
                     {selectionMode ? (
-                      <td className="box-border py-2 pl-2 pr-2 align-middle">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-[var(--admin-border)] accent-[var(--admin-accent)]"
+                      <td
+                        className="box-border py-2 pl-2 pr-2 align-middle"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <AdminTableSelectCheckbox
                           checked={selection.isSelected(row.id)}
                           onChange={() => selection.toggleRow(row.id)}
-                          aria-label={row.full_name || row.email}
+                          ariaLabel={row.full_name || row.email}
                         />
                       </td>
                     ) : null}
                     <td className="box-border py-2 pl-2 pr-2 align-middle">
                       <div className="flex items-center gap-3">
-                        <span
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--admin-brand-muted)] text-xs font-semibold text-[var(--admin-brand)]"
-                          aria-hidden
-                        >
-                          {initialsFromName(row.full_name)}
-                        </span>
+                        <InternshipStudentAvatar
+                          url={resolveMediaUrl(row.avatar_url)}
+                          name={row.full_name}
+                          email={row.email}
+                          initials={initialsFromName(row.full_name)}
+                          size="list"
+                        />
                         <span className="text-num-14 font-medium leading-5 text-[var(--admin-text)]">
                           {row.full_name}
                         </span>
@@ -482,28 +487,24 @@ const EncadrantsTablePanel: FunctionComponent<EncadrantsTablePanelProps> = ({
                           : t('admin.tables.encadrants.inactive')}
                       </span>
                     </td>
-                    <td className="box-border py-2 pl-2 pr-2 text-end align-middle">
-                      <div className="flex h-8 items-start justify-end gap-2">
-                        <button
-                          type="button"
-                          className={adminTableBtn}
-                          onClick={() => setViewRow(row)}
-                        >
-                          <Eye className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                          {action('view')}
-                        </button>
-                        <button
-                          type="button"
-                          className={adminTableBtn}
-                          onClick={() => navigate(adminCrudRoutes.encadrantEdit(row.id))}
-                        >
-                          <Pencil className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                          {action('edit')}
-                        </button>
-                      </div>
+                    <td
+                      className="box-border py-2 pl-2 pr-2 text-end align-middle"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <EncadrantActions
+                        encadrant={row}
+                        onView={() => setViewRow(row)}
+                        onEdit={() => navigate(adminCrudRoutes.encadrantEdit(row.id))}
+                      />
                     </td>
                   </tr>
-                ))
+                ))}
+                <AdminTableFillerRows
+                  variant="encadrant"
+                  selectionMode={selectionMode}
+                  rows={adminTableFillerCount(rows.length)}
+                />
+                </>
               )}
             </tbody>
           </AdminTableScroll>

@@ -1,6 +1,6 @@
 import { ChangeEvent, FunctionComponent, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Upload } from 'lucide-react';
+import { GraduationCap, Loader2, Upload } from 'lucide-react';
 import { adminStudentsApi } from '../../api/students';
 import { useAdminToast } from '../../dashboard/context/AdminToastContext';
 import { useAdminCopy, useAdminSearchPlaceholder } from '../../i18n/useAdminCopy';
@@ -13,7 +13,10 @@ import {
   AdminPagination,
   AdminTableEmptyState,
   AdminTableScroll,
+  AdminTableSelectCheckbox,
   AdminTableSkeletonRows,
+  AdminTableFillerRows,
+  adminTableFillerCount,
 } from '../../ui';
 import { programTableLabel } from '../../shared/utils/programDisplay';
 import AdminDeleteConfirmModal from '../../ui/AdminDeleteConfirmModal';
@@ -192,6 +195,7 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
       <div className="box-border flex w-full min-w-0 flex-col admin-module-panel font-inter shadow-sm">
         <AdminModuleHeader
           layout="toolbar"
+          icon={GraduationCap}
           title={t('admin.modules.students.title')}
           subtitle={t('admin.modules.students.subtitle')}
           actions={
@@ -208,6 +212,7 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
                 ariaLabel: filterLabel('allStatuses'),
               }}
               createLabel={createLabel('student')}
+              createVariant="primary"
               onCreate={onCreate}
               actionExtra={
                 <button
@@ -243,15 +248,11 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
               <tr>
                 {selectionMode ? (
                   <th className="w-10">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-[var(--admin-border)] accent-[var(--admin-accent)]"
+                    <AdminTableSelectCheckbox
                       checked={selection.allOnPageSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = selection.someOnPageSelected;
-                      }}
+                      indeterminate={selection.someOnPageSelected}
                       onChange={selection.toggleAllOnPage}
-                      aria-label={t('admin.common.delete.clearSelection')}
+                      ariaLabel={t('admin.common.delete.clearSelection')}
                     />
                   </th>
                 ) : null}
@@ -270,16 +271,19 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
               ) : students.length === 0 ? (
                 <AdminTableEmptyState colSpan={colSpan} title={emptyState('studentsFilters')} />
               ) : (
-                students.map((student) => (
-                  <tr key={student.id}>
+                <>
+                {students.map((student) => (
+                  <tr
+                    key={student.id}
+                    className="admin-table-row--interactive"
+                    onClick={() => onView(student)}
+                  >
                     {selectionMode ? (
-                      <td>
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-[var(--admin-border)] accent-[var(--admin-accent)]"
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <AdminTableSelectCheckbox
                           checked={selection.isSelected(student.id)}
                           onChange={() => selection.toggleRow(student.id)}
-                          aria-label={student.full_name || student.email}
+                          ariaLabel={student.full_name || student.email}
                         />
                       </td>
                     ) : null}
@@ -309,7 +313,10 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
                         {accountStatus(student.account_status)}
                       </span>
                     </td>
-                    <td className="admin-students-table__actions text-end">
+                    <td
+                      className="admin-students-table__actions text-end"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <StudentActions
                         student={student}
                         onView={() => onView(student)}
@@ -318,7 +325,13 @@ const StudentsDashboardTable: FunctionComponent<StudentsDashboardTableProps> = (
                       />
                     </td>
                   </tr>
-                ))
+                ))}
+                <AdminTableFillerRows
+                  variant="student"
+                  selectionMode={selectionMode}
+                  rows={adminTableFillerCount(students.length)}
+                />
+                </>
               )}
             </tbody>
           </AdminTableScroll>
